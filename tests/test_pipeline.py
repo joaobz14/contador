@@ -61,3 +61,16 @@ def test_amanha_br_e_um_dia_depois_de_hoje(core):
     h = date.fromisoformat(core._hoje_br())
     a = date.fromisoformat(core._amanha_br())
     assert (a - h).days == 1
+
+
+def test_coletar_grupos_carimba_dia_de_despacho(core, monkeypatch):
+    _prepara(core, monkeypatch, [{"_envio": {"shipment_id": 44, "expected_date": "2026-06-19"}}])
+    col = core.coletar_grupos("tok", "seller", dia="2026-06-19")
+    assert col.grupos and all(g.dia == "2026-06-19" for g in col.grupos)
+
+
+def test_coletar_grupos_hoje_nao_carimba_dia(core, monkeypatch):
+    # _prepara fixa _hoje_br em 2026-06-18
+    _prepara(core, monkeypatch, [{"_envio": {"shipment_id": 7, "expected_date": "2026-06-18"}}])
+    col = core.coletar_grupos("tok", "seller")
+    assert col.grupos and all(g.dia == "" for g in col.grupos)

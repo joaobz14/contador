@@ -179,6 +179,9 @@ class Grupo:
     nome: str
     quantidade: int
     shipment_ids: list[int] = field(default_factory=list)
+    # Dia de despacho (YYYY-MM-DD) ao qual este grupo pertence. Usado como
+    # referencia no estado de impressao; vazio = usa o dia de hoje.
+    dia: str = ""
 
     @property
     def chave_grupo(self) -> str:
@@ -472,6 +475,11 @@ def coletar_grupos(
         alvo = prontos
     itens = extrair_itens(token, alvo)
     grupos = agrupar(itens)
+    if dia is not None:
+        # Grupos de um dia especifico carregam esse dia para o estado de
+        # impressao ser avaliado/gravado por dia de despacho.
+        for g in grupos:
+            g.dia = dia
     return Coleta(prontos=prontos, alvo=alvo, itens=itens, grupos=grupos)
 
 
@@ -595,7 +603,9 @@ def salvar_estado(estado: dict) -> None:
 
 
 def _chave_estado(grupo: Grupo) -> str:
-    return f"{_hoje_br()}|{grupo.chave_grupo}"
+    # Usa o dia de despacho do grupo (quando definido) para namespacar o
+    # estado por dia; senao, cai no dia de hoje.
+    return f"{grupo.dia or _hoje_br()}|{grupo.chave_grupo}"
 
 
 def _impressos(estado: dict, grupo: Grupo) -> set[int]:
