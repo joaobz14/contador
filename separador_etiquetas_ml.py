@@ -333,6 +333,22 @@ def buscar_envio(token: str, shipment_id: int) -> dict:
         return {}
 
 
+def _prazo_do_envio(env: dict) -> str:
+    """Tenta achar o prazo de despacho (handling limit) ja dentro do detalhe
+    do envio, evitando uma chamada extra ao /sla. Cobre os formatos conhecidos
+    do ML; retorna "" se nao encontrar (ai o chamador cai no /sla)."""
+    candidatos = [
+        ((env.get("shipping_option") or {}).get("estimated_handling_limit") or {}).get("date"),
+        (env.get("estimated_handling_limit") or {}).get("date"),
+        ((env.get("lead_time") or {}).get("estimated_handling_limit") or {}).get("date"),
+        (env.get("sla") or {}).get("expected_date"),
+    ]
+    for valor in candidatos:
+        if valor:
+            return valor
+    return ""
+
+
 def _avaliar_pedido(token: str, ped: dict) -> dict | None:
     """Retorna o pedido com _envio se estiver ready_to_print; senao None."""
     sid = (ped.get("shipping") or {}).get("id")
@@ -341,8 +357,12 @@ def _avaliar_pedido(token: str, ped: dict) -> dict | None:
     env = buscar_envio(token, sid)
     if env.get("substatus") != SUBSTATUS_IMPRIMIR:
         return None
-    sla = _sla(token, sid)
-    expected = _data_despacho(sla.get("expected_date") or "")
+    # O prazo de despacho costuma vir no proprio detalhe do envio; so chama o
+    # /sla (uma requisicao a mais) quando nao encontramos no detalhe.
+    expected_raw = _prazo_do_envio(env)
+    if not expected_raw:
+        expected_raw = _sla(token, sid).get("expected_date") or ""
+    expected = _data_despacho(expected_raw)
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
     ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt}
     return ped
