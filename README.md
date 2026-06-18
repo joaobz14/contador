@@ -61,6 +61,10 @@ Ele abre a tela direto, sem a janela preta do terminal. Para ter um ícone na
 > Se a tela não abrir, use **`Abrir Separador (diagnostico).bat`**: ele mantém o
 > terminal aberto mostrando o motivo do erro.
 
+**Alternativa — `Abrir Separador.pyw`:** também abre a tela sem terminal por
+duplo-clique. Depende de o Windows ter o `.pyw` associado ao `pythonw`; se o
+duplo-clique não fizer nada, fique com o `Abrir Separador.bat` (mais garantido).
+
 **Pelo terminal (alternativa):**
 
 ```bash
