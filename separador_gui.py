@@ -186,7 +186,11 @@ class SeparadorApp:
         self.imprimir(pend)
 
 
-if __name__ == "__main__":
+def main() -> None:
     root = tk.Tk()
     SeparadorApp(root)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
