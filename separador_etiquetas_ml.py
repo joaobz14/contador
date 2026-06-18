@@ -47,11 +47,24 @@ PASTA_DOWNLOADS = Path.home() / "Downloads"
 
 
 # ---------------------------------------------------------------------------
+# ERROS
+# ---------------------------------------------------------------------------
+class SeparadorError(RuntimeError):
+    """Erro de negocio do separador (credenciais, token, etc.).
+
+    O nucleo lanca esta excecao em vez de encerrar o processo, para que a
+    camada que chama (CLI ou GUI) decida como mostrar a mensagem.
+    """
+
+
+# ---------------------------------------------------------------------------
 # CREDENCIAIS
 # ---------------------------------------------------------------------------
 def carregar_credenciais() -> dict:
     if not ARQUIVO_CRED.exists():
-        sys.exit("ERRO: credenciais.json nao encontrado. Rode pegar_token.py primeiro.")
+        raise SeparadorError(
+            "credenciais.json nao encontrado. Rode pegar_token.py primeiro."
+        )
     return json.loads(ARQUIVO_CRED.read_text(encoding="utf-8"))
 
 
@@ -72,7 +85,7 @@ def renovar_token(cred: dict) -> str:
         timeout=TIMEOUT,
     )
     if resp.status_code != 200:
-        sys.exit(f"ERRO ao renovar token: {resp.text}")
+        raise SeparadorError(f"Falha ao renovar token: {resp.text}")
     dados = resp.json()
     novo = dados.get("refresh_token")
     if novo and novo != cred["refresh_token"]:
@@ -523,8 +536,11 @@ def main() -> None:
     args = sys.argv[1:]
     comando = args[0] if args else "listar"
 
-    cred = carregar_credenciais()
-    token = renovar_token(cred)
+    try:
+        cred = carregar_credenciais()
+        token = renovar_token(cred)
+    except SeparadorError as e:
+        sys.exit(f"ERRO: {e}")
 
     if comando == "rastrear" and len(args) >= 2:
         rastrear_sku(token, cred["seller_id"], args[1])
