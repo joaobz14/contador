@@ -94,21 +94,31 @@ def renovar_token(cred: dict) -> str:
     return dados["access_token"]
 
 
+def _requisicao_get(
+    url: str, headers: dict, params: dict | None = None
+) -> requests.Response:
+    """GET com retry/backoff exponencial em erros transitorios (429/500/502/503).
+
+    Retorna a Response da ultima tentativa; quem chama decide o que fazer com
+    o status. Usado tanto pelas chamadas que esperam JSON quanto pelo download
+    binario das etiquetas.
+    """
+    resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+    for tentativa in range(1, 3):
+        if resp.status_code not in (429, 500, 502, 503):
+            return resp
+        time.sleep(2 ** tentativa)
+        resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+    return resp
+
+
 def _get(url: str, token: str, params: dict | None = None, extra: dict | None = None) -> dict:
     headers = {"Authorization": f"Bearer {token}"}
     if extra:
         headers.update(extra)
-    resp = None
-    for tentativa in range(3):
-        resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
-        if resp.status_code in (429, 500, 502, 503):
-            time.sleep(2 ** tentativa)
-            continue
-        resp.raise_for_status()
-        return resp.json()
-    if resp is not None:
-        resp.raise_for_status()
-    return {}
+    resp = _requisicao_get(url, headers, params)
+    resp.raise_for_status()
+    return resp.json()
 
 
 # ---------------------------------------------------------------------------
@@ -412,11 +422,10 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
     for i in range(0, len(shipment_ids), 50):
         lote = shipment_ids[i:i + 50]
         ids = ",".join(str(s) for s in lote)
-        resp = requests.get(
+        resp = _requisicao_get(
             f"{API}/shipment_labels",
-            headers=headers,
-            params={"shipment_ids": ids, "response_type": "zpl2"},
-            timeout=TIMEOUT,
+            headers,
+            {"shipment_ids": ids, "response_type": "zpl2"},
         )
         if resp.status_code != 200:
             print(f"  [erro etiquetas] HTTP {resp.status_code}: {resp.text[:200]}")
