@@ -141,21 +141,27 @@ class SeparadorApp:
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
 
     def _linha(self, g) -> None:
-        impresso = core.status_grupo(self.estado, g) == "impresso"
+        status = core.status_grupo(self.estado, g)
+        faltam = len(core.envios_pendentes(self.estado, g))
         fr = ttk.Frame(self.lista, padding=(8, 6), relief="solid", borderwidth=1)
         fr.pack(fill="x", pady=2)
 
         esq = ttk.Frame(fr)
         esq.pack(side="left", fill="x", expand=True)
         ttk.Label(esq, text=g.nome, font=("Segoe UI", 9)).pack(anchor="w")
-        ttk.Label(esq, text=f"{g.total_etiquetas} etiqueta(s)",
-                  foreground=CINZA, font=("Segoe UI", 8)).pack(anchor="w")
+        if status == "parcial":
+            sub = (f"{g.total_etiquetas - faltam} de {g.total_etiquetas} impressas "
+                   f"· faltam {faltam}")
+        else:
+            sub = f"{g.total_etiquetas} etiqueta(s)"
+        ttk.Label(esq, text=sub, foreground=CINZA, font=("Segoe UI", 8)).pack(anchor="w")
 
-        if impresso:
+        if status == "impresso":
             ttk.Label(fr, text="✓ Impresso", foreground=VERDE,
                       font=("Segoe UI", 9, "bold")).pack(side="right")
         else:
-            ttk.Button(fr, text="Imprimir",
+            texto = "Imprimir faltantes" if status == "parcial" else "Imprimir"
+            ttk.Button(fr, text=texto,
                        command=lambda gg=g: self.imprimir(gg)).pack(side="right")
 
     # -------------------------------------------------------------- IMPRIMIR
@@ -167,11 +173,7 @@ class SeparadorApp:
 
     def _imprimir_thread(self, g) -> None:
         try:
-            zpl = core.baixar_zpl(self.token, g.shipment_ids)
-            if "^XA" not in zpl:
-                raise RuntimeError("A API não retornou ZPL válido para este grupo.")
-            core.gerar_zip_etiquetas(g, zpl)
-            core.marcar_impresso(self.estado, g)
+            core.imprimir_pendentes(self.token, g, self.estado)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return

@@ -514,13 +514,66 @@ def _chave_estado(grupo: Grupo) -> str:
     return f"{datetime.now().date().isoformat()}|{grupo.chave_grupo}"
 
 
+def _impressos(estado: dict, grupo: Grupo) -> set[int]:
+    """Conjunto de shipment_ids ja impressos para o grupo (no dia).
+
+    Aceita o formato novo (lista de ids) e o antigo (string "impresso"),
+    para nao quebrar arquivos de estado ja existentes.
+    """
+    valor = estado.get(_chave_estado(grupo))
+    if valor == "impresso":               # formato antigo: tudo impresso
+        return set(grupo.shipment_ids)
+    if isinstance(valor, list):
+        return set(valor)
+    return set()
+
+
 def status_grupo(estado: dict, grupo: Grupo) -> str:
-    return estado.get(_chave_estado(grupo), "pendente")
+    """pendente | parcial | impresso, comparando os envios ATUAIS do grupo
+    com os que ja foram impressos. Um envio novo reabre o grupo."""
+    atuais = set(grupo.shipment_ids)
+    if not atuais:
+        return "pendente"
+    impressos = _impressos(estado, grupo)
+    if atuais <= impressos:
+        return "impresso"
+    if atuais & impressos:
+        return "parcial"
+    return "pendente"
 
 
-def marcar_impresso(estado: dict, grupo: Grupo) -> None:
-    estado[_chave_estado(grupo)] = "impresso"
+def envios_pendentes(estado: dict, grupo: Grupo) -> list[int]:
+    """Envios do grupo que ainda nao foram impressos (preserva a ordem)."""
+    impressos = _impressos(estado, grupo)
+    return [s for s in grupo.shipment_ids if s not in impressos]
+
+
+def marcar_impresso(estado: dict, grupo: Grupo, shipment_ids: list[int] | None = None) -> None:
+    """Marca como impressos os shipment_ids informados (ou todos do grupo),
+    acumulando com os ja registrados no dia."""
+    ids = grupo.shipment_ids if shipment_ids is None else shipment_ids
+    impressos = _impressos(estado, grupo)
+    impressos.update(ids)
+    estado[_chave_estado(grupo)] = sorted(impressos)
     salvar_estado(estado)
+
+
+def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:
+    """Baixa e gera o ZIP APENAS dos envios ainda nao impressos do grupo,
+    marca-os e retorna a lista impressa (vazia se nada estava pendente).
+
+    Logica compartilhada por CLI e GUI. Lanca SeparadorError em falha de
+    download ou ZPL invalido; nesse caso nada e marcado como impresso.
+    """
+    pendentes = envios_pendentes(estado, grupo)
+    if not pendentes:
+        return []
+    zpl = baixar_zpl(token, pendentes)
+    if "^XA" not in zpl:
+        raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+    gerar_zip_etiquetas(grupo, zpl)
+    marcar_impresso(estado, grupo, pendentes)
+    return pendentes
 
 
 # ---------------------------------------------------------------------------
@@ -545,19 +598,18 @@ def listar(grupos: list[Grupo], estado: dict, qtd_prontos: int) -> None:
 
 
 def imprimir_grupo(token: str, grupo: Grupo, estado: dict) -> None:
-    print(f"Baixando etiquetas de: {grupo.nome} (qtd {grupo.quantidade}) ...")
+    pendentes = envios_pendentes(estado, grupo)
+    if not pendentes:
+        print(f"Grupo '{grupo.nome}' (qtd {grupo.quantidade}): nada pendente, ja impresso.")
+        return
+    print(f"Baixando {len(pendentes)} etiqueta(s) de: {grupo.nome} (qtd {grupo.quantidade}) ...")
     try:
-        zpl = baixar_zpl(token, grupo.shipment_ids)
+        impressos = imprimir_pendentes(token, grupo, estado)
     except SeparadorError as e:
         print(f"  ERRO: {e}")
         return
-    if "^XA" not in zpl:
-        print("  ATENCAO: a API nao retornou ZPL valido (sem ^XA). Nada foi gerado.")
-        return
-    caminho = gerar_zip_etiquetas(grupo, zpl)
-    print(f"  {grupo.total_etiquetas} etiquetas -> ZIP em: {caminho}")
+    print(f"  {len(impressos)} etiqueta(s) -> ZIP gerado em: {PASTA_DOWNLOADS}")
     print("  O app da Zebra vai detectar e imprimir automaticamente.")
-    marcar_impresso(estado, grupo)
     print("  Status: IMPRESSO.")
 
 
