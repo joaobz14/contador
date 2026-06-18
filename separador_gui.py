@@ -30,7 +30,7 @@ class SeparadorApp:
         self.estado: dict = {}
         self.ocupado = False
         self._build_ui()
-        self.root.after(300, self.atualizar)  # carrega assim que abre
+        self._tela_inicial()           # abre parado: usuario escolhe o filtro
 
     # ------------------------------------------------------------------ UI
     def _build_ui(self) -> None:
@@ -90,6 +90,18 @@ class SeparadorApp:
         for r in self.radios:
             r.config(state=estado)
         self.lbl_status.config(text=msg)
+
+    def _tela_inicial(self) -> None:
+        """Tela de abertura: nada e buscado ate o usuario escolher e clicar."""
+        for w in self.lista.winfo_children():
+            w.destroy()
+        self.lbl_resumo.config(text="")
+        ttk.Label(
+            self.lista, padding=24, justify="center", foreground=CINZA,
+            text=("Escolha o dia (Hoje ou Amanhã) e clique em 🔄 Atualizar\n"
+                  "para buscar os pedidos."),
+        ).pack()
+        self.lbl_status.config(text="Pronto. Aguardando você escolher o filtro.")
 
     # ------------------------------------------------------------ ATUALIZAR
     def atualizar(self) -> None:
