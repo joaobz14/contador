@@ -27,7 +27,7 @@ import zipfile
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -39,6 +39,10 @@ DIAS_JANELA = 30
 TAM_NOME = 45
 SUBSTATUS_IMPRIMIR = "ready_to_print"
 DIAS_ESTADO = 7  # dias de historico de impressao mantidos no estado_grupos.json
+# Horario de Brasilia. O Mercado Livre expressa o prazo de despacho em -03:00
+# e o Brasil nao usa horario de verao desde 2019, entao um offset fixo basta
+# (e evita depender da base de fusos do sistema, ausente em muitos Windows).
+TZ_BR = timezone(timedelta(hours=-3))
 # Pasta deste script: os arquivos de credenciais/estado/cache ficam sempre
 # aqui, independente de onde o programa for aberto (atalho, agendador, etc.).
 PASTA_SCRIPT = Path(__file__).resolve().parent
@@ -59,6 +63,30 @@ class SeparadorError(RuntimeError):
     O nucleo lanca esta excecao em vez de encerrar o processo, para que a
     camada que chama (CLI ou GUI) decida como mostrar a mensagem.
     """
+
+
+# ---------------------------------------------------------------------------
+# DATAS (sempre no horario de Brasilia, como o Mercado Livre define o prazo)
+# ---------------------------------------------------------------------------
+def _hoje_br() -> str:
+    """Data de hoje (YYYY-MM-DD) no horario de Brasilia, independente do
+    fuso/relogio da maquina (importante em servidores em UTC)."""
+    return datetime.now(TZ_BR).date().isoformat()
+
+
+def _data_despacho(expected_raw: str) -> str:
+    """Converte o expected_date da API para o dia (YYYY-MM-DD) no horario de
+    Brasilia. Interpreta o offset ISO 8601 que o ML envia; se nao der para
+    parsear, cai no recorte simples dos 10 primeiros caracteres."""
+    if not expected_raw:
+        return ""
+    try:
+        dt = datetime.fromisoformat(expected_raw.replace("Z", "+00:00"))
+    except ValueError:
+        return expected_raw[:10]
+    if dt.tzinfo is None:                 # sem offset: usa o que veio
+        return expected_raw[:10]
+    return dt.astimezone(TZ_BR).date().isoformat()
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +255,7 @@ def identidade(item: dict, cache: dict) -> tuple[str, str]:
 # BUSCA DE PEDIDOS E ENVIOS
 # ---------------------------------------------------------------------------
 def buscar_pedidos(token: str, seller_id: str) -> list[dict]:
-    desde = (datetime.now() - timedelta(days=DIAS_JANELA)).strftime("%Y-%m-%dT00:00:00.000-03:00")
+    desde = (datetime.now(TZ_BR) - timedelta(days=DIAS_JANELA)).strftime("%Y-%m-%dT00:00:00.000-03:00")
     pedidos: list[dict] = []
     offset = 0
     while offset < MAX_PEDIDOS:
@@ -274,7 +302,7 @@ def buscar_pedidos_amplo(token: str, seller_id: str, limite: int = 1000) -> list
 def rastrear_sku(token: str, seller_id: str, sku: str) -> None:
     """Mostra todos os pedidos de um SKU e por que cada um entra (ou nao) em 'hoje'."""
     alvo = sku.lower()
-    hoje = datetime.now().date().isoformat()
+    hoje = _hoje_br()
     print(f"Buscando todos os pedidos do SKU {sku}...")
     pedidos = buscar_pedidos_amplo(token, seller_id)
     achados = []
@@ -291,7 +319,7 @@ def rastrear_sku(token: str, seller_id: str, sku: str) -> None:
         env = buscar_envio(token, sid) if sid else {}
         sub = env.get("substatus")
         sla = _sla(token, sid) if sid else {}
-        exp = (sla.get("expected_date") or "")[:10]
+        exp = _data_despacho(sla.get("expected_date") or "")
         entra = status == "paid" and sub == SUBSTATUS_IMPRIMIR and exp == hoje
         marca = "ENTRA HOJE" if entra else "fora"
         print(f"  pedido {ped.get('id')} | qtd {qtd} | status {status} | "
@@ -314,7 +342,7 @@ def _avaliar_pedido(token: str, ped: dict) -> dict | None:
     if env.get("substatus") != SUBSTATUS_IMPRIMIR:
         return None
     sla = _sla(token, sid)
-    expected = (sla.get("expected_date") or "")[:10]
+    expected = _data_despacho(sla.get("expected_date") or "")
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
     ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt}
     return ped
@@ -407,7 +435,7 @@ def coletar_grupos(
     pedidos = buscar_pedidos(token, seller_id)
     prontos = filtrar_para_imprimir(token, pedidos, progresso=progresso)
     if somente_hoje:
-        hoje = datetime.now().date().isoformat()
+        hoje = _hoje_br()
         alvo = [p for p in prontos if p["_envio"]["expected_date"] == hoje]
     else:
         alvo = prontos
@@ -508,7 +536,7 @@ def _limpar_estado_antigo(estado: dict, dias: int = DIAS_ESTADO) -> dict:
     janela (e chaves sem data valida, como formatos legados) sao descartadas,
     evitando que o estado_grupos.json cresca indefinidamente.
     """
-    limite = (datetime.now().date() - timedelta(days=dias)).isoformat()
+    limite = (datetime.now(TZ_BR).date() - timedelta(days=dias)).isoformat()
     limpo: dict = {}
     for chave, valor in estado.items():
         data = chave.split("|", 1)[0]
@@ -536,7 +564,7 @@ def salvar_estado(estado: dict) -> None:
 
 
 def _chave_estado(grupo: Grupo) -> str:
-    return f"{datetime.now().date().isoformat()}|{grupo.chave_grupo}"
+    return f"{_hoje_br()}|{grupo.chave_grupo}"
 
 
 def _impressos(estado: dict, grupo: Grupo) -> set[int]:
@@ -682,7 +710,7 @@ def main() -> None:
         # Diagnostico leve: nao precisa extrair/agrupar itens.
         pedidos = buscar_pedidos(token, cred["seller_id"])
         prontos = filtrar_para_imprimir(token, pedidos)
-        debug_envios(prontos, datetime.now().date().isoformat())
+        debug_envios(prontos, _hoje_br())
         return
 
     # Por padrao: so os de HOJE. Comando "todos" mostra tambem os de outros dias.
