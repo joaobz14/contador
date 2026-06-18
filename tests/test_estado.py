@@ -45,6 +45,15 @@ def test_compatibilidade_formato_antigo_string(core):
     assert core.envios_pendentes(estado, g) == []
 
 
+def test_status_usa_o_dia_de_despacho_do_grupo(core):
+    g = make_grupo(core, [10, 20])
+    g.dia = "2026-06-19"
+    # chave do dia 19 marca como impresso
+    assert core.status_grupo({"2026-06-19|K|q1": [10, 20]}, g) == "impresso"
+    # estado de OUTRO dia (hoje) nao deve influenciar a visao de amanha
+    assert core.status_grupo({f"{core._hoje_br()}|K|q1": [10, 20]}, g) == "pendente"
+
+
 # ------------------------------------------------------------ imprimir_pendentes
 def test_imprimir_pendentes_baixa_somente_os_novos(core, tmp_path, monkeypatch):
     monkeypatch.setattr(core, "ARQUIVO_ESTADO", tmp_path / "estado.json")
