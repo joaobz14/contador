@@ -381,6 +381,38 @@ def agrupar(itens: list[ItemPedido]) -> list[Grupo]:
 
 
 # ---------------------------------------------------------------------------
+# PIPELINE (reutilizado pela CLI e pela GUI)
+# ---------------------------------------------------------------------------
+@dataclass
+class Coleta:
+    """Resultado do pipeline completo de uma atualizacao."""
+    prontos: list[dict]               # todos os envios ready_to_print
+    alvo: list[dict]                  # subconjunto considerado (hoje ou todos)
+    itens: list[ItemPedido]
+    grupos: list[Grupo]
+
+
+def coletar_grupos(
+    token: str, seller_id: str, *, somente_hoje: bool = True, progresso=None
+) -> Coleta:
+    """Busca pedidos, filtra os prontos para imprimir, seleciona pelo dia,
+    extrai os itens e agrupa. Centraliza o fluxo usado pela CLI e pela GUI
+    para que as duas nao divirjam. progresso(feitos, total) e repassado ao
+    filtro de envios.
+    """
+    pedidos = buscar_pedidos(token, seller_id)
+    prontos = filtrar_para_imprimir(token, pedidos, progresso=progresso)
+    if somente_hoje:
+        hoje = datetime.now().date().isoformat()
+        alvo = [p for p in prontos if p["_envio"]["expected_date"] == hoje]
+    else:
+        alvo = prontos
+    itens = extrair_itens(token, alvo)
+    grupos = agrupar(itens)
+    return Coleta(prontos=prontos, alvo=alvo, itens=itens, grupos=grupos)
+
+
+# ---------------------------------------------------------------------------
 # DIAGNOSTICO DE DATAS (hoje vs proximos dias)
 # ---------------------------------------------------------------------------
 def _sla(token: str, shipment_id: int) -> dict:
@@ -555,24 +587,20 @@ def main() -> None:
         rastrear_sku(token, cred["seller_id"], args[1])
         return
 
-    pedidos = buscar_pedidos(token, cred["seller_id"])
-    prontos = filtrar_para_imprimir(token, pedidos)
-    hoje = datetime.now().date().isoformat()
-
     if comando == "envios":
-        debug_envios(prontos, hoje)
+        # Diagnostico leve: nao precisa extrair/agrupar itens.
+        pedidos = buscar_pedidos(token, cred["seller_id"])
+        prontos = filtrar_para_imprimir(token, pedidos)
+        debug_envios(prontos, datetime.now().date().isoformat())
         return
 
     # Por padrao: so os de HOJE. Comando "todos" mostra tambem os de outros dias.
-    alvo = prontos if comando == "todos" else [
-        p for p in prontos if p["_envio"]["expected_date"] == hoje
-    ]
-    itens = extrair_itens(token, alvo)
-    grupos = agrupar(itens)
+    coleta = coletar_grupos(token, cred["seller_id"], somente_hoje=(comando != "todos"))
+    itens, grupos = coleta.itens, coleta.grupos
     estado = carregar_estado()
 
     if comando in ("listar", "todos"):
-        listar(grupos, estado, len(alvo))
+        listar(grupos, estado, len(coleta.alvo))
         rotulo = "todos os dias" if comando == "todos" else "somente HOJE"
         print(f"\n(Nada foi impresso. Mostrando {rotulo}.)")
 
