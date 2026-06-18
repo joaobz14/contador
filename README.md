@@ -51,11 +51,21 @@ python separador_etiquetas_ml.py rastrear <SKU>            # diagnóstico de um 
 
 ### Interface gráfica
 
+Mostra os grupos do dia (produto + quantidade) com um botão **Imprimir** em cada um.
+
+**Jeito prático (Windows):** dê um duplo-clique em **`Abrir Separador.bat`**.
+Ele abre a tela direto, sem a janela preta do terminal. Para ter um ícone na
+área de trabalho, clique com o botão direito nesse arquivo →
+**Enviar para → Área de trabalho (criar atalho)**.
+
+> Se a tela não abrir, use **`Abrir Separador (diagnostico).bat`**: ele mantém o
+> terminal aberto mostrando o motivo do erro.
+
+**Pelo terminal (alternativa):**
+
 ```bash
 python separador_gui.py
 ```
-
-Mostra os grupos do dia (produto + quantidade) com um botão **Imprimir** em cada um.
 
 ## Como a impressão funciona
 
