@@ -89,6 +89,21 @@ Zebra (`impressora_zebra_usb.py`) monitora e envia automaticamente para a impres
 Ajuste `PASTA_DOWNLOADS` em `separador_etiquetas_ml.py` caso o seu app monitore
 outra pasta.
 
+## Nomes amigáveis para os SKUs
+
+Para mostrar o nome do produto ao lado do SKU (ex.: `PRP — Picador Pequeno`),
+edite o arquivo **`nomes_sku.json`** com o de‑para `SKU → nome`:
+
+```json
+{
+  "PRP": "Picador Pequeno",
+  "A02": "Outro produto"
+}
+```
+
+É só exibição: o agrupamento e o controle de impresso continuam pelo SKU. SKUs
+sem nome cadastrado seguem mostrando apenas o SKU.
+
 ## Arquivos gerados (não versionados)
 
 - `credenciais.json` — segredos e tokens da sua conta.

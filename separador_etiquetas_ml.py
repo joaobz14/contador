@@ -49,6 +49,8 @@ PASTA_SCRIPT = Path(__file__).resolve().parent
 ARQUIVO_CRED = PASTA_SCRIPT / "credenciais.json"
 ARQUIVO_ESTADO = PASTA_SCRIPT / "estado_grupos.json"
 ARQUIVO_CACHE = PASTA_SCRIPT / "itens_cache.json"
+# De-para opcional SKU -> nome amigavel, exibido junto do SKU na tela/CLI.
+ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
@@ -441,8 +443,28 @@ def agrupar(itens: list[ItemPedido]) -> list[Grupo]:
 
 
 # ---------------------------------------------------------------------------
-# PIPELINE (reutilizado pela CLI e pela GUI)
+# NOMES AMIGAVEIS (de-para SKU -> nome)
 # ---------------------------------------------------------------------------
+def carregar_nomes() -> dict:
+    """Le o de-para SKU -> nome do nomes_sku.json (vazio se nao existir)."""
+    if ARQUIVO_NOMES.exists():
+        try:
+            return json.loads(ARQUIVO_NOMES.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def aplicar_nomes(grupos: list[Grupo], nomes: dict) -> None:
+    """Acrescenta o nome amigavel ao rotulo dos grupos cujo SKU esta no mapa.
+    Ex.: 'PRP' -> 'PRP — Picador Pequeno'. So mexe na exibicao (Grupo.nome);
+    o agrupamento e o estado continuam pela chave/SKU."""
+    if not nomes:
+        return
+    for g in grupos:
+        amigavel = nomes.get(g.chave)
+        if amigavel:
+            g.nome = f"{g.chave} — {amigavel}"
 @dataclass
 class Coleta:
     """Resultado do pipeline completo de uma atualizacao."""
@@ -475,6 +497,7 @@ def coletar_grupos(
         alvo = prontos
     itens = extrair_itens(token, alvo)
     grupos = agrupar(itens)
+    aplicar_nomes(grupos, carregar_nomes())
     if dia is not None:
         # Grupos de um dia especifico carregam esse dia para o estado de
         # impressao ser avaliado/gravado por dia de despacho.
