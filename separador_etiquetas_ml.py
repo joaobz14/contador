@@ -38,9 +38,12 @@ MAX_PEDIDOS = 3000
 DIAS_JANELA = 30
 TAM_NOME = 45
 SUBSTATUS_IMPRIMIR = "ready_to_print"
-ARQUIVO_CRED = Path("credenciais.json")
-ARQUIVO_ESTADO = Path("estado_grupos.json")
-ARQUIVO_CACHE = Path("itens_cache.json")
+# Pasta deste script: os arquivos de credenciais/estado/cache ficam sempre
+# aqui, independente de onde o programa for aberto (atalho, agendador, etc.).
+PASTA_SCRIPT = Path(__file__).resolve().parent
+ARQUIVO_CRED = PASTA_SCRIPT / "credenciais.json"
+ARQUIVO_ESTADO = PASTA_SCRIPT / "estado_grupos.json"
+ARQUIVO_CACHE = PASTA_SCRIPT / "itens_cache.json"
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
@@ -448,7 +451,12 @@ def _zpl_de_zip(conteudo: bytes) -> str:
 
 
 def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
-    """Baixa as etiquetas ZPL via /shipment_labels (ate 50 envios por chamada)."""
+    """Baixa as etiquetas ZPL via /shipment_labels (ate 50 envios por chamada).
+
+    Se QUALQUER lote falhar (apos os retries de _requisicao_get), aborta com
+    SeparadorError em vez de devolver um ZPL incompleto. Assim quem chama nao
+    gera um ZIP parcial nem marca o grupo como impresso por engano.
+    """
     headers = {"Authorization": f"Bearer {token}"}
     partes: list[str] = []
     for i in range(0, len(shipment_ids), 50):
@@ -460,8 +468,10 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
             {"shipment_ids": ids, "response_type": "zpl2"},
         )
         if resp.status_code != 200:
-            print(f"  [erro etiquetas] HTTP {resp.status_code}: {resp.text[:200]}")
-            continue
+            raise SeparadorError(
+                f"Falha ao baixar etiquetas (HTTP {resp.status_code}) para os "
+                f"envios {ids}. Nada foi impresso; o grupo segue pendente."
+            )
         conteudo = resp.content
         if conteudo[:2] == b"PK":          # resposta e um ZIP
             partes.append(_zpl_de_zip(conteudo))
@@ -536,7 +546,11 @@ def listar(grupos: list[Grupo], estado: dict, qtd_prontos: int) -> None:
 
 def imprimir_grupo(token: str, grupo: Grupo, estado: dict) -> None:
     print(f"Baixando etiquetas de: {grupo.nome} (qtd {grupo.quantidade}) ...")
-    zpl = baixar_zpl(token, grupo.shipment_ids)
+    try:
+        zpl = baixar_zpl(token, grupo.shipment_ids)
+    except SeparadorError as e:
+        print(f"  ERRO: {e}")
+        return
     if "^XA" not in zpl:
         print("  ATENCAO: a API nao retornou ZPL valido (sem ^XA). Nada foi gerado.")
         return
