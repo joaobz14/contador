@@ -1,0 +1,7 @@
+{
+  "client_id": "SEU_APP_ID",
+  "client_secret": "SEU_CLIENT_SECRET",
+  "refresh_token": "GERADO_PELO_pegar_token.py",
+  "seller_id": "SEU_SELLER_ID",
+  "redirect_uri": "https://www.google.com"
+}

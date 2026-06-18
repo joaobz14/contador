@@ -1,0 +1,23 @@
+# Segredos e credenciais (NUNCA versionar)
+credenciais.json
+link_autorizacao.txt
+
+# Estado e cache gerados em tempo de execucao
+estado_grupos.json
+itens_cache.json
+
+# Bytecode / cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
