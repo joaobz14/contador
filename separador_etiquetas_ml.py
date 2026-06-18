@@ -38,6 +38,7 @@ MAX_PEDIDOS = 3000
 DIAS_JANELA = 30
 TAM_NOME = 45
 SUBSTATUS_IMPRIMIR = "ready_to_print"
+DIAS_ESTADO = 7  # dias de historico de impressao mantidos no estado_grupos.json
 # Pasta deste script: os arquivos de credenciais/estado/cache ficam sempre
 # aqui, independente de onde o programa for aberto (atalho, agendador, etc.).
 PASTA_SCRIPT = Path(__file__).resolve().parent
@@ -500,10 +501,34 @@ def gerar_zip_etiquetas(grupo: Grupo, zpl_texto: str) -> Path:
 # ---------------------------------------------------------------------------
 # ESTADO
 # ---------------------------------------------------------------------------
+def _limpar_estado_antigo(estado: dict, dias: int = DIAS_ESTADO) -> dict:
+    """Mantem so as entradas dos ultimos `dias` dias.
+
+    As chaves tem o formato 'YYYY-MM-DD|...'. Entradas mais antigas que a
+    janela (e chaves sem data valida, como formatos legados) sao descartadas,
+    evitando que o estado_grupos.json cresca indefinidamente.
+    """
+    limite = (datetime.now().date() - timedelta(days=dias)).isoformat()
+    limpo: dict = {}
+    for chave, valor in estado.items():
+        data = chave.split("|", 1)[0]
+        try:
+            datetime.strptime(data, "%Y-%m-%d")
+        except ValueError:
+            continue  # chave sem data valida (legado): descarta
+        if data >= limite:
+            limpo[chave] = valor
+    return limpo
+
+
 def carregar_estado() -> dict:
-    if ARQUIVO_ESTADO.exists():
-        return json.loads(ARQUIVO_ESTADO.read_text(encoding="utf-8"))
-    return {}
+    if not ARQUIVO_ESTADO.exists():
+        return {}
+    estado = json.loads(ARQUIVO_ESTADO.read_text(encoding="utf-8"))
+    limpo = _limpar_estado_antigo(estado)
+    if len(limpo) != len(estado):   # poda entradas antigas e persiste
+        salvar_estado(limpo)
+    return limpo
 
 
 def salvar_estado(estado: dict) -> None:
