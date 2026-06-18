@@ -74,6 +74,11 @@ def _hoje_br() -> str:
     return datetime.now(TZ_BR).date().isoformat()
 
 
+def _amanha_br() -> str:
+    """Data de amanha (YYYY-MM-DD) no horario de Brasilia."""
+    return (datetime.now(TZ_BR).date() + timedelta(days=1)).isoformat()
+
+
 def _data_despacho(expected_raw: str) -> str:
     """Converte o expected_date da API para o dia (YYYY-MM-DD) no horario de
     Brasilia. Interpreta o offset ISO 8601 que o ML envia; se nao der para
@@ -445,16 +450,22 @@ class Coleta:
 
 
 def coletar_grupos(
-    token: str, seller_id: str, *, somente_hoje: bool = True, progresso=None
+    token: str, seller_id: str, *, dia: str | None = None,
+    somente_hoje: bool = True, progresso=None,
 ) -> Coleta:
     """Busca pedidos, filtra os prontos para imprimir, seleciona pelo dia,
     extrai os itens e agrupa. Centraliza o fluxo usado pela CLI e pela GUI
     para que as duas nao divirjam. progresso(feitos, total) e repassado ao
     filtro de envios.
+
+    Selecao do alvo: se `dia` (YYYY-MM-DD) for informado, usa esse dia de
+    despacho; senao, `somente_hoje` decide entre hoje e todos os dias.
     """
     pedidos = buscar_pedidos(token, seller_id)
     prontos = filtrar_para_imprimir(token, pedidos, progresso=progresso)
-    if somente_hoje:
+    if dia is not None:
+        alvo = [p for p in prontos if p["_envio"]["expected_date"] == dia]
+    elif somente_hoje:
         hoje = _hoje_br()
         alvo = [p for p in prontos if p["_envio"]["expected_date"] == hoje]
     else:
@@ -733,14 +744,26 @@ def main() -> None:
         debug_envios(prontos, _hoje_br())
         return
 
-    # Por padrao: so os de HOJE. Comando "todos" mostra tambem os de outros dias.
-    coleta = coletar_grupos(token, cred["seller_id"], somente_hoje=(comando != "todos"))
+    # Selecao do dia: hoje (padrao), amanha, uma data especifica ou todos.
+    dia = None
+    rotulo = "somente HOJE"
+    if comando == "amanha":
+        dia = _amanha_br()
+        rotulo = f"despacho de AMANHA ({dia})"
+    elif comando == "dia" and len(args) >= 2:
+        dia = args[1]
+        rotulo = f"despacho de {dia}"
+    elif comando == "todos":
+        rotulo = "todos os dias"
+
+    coleta = coletar_grupos(
+        token, cred["seller_id"], dia=dia, somente_hoje=(comando not in ("todos",)),
+    )
     itens, grupos = coleta.itens, coleta.grupos
     estado = carregar_estado()
 
-    if comando in ("listar", "todos"):
+    if comando in ("listar", "todos", "amanha", "dia"):
         listar(grupos, estado, len(coleta.alvo))
-        rotulo = "todos os dias" if comando == "todos" else "somente HOJE"
         print(f"\n(Nada foi impresso. Mostrando {rotulo}.)")
 
     elif comando == "detalhar" and len(args) >= 3:
@@ -761,7 +784,8 @@ def main() -> None:
         imprimir_grupo(token, pendente, estado)
 
     else:
-        print('Uso: listar | todos | envios | detalhar "<nome>" <QTD> | imprimir "<nome>" <QTD> | proximo')
+        print('Uso: listar | amanha | dia <AAAA-MM-DD> | todos | envios | '
+              'detalhar "<nome>" <QTD> | imprimir "<nome>" <QTD> | proximo')
 
 
 if __name__ == "__main__":

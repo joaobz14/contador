@@ -47,3 +47,17 @@ def test_coletar_grupos_repassa_progresso(core, monkeypatch):
     chamou = _prepara(core, monkeypatch, _prontos())
     core.coletar_grupos("tok", "seller", progresso=lambda f, t: None)
     assert chamou["progresso"] is True
+
+
+def test_coletar_grupos_por_dia_especifico(core, monkeypatch):
+    prontos = _prontos() + [{"_envio": {"shipment_id": 44, "expected_date": "2026-06-19"}}]
+    _prepara(core, monkeypatch, prontos)
+    col = core.coletar_grupos("tok", "seller", dia="2026-06-19")
+    assert {i.shipment_id for i in col.itens} == {44}  # so o de 2026-06-19
+
+
+def test_amanha_br_e_um_dia_depois_de_hoje(core):
+    from datetime import date
+    h = date.fromisoformat(core._hoje_br())
+    a = date.fromisoformat(core._amanha_br())
+    assert (a - h).days == 1
