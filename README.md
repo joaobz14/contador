@@ -35,6 +35,16 @@ com o `refresh_token` e o `seller_id` da sua conta.
 > ⚠️ **Nunca** compartilhe ou versione o `credenciais.json`: ele contém segredos
 > da sua aplicação. Esse arquivo já está no `.gitignore`.
 
+## Atualizar para a versão mais nova
+
+Se você obteve o projeto com `git clone`, dê um duplo-clique em
+**`Atualizar programa.bat`** (ele roda `git pull` na pasta, sem abrir o
+terminal). Em seguida, abra o programa normalmente pelo `Abrir Separador.bat`.
+
+> Usando em mais de um PC via OneDrive (mesma conta): atualize em **apenas um**
+> deles; o OneDrive sincroniza a pasta para o outro. Não use os dois ao mesmo
+> tempo e espere o OneDrive terminar de sincronizar antes de trocar de máquina.
+
 ## Uso
 
 ### Linha de comando
