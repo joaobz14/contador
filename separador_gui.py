@@ -45,6 +45,20 @@ class SeparadorApp:
         self.btn_proximo = ttk.Button(topo, text="⏭ Próximo pendente",
                                        command=self.imprimir_proximo)
         self.btn_proximo.pack(side="left", padx=6)
+
+        # Seletor de dia de despacho: Hoje (padrao) ou Amanha.
+        self.modo = tk.StringVar(value="hoje")
+        seletor = ttk.Frame(topo)
+        seletor.pack(side="left", padx=12)
+        self.radios = [
+            ttk.Radiobutton(seletor, text="Hoje", value="hoje",
+                            variable=self.modo, command=self.atualizar),
+            ttk.Radiobutton(seletor, text="Amanhã", value="amanha",
+                            variable=self.modo, command=self.atualizar),
+        ]
+        for r in self.radios:
+            r.pack(side="left", padx=(0, 6))
+
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
 
@@ -73,6 +87,8 @@ class SeparadorApp:
         estado = "disabled" if ocupado else "normal"
         self.btn_atualizar.config(state=estado)
         self.btn_proximo.config(state=estado)
+        for r in self.radios:
+            r.config(state=estado)
         self.lbl_status.config(text=msg)
 
     # ------------------------------------------------------------ ATUALIZAR
@@ -94,8 +110,9 @@ class SeparadorApp:
         try:
             self.cred = core.carregar_credenciais()
             self.token = core.renovar_token(self.cred)
+            dia = core._amanha_br() if self.modo.get() == "amanha" else None
             coleta = core.coletar_grupos(
-                self.token, self.cred["seller_id"], progresso=self._progresso
+                self.token, self.cred["seller_id"], dia=dia, progresso=self._progresso
             )
             grupos = coleta.grupos
         except Exception as e:
@@ -122,8 +139,9 @@ class SeparadorApp:
         self.lbl_resumo.config(
             text=f"{len(self.grupos)} grupos · {total_et} etiquetas · {impressos} impressos")
 
+        dia_txt = "amanhã" if self.modo.get() == "amanha" else "hoje"
         if not self.grupos:
-            ttk.Label(self.lista, text="Nenhum grupo para imprimir hoje. 🎉",
+            ttk.Label(self.lista, text=f"Nenhum grupo para imprimir {dia_txt}. 🎉",
                       padding=24).pack()
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
