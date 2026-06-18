@@ -85,3 +85,13 @@ outra pasta.
 - `estado_grupos.json` — registra quais grupos já foram impressos no dia.
 - `itens_cache.json` — cache de detalhes de produtos.
 - `link_autorizacao.txt` — link de autorização gerado pelo `pegar_token.py`.
+
+## Testes
+
+A lógica do núcleo tem testes automatizados (pytest), sem rede nem arquivos reais.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
