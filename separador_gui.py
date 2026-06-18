@@ -94,12 +94,10 @@ class SeparadorApp:
         try:
             self.cred = core.carregar_credenciais()
             self.token = core.renovar_token(self.cred)
-            pedidos = core.buscar_pedidos(self.token, self.cred["seller_id"])
-            prontos = core.filtrar_para_imprimir(self.token, pedidos, progresso=self._progresso)
-            hoje = datetime.now().date().isoformat()
-            do_dia = [p for p in prontos if p["_envio"]["expected_date"] == hoje]
-            itens = core.extrair_itens(self.token, do_dia)
-            grupos = core.agrupar(itens)
+            coleta = core.coletar_grupos(
+                self.token, self.cred["seller_id"], progresso=self._progresso
+            )
+            grupos = coleta.grupos
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
