@@ -118,6 +118,14 @@ Segurança: o **token vem do `bot_config.json`** (não versionado) ou da variáv
 Onde rodar: numa máquina **sempre ligada e com internet** que tenha o projeto e o
 `credenciais.json` (ex.: o PC do escritório).
 
+**Ligar por duplo-clique:** use **`Iniciar Bot.bat`** (mantenha a janela aberta — o
+bot só responde enquanto ela estiver rodando).
+
+**Ligar junto com o Windows (opcional):** clique com o botão direito no
+`Iniciar Bot.bat` → *Enviar para → Área de trabalho (criar atalho)*; depois
+pressione `Win+R`, digite `shell:startup` e mova esse atalho para a pasta que
+abrir. Assim o bot inicia sozinho quando o PC liga.
+
 ## Como a impressão funciona
 
 Ao imprimir um grupo, o programa baixa o ZPL pela API (`/shipment_labels`) e grava
