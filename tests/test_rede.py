@@ -21,6 +21,25 @@ def _sequencia(monkeypatch, core, respostas):
     return estado
 
 
+def test_espera_retry_respeita_header(core):
+    r = FakeResp(429, headers={"Retry-After": "5"})
+    espera = core._espera_retry(r, 1)
+    assert 5 <= espera <= 5.5            # Retry-After + jitter pequeno
+
+
+def test_espera_retry_sem_header_usa_backoff(core):
+    r = FakeResp(503)                    # sem Retry-After
+    e1 = core._espera_retry(r, 1)
+    e2 = core._espera_retry(r, 2)
+    assert 2 <= e1 <= 2.5                # 2^1 + jitter
+    assert 4 <= e2 <= 4.5                # 2^2 + jitter
+
+
+def test_espera_retry_header_invalido_cai_no_backoff(core):
+    r = FakeResp(429, headers={"Retry-After": "xx"})
+    assert 2 <= core._espera_retry(r, 1) <= 2.5
+
+
 def test_requisicao_get_repete_e_retorna_apos_erros(core, monkeypatch):
     estado = _sequencia(monkeypatch, core, [FakeResp(503), FakeResp(503), FakeResp(200, json_data={"ok": True})])
     out = core._get("http://x", "tok")

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import io
 import json
+import random
 import sys
 import time
 import zipfile
@@ -137,20 +138,33 @@ def renovar_token(cred: dict) -> str:
     return dados["access_token"]
 
 
+def _espera_retry(resp: requests.Response, tentativa: int) -> float:
+    """Tempo de espera antes de re-tentar. Respeita o cabecalho Retry-After do
+    ML quando presente; senao usa backoff exponencial. Soma um jitter aleatorio
+    para os varios workers nao re-tentarem todos no mesmo instante."""
+    retry_after = getattr(resp, "headers", {}).get("Retry-After")
+    if retry_after:
+        try:
+            return float(retry_after) + random.uniform(0, 0.5)
+        except (TypeError, ValueError):
+            pass
+    return (2 ** tentativa) + random.uniform(0, 0.5)
+
+
 def _requisicao_get(
     url: str, headers: dict, params: dict | None = None
 ) -> requests.Response:
-    """GET com retry/backoff exponencial em erros transitorios (429/500/502/503).
+    """GET com retry em erros transitorios (429/500/502/503).
 
-    Retorna a Response da ultima tentativa; quem chama decide o que fazer com
-    o status. Usado tanto pelas chamadas que esperam JSON quanto pelo download
-    binario das etiquetas.
+    Em 429, respeita o Retry-After do ML (ver _espera_retry) e aplica jitter,
+    para nao martelar o limite de requisicoes. Retorna a Response da ultima
+    tentativa; quem chama decide o que fazer com o status.
     """
     resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
     for tentativa in range(1, 3):
         if resp.status_code not in (429, 500, 502, 503):
             return resp
-        time.sleep(2 ** tentativa)
+        time.sleep(_espera_retry(resp, tentativa))
         resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
     return resp
 

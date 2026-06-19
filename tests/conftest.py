@@ -20,11 +20,12 @@ def core(monkeypatch):
 class FakeResp:
     """Resposta HTTP falsa para simular requests.get sem rede."""
 
-    def __init__(self, status=200, content=b"", json_data=None, text=""):
+    def __init__(self, status=200, content=b"", json_data=None, text="", headers=None):
         self.status_code = status
         self.content = content
         self._json = json_data
         self.text = text
+        self.headers = headers or {}
 
     def json(self):
         return self._json
