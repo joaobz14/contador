@@ -71,6 +71,7 @@ terminal). Em seguida, abra o programa normalmente pelo `Abrir Separador.bat`.
 python separador_etiquetas_ml.py            # lista os grupos prontos (somente de HOJE)
 python separador_etiquetas_ml.py todos      # inclui também os de outros dias
 python separador_etiquetas_ml.py envios     # mostra as datas de despacho
+python separador_etiquetas_ml.py resumo     # quantos pacotes em cada dia de despacho
 python separador_etiquetas_ml.py detalhar "<nome>" <QTD>   # composição de um grupo
 python separador_etiquetas_ml.py imprimir "<nome>" <QTD>   # imprime um grupo
 python separador_etiquetas_ml.py proximo    # imprime o próximo grupo pendente
