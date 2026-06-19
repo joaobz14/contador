@@ -102,6 +102,29 @@ def _data_despacho(expected_raw: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# IO DE ARQUIVOS JSON (gravacao atomica + leitura tolerante a falhas)
+# ---------------------------------------------------------------------------
+def _ler_json(caminho: Path) -> dict:
+    """Le um JSON. Se nao existir ou estiver corrompido/ilegivel, retorna {}
+    em vez de quebrar (importante com a sincronizacao do OneDrive, que pode
+    deixar um arquivo lido pela metade)."""
+    if not caminho.exists():
+        return {}
+    try:
+        return json.loads(caminho.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return {}
+
+
+def _gravar_json(caminho: Path, dados) -> None:
+    """Grava JSON de forma atomica: escreve em .tmp e renomeia. Assim o arquivo
+    final nunca fica pela metade (corte de energia, crash ou sync do OneDrive)."""
+    tmp = caminho.with_name(caminho.name + ".tmp")
+    tmp.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(caminho)
+
+
+# ---------------------------------------------------------------------------
 # CREDENCIAIS
 # ---------------------------------------------------------------------------
 def carregar_credenciais() -> dict:
@@ -109,11 +132,16 @@ def carregar_credenciais() -> dict:
         raise SeparadorError(
             "credenciais.json nao encontrado. Rode pegar_token.py primeiro."
         )
-    return json.loads(ARQUIVO_CRED.read_text(encoding="utf-8"))
+    try:
+        return json.loads(ARQUIVO_CRED.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        raise SeparadorError(
+            "credenciais.json invalido ou ilegivel. Rode pegar_token.py de novo."
+        ) from e
 
 
 def salvar_credenciais(cred: dict) -> None:
-    ARQUIVO_CRED.write_text(json.dumps(cred, ensure_ascii=False, indent=2), encoding="utf-8")
+    _gravar_json(ARQUIVO_CRED, cred)
 
 
 def renovar_token(cred: dict) -> str:
@@ -152,20 +180,28 @@ def _espera_retry(resp: requests.Response, tentativa: int) -> float:
 
 
 def _requisicao_get(
-    url: str, headers: dict, params: dict | None = None
+    url: str, headers: dict, params: dict | None = None, tentativas: int = 3
 ) -> requests.Response:
-    """GET com retry em erros transitorios (429/500/502/503).
+    """GET com retry em erros transitorios e em falhas de rede.
 
-    Em 429, respeita o Retry-After do ML (ver _espera_retry) e aplica jitter,
-    para nao martelar o limite de requisicoes. Retorna a Response da ultima
+    Re-tenta em respostas 429/500/502/503 (em 429 respeita o Retry-After do
+    ML e aplica jitter) e tambem em quedas/timeout de conexao, para um soluco
+    de rede nao derrubar a atualizacao inteira. Retorna a Response da ultima
     tentativa; quem chama decide o que fazer com o status.
     """
-    resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
-    for tentativa in range(1, 3):
-        if resp.status_code not in (429, 500, 502, 503):
+    resp = None
+    for tentativa in range(tentativas):
+        ultima = tentativa == tentativas - 1
+        try:
+            resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+        except (requests.ConnectionError, requests.Timeout):
+            if ultima:
+                raise
+            time.sleep((2 ** (tentativa + 1)) + random.uniform(0, 0.5))
+            continue
+        if resp.status_code not in (429, 500, 502, 503) or ultima:
             return resp
-        time.sleep(_espera_retry(resp, tentativa))
-        resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+        time.sleep(_espera_retry(resp, tentativa + 1))
     return resp
 
 
@@ -216,13 +252,11 @@ class Grupo:
 # CACHE DE PRODUTOS (item_id -> {title, variations:{variation_id: gtin}})
 # ---------------------------------------------------------------------------
 def carregar_cache() -> dict:
-    if ARQUIVO_CACHE.exists():
-        return json.loads(ARQUIVO_CACHE.read_text(encoding="utf-8"))
-    return {}
+    return _ler_json(ARQUIVO_CACHE)
 
 
 def salvar_cache(cache: dict) -> None:
-    ARQUIVO_CACHE.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+    _gravar_json(ARQUIVO_CACHE, cache)
 
 
 def buscar_detalhes(token: str, item_ids: set[str], cache: dict) -> None:
@@ -381,18 +415,11 @@ def _prazo_do_envio(env: dict) -> str:
 
 
 def _carregar_envios_cache() -> dict:
-    if ARQUIVO_ENVIOS_CACHE.exists():
-        try:
-            return json.loads(ARQUIVO_ENVIOS_CACHE.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            return {}
-    return {}
+    return _ler_json(ARQUIVO_ENVIOS_CACHE)
 
 
 def _salvar_envios_cache(cache: dict) -> None:
-    ARQUIVO_ENVIOS_CACHE.write_text(
-        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    _gravar_json(ARQUIVO_ENVIOS_CACHE, cache)
 
 
 def _limpar_envios_cache(cache: dict, dias: int = DIAS_JANELA) -> dict:
@@ -508,12 +535,7 @@ def agrupar(itens: list[ItemPedido]) -> list[Grupo]:
 # ---------------------------------------------------------------------------
 def carregar_nomes() -> dict:
     """Le o de-para SKU -> nome do nomes_sku.json (vazio se nao existir)."""
-    if ARQUIVO_NOMES.exists():
-        try:
-            return json.loads(ARQUIVO_NOMES.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            return {}
-    return {}
+    return _ler_json(ARQUIVO_NOMES)
 
 
 def aplicar_nomes(grupos: list[Grupo], nomes: dict) -> None:
@@ -673,9 +695,7 @@ def _limpar_estado_antigo(estado: dict, dias: int = DIAS_ESTADO) -> dict:
 
 
 def carregar_estado() -> dict:
-    if not ARQUIVO_ESTADO.exists():
-        return {}
-    estado = json.loads(ARQUIVO_ESTADO.read_text(encoding="utf-8"))
+    estado = _ler_json(ARQUIVO_ESTADO)
     limpo = _limpar_estado_antigo(estado)
     if len(limpo) != len(estado):   # poda entradas antigas e persiste
         salvar_estado(limpo)
@@ -683,7 +703,7 @@ def carregar_estado() -> dict:
 
 
 def salvar_estado(estado: dict) -> None:
-    ARQUIVO_ESTADO.write_text(json.dumps(estado, ensure_ascii=False, indent=2), encoding="utf-8")
+    _gravar_json(ARQUIVO_ESTADO, estado)
 
 
 def _chave_estado(grupo: Grupo) -> str:

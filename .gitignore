@@ -6,6 +6,7 @@ link_autorizacao.txt
 estado_grupos.json
 itens_cache.json
 envios_cache.json
+*.tmp
 
 # Bytecode / cache do Python
 __pycache__/
