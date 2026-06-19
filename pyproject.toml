@@ -1,0 +1,17 @@
+[project]
+name = "separador-etiquetas-ml"
+version = "1.0.0"
+description = "Separador e impressor em lote de etiquetas de envio do Mercado Livre (agrupa por SKU + quantidade)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["requests"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+# O projeto roda como scripts (separador_gui.py / separador_etiquetas_ml.py),
+# nao como pacote instalavel — por isso nao ha [build-system].
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

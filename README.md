@@ -8,14 +8,32 @@ em lote. Ela lê os pedidos da conta, mantém apenas os que estão em
 A identidade de cada produto é definida nesta ordem de prioridade:
 **SKU → GTIN + voltagem → `item_id:variação`**.
 
-## Arquivos
+## Estrutura do projeto
 
+**Código**
 | Arquivo | Papel |
 |---|---|
-| `pegar_token.py` | Configuração inicial (uma vez só): faz o fluxo OAuth do Mercado Livre e gera o `credenciais.json`. |
 | `separador_etiquetas_ml.py` | Núcleo da aplicação + interface de linha de comando (CLI). |
 | `separador_gui.py` | Interface gráfica (Tkinter) que reaproveita o núcleo. |
+| `pegar_token.py` | Configuração inicial (uma vez só): faz o fluxo OAuth do Mercado Livre e gera o `credenciais.json`. |
+| `tests/` | Testes automatizados (pytest). |
+
+**Atalhos do Windows**
+| Arquivo | Papel |
+|---|---|
+| `Abrir Separador.bat` | Abre a tela sem terminal (duplo-clique). |
+| `Abrir Separador (diagnostico).bat` | Abre com terminal visível, para ver erros. |
+| `Abrir Separador.pyw` | Alternativa ao `.bat` (depende da associação do `.pyw`). |
+| `Atualizar programa.bat` | Atualiza para a versão mais nova (`git pull`). |
+
+**Configuração e dados**
+| Arquivo | Papel |
+|---|---|
+| `nomes_sku.json` | De-para SKU → nome amigável (versionado). |
 | `credenciais.example.json` | Modelo do arquivo de credenciais (copie para `credenciais.json`). |
+| `pyproject.toml` / `requirements*.txt` | Metadados, dependências e configuração de testes. |
+
+> Arquivos com segredos/estado (`credenciais.json`, `estado_grupos.json`, caches) **não** são versionados — veja "Arquivos gerados" no fim.
 
 ## Instalação
 
