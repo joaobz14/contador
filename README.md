@@ -109,6 +109,7 @@ sem nome cadastrado seguem mostrando apenas o SKU.
 - `credenciais.json` — segredos e tokens da sua conta.
 - `estado_grupos.json` — registra quais grupos já foram impressos no dia.
 - `itens_cache.json` — cache de detalhes de produtos.
+- `envios_cache.json` — cache de envios já finalizados (pulados nas próximas buscas para acelerar).
 - `link_autorizacao.txt` — link de autorização gerado pelo `pegar_token.py`.
 
 ## Testes
