@@ -41,3 +41,45 @@ def texto_resumo(prontos: list, hoje: str, amanha: str) -> str:
         saida.append(f"  {data}   {qtd:>3} pacote(s){marca}")
     saida.append(f"\nTotal: {len(prontos)} pacote(s) em {len(linhas_dia)} dia(s).")
     return "\n".join(saida)
+
+
+def texto_detalhe(itens: list, chave: str) -> str:
+    """Composicao de um SKU: quais produtos/variacoes/voltagens o formam e
+    quantos envios de cada. Casa a chave sem diferenciar maiusculas/minusculas."""
+    alvo = chave.strip().lower()
+    comp: dict[tuple, set] = defaultdict(set)
+    for it in itens:
+        if it.chave.lower() == alvo and it.shipment_id:
+            comp[(it.item_id, (it.titulo or "")[:50], it.voltagem)].add(it.shipment_id)
+    if not comp:
+        return f"Nada encontrado para o SKU '{chave}' hoje."
+    linhas = [f"Composicao de {chave} (hoje):"]
+    for (iid, tit, volt), ships in sorted(comp.items(), key=lambda x: -len(x[1])):
+        v = f" [{volt}]" if volt else ""
+        linhas.append(f"  {len(ships):>3}  {iid}  {tit}{v}".rstrip())
+    return "\n".join(linhas)
+
+
+def dividir_mensagem(texto: str, limite: int = 4000) -> list[str]:
+    """Divide um texto em blocos <= limite (o Telegram corta em ~4096), quebrando
+    preferencialmente em linhas. Linhas isoladas maiores que o limite sao
+    fatiadas no tamanho maximo."""
+    blocos: list[str] = []
+    atual = ""
+    for linha in texto.split("\n"):
+        while len(linha) > limite:               # linha gigante: fatia na marra
+            if atual:
+                blocos.append(atual)
+                atual = ""
+            blocos.append(linha[:limite])
+            linha = linha[limite:]
+        if not atual:
+            atual = linha
+        elif len(atual) + 1 + len(linha) <= limite:
+            atual = f"{atual}\n{linha}"
+        else:
+            blocos.append(atual)
+            atual = linha
+    if atual:
+        blocos.append(atual)
+    return blocos or [""]

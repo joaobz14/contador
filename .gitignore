@@ -7,6 +7,7 @@ bot_config.json
 estado_grupos.json
 itens_cache.json
 envios_cache.json
+bot.log
 *.tmp
 
 # Bytecode / cache do Python

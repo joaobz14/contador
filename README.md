@@ -102,8 +102,16 @@ python separador_gui.py
 
 ## Bot do Telegram (opcional — consulta)
 
-Permite consultar os pedidos pelo celular (somente leitura: `/hoje`, `/amanha`,
-`/resumo`). Não imprime nem altera nada — só lê via o núcleo.
+Permite consultar os pedidos pelo celular (somente leitura). Não imprime nem
+altera nada — só lê via o núcleo. Comandos:
+
+- `/hoje`, `/amanha`, `/dia AAAA-MM-DD`, `/todos` — grupos por dia de despacho
+- `/detalhar SKU` — composição de um SKU (itens/variações que o formam)
+- `/resumo` — quantos pacotes por dia
+- `/id` — mostra seu chat id (para liberar no `chat_ids`)
+
+Mensagens longas são divididas automaticamente; a atividade fica registrada em
+`bot.log`.
 
 ```bash
 pip install -r requirements-bot.txt
