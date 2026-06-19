@@ -100,6 +100,24 @@ duplo-clique não fizer nada, fique com o `Abrir Separador.bat` (mais garantido)
 python separador_gui.py
 ```
 
+## Bot do Telegram (opcional — consulta)
+
+Permite consultar os pedidos pelo celular (somente leitura: `/hoje`, `/amanha`,
+`/resumo`). Não imprime nem altera nada — só lê via o núcleo.
+
+```bash
+pip install -r requirements-bot.txt
+copy bot_config.example.json bot_config.json   # e preencha o token do @BotFather
+python bot_telegram.py                          # precisa do credenciais.json na mesma pasta
+```
+
+Segurança: o **token vem do `bot_config.json`** (não versionado) ou da variável
+`TELEGRAM_BOT_TOKEN`, e o bot só responde aos **chat ids autorizados**. Mande
+`/id` ao bot para descobrir seu chat id, coloque-o em `chat_ids` e reinicie.
+
+Onde rodar: numa máquina **sempre ligada e com internet** que tenha o projeto e o
+`credenciais.json` (ex.: o PC do escritório).
+
 ## Como a impressão funciona
 
 Ao imprimir um grupo, o programa baixa o ZPL pela API (`/shipment_labels`) e grava

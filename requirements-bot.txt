@@ -1,0 +1,3 @@
+# Dependencias do bot do Telegram (opcional; nao precisa para usar o app/GUI)
+-r requirements.txt
+python-telegram-bot>=20
