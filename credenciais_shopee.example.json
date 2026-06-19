@@ -1,0 +1,9 @@
+{
+  "partner_id": 123456,
+  "partner_key": "SUA_PARTNER_KEY",
+  "shop_id": 987654,
+  "refresh_token": "GERADO_PELO_pegar_token_shopee.py",
+  "access_token": "",
+  "access_token_exp": 0,
+  "redirect_uri": "https://www.google.com"
+}

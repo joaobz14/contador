@@ -99,6 +99,21 @@ duplo-clique não fizer nada, fique com o `Abrir Separador.bat` (mais garantido)
 python separador_gui.py
 ```
 
+## Shopee (experimental — Fase 1: leitura)
+
+Integração inicial com a Shopee Open Platform (somente **listar/agrupar**, ainda
+sem impressão). Pré-requisito: criar um app em https://open.shopee.com e autorizar
+a loja.
+
+```bash
+python pegar_token_shopee.py      # uma vez: autoriza a loja -> credenciais_shopee.json
+python shopee_api.py              # grupos prontos para enviar HOJE
+python shopee_api.py amanha | todos | dia <AAAA-MM-DD>
+```
+
+Reaproveita o agrupamento por SKU + quantidade, os nomes (`nomes_sku.json`) e o
+fuso de Brasília. A impressão das etiquetas da Shopee fica para a Fase 2.
+
 ## Como a impressão funciona
 
 Ao imprimir um grupo, o programa baixa o ZPL pela API (`/shipment_labels`) e grava
