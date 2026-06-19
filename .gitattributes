@@ -1,0 +1,10 @@
+# Normalizacao de fim de linha consistente entre os PCs.
+* text=auto eol=lf
+
+# Arquivos do Windows precisam de CRLF para funcionar bem.
+*.bat text eol=crlf
+*.pyw text eol=crlf
+
+# Tratados como binarios (sem conversao de fim de linha).
+*.zip binary
+*.png binary
