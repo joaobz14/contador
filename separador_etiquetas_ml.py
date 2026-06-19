@@ -284,10 +284,9 @@ def identidade(item: dict, cache: dict) -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 def buscar_pedidos(token: str, seller_id: str) -> list[dict]:
     desde = (datetime.now(TZ_BR) - timedelta(days=DIAS_JANELA)).strftime("%Y-%m-%dT00:00:00.000-03:00")
-    pedidos: list[dict] = []
-    offset = 0
-    while offset < MAX_PEDIDOS:
-        dados = _get(
+
+    def pagina(offset: int) -> dict:
+        return _get(
             f"{API}/orders/search",
             token,
             params={
@@ -299,12 +298,16 @@ def buscar_pedidos(token: str, seller_id: str) -> list[dict]:
                 "limit": 50,
             },
         )
-        resultados = dados.get("results", [])
-        pedidos.extend(resultados)
-        total = dados.get("paging", {}).get("total", 0)
-        offset += 50
-        if offset >= total or not resultados:
-            break
+
+    # 1a pagina (offset 0) para descobrir o total; as demais vao em paralelo.
+    primeira = pagina(0)
+    pedidos: list[dict] = list(primeira.get("results", []))
+    total = min(primeira.get("paging", {}).get("total", 0), MAX_PEDIDOS)
+    offsets = list(range(50, total, 50))
+    if offsets:
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            for dados in ex.map(pagina, offsets):
+                pedidos.extend(dados.get("results", []))
     return pedidos
 
 
