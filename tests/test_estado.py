@@ -46,12 +46,13 @@ def test_compatibilidade_formato_antigo_string(core):
 
 
 def test_status_usa_o_dia_de_despacho_do_grupo(core):
+    # Datas fixas no passado para nunca colidirem com "hoje".
     g = make_grupo(core, [10, 20])
-    g.dia = "2026-06-19"
-    # chave do dia 19 marca como impresso
-    assert core.status_grupo({"2026-06-19|K|q1": [10, 20]}, g) == "impresso"
-    # estado de OUTRO dia (hoje) nao deve influenciar a visao de amanha
-    assert core.status_grupo({f"{core._hoje_br()}|K|q1": [10, 20]}, g) == "pendente"
+    g.dia = "2000-01-02"
+    # chave do mesmo dia marca como impresso
+    assert core.status_grupo({"2000-01-02|K|q1": [10, 20]}, g) == "impresso"
+    # estado de OUTRO dia nao deve influenciar a visao do dia do grupo
+    assert core.status_grupo({"2000-01-01|K|q1": [10, 20]}, g) == "pendente"
 
 
 # ------------------------------------------------------------ imprimir_pendentes
