@@ -51,6 +51,10 @@ ARQUIVO_ESTADO = PASTA_SCRIPT / "estado_grupos.json"
 ARQUIVO_CACHE = PASTA_SCRIPT / "itens_cache.json"
 # De-para opcional SKU -> nome amigavel, exibido junto do SKU na tela/CLI.
 ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
+# Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
+# nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
+ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
+STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
@@ -359,14 +363,39 @@ def _prazo_do_envio(env: dict) -> str:
     return ""
 
 
-def _avaliar_pedido(token: str, ped: dict) -> dict | None:
-    """Retorna o pedido com _envio se estiver ready_to_print; senao None."""
+def _carregar_envios_cache() -> dict:
+    if ARQUIVO_ENVIOS_CACHE.exists():
+        try:
+            return json.loads(ARQUIVO_ENVIOS_CACHE.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def _salvar_envios_cache(cache: dict) -> None:
+    ARQUIVO_ENVIOS_CACHE.write_text(
+        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def _limpar_envios_cache(cache: dict, dias: int = DIAS_JANELA) -> dict:
+    """Descarta entradas mais antigas que a janela de busca de pedidos
+    (alem dela o pedido nem aparece mais em orders/search)."""
+    limite = (datetime.now(TZ_BR).date() - timedelta(days=dias)).isoformat()
+    return {sid: d for sid, d in cache.items() if isinstance(d, str) and d >= limite}
+
+
+def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str]:
+    """Avalia o envio do pedido. Retorna (pedido, shipment_id, status):
+    o pedido vem com _envio preenchido quando esta em ready_to_print; senao
+    vem None (mas com o status, para o cache de finalizados)."""
     sid = (ped.get("shipping") or {}).get("id")
     if not sid:
-        return None
+        return None, None, ""
     env = buscar_envio(token, sid)
+    status = env.get("status") or ""
     if env.get("substatus") != SUBSTATUS_IMPRIMIR:
-        return None
+        return None, sid, status
     # O prazo de despacho costuma vir no proprio detalhe do envio; so chama o
     # /sla (uma requisicao a mais) quando nao encontramos no detalhe.
     expected_raw = _prazo_do_envio(env)
@@ -375,25 +404,40 @@ def _avaliar_pedido(token: str, ped: dict) -> dict | None:
     expected = _data_despacho(expected_raw)
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
     ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt}
-    return ped
+    return ped, sid, status
 
 
 def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None) -> list[dict]:
-    """Mantem pedidos em ready_to_print. progresso(feitos, total) e chamado por pedido."""
-    total = len(pedidos)
+    """Mantem pedidos em ready_to_print. progresso(feitos, total) e chamado por pedido.
+
+    Pula os envios ja conhecidos como finalizados (cache de status terminais),
+    reduzindo bastante as chamadas a API em atualizacoes repetidas.
+    """
+    cache = _carregar_envios_cache()
+    hoje = _hoje_br()
+    a_checar = [
+        p for p in pedidos
+        if str((p.get("shipping") or {}).get("id")) not in cache
+    ]
+    total = len(a_checar)
     prontos: list[dict] = []
+    novos_terminais: dict = {}
     feitos = 0
     with ThreadPoolExecutor(max_workers=12) as ex:
-        for resultado in ex.map(lambda p: _avaliar_pedido(token, p), pedidos):
+        for ped, sid, status in ex.map(lambda p: _avaliar_pedido(token, p), a_checar):
             feitos += 1
             if progresso:
                 progresso(feitos, total)
             else:
                 print(f"  Verificando envios: {feitos}/{total}", end="\r")
-            if resultado is not None:
-                prontos.append(resultado)
+            if ped is not None:
+                prontos.append(ped)
+            elif sid and status in STATUS_TERMINAIS:
+                novos_terminais[str(sid)] = hoje
     if not progresso:
         print()
+    cache.update(novos_terminais)
+    _salvar_envios_cache(_limpar_envios_cache(cache))
     return prontos
 
 
