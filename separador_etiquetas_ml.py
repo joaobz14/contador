@@ -612,6 +612,34 @@ def debug_envios(pedidos_prontos: list[dict], hoje: str) -> None:
     print(f"\nTotal prontos: {len(pedidos_prontos)} | de hoje: {cont_hoje}")
 
 
+def resumo_por_dia(pedidos_prontos: list[dict]) -> list[tuple[str, int]]:
+    """Conta quantos envios prontos ha em cada dia de despacho, ordenado por
+    data. Funcao pura (testavel sem rede)."""
+    por_dia: dict[str, int] = defaultdict(int)
+    for ped in pedidos_prontos:
+        data = (ped.get("_envio") or {}).get("expected_date") or "(sem data)"
+        por_dia[data] += 1
+    return sorted(por_dia.items())
+
+
+def imprimir_resumo(pedidos_prontos: list[dict], hoje: str, amanha: str) -> None:
+    """Mostra um panorama de quantos pacotes ha por dia de despacho."""
+    linhas = resumo_por_dia(pedidos_prontos)
+    print(f"\n--- RESUMO POR DIA DE DESPACHO (hoje = {hoje}) ---\n")
+    if not linhas:
+        print("  Nenhum envio pronto para imprimir.")
+        return
+    for data, qtd in linhas:
+        if data == hoje:
+            marca = " <== HOJE"
+        elif data == amanha:
+            marca = " <== amanha"
+        else:
+            marca = ""
+        print(f"  {data}   {qtd:>3} pacote(s){marca}")
+    print(f"\n  Total: {len(pedidos_prontos)} pacote(s) em {len(linhas)} dia(s).")
+
+
 # ---------------------------------------------------------------------------
 # ETIQUETAS ZPL
 # ---------------------------------------------------------------------------
@@ -851,11 +879,14 @@ def main() -> None:
         rastrear_sku(token, cred["seller_id"], args[1])
         return
 
-    if comando == "envios":
+    if comando in ("envios", "resumo"):
         # Diagnostico leve: nao precisa extrair/agrupar itens.
         pedidos = buscar_pedidos(token, cred["seller_id"])
         prontos = filtrar_para_imprimir(token, pedidos)
-        debug_envios(prontos, _hoje_br())
+        if comando == "resumo":
+            imprimir_resumo(prontos, _hoje_br(), _amanha_br())
+        else:
+            debug_envios(prontos, _hoje_br())
         return
 
     # Selecao do dia: hoje (padrao), amanha, uma data especifica ou todos.
@@ -898,7 +929,7 @@ def main() -> None:
         imprimir_grupo(token, pendente, estado)
 
     else:
-        print('Uso: listar | amanha | dia <AAAA-MM-DD> | todos | envios | '
+        print('Uso: listar | amanha | dia <AAAA-MM-DD> | todos | envios | resumo | '
               'detalhar "<nome>" <QTD> | imprimir "<nome>" <QTD> | proximo')
 
 
