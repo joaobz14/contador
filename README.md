@@ -8,6 +8,10 @@ em lote. Ela lê os pedidos da conta, mantém apenas os que estão em
 A identidade de cada produto é definida nesta ordem de prioridade:
 **SKU → GTIN + voltagem → `item_id:variação`**.
 
+O agrupamento é **por envio = 1 etiqueta**: um pedido com vários SKUs diferentes
+(combo/kit) vira um único grupo "Combo" (1 etiqueta, listando os itens), em vez de
+ser separado por SKU.
+
 ## Estrutura do projeto
 
 **Código**

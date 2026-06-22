@@ -238,6 +238,9 @@ class Grupo:
     # Dia de despacho (YYYY-MM-DD) ao qual este grupo pertence. Usado como
     # referencia no estado de impressao; vazio = usa o dia de hoje.
     dia: str = ""
+    # Para envios "combo" (varios SKUs no mesmo pacote): lista de (sku, qtd).
+    # Vazio em grupos normais de um unico SKU.
+    componentes: list = field(default_factory=list)
 
     @property
     def chave_grupo(self) -> str:
@@ -517,16 +520,44 @@ def extrair_itens(token: str, pedidos: list[dict]) -> list[ItemPedido]:
 
 
 def agrupar(itens: list[ItemPedido]) -> list[Grupo]:
-    """REGRA PRINCIPAL: agrupa por identidade do produto + quantidade do pedido."""
-    grupos: dict[tuple[str, int], Grupo] = {}
+    """Agrupa por ENVIO (1 envio = 1 etiqueta):
+
+    - envio com 1 SKU (mesmo que varias unidades) -> grupo por SKU + quantidade;
+    - envio com SKUs diferentes (combo/kit) -> um grupo "combo" proprio, contando
+      1 etiqueta por pacote (nunca separa o combo por SKU).
+    """
+    # 1) junta os itens por envio
+    por_envio: dict[int, list[ItemPedido]] = defaultdict(list)
     for it in itens:
-        ch = (it.chave, it.quantidade)
-        g = grupos.get(ch)
+        if it.shipment_id:
+            por_envio[it.shipment_id].append(it)
+
+    # 2) para cada envio, decide se e SKU unico ou combo
+    grupos: dict[tuple[str, int], Grupo] = {}
+    for sid, do_envio in por_envio.items():
+        qtd_por_chave: dict[str, int] = defaultdict(int)
+        nome_por_chave: dict[str, str] = {}
+        for it in do_envio:
+            qtd_por_chave[it.chave] += it.quantidade
+            nome_por_chave.setdefault(it.chave, it.nome)
+
+        if len(qtd_por_chave) == 1:                     # envio de um unico SKU
+            chave, qtd = next(iter(qtd_por_chave.items()))
+            nome = nome_por_chave[chave]
+            componentes: list = []
+        else:                                            # envio combo (varios SKUs)
+            comp = sorted(qtd_por_chave.items())
+            chave = "COMBO:" + "+".join(f"{c}x{q}" for c, q in comp)
+            qtd = 1
+            nome = "Combo: " + " + ".join(f"{c} x{q}" for c, q in comp)
+            componentes = comp
+
+        g = grupos.get((chave, qtd))
         if g is None:
-            g = Grupo(chave=it.chave, nome=it.nome, quantidade=it.quantidade)
-            grupos[ch] = g
-        if it.shipment_id and it.shipment_id not in g.shipment_ids:
-            g.shipment_ids.append(it.shipment_id)
+            g = Grupo(chave=chave, nome=nome, quantidade=qtd, componentes=componentes)
+            grupos[(chave, qtd)] = g
+        if sid not in g.shipment_ids:
+            g.shipment_ids.append(sid)
     return sorted(grupos.values(), key=lambda g: (g.quantidade, g.nome.lower()))
 
 
@@ -538,16 +569,31 @@ def carregar_nomes() -> dict:
     return _ler_json(ARQUIVO_NOMES)
 
 
+def _rotulo_sku(sku: str, nomes: dict) -> str:
+    amigavel = nomes.get(sku)
+    return f"{sku} — {amigavel}" if amigavel else sku
+
+
 def aplicar_nomes(grupos: list[Grupo], nomes: dict) -> None:
     """Acrescenta o nome amigavel ao rotulo dos grupos cujo SKU esta no mapa.
-    Ex.: 'PRP' -> 'PRP — Picador Pequeno'. So mexe na exibicao (Grupo.nome);
-    o agrupamento e o estado continuam pela chave/SKU."""
+    Ex.: 'PRP' -> 'PRP — Picador Pequeno'. Em combos, enriquece cada SKU do
+    pacote. So mexe na exibicao (Grupo.nome); agrupamento e estado seguem
+    pela chave."""
     if not nomes:
         return
     for g in grupos:
-        amigavel = nomes.get(g.chave)
-        if amigavel:
-            g.nome = f"{g.chave} — {amigavel}"
+        if g.componentes:                                # combo: enriquece os itens
+            partes = [
+                f"{_rotulo_sku(sku, nomes)} (x{q})" if q > 1 else _rotulo_sku(sku, nomes)
+                for sku, q in g.componentes
+            ]
+            g.nome = "Combo: " + " + ".join(partes)
+        else:
+            amigavel = nomes.get(g.chave)
+            if amigavel:
+                g.nome = f"{g.chave} — {amigavel}"
+
+
 @dataclass
 class Coleta:
     """Resultado do pipeline completo de uma atualizacao."""
