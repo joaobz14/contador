@@ -35,6 +35,22 @@ def test_texto_resumo_vazio(core):
     assert "Nenhum envio" in relatorio.texto_resumo([], "2026-06-19", "2026-06-20")
 
 
+def test_texto_bom_dia(core):
+    prontos = [
+        {"_envio": {"expected_date": "2026-06-19"}},
+        {"_envio": {"expected_date": "2026-06-19"}},
+        {"_envio": {"expected_date": "2026-06-22"}},
+    ]
+    txt = relatorio.texto_bom_dia(prontos, "2026-06-19", "2026-06-20")
+    assert "Bom dia! Hoje voce tem 2 pacote(s)" in txt
+    assert "2026-06-22" in txt              # inclui o resumo por dia
+
+
+def test_texto_bom_dia_sem_pedidos(core):
+    txt = relatorio.texto_bom_dia([], "2026-06-19", "2026-06-20")
+    assert "0 pacote(s)" in txt
+
+
 def test_texto_detalhe(core):
     itens = [
         core.ItemPedido(order_id=1, shipment_id=10, chave="PRP", nome="PRP",

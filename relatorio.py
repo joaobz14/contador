@@ -43,6 +43,14 @@ def texto_resumo(prontos: list, hoje: str, amanha: str) -> str:
     return "\n".join(saida)
 
 
+def texto_bom_dia(prontos: list, hoje: str, amanha: str) -> str:
+    """Mensagem do aviso automatico da manha: manchete com a contagem de hoje
+    seguida do resumo por dia."""
+    de_hoje = sum(1 for p in prontos if (p.get("_envio") or {}).get("expected_date") == hoje)
+    cabecalho = f"Bom dia! Hoje voce tem {de_hoje} pacote(s) para despachar."
+    return f"{cabecalho}\n\n{texto_resumo(prontos, hoje, amanha)}"
+
+
 def texto_detalhe(itens: list, chave: str) -> str:
     """Composicao de um SKU: quais produtos/variacoes/voltagens o formam e
     quantos envios de cada. Casa a chave sem diferenciar maiusculas/minusculas."""

@@ -113,6 +113,14 @@ altera nada — só lê via o núcleo. Comandos:
 Mensagens longas são divididas automaticamente; a atividade fica registrada em
 `bot.log`.
 
+**Botões:** `/start` (ou `/menu`) mostra botões **Hoje / Amanhã / Resumo / Todos**
+— é só tocar, sem digitar.
+
+**Aviso automático da manhã:** defina `"aviso_horario"` no `bot_config.json` (ex.:
+`"08:00"`) e o bot manda o resumo do dia nesse horário (horário de Brasília) para
+os `chat_ids`. Deixe em branco/remova para desativar. Precisa do bot ligado no
+horário e da dependência de agendador (já incluída no `requirements-bot.txt`).
+
 ```bash
 pip install -r requirements-bot.txt
 copy bot_config.example.json bot_config.json   # e preencha o token do @BotFather
