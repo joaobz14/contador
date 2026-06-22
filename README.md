@@ -71,6 +71,7 @@ terminal). Em seguida, abra o programa normalmente pelo `Abrir Separador.bat`.
 python separador_etiquetas_ml.py            # lista os grupos prontos (somente de HOJE)
 python separador_etiquetas_ml.py todos      # inclui também os de outros dias
 python separador_etiquetas_ml.py envios     # mostra as datas de despacho
+python separador_etiquetas_ml.py resumo     # quantos pacotes em cada dia de despacho
 python separador_etiquetas_ml.py detalhar "<nome>" <QTD>   # composição de um grupo
 python separador_etiquetas_ml.py imprimir "<nome>" <QTD>   # imprime um grupo
 python separador_etiquetas_ml.py proximo    # imprime o próximo grupo pendente
@@ -98,6 +99,48 @@ duplo-clique não fizer nada, fique com o `Abrir Separador.bat` (mais garantido)
 ```bash
 python separador_gui.py
 ```
+
+## Bot do Telegram (opcional — consulta)
+
+Permite consultar os pedidos pelo celular (somente leitura). Não imprime nem
+altera nada — só lê via o núcleo. Comandos:
+
+- `/hoje`, `/amanha`, `/dia AAAA-MM-DD`, `/todos` — grupos por dia de despacho
+- `/detalhar SKU` — composição de um SKU (itens/variações que o formam)
+- `/resumo` — quantos pacotes por dia
+- `/id` — mostra seu chat id (para liberar no `chat_ids`)
+
+Mensagens longas são divididas automaticamente; a atividade fica registrada em
+`bot.log`.
+
+**Botões:** `/start` (ou `/menu`) mostra botões **Hoje / Amanhã / Resumo / Todos**
+— é só tocar, sem digitar.
+
+**Aviso automático da manhã:** defina `"aviso_horario"` no `bot_config.json` (ex.:
+`"08:00"`) e o bot manda o resumo do dia nesse horário (horário de Brasília) para
+os `chat_ids`. Deixe em branco/remova para desativar. Precisa do bot ligado no
+horário e da dependência de agendador (já incluída no `requirements-bot.txt`).
+
+```bash
+pip install -r requirements-bot.txt
+copy bot_config.example.json bot_config.json   # e preencha o token do @BotFather
+python bot_telegram.py                          # precisa do credenciais.json na mesma pasta
+```
+
+Segurança: o **token vem do `bot_config.json`** (não versionado) ou da variável
+`TELEGRAM_BOT_TOKEN`, e o bot só responde aos **chat ids autorizados**. Mande
+`/id` ao bot para descobrir seu chat id, coloque-o em `chat_ids` e reinicie.
+
+Onde rodar: numa máquina **sempre ligada e com internet** que tenha o projeto e o
+`credenciais.json` (ex.: o PC do escritório).
+
+**Ligar por duplo-clique:** use **`Iniciar Bot.bat`** (mantenha a janela aberta — o
+bot só responde enquanto ela estiver rodando).
+
+**Ligar junto com o Windows (opcional):** clique com o botão direito no
+`Iniciar Bot.bat` → *Enviar para → Área de trabalho (criar atalho)*; depois
+pressione `Win+R`, digite `shell:startup` e mova esse atalho para a pasta que
+abrir. Assim o bot inicia sozinho quando o PC liga.
 
 ## Shopee (experimental — Fase 1: leitura)
 

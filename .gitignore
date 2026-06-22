@@ -3,11 +3,13 @@ credenciais.json
 credenciais_shopee.json
 link_autorizacao.txt
 link_autorizacao_shopee.txt
+bot_config.json
 
 # Estado e cache gerados em tempo de execucao
 estado_grupos.json
 itens_cache.json
 envios_cache.json
+bot.log
 *.tmp
 
 # Bytecode / cache do Python
