@@ -1,6 +1,8 @@
 # Segredos e credenciais (NUNCA versionar)
 credenciais.json
+credenciais_shopee.json
 link_autorizacao.txt
+link_autorizacao_shopee.txt
 bot_config.json
 
 # Estado e cache gerados em tempo de execucao
