@@ -84,14 +84,13 @@ class SeparadorApp:
         self._rebuild_conta_selector()
 
         # Seletor de dia de despacho: Hoje (padrao) ou Amanha.
+        # So mudam a escolha; a busca so acontece quando o usuario clica em Atualizar.
         self.modo = tk.StringVar(value="hoje")
         seletor = ttk.Frame(topo)
         seletor.pack(side="left", padx=6)
         self.radios = [
-            ttk.Radiobutton(seletor, text="Hoje", value="hoje",
-                            variable=self.modo, command=self.atualizar),
-            ttk.Radiobutton(seletor, text="Amanhã", value="amanha",
-                            variable=self.modo, command=self.atualizar),
+            ttk.Radiobutton(seletor, text="Hoje", value="hoje", variable=self.modo),
+            ttk.Radiobutton(seletor, text="Amanhã", value="amanha", variable=self.modo),
         ]
         for r in self.radios:
             r.pack(side="left", padx=(0, 6))
@@ -144,12 +143,12 @@ class SeparadorApp:
             self._radios_conta.append(r)
 
     def _trocar_conta(self, nome: str) -> None:
-        """Troca a conta ativa, salva a preferencia e recarrega."""
+        """Troca a conta ativa e volta para a tela inicial (sem buscar).
+        A busca so acontece quando o usuario escolhe o dia e clica em Atualizar."""
         core.definir_conta(nome)
         self.config["conta_ativa"] = nome
         core.salvar_config(self.config)
         self._tela_inicial()
-        self.atualizar()
 
     def _ocupar(self, ocupado: bool, msg: str = "") -> None:
         self.ocupado = ocupado
@@ -174,10 +173,11 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
         self.lbl_resumo.config(text="")
+        tem_contas = len(core.listar_contas()) >= 2
+        prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia (Hoje ou Amanhã)"
         ttk.Label(
             self.lista, padding=24, justify="center", foreground=CINZA,
-            text=("Escolha o dia (Hoje ou Amanhã) e clique em 🔄 Atualizar\n"
-                  "para buscar os pedidos."),
+            text=(f"{prefixo} e clique em 🔄 Atualizar\npara buscar os pedidos."),
         ).pack()
         self.lbl_status.config(text="Pronto. Aguardando você escolher o filtro.")
 
