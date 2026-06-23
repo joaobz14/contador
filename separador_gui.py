@@ -211,7 +211,7 @@ class SeparadorApp:
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
 
-        # ----- Secao: para imprimir (pendentes/parciais), agrupado por quantidade
+        # ----- Seção: para imprimir (pendentes/parciais), agrupado por quantidade
         if pendentes:
             ttk.Label(self.lista, text="🖨  Para imprimir",
                       font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
@@ -227,7 +227,7 @@ class SeparadorApp:
             ttk.Label(self.lista, text=f"Tudo impresso {dia_txt}! 🎉",
                       padding=(0, 12)).pack()
 
-        # ----- Secao: ja impressas (arquivadas), embaixo e separadas
+        # ----- Seção: já impressas (arquivadas), embaixo e separadas
         if arquivadas:
             ttk.Label(self.lista,
                       text=f"✓  Já impressas — arquivadas ({len(arquivadas)})",

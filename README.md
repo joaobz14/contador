@@ -97,6 +97,8 @@ python separador_etiquetas_ml.py rastrear <SKU>            # diagnóstico de um 
 ### Interface gráfica
 
 Mostra os grupos do dia (produto + quantidade) com um botão **Imprimir** em cada um.
+A lista é separada em **🖨 Para imprimir** (em cima) e **✓ Já impressas — arquivadas**
+(embaixo), para que um grupo pendente nunca fique perdido no meio dos já impressos.
 Cada grupo também tem **↻ Reimprimir**, que refaz as etiquetas daquele grupo (útil
 se uma etiqueta atolar/estragar) sem alterar o controle de impresso.
 
