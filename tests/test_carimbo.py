@@ -1,4 +1,4 @@
-"""Carimbo do SKU na etiqueta ZPL (sem rede)."""
+"""Carimbo do SKU na DANFE (area livre central), sem rede."""
 
 
 def _grupo(core, chave="A03", componentes=None):
@@ -6,32 +6,30 @@ def _grupo(core, chave="A03", componentes=None):
                       componentes=componentes or [])
 
 
-def test_carimbo_insere_sku_antes_do_fim_da_etiqueta(core):
-    zpl = "^XA^FO50,50^FDfulano^FS^XZ"
-    out = core.carimbar_zpl(zpl, "A03")
-    assert out.count("^XZ") == 1
-    assert "^FDA03^FS" in out
-    assert "fulano" in out                     # nada do original e perdido
-    assert out.index("A03") < out.index("^XZ") # carimbo vem antes do fim
+# Pacote tipico do ML: DANFE (nota) + etiqueta de envio, dois blocos ^XA..^XZ.
+ZPL = "^XA DANFE SIMPLIFICADO conteudo da nota ^XZ\n^XA etiqueta de envio SBA6 ^XZ"
 
 
-def test_carimbo_em_todas_as_etiquetas(core):
-    zpl = "^XA...^XZ\n^XA...^XZ"
-    out = core.carimbar_zpl(zpl, "A05")
-    assert out.count("^FDA05^FS") == 2         # uma por etiqueta
+def test_carimbo_so_na_danfe(core):
+    out = core.carimbar_zpl(ZPL, "A03")
+    assert out.count("^FDA03^FS") == 1                 # uma vez so
+    danfe, envio = out.split("^XA etiqueta")           # separa os dois blocos
+    assert "^FDA03^FS" in danfe                         # carimbo ficou na DANFE
+    assert "A03" not in envio                           # etiqueta de envio intacta
 
 
-def test_carimbo_pula_a_danfe(core):
-    # pacote do ML: DANFE (nota) + etiqueta de envio. So a etiqueta leva carimbo.
-    zpl = "^XA DANFE SIMPLIFICADO ^XZ\n^XA etiqueta de envio ^XZ"
-    out = core.carimbar_zpl(zpl, "A03")
-    assert out.count("^FDA03^FS") == 1         # so na etiqueta de envio
-    assert "DANFE" in out                      # bloco da nota preservado
+def test_carimbo_nao_toca_a_etiqueta_de_envio(core):
+    out = core.carimbar_zpl(ZPL, "A03")
+    assert "etiqueta de envio SBA6 ^XZ" in out          # bloco de envio preservado
+
+
+def test_carimbo_sem_danfe_nao_altera(core):
+    zpl = "^XA so etiqueta de envio ^XZ"
+    assert core.carimbar_zpl(zpl, "A03") == zpl
 
 
 def test_carimbo_texto_vazio_nao_altera(core):
-    zpl = "^XA^XZ"
-    assert core.carimbar_zpl(zpl, "") == zpl
+    assert core.carimbar_zpl(ZPL, "") == ZPL
 
 
 def test_carimbo_zpl_invalido_nao_altera(core):
@@ -39,8 +37,8 @@ def test_carimbo_zpl_invalido_nao_altera(core):
 
 
 def test_carimbo_neutraliza_caracteres_de_controle(core):
-    out = core.carimbar_zpl("^XA^XZ", "A^03~X")
-    assert "^03" not in out.split("^FD")[1]    # ^ e ~ nao escapam para comando
+    out = core.carimbar_zpl("^XA DANFE ^XZ", "A^03~X")
+    assert "^03" not in out.split("^FD")[1]            # ^ e ~ nao viram comando
 
 
 def test_texto_carimbo_grupo_normal(core):

@@ -78,6 +78,7 @@ python separador_etiquetas_ml.py envios     # mostra as datas de despacho
 python separador_etiquetas_ml.py resumo     # quantos pacotes em cada dia de despacho
 python separador_etiquetas_ml.py detalhar "<nome>" <QTD>   # composição de um grupo
 python separador_etiquetas_ml.py imprimir "<nome>" <QTD>   # imprime um grupo
+python separador_etiquetas_ml.py reimprimir "<nome>" <QTD> # reimprime um grupo (não altera o estado)
 python separador_etiquetas_ml.py proximo    # imprime o próximo grupo pendente
 python separador_etiquetas_ml.py rastrear <SKU>            # diagnóstico de um SKU
 ```
@@ -85,6 +86,8 @@ python separador_etiquetas_ml.py rastrear <SKU>            # diagnóstico de um 
 ### Interface gráfica
 
 Mostra os grupos do dia (produto + quantidade) com um botão **Imprimir** em cada um.
+Cada grupo também tem **↻ Reimprimir**, que refaz as etiquetas daquele grupo (útil
+se uma etiqueta atolar/estragar) sem alterar o controle de impresso.
 
 **Jeito prático (Windows):** dê um duplo-clique em **`Abrir Separador.bat`**.
 Ele abre a tela direto, sem a janela preta do terminal. Para ter um ícone na
@@ -170,10 +173,10 @@ Ajuste `PASTA_DOWNLOADS` em `separador_etiquetas_ml.py` caso o seu app monitore
 outra pasta.
 
 **Carimbar o SKU na etiqueta:** o checkbox **"Carimbar SKU"** na tela imprime o
-código do produto num canto da etiqueta de **envio** (a DANFE/nota nunca é
-carimbada), para identificar o produto ao separar. A escolha fica lembrada
-(`config.json`). A posição/tamanho do carimbo são ajustáveis pelas constantes
-`CARIMBO_X`, `CARIMBO_Y` e `CARIMBO_ALTURA`.
+código do produto na **DANFE** (nota fiscal), na área livre central (a etiqueta
+de envio não é carimbada, pois é cheia e varia de layout), para identificar o
+produto ao separar. A escolha fica lembrada (`config.json`). A posição/tamanho do
+carimbo são ajustáveis pelas constantes `CARIMBO_X`, `CARIMBO_Y` e `CARIMBO_ALTURA`.
 
 ## Nomes amigáveis para os SKUs
 

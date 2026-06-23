@@ -55,6 +55,35 @@ def test_status_usa_o_dia_de_despacho_do_grupo(core):
     assert core.status_grupo({"2000-01-01|K|q1": [10, 20]}, g) == "pendente"
 
 
+# ------------------------------------------------------------------- reimprimir
+def test_reimprimir_baixa_todos_e_nao_mexe_no_estado(core, tmp_path, monkeypatch):
+    monkeypatch.setattr(core, "gerar_zip_etiquetas", lambda g, zpl: tmp_path / "fake.zip")
+    baixados = {}
+    monkeypatch.setattr(core, "baixar_zpl",
+                        lambda token, ids: baixados.update(ids=list(ids)) or "^XA ^XZ")
+    g = make_grupo(core, [10, 20, 30])
+    estado = {core._chave_estado(g): [10, 20]}     # parcialmente impresso
+
+    reimpressos = core.reimprimir("tok", g)
+    assert reimpressos == [10, 20, 30]             # reimprime TODOS
+    assert baixados["ids"] == [10, 20, 30]
+    assert estado == {core._chave_estado(g): [10, 20]}   # estado intacto
+
+
+def test_reimprimir_sem_envios_nao_baixa(core, monkeypatch):
+    chamou = {"v": False}
+    monkeypatch.setattr(core, "baixar_zpl", lambda *a: chamou.update(v=True) or "^XA")
+    assert core.reimprimir("tok", make_grupo(core, [])) == []
+    assert chamou["v"] is False
+
+
+def test_reimprimir_zpl_invalido_levanta_erro(core, tmp_path, monkeypatch):
+    monkeypatch.setattr(core, "baixar_zpl", lambda token, ids: "sem zpl")
+    import pytest
+    with pytest.raises(core.SeparadorError):
+        core.reimprimir("tok", make_grupo(core, [1]))
+
+
 # ------------------------------------------------------------ imprimir_pendentes
 def test_imprimir_pendentes_baixa_somente_os_novos(core, tmp_path, monkeypatch):
     monkeypatch.setattr(core, "ARQUIVO_ESTADO", tmp_path / "estado.json")
