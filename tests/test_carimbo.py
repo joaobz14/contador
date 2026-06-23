@@ -21,6 +21,14 @@ def test_carimbo_em_todas_as_etiquetas(core):
     assert out.count("^FDA05^FS") == 2         # uma por etiqueta
 
 
+def test_carimbo_pula_a_danfe(core):
+    # pacote do ML: DANFE (nota) + etiqueta de envio. So a etiqueta leva carimbo.
+    zpl = "^XA DANFE SIMPLIFICADO ^XZ\n^XA etiqueta de envio ^XZ"
+    out = core.carimbar_zpl(zpl, "A03")
+    assert out.count("^FDA03^FS") == 1         # so na etiqueta de envio
+    assert "DANFE" in out                      # bloco da nota preservado
+
+
 def test_carimbo_texto_vazio_nao_altera(core):
     zpl = "^XA^XZ"
     assert core.carimbar_zpl(zpl, "") == zpl

@@ -169,6 +169,12 @@ Zebra (`impressora_zebra_usb.py`) monitora e envia automaticamente para a impres
 Ajuste `PASTA_DOWNLOADS` em `separador_etiquetas_ml.py` caso o seu app monitore
 outra pasta.
 
+**Carimbar o SKU na etiqueta:** o checkbox **"Carimbar SKU"** na tela imprime o
+código do produto num canto da etiqueta de **envio** (a DANFE/nota nunca é
+carimbada), para identificar o produto ao separar. A escolha fica lembrada
+(`config.json`). A posição/tamanho do carimbo são ajustáveis pelas constantes
+`CARIMBO_X`, `CARIMBO_Y` e `CARIMBO_ALTURA`.
+
 ## Nomes amigáveis para os SKUs
 
 Para mostrar o nome do produto ao lado do SKU (ex.: `PRP — Picador Pequeno`),
