@@ -170,10 +170,10 @@ Ajuste `PASTA_DOWNLOADS` em `separador_etiquetas_ml.py` caso o seu app monitore
 outra pasta.
 
 **Carimbar o SKU na etiqueta:** o checkbox **"Carimbar SKU"** na tela imprime o
-código do produto num canto da etiqueta de **envio** (a DANFE/nota nunca é
-carimbada), para identificar o produto ao separar. A escolha fica lembrada
-(`config.json`). A posição/tamanho do carimbo são ajustáveis pelas constantes
-`CARIMBO_X`, `CARIMBO_Y` e `CARIMBO_ALTURA`.
+código do produto na **DANFE** (nota fiscal), na área livre central (a etiqueta
+de envio não é carimbada, pois é cheia e varia de layout), para identificar o
+produto ao separar. A escolha fica lembrada (`config.json`). A posição/tamanho do
+carimbo são ajustáveis pelas constantes `CARIMBO_X`, `CARIMBO_Y` e `CARIMBO_ALTURA`.
 
 ## Nomes amigáveis para os SKUs
 
