@@ -60,6 +60,15 @@ STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
 
+# Carimbo do SKU na etiqueta: imprime o codigo do produto num canto de cada
+# etiqueta ZPL, para identificar o produto ao imprimir em lote. CARIMBAR_SKU
+# liga/desliga. Posicao (em "dots"; 203 dpi ~= 8 dots/mm) e altura da fonte sao
+# ajustaveis se o texto cair sobre o conteudo do Mercado Livre.
+CARIMBAR_SKU = True
+CARIMBO_X = 20       # dots a partir da esquerda
+CARIMBO_Y = 20       # dots a partir do topo
+CARIMBO_ALTURA = 50  # altura/largura da fonte em dots (~6 mm)
+
 
 # ---------------------------------------------------------------------------
 # ERROS
@@ -698,6 +707,30 @@ def _zpl_de_zip(conteudo: bytes) -> str:
     return "\n".join(partes)
 
 
+def _texto_carimbo(grupo: Grupo) -> str:
+    """Codigo curto do produto para carimbar na etiqueta.
+
+    Grupo normal: o proprio SKU/chave. Combo: os SKUs unidos por '+'.
+    """
+    if grupo.componentes:
+        return "+".join(str(sku) for sku, _ in grupo.componentes)
+    return grupo.chave
+
+
+def carimbar_zpl(zpl: str, texto: str) -> str:
+    """Carimba `texto` (ex.: o SKU) num canto de cada etiqueta do ZPL.
+
+    Insere um campo de texto ZPL imediatamente antes de cada `^XZ` (fim de
+    etiqueta), sem remover nada do conteudo original. Se nao houver `^XZ`
+    (ZPL inesperado) ou o texto for vazio, devolve o ZPL intacto.
+    """
+    if not texto or "^XZ" not in zpl:
+        return zpl
+    seguro = texto.replace("^", " ").replace("~", " ")
+    campo = f"^FO{CARIMBO_X},{CARIMBO_Y}^A0N,{CARIMBO_ALTURA},{CARIMBO_ALTURA}^FD{seguro}^FS"
+    return zpl.replace("^XZ", f"\n{campo}\n^XZ")
+
+
 def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
     """Baixa as etiquetas ZPL via /shipment_labels (ate 50 envios por chamada).
 
@@ -843,6 +876,8 @@ def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:
     zpl = baixar_zpl(token, pendentes)
     if "^XA" not in zpl:
         raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+    if CARIMBAR_SKU:
+        zpl = carimbar_zpl(zpl, _texto_carimbo(grupo))
     gerar_zip_etiquetas(grupo, zpl)
     marcar_impresso(estado, grupo, pendentes)
     return pendentes
