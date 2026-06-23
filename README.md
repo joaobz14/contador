@@ -45,17 +45,28 @@ ser separado por SKU.
 pip install -r requirements.txt
 ```
 
-## Configuração (uma vez só)
+## Configuração (uma vez por conta)
 
 ```bash
 python pegar_token.py
 ```
 
-Siga as instruções na tela. Ao final será criado o arquivo `credenciais.json`
-com o `refresh_token` e o `seller_id` da sua conta.
+Siga as instruções na tela. O programa pede o **nome da conta** (ex.: `Gastromaq`,
+`Cozilatti`) e ao final salva o arquivo em `contas/{nome}/credenciais.json`.
+Repita para cada conta adicional.
 
-> ⚠️ **Nunca** compartilhe ou versione o `credenciais.json`: ele contém segredos
-> da sua aplicação. Esse arquivo já está no `.gitignore`.
+> ⚠️ **Nunca** compartilhe ou versione os arquivos de credenciais: eles contêm
+> segredos da sua aplicação. Já estão no `.gitignore` (`contas/*/credenciais.json`).
+
+### Múltiplas contas
+
+O app suporta várias contas Mercado Livre simultaneamente. Cada conta tem seus
+próprios arquivos em `contas/{nome}/` (credenciais, estado de impresso, caches),
+completamente isolados. O `nomes_sku.json` e as preferências gerais são compartilhados.
+
+Quando há 2 ou mais contas configuradas, a tela mostra um seletor de conta
+(`[Gastromaq] [Cozilatti]`) antes do filtro de dia. A conta ativa é lembrada
+automaticamente.
 
 ## Atualizar para a versão mais nova
 

@@ -58,6 +58,7 @@ ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
 # Preferencias do app (ex.: carimbar o SKU), editaveis pela tela.
 ARQUIVO_CONFIG = PASTA_SCRIPT / "config.json"
+PASTA_CONTAS = PASTA_SCRIPT / "contas"
 STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
@@ -145,6 +146,47 @@ def salvar_config(cfg: dict) -> None:
     _gravar_json(ARQUIVO_CONFIG, cfg)
 
 
+def definir_conta(nome: str) -> Path:
+    """Atualiza as globais de arquivo para apontar para contas/{nome}/."""
+    global ARQUIVO_CRED, ARQUIVO_ESTADO, ARQUIVO_CACHE, ARQUIVO_ENVIOS_CACHE
+    pasta = PASTA_CONTAS / nome
+    pasta.mkdir(parents=True, exist_ok=True)
+    ARQUIVO_CRED = pasta / "credenciais.json"
+    ARQUIVO_ESTADO = pasta / "estado_grupos.json"
+    ARQUIVO_CACHE = pasta / "itens_cache.json"
+    ARQUIVO_ENVIOS_CACHE = pasta / "envios_cache.json"
+    return pasta
+
+
+def listar_contas() -> list[str]:
+    """Retorna subpastas de PASTA_CONTAS que contenham credenciais.json."""
+    if not PASTA_CONTAS.exists():
+        return []
+    return sorted(
+        p.name for p in PASTA_CONTAS.iterdir()
+        if p.is_dir() and (p / "credenciais.json").exists()
+    )
+
+
+def migrar_conta_legado(nome: str) -> None:
+    """Move arquivos da raiz para contas/{nome}/ se necessario (uma unica vez)."""
+    destino = PASTA_CONTAS / nome
+    if (destino / "credenciais.json").exists():
+        return  # ja migrado
+    if not (PASTA_SCRIPT / "credenciais.json").exists():
+        return  # nao ha nada para migrar
+    destino.mkdir(parents=True, exist_ok=True)
+    for nome_arq in ("credenciais.json", "estado_grupos.json", "envios_cache.json", "itens_cache.json"):
+        origem = PASTA_SCRIPT / nome_arq
+        if origem.exists():
+            origem.replace(destino / nome_arq)
+
+
+def conta_ativa() -> str:
+    """Retorna o nome da conta ativa do config.json ('' se nao configurada)."""
+    return carregar_config().get("conta_ativa", "")
+
+
 def aplicar_config() -> dict:
     """Le o config.json e aplica as preferencias ao modulo (ex.: CARIMBAR_SKU).
     Devolve o config lido. Chamado na abertura da tela/CLI."""
@@ -152,6 +194,9 @@ def aplicar_config() -> dict:
     cfg = carregar_config()
     if "carimbar_sku" in cfg:
         CARIMBAR_SKU = bool(cfg["carimbar_sku"])
+    if "conta_ativa" in cfg:
+        migrar_conta_legado(cfg["conta_ativa"])  # so age se necessario
+        definir_conta(cfg["conta_ativa"])
     return cfg
 
 

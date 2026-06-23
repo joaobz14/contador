@@ -1,7 +1,7 @@
 """
 pegar_token.py
 Programa de UMA VEZ SO. Pega a autorizacao do Mercado Livre e salva tudo
-no arquivo 'credenciais.json'. Depois disso voce nao precisa mais dele.
+no arquivo 'contas/{nome}/credenciais.json'. Depois disso voce nao precisa mais dele.
 
 Como usar:
   1) pip install requests   (se ainda nao tiver)
@@ -17,7 +17,7 @@ import requests
 
 AUTH_URL = "https://auth.mercadolivre.com.br/authorization"
 TOKEN_URL = "https://api.mercadolibre.com/oauth/token"
-ARQUIVO = Path("credenciais.json")
+PASTA_SCRIPT = Path(__file__).resolve().parent
 
 
 def perguntar(rotulo: str) -> str:
@@ -41,6 +41,11 @@ def main() -> None:
     print("=" * 60)
     print(" CONFIGURACAO DAS CREDENCIAIS DO MERCADO LIVRE")
     print("=" * 60)
+
+    nome_conta = perguntar("\n0) Nome desta conta (ex: Gastromaq, Cozilatti):\n> ")
+    pasta_conta = PASTA_SCRIPT / "contas" / nome_conta
+    pasta_conta.mkdir(parents=True, exist_ok=True)
+    arquivo = pasta_conta / "credenciais.json"
 
     client_id = perguntar("\n1) Cole aqui o App ID (Client ID) e Enter:\n> ")
     client_secret = perguntar("\n2) Cole aqui o Client Secret e Enter:\n> ")
@@ -114,15 +119,17 @@ def main() -> None:
         "seller_id": str(dados["user_id"]),
         "redirect_uri": redirect,
     }
-    ARQUIVO.write_text(
+    arquivo.write_text(
         json.dumps(credenciais, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
     print("\n" + "=" * 60)
-    print(" PRONTO! Tudo salvo em 'credenciais.json'")
+    print(f" PRONTO! Tudo salvo em 'contas/{nome_conta}/credenciais.json'")
     print("=" * 60)
     print(f" Seu numero de vendedor (seller_id): {credenciais['seller_id']}")
     print(" Pode fechar. Nao precisa mais rodar este programa.")
+    print(f"\n Lembre de definir esta conta como ativa no config.json:")
+    print(f'   "conta_ativa": "{nome_conta}"')
 
 
 if __name__ == "__main__":

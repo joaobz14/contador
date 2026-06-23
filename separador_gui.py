@@ -29,7 +29,7 @@ class SeparadorApp:
         self.grupos: list = []
         self.estado: dict = {}
         self.ocupado = False
-        self.config = core.aplicar_config()   # aplica preferencias salvas (ex.: carimbar SKU)
+        self.config = core.aplicar_config()   # aplica conta_ativa + carimbo
         self._build_ui()
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
 
@@ -47,10 +47,16 @@ class SeparadorApp:
                                        command=self.imprimir_proximo)
         self.btn_proximo.pack(side="left", padx=6)
 
+        # Seletor de conta (mostrado apenas quando ha 2+ contas configuradas).
+        self.conta_var = tk.StringVar(value=self.config.get("conta_ativa", ""))
+        self._frame_contas = ttk.Frame(topo)
+        self._radios_conta: list = []
+        self._rebuild_conta_selector()
+
         # Seletor de dia de despacho: Hoje (padrao) ou Amanha.
         self.modo = tk.StringVar(value="hoje")
         seletor = ttk.Frame(topo)
-        seletor.pack(side="left", padx=12)
+        seletor.pack(side="left", padx=6)
         self.radios = [
             ttk.Radiobutton(seletor, text="Hoje", value="hoje",
                             variable=self.modo, command=self.atualizar),
@@ -65,7 +71,7 @@ class SeparadorApp:
         self.chk_carimbar = ttk.Checkbutton(
             topo, text="Carimbar SKU", variable=self.carimbar,
             command=self._alternar_carimbo)
-        self.chk_carimbar.pack(side="left", padx=12)
+        self.chk_carimbar.pack(side="left", padx=8)
 
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
@@ -90,6 +96,31 @@ class SeparadorApp:
         self.canvas.bind_all("<MouseWheel>",
                              lambda e: self.canvas.yview_scroll(int(-e.delta / 120), "units"))
 
+    def _rebuild_conta_selector(self) -> None:
+        """Reconstroi os radio buttons de conta. Exibe so com 2+ contas."""
+        for w in self._frame_contas.winfo_children():
+            w.destroy()
+        self._radios_conta.clear()
+        contas = core.listar_contas()
+        if len(contas) < 2:
+            self._frame_contas.pack_forget()
+            return
+        self._frame_contas.pack(side="left", padx=(0, 6))
+        for nome in contas:
+            r = ttk.Radiobutton(self._frame_contas, text=nome, value=nome,
+                                variable=self.conta_var,
+                                command=lambda n=nome: self._trocar_conta(n))
+            r.pack(side="left", padx=(0, 4))
+            self._radios_conta.append(r)
+
+    def _trocar_conta(self, nome: str) -> None:
+        """Troca a conta ativa, salva a preferencia e recarrega."""
+        core.definir_conta(nome)
+        self.config["conta_ativa"] = nome
+        core.salvar_config(self.config)
+        self._tela_inicial()
+        self.atualizar()
+
     def _ocupar(self, ocupado: bool, msg: str = "") -> None:
         self.ocupado = ocupado
         estado = "disabled" if ocupado else "normal"
@@ -97,6 +128,8 @@ class SeparadorApp:
         self.btn_proximo.config(state=estado)
         self.chk_carimbar.config(state=estado)
         for r in self.radios:
+            r.config(state=estado)
+        for r in self._radios_conta:
             r.config(state=estado)
         self.lbl_status.config(text=msg)
 
@@ -160,11 +193,16 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
 
+        # Separa quem falta imprimir (topo) de quem ja foi impresso (arquivadas),
+        # para que um grupo pendente nunca fique "perdido" no meio dos ✓ verdes.
+        estados = [(g, core.status_grupo(self.estado, g)) for g in self.grupos]
+        pendentes = [g for g, s in estados if s != "impresso"]
+        arquivadas = [g for g, s in estados if s == "impresso"]
+
         total_et = sum(g.total_etiquetas for g in self.grupos)
-        impressos = sum(1 for g in self.grupos
-                        if core.status_grupo(self.estado, g) == "impresso")
         self.lbl_resumo.config(
-            text=f"{len(self.grupos)} grupos · {total_et} etiquetas · {impressos} impressos")
+            text=f"{len(self.grupos)} grupos · {total_et} etiquetas · "
+                 f"{len(arquivadas)} impressos")
 
         dia_txt = "amanhã" if self.modo.get() == "amanha" else "hoje"
         if not self.grupos:
@@ -173,14 +211,29 @@ class SeparadorApp:
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
 
-        por_qtd: dict[int, list] = {}
-        for g in self.grupos:
-            por_qtd.setdefault(g.quantidade, []).append(g)
+        # ----- Secao: para imprimir (pendentes/parciais), agrupado por quantidade
+        if pendentes:
+            ttk.Label(self.lista, text="🖨  Para imprimir",
+                      font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
+            por_qtd: dict[int, list] = {}
+            for g in pendentes:
+                por_qtd.setdefault(g.quantidade, []).append(g)
+            for qtd in sorted(por_qtd):
+                ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
+                          font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(8, 4))
+                for g in por_qtd[qtd]:
+                    self._linha(g)
+        else:
+            ttk.Label(self.lista, text=f"Tudo impresso {dia_txt}! 🎉",
+                      padding=(0, 12)).pack()
 
-        for qtd in sorted(por_qtd):
-            ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
-                      font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(12, 4))
-            for g in por_qtd[qtd]:
+        # ----- Secao: ja impressas (arquivadas), embaixo e separadas
+        if arquivadas:
+            ttk.Label(self.lista,
+                      text=f"✓  Já impressas — arquivadas ({len(arquivadas)})",
+                      font=("Segoe UI", 11, "bold"), foreground=CINZA
+                      ).pack(fill="x", pady=(16, 2))
+            for g in arquivadas:
                 self._linha(g)
 
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
