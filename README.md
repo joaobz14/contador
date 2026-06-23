@@ -68,6 +68,11 @@ Quando há 2 ou mais contas configuradas, a tela mostra um seletor de conta
 (`[Gastromaq] [Cozilatti]`) antes do filtro de dia. A conta ativa é lembrada
 automaticamente.
 
+**Migração da conta antiga:** se você já usava o app com uma conta na raiz, na
+primeira vez que abrir a tela ele pergunta o nome dessa conta (ex.: `Gastromaq`)
+e move os arquivos para `contas/{nome}/` automaticamente. Depois disso é só rodar
+`pegar_token.py` para adicionar a segunda conta.
+
 ## Atualizar para a versão mais nova
 
 Se você obteve o projeto com `git clone`, dê um duplo-clique em
