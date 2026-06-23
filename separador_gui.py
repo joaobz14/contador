@@ -33,6 +33,16 @@ class SeparadorApp:
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
         self._build_ui()
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
+        # Salva o tamanho/posicao da janela ao fechar, para reabrir igual.
+        self.root.protocol("WM_DELETE_WINDOW", self._ao_fechar)
+
+    def _ao_fechar(self) -> None:
+        try:
+            self.config["geometria"] = self.root.geometry()
+            core.salvar_config(self.config)
+        except Exception:
+            pass
+        self.root.destroy()
 
     def _verificar_migracao(self) -> None:
         """Garante que exista uma conta ativa válida apontada.
@@ -66,7 +76,8 @@ class SeparadorApp:
     # ------------------------------------------------------------------ UI
     def _build_ui(self) -> None:
         self.root.title("Separador de Etiquetas — Mercado Livre")
-        self.root.geometry("580x700")
+        # Restaura o tamanho/posicao salvos (ou usa o padrao na 1a vez).
+        self.root.geometry(self.config.get("geometria") or "580x700")
         self.root.minsize(460, 480)
 
         topo = ttk.Frame(self.root, padding=10)
