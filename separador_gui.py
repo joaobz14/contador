@@ -29,6 +29,7 @@ class SeparadorApp:
         self.grupos: list = []
         self.estado: dict = {}
         self.ocupado = False
+        self.config = core.aplicar_config()   # aplica preferencias salvas (ex.: carimbar SKU)
         self._build_ui()
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
 
@@ -59,6 +60,13 @@ class SeparadorApp:
         for r in self.radios:
             r.pack(side="left", padx=(0, 6))
 
+        # Liga/desliga o carimbo do SKU na etiqueta (preferencia lembrada).
+        self.carimbar = tk.BooleanVar(value=core.CARIMBAR_SKU)
+        self.chk_carimbar = ttk.Checkbutton(
+            topo, text="Carimbar SKU", variable=self.carimbar,
+            command=self._alternar_carimbo)
+        self.chk_carimbar.pack(side="left", padx=12)
+
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
 
@@ -87,9 +95,16 @@ class SeparadorApp:
         estado = "disabled" if ocupado else "normal"
         self.btn_atualizar.config(state=estado)
         self.btn_proximo.config(state=estado)
+        self.chk_carimbar.config(state=estado)
         for r in self.radios:
             r.config(state=estado)
         self.lbl_status.config(text=msg)
+
+    def _alternar_carimbo(self) -> None:
+        """Liga/desliga o carimbo do SKU e lembra a escolha no config.json."""
+        core.CARIMBAR_SKU = self.carimbar.get()
+        self.config["carimbar_sku"] = core.CARIMBAR_SKU
+        core.salvar_config(self.config)
 
     def _tela_inicial(self) -> None:
         """Tela de abertura: nada e buscado ate o usuario escolher e clicar."""

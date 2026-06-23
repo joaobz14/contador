@@ -56,6 +56,8 @@ ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
+# Preferencias do app (ex.: carimbar o SKU), editaveis pela tela.
+ARQUIVO_CONFIG = PASTA_SCRIPT / "config.json"
 STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
@@ -133,6 +135,25 @@ def _gravar_json(caminho: Path, dados) -> None:
     tmp = caminho.with_name(caminho.name + ".tmp")
     tmp.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(caminho)
+
+
+def carregar_config() -> dict:
+    """Preferencias do app (config.json). Vazio/ausente -> {}."""
+    return _ler_json(ARQUIVO_CONFIG)
+
+
+def salvar_config(cfg: dict) -> None:
+    _gravar_json(ARQUIVO_CONFIG, cfg)
+
+
+def aplicar_config() -> dict:
+    """Le o config.json e aplica as preferencias ao modulo (ex.: CARIMBAR_SKU).
+    Devolve o config lido. Chamado na abertura da tela/CLI."""
+    global CARIMBAR_SKU
+    cfg = carregar_config()
+    if "carimbar_sku" in cfg:
+        CARIMBAR_SKU = bool(cfg["carimbar_sku"])
+    return cfg
 
 
 # ---------------------------------------------------------------------------
@@ -962,6 +983,7 @@ def detalhar(itens: list[ItemPedido], grupos: list[Grupo], texto: str, qtd: int)
 def main() -> None:
     args = sys.argv[1:]
     comando = args[0] if args else "listar"
+    aplicar_config()           # respeita a preferencia de carimbo salva na tela
 
     try:
         cred = carregar_credenciais()
