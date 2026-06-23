@@ -22,6 +22,7 @@ from __future__ import annotations
 import io
 import json
 import random
+import re
 import sys
 import time
 import zipfile
@@ -60,14 +61,15 @@ STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
 
-# Carimbo do SKU na etiqueta: imprime o codigo do produto num canto de cada
-# etiqueta ZPL, para identificar o produto ao imprimir em lote. CARIMBAR_SKU
-# liga/desliga. Posicao (em "dots"; 203 dpi ~= 8 dots/mm) e altura da fonte sao
-# ajustaveis se o texto cair sobre o conteudo do Mercado Livre.
-CARIMBAR_SKU = True
-CARIMBO_X = 20       # dots a partir da esquerda
-CARIMBO_Y = 20       # dots a partir do topo
-CARIMBO_ALTURA = 50  # altura/largura da fonte em dots (~6 mm)
+# Carimbo do SKU na etiqueta: imprime o codigo do produto num canto da etiqueta
+# de ENVIO (a DANFE/nota nunca e carimbada), para identificar o produto ao
+# imprimir em lote. CARIMBAR_SKU liga/desliga (mude para True para ativar).
+# Posicao (em "dots"; 203 dpi ~= 8 dots/mm) e altura da fonte sao ajustaveis
+# conforme o lugar escolhido na etiqueta.
+CARIMBAR_SKU = False  # <- mude para True quando a posicao do SKU estiver definida
+CARIMBO_X = 20        # dots a partir da esquerda
+CARIMBO_Y = 20        # dots a partir do topo
+CARIMBO_ALTURA = 50   # altura/largura da fonte em dots (~6 mm)
 
 
 # ---------------------------------------------------------------------------
@@ -718,17 +720,28 @@ def _texto_carimbo(grupo: Grupo) -> str:
 
 
 def carimbar_zpl(zpl: str, texto: str) -> str:
-    """Carimba `texto` (ex.: o SKU) num canto de cada etiqueta do ZPL.
+    """Carimba `texto` (ex.: o SKU) num canto da ETIQUETA DE ENVIO do ZPL.
 
-    Insere um campo de texto ZPL imediatamente antes de cada `^XZ` (fim de
-    etiqueta), sem remover nada do conteudo original. Se nao houver `^XZ`
-    (ZPL inesperado) ou o texto for vazio, devolve o ZPL intacto.
+    O "pacote" do ML traz duas paginas: a DANFE (nota fiscal) e a etiqueta de
+    envio. Carimbamos so a etiqueta de envio (pulamos qualquer bloco que
+    contenha "DANFE"), inserindo um campo de texto antes do `^XZ` daquele bloco,
+    sem remover nada do original. Texto vazio ou ZPL sem `^XZ` -> devolve intacto.
     """
     if not texto or "^XZ" not in zpl:
         return zpl
     seguro = texto.replace("^", " ").replace("~", " ")
     campo = f"^FO{CARIMBO_X},{CARIMBO_Y}^A0N,{CARIMBO_ALTURA},{CARIMBO_ALTURA}^FD{seguro}^FS"
-    return zpl.replace("^XZ", f"\n{campo}\n^XZ")
+
+    def _aplica(m: "re.Match") -> str:
+        bloco = m.group(0)
+        if "DANFE" in bloco.upper():          # nota fiscal: nao carimba
+            return bloco
+        return bloco.replace("^XZ", f"\n{campo}\n^XZ", 1)
+
+    novo, n = re.subn(r"\^XA.*?\^XZ", _aplica, zpl, flags=re.DOTALL)
+    if n == 0:                                 # ZPL sem blocos delimitados
+        return zpl.replace("^XZ", f"\n{campo}\n^XZ")
+    return novo
 
 
 def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
