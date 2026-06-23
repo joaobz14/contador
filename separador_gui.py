@@ -37,25 +37,24 @@ class SeparadorApp:
     def _verificar_migracao(self) -> None:
         """Garante que exista uma conta ativa válida apontada.
 
-        Na 1ª abertura com suporte a várias contas: se ainda não há nenhuma conta
-        em contas/ mas existe um credenciais.json na raiz (conta antiga), pergunta
-        o nome e migra para contas/{nome}/. Também escolhe uma conta ativa padrão
-        se a salva no config sumir/for inválida.
+        Se ainda houver um credenciais.json na RAIZ (conta antiga), pergunta o
+        nome e migra para contas/{nome}/ — mesmo que já existam outras contas
+        (caso de quem adicionou a 2ª conta antes de migrar a 1ª). Também escolhe
+        uma conta ativa padrão se a salva no config sumir/for inválida.
         """
-        contas = core.listar_contas()
         # 1) Conta antiga ainda na raiz: pedir nome e migrar para contas/{nome}/
-        if not contas and (core.PASTA_SCRIPT / "credenciais.json").exists():
+        if (core.PASTA_SCRIPT / "credenciais.json").exists():
             nome = simpledialog.askstring(
-                "Nome da conta",
-                "Primeira vez com suporte a várias contas.\n\n"
-                "Qual o nome desta conta? (ex.: Gastromaq)",
+                "Nome da conta antiga",
+                "Encontrei uma conta ainda solta na pasta principal.\n\n"
+                "Qual o nome dela? (ex.: Gastromaq)",
                 initialvalue="Gastromaq", parent=self.root)
             nome = (nome or "Gastromaq").strip() or "Gastromaq"
             core.migrar_conta_legado(nome)
             self.config["conta_ativa"] = nome
             core.salvar_config(self.config)
-            contas = core.listar_contas()
         # 2) Garante que a conta ativa aponte para uma conta existente
+        contas = core.listar_contas()
         ativa = self.config.get("conta_ativa", "")
         if contas and ativa not in contas:
             ativa = contas[0]
