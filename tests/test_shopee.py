@@ -23,6 +23,16 @@ def test_detectar_formato_etiqueta():
     assert sh.detectar_formato(b"qualquer coisa") == "DESCONHECIDO"
 
 
+def test_envio_ja_arranjado():
+    # sem pickup nem dropoff pendentes -> ja arranjado
+    assert sh.envio_ja_arranjado({"response": {"info_needed": {}}}) is True
+    assert sh.envio_ja_arranjado(
+        {"response": {"info_needed": {"pickup": [], "dropoff": []}}}) is True
+    # precisa de pickup -> ainda nao arranjado
+    assert sh.envio_ja_arranjado(
+        {"response": {"info_needed": {"pickup": ["address_id"]}}}) is False
+
+
 def test_status_documento_extrai_status_por_order():
     res = {"response": {"result_list": [
         {"order_sn": "A1", "status": "READY"},

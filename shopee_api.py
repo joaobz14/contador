@@ -254,6 +254,33 @@ def parametros_documento(cred: dict, token: str, order_sn: str) -> dict:
                       {"order_list": [{"order_sn": order_sn}]})
 
 
+def parametros_envio(cred: dict, token: str, order_sn: str) -> dict:
+    """get_shipping_parameter (LEITURA): diz se o pedido precisa de pickup ou
+    dropoff e quais opcoes existem. Use antes de ship_order para saber o que enviar."""
+    return _post_shop(cred, token, "/api/v2/logistics/get_shipping_parameter",
+                      {"order_sn": order_sn})
+
+
+def ship_order(cred: dict, token: str, order_sn: str, *,
+               pickup: dict | None = None, dropoff: dict | None = None) -> dict:
+    """Finaliza o arranjo de envio (pickup OU dropoff) antes de gerar a etiqueta.
+    ATENCAO: acao que COMPROMETE o envio. So chamar com os parametros corretos,
+    obtidos de parametros_envio(). # CONFIRMAR campos no primeiro teste real."""
+    body: dict = {"order_sn": order_sn}
+    if pickup is not None:
+        body["pickup"] = pickup
+    if dropoff is not None:
+        body["dropoff"] = dropoff
+    return _post_shop(cred, token, "/api/v2/logistics/ship_order", body)
+
+
+def envio_ja_arranjado(param: dict) -> bool:
+    """Heuristica: se get_shipping_parameter nao pede nem pickup nem dropoff,
+    o envio ja esta arranjado e da para gerar a etiqueta direto."""
+    info = param.get("response", {}).get("info_needed", {})
+    return not info.get("pickup") and not info.get("dropoff")
+
+
 def criar_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> dict:
     body = {"order_list": [{"order_sn": sn, "shipping_document_type": tipo} for sn in order_sns]}
     return _post_shop(cred, token, "/api/v2/logistics/create_shipping_document", body)
@@ -322,11 +349,22 @@ def main() -> None:
     args = sys.argv[1:]
     comando = args[0] if args else "listar"
 
-    # Etiqueta de um pedido: gera, baixa e mostra o formato detectado.
+    # Etiqueta de um pedido: confere o arranjo de envio, gera, baixa e mostra o formato.
     if comando == "etiqueta" and len(args) >= 2:
         order_sn = args[1]
         try:
             cred = carregar_credenciais()
+            token = obter_token(cred)
+            # 1) Confere se o envio ja esta arranjado (pickup/dropoff).
+            param = parametros_envio(cred, token, order_sn)
+            if not envio_ja_arranjado(param):
+                info = param.get("response", {}).get("info_needed", {})
+                print("Este pedido precisa de ship_order (arranjo de envio) ANTES da etiqueta.")
+                print(f"info_needed: {info}")
+                print("\n>> Me envie esse 'info_needed' que eu finalizo o ship_order com os")
+                print("   parametros certos da sua logistica (sem risco de comprometer errado).")
+                return
+            # 2) Envio ja arranjado: gera e baixa a etiqueta.
             print(f"Gerando etiqueta ({TIPO_ETIQUETA}) do pedido {order_sn} ...")
             conteudo = gerar_etiqueta(cred, [order_sn])
             caminho, fmt = salvar_etiqueta(conteudo, order_sn)
