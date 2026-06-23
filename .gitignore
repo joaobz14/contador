@@ -5,6 +5,12 @@ link_autorizacao.txt
 link_autorizacao_shopee.txt
 bot_config.json
 
+# Arquivos por conta (contas/{nome}/)
+contas/*/credenciais.json
+contas/*/estado_grupos.json
+contas/*/itens_cache.json
+contas/*/envios_cache.json
+
 # Estado e cache gerados em tempo de execucao
 estado_grupos.json
 itens_cache.json
