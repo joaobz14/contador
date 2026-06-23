@@ -65,13 +65,12 @@ STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 PASTA_DOWNLOADS = Path.home() / "Downloads"
 
 # Carimbo do SKU: imprime o codigo do produto na DANFE (nota fiscal), na area
-# LIVRE CENTRAL (sempre vazia), para identificar o produto ao separar. A etiqueta
-# de envio nao e carimbada (e cheia e o layout varia). CARIMBAR_SKU liga/desliga.
-# Posicao em "dots" (203 dpi ~= 8 dots/mm); a DANFE 10x15 tem ~812 x ~1200 dots.
-CARIMBAR_SKU = False  # <- mude para True (ou marque na tela) para ativar
-CARIMBO_X = 60        # dots a partir da esquerda
+# LIVRE CENTRAL (sempre vazia), centralizado, para identificar o produto. A
+# etiqueta de envio nao e carimbada. Posicao/tamanho em "dots" (203 dpi ~= 8/mm).
+CARIMBAR_SKU = False  # ligado pela tela quando o modo de identificacao = "carimbo"
 CARIMBO_Y = 600       # dots a partir do topo (area livre central da DANFE)
-CARIMBO_ALTURA = 110  # altura/largura da fonte em dots (~13 mm, bem visivel)
+CARIMBO_ALTURA = 70   # altura da fonte em dots (~8 mm)
+LARGURA_ETIQUETA = 812  # largura ~10 cm @203 dpi; usada para centralizar texto
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +191,10 @@ def aplicar_config() -> dict:
     Devolve o config lido. Chamado na abertura da tela/CLI."""
     global CARIMBAR_SKU
     cfg = carregar_config()
-    if "carimbar_sku" in cfg:
+    # Modo de identificacao novo tem prioridade; cai no carimbar_sku legado.
+    if "modo_identificacao" in cfg:
+        CARIMBAR_SKU = cfg["modo_identificacao"] == "carimbo"
+    elif "carimbar_sku" in cfg:
         CARIMBAR_SKU = bool(cfg["carimbar_sku"])
     if "conta_ativa" in cfg:
         migrar_conta_legado(cfg["conta_ativa"])  # so age se necessario
@@ -784,28 +786,52 @@ def _texto_carimbo(grupo: Grupo) -> str:
     return grupo.chave
 
 
+def _largura_zpl(bloco: str) -> int:
+    """Largura de impressao (^PWxxxx) do bloco; cai no padrao se nao houver."""
+    m = re.search(r"\^PW(\d+)", bloco)
+    return int(m.group(1)) if m else LARGURA_ETIQUETA
+
+
 def carimbar_zpl(zpl: str, texto: str) -> str:
-    """Carimba `texto` (ex.: o SKU) na DANFE (nota fiscal), na area livre central.
+    """Carimba `texto` (ex.: o SKU) na DANFE (nota fiscal), CENTRALIZADO na area
+    livre central.
 
     O "pacote" do ML traz duas paginas: a DANFE (nota fiscal) e a etiqueta de
-    envio. Carimbamos SO a DANFE (bloco que contem "DANFE"), que sempre tem um
-    espaco vazio no meio; a etiqueta de envio fica intacta. Inserimos um campo de
-    texto antes do `^XZ` daquele bloco, sem remover nada do original. Texto vazio,
-    ZPL sem `^XZ` ou sem DANFE -> devolve intacto.
+    envio. Carimbamos SO a DANFE (bloco que contem "DANFE"); a etiqueta de envio
+    fica intacta. O texto e centralizado na largura da etiqueta (^FB ... C).
+    Texto vazio, ZPL sem `^XZ` ou sem DANFE -> devolve intacto.
     """
     if not texto or "^XZ" not in zpl:
         return zpl
     seguro = texto.replace("^", " ").replace("~", " ")
-    campo = f"^FO{CARIMBO_X},{CARIMBO_Y}^A0N,{CARIMBO_ALTURA},{CARIMBO_ALTURA}^FD{seguro}^FS"
 
     def _aplica(m: "re.Match") -> str:
         bloco = m.group(0)
-        if "DANFE" in bloco.upper():          # so a nota fiscal leva o carimbo
-            return bloco.replace("^XZ", f"\n{campo}\n^XZ", 1)
-        return bloco
+        if "DANFE" not in bloco.upper():       # so a nota fiscal leva o carimbo
+            return bloco
+        pw = _largura_zpl(bloco)
+        campo = (f"^FO0,{CARIMBO_Y}^A0N,{CARIMBO_ALTURA},{CARIMBO_ALTURA}"
+                 f"^FB{pw},1,0,C,0^FD{seguro}^FS")
+        return bloco.replace("^XZ", f"\n{campo}\n^XZ", 1)
 
     novo, _ = re.subn(r"\^XA.*?\^XZ", _aplica, zpl, flags=re.DOTALL)
     return novo
+
+
+def zpl_divisoria(grupo: Grupo) -> str:
+    """Etiqueta separadora (1 pagina ZPL) com SKU, nome e quantidade do lote,
+    centralizada. Impressa ANTES das etiquetas do lote no modo 'divisoria'."""
+    sku = _texto_carimbo(grupo).replace("^", " ").replace("~", " ")
+    nome = grupo.nome.replace("^", " ").replace("~", " ")
+    info = f"q{grupo.quantidade}  -  {grupo.total_etiquetas} etiqueta(s)"
+    w = LARGURA_ETIQUETA - 40
+    return (
+        "^XA^CI28"
+        f"^FO20,260^A0N,120,120^FB{w},1,0,C,0^FD{sku}^FS"
+        f"^FO20,410^A0N,45,45^FB{w},3,6,C,0^FD{nome}^FS"
+        f"^FO20,640^A0N,55,55^FB{w},1,0,C,0^FD{info}^FS"
+        "^XZ"
+    )
 
 
 def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
@@ -838,7 +864,7 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
     return "\n".join(partes)
 
 
-def gerar_zip_etiquetas(grupo: Grupo, zpl_texto: str) -> Path:
+def _gerar_zip(rotulo: str, zpl_texto: str) -> Path:
     """
     Monta um ZIP no formato que o impressora_zebra_usb.py reconhece:
       - nome do ZIP comeca com um prefixo aceito ("etiqueta de envio")
@@ -846,13 +872,17 @@ def gerar_zip_etiquetas(grupo: Grupo, zpl_texto: str) -> Path:
     Grava de forma atomica (.tmp -> rename) para o monitor so ver o arquivo pronto.
     """
     PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    base = "".join(c if c.isalnum() else "_" for c in grupo.nome)[:30].strip("_")
-    nome_zip = PASTA_DOWNLOADS / f"etiqueta de envio - {base} - q{grupo.quantidade}.zip"
+    base = "".join(c if c.isalnum() else "_" for c in rotulo)[:40].strip("_")
+    nome_zip = PASTA_DOWNLOADS / f"etiqueta de envio - {base}.zip"
     tmp = nome_zip.with_name(nome_zip.name + ".tmp")
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(f"Etiqueta de envio - {base}.txt", zpl_texto)
     tmp.replace(nome_zip)
     return nome_zip
+
+
+def gerar_zip_etiquetas(grupo: Grupo, zpl_texto: str) -> Path:
+    return _gerar_zip(f"{grupo.nome} - q{grupo.quantidade}", zpl_texto)
 
 
 # ---------------------------------------------------------------------------
@@ -977,6 +1007,46 @@ def reimprimir(token: str, grupo: Grupo) -> list[int]:
         zpl = carimbar_zpl(zpl, _texto_carimbo(grupo))
     gerar_zip_etiquetas(grupo, zpl)
     return ids
+
+
+def preparar_lotes(token: str, grupos: list[Grupo], estado: dict,
+                   *, modo: str = "nenhuma") -> tuple[str, list[tuple[Grupo, list[int]]]]:
+    """Baixa as etiquetas dos lotes (apenas os envios pendentes de cada um) e monta
+    UM ZPL combinado, na ordem dos grupos. Por lote:
+      - modo='divisoria': insere uma etiqueta separadora ANTES das etiquetas;
+      - modo='carimbo':   carimba o SKU em cada DANFE;
+      - modo='nenhuma':   nem divisoria nem carimbo.
+
+    NAO marca nada como impresso (quem chama marca depois da confirmacao). Aborta
+    com SeparadorError se algum download falhar (nada e gerado). Devolve
+    (zpl_combinado, [(grupo, pendentes), ...])."""
+    partes: list[str] = []
+    pendentes: list[tuple[Grupo, list[int]]] = []
+    for g in grupos:
+        pend = envios_pendentes(estado, g)
+        if not pend:
+            continue
+        zpl = baixar_zpl(token, pend)
+        if "^XA" not in zpl:
+            raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+        if modo == "carimbo":
+            zpl = carimbar_zpl(zpl, _texto_carimbo(g))
+        if modo == "divisoria":
+            partes.append(zpl_divisoria(g))
+        partes.append(zpl)
+        pendentes.append((g, pend))
+    return "\n".join(partes), pendentes
+
+
+def gerar_zip_lotes(token: str, grupos: list[Grupo], estado: dict,
+                    *, modo: str = "nenhuma") -> list[tuple[Grupo, list[int]]]:
+    """Gera UM ZIP com todos os lotes selecionados (com divisoria/carimbo conforme
+    o modo) e devolve [(grupo, pendentes), ...] para marcar depois. Nada e marcado aqui."""
+    zpl, pendentes = preparar_lotes(token, grupos, estado, modo=modo)
+    if not pendentes:
+        return []
+    _gerar_zip(f"LOTES x{len(pendentes)}", zpl)
+    return pendentes
 
 
 # ---------------------------------------------------------------------------

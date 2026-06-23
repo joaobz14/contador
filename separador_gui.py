@@ -29,7 +29,13 @@ class SeparadorApp:
         self.grupos: list = []
         self.estado: dict = {}
         self.ocupado = False
-        self.config = core.aplicar_config()   # aplica conta_ativa + carimbo
+        self.config = core.aplicar_config()   # aplica conta_ativa + identificacao
+        # Modo de identificacao do produto na impressao: carimbo | divisoria | nenhuma.
+        self.modo_ident = self.config.get("modo_identificacao")
+        if self.modo_ident is None:           # compatibilidade com o config antigo
+            self.modo_ident = "carimbo" if self.config.get("carimbar_sku") else "nenhuma"
+        core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
+        self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
         self._build_ui()
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
@@ -106,12 +112,16 @@ class SeparadorApp:
         for r in self.radios:
             r.pack(side="left", padx=(0, 6))
 
-        # Liga/desliga o carimbo do SKU na etiqueta (preferencia lembrada).
-        self.carimbar = tk.BooleanVar(value=core.CARIMBAR_SKU)
-        self.chk_carimbar = ttk.Checkbutton(
-            topo, text="Carimbar SKU", variable=self.carimbar,
-            command=self._alternar_carimbo)
-        self.chk_carimbar.pack(side="left", padx=8)
+        # Modo de identificacao do produto na impressao (preferencia lembrada).
+        self._ident_labels = {"carimbo": "Carimbo no DANFE",
+                              "divisoria": "Etiqueta divisória", "nenhuma": "Nenhuma"}
+        self._ident_valor = {v: k for k, v in self._ident_labels.items()}
+        ttk.Label(topo, text="Identificação:").pack(side="left", padx=(8, 2))
+        self.cb_ident = ttk.Combobox(topo, width=16, state="readonly",
+                                     values=list(self._ident_labels.values()))
+        self.cb_ident.set(self._ident_labels[self.modo_ident])
+        self.cb_ident.bind("<<ComboboxSelected>>", self._trocar_identificacao)
+        self.cb_ident.pack(side="left", padx=(0, 8))
 
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
@@ -166,17 +176,18 @@ class SeparadorApp:
         estado = "disabled" if ocupado else "normal"
         self.btn_atualizar.config(state=estado)
         self.btn_proximo.config(state=estado)
-        self.chk_carimbar.config(state=estado)
+        self.cb_ident.config(state="disabled" if ocupado else "readonly")
         for r in self.radios:
             r.config(state=estado)
         for r in self._radios_conta:
             r.config(state=estado)
         self.lbl_status.config(text=msg)
 
-    def _alternar_carimbo(self) -> None:
-        """Liga/desliga o carimbo do SKU e lembra a escolha no config.json."""
-        core.CARIMBAR_SKU = self.carimbar.get()
-        self.config["carimbar_sku"] = core.CARIMBAR_SKU
+    def _trocar_identificacao(self, event=None) -> None:
+        """Troca o modo de identificacao (carimbo/divisoria/nenhuma) e lembra."""
+        self.modo_ident = self._ident_valor.get(self.cb_ident.get(), "nenhuma")
+        core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
+        self.config["modo_identificacao"] = self.modo_ident
         core.salvar_config(self.config)
 
     def _tela_inicial(self) -> None:
@@ -233,6 +244,7 @@ class SeparadorApp:
         self.prog.pack_forget()
         for w in self.lista.winfo_children():
             w.destroy()
+        self._sel_vars = []          # caixinhas sao recriadas a cada render
 
         # Separa quem falta imprimir (topo) de quem ja foi impresso (arquivadas),
         # para que um grupo pendente nunca fique "perdido" no meio dos ✓ verdes.
@@ -254,8 +266,12 @@ class SeparadorApp:
 
         # ----- Seção: para imprimir (pendentes/parciais), agrupado por quantidade
         if pendentes:
-            ttk.Label(self.lista, text="🖨  Para imprimir",
-                      font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
+            cab = ttk.Frame(self.lista)
+            cab.pack(fill="x", pady=(8, 2))
+            ttk.Label(cab, text="🖨  Para imprimir",
+                      font=("Segoe UI", 11, "bold")).pack(side="left")
+            ttk.Button(cab, text="🖨 Imprimir selecionados",
+                       command=self.imprimir_lotes).pack(side="right")
             por_qtd: dict[int, list] = {}
             for g in pendentes:
                 por_qtd.setdefault(g.quantidade, []).append(g)
@@ -263,7 +279,7 @@ class SeparadorApp:
                 ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
                           font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(8, 4))
                 for g in por_qtd[qtd]:
-                    self._linha(g)
+                    self._linha(g, selecionavel=True)
         else:
             ttk.Label(self.lista, text=f"Tudo impresso {dia_txt}! 🎉",
                       padding=(0, 12)).pack()
@@ -279,11 +295,16 @@ class SeparadorApp:
 
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
 
-    def _linha(self, g) -> None:
+    def _linha(self, g, selecionavel: bool = False) -> None:
         status = core.status_grupo(self.estado, g)
         faltam = len(core.envios_pendentes(self.estado, g))
         fr = ttk.Frame(self.lista, padding=(8, 6), relief="solid", borderwidth=1)
         fr.pack(fill="x", pady=2)
+
+        if selecionavel:                       # caixinha para "Imprimir selecionados"
+            var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(fr, variable=var).pack(side="left", padx=(0, 6))
+            self._sel_vars.append((g, var))
 
         esq = ttk.Frame(fr)
         esq.pack(side="left", fill="x", expand=True)
@@ -340,6 +361,49 @@ class SeparadorApp:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
         self.root.after(0, self._render)
+
+    # ------------------------------------------------------- IMPRIMIR LOTES
+    def imprimir_lotes(self) -> None:
+        if self.ocupado:
+            return
+        selecionados = [g for g, v in self._sel_vars if v.get()]
+        if not selecionados:
+            messagebox.showinfo("Imprimir lotes",
+                                "Marque ao menos um lote na caixinha à esquerda.")
+            return
+        modo_txt = self._ident_labels.get(self.modo_ident, "")
+        self._ocupar(True, f"Imprimindo {len(selecionados)} lote(s) ({modo_txt}) ...")
+        threading.Thread(target=self._imprimir_lotes_thread,
+                         args=(selecionados,), daemon=True).start()
+
+    def _imprimir_lotes_thread(self, grupos) -> None:
+        try:
+            impressos = core.gerar_zip_lotes(self.token, grupos, self.estado,
+                                             modo=self.modo_ident)
+        except Exception as e:
+            self.root.after(0, lambda erro=e: self._erro(str(erro)))
+            return
+        self.root.after(0, lambda: self._pos_lotes(impressos))
+
+    def _pos_lotes(self, impressos: list) -> None:
+        self._ocupar(False, "")
+        if not impressos:
+            messagebox.showinfo("Imprimir lotes",
+                                "Nada pendente nos lotes selecionados.")
+            return
+        n = len(impressos)
+        marcar = True
+        if n >= 2:                              # confirma o resultado fisico da impressao
+            marcar = messagebox.askyesno(
+                "Confirmar impressão",
+                f"Enviei {n} lote(s) para a impressora.\n\n"
+                "As etiquetas saíram corretamente?\n\n"
+                "Sim = marca como impressos.\n"
+                "Não = mantém pendentes para reimprimir.")
+        if marcar:
+            for g, pend in impressos:
+                core.marcar_impresso(self.estado, g, pend)
+        self._render()
 
     def imprimir_proximo(self) -> None:
         pend = next((g for g in self.grupos
