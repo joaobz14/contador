@@ -160,11 +160,16 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
 
+        # Separa quem falta imprimir (topo) de quem ja foi impresso (arquivadas),
+        # para que um grupo pendente nunca fique "perdido" no meio dos ✓ verdes.
+        estados = [(g, core.status_grupo(self.estado, g)) for g in self.grupos]
+        pendentes = [g for g, s in estados if s != "impresso"]
+        arquivadas = [g for g, s in estados if s == "impresso"]
+
         total_et = sum(g.total_etiquetas for g in self.grupos)
-        impressos = sum(1 for g in self.grupos
-                        if core.status_grupo(self.estado, g) == "impresso")
         self.lbl_resumo.config(
-            text=f"{len(self.grupos)} grupos · {total_et} etiquetas · {impressos} impressos")
+            text=f"{len(self.grupos)} grupos · {total_et} etiquetas · "
+                 f"{len(arquivadas)} impressos")
 
         dia_txt = "amanhã" if self.modo.get() == "amanha" else "hoje"
         if not self.grupos:
@@ -173,14 +178,29 @@ class SeparadorApp:
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
 
-        por_qtd: dict[int, list] = {}
-        for g in self.grupos:
-            por_qtd.setdefault(g.quantidade, []).append(g)
+        # ----- Seção: para imprimir (pendentes/parciais), agrupado por quantidade
+        if pendentes:
+            ttk.Label(self.lista, text="🖨  Para imprimir",
+                      font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
+            por_qtd: dict[int, list] = {}
+            for g in pendentes:
+                por_qtd.setdefault(g.quantidade, []).append(g)
+            for qtd in sorted(por_qtd):
+                ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
+                          font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(8, 4))
+                for g in por_qtd[qtd]:
+                    self._linha(g)
+        else:
+            ttk.Label(self.lista, text=f"Tudo impresso {dia_txt}! 🎉",
+                      padding=(0, 12)).pack()
 
-        for qtd in sorted(por_qtd):
-            ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
-                      font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(12, 4))
-            for g in por_qtd[qtd]:
+        # ----- Seção: já impressas (arquivadas), embaixo e separadas
+        if arquivadas:
+            ttk.Label(self.lista,
+                      text=f"✓  Já impressas — arquivadas ({len(arquivadas)})",
+                      font=("Segoe UI", 11, "bold"), foreground=CINZA
+                      ).pack(fill="x", pady=(16, 2))
+            for g in arquivadas:
                 self._linha(g)
 
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
