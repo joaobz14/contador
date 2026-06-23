@@ -29,6 +29,7 @@ ser separado por SKU.
 | `Abrir Separador (diagnostico).bat` | Abre com terminal visível, para ver erros. |
 | `Abrir Separador.pyw` | Alternativa ao `.bat` (depende da associação do `.pyw`). |
 | `Atualizar programa.bat` | Atualiza para a versão mais nova (`git pull`). |
+| `Pegar Token.bat` | Configura/adiciona uma conta (roda o `pegar_token.py`). |
 
 **Configuração e dados**
 | Arquivo | Papel |

@@ -10,6 +10,7 @@ Como usar:
 """
 
 import json
+import traceback
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -66,7 +67,7 @@ def main() -> None:
     print("\n" + "=" * 60)
     print(" PASSO IMPORTANTE - faca RAPIDO (o codigo expira em minutos)")
     print("=" * 60)
-    Path("link_autorizacao.txt").write_text(link, encoding="utf-8")
+    (PASTA_SCRIPT / "link_autorizacao.txt").write_text(link, encoding="utf-8")
     print("\nO link foi salvo no arquivo 'link_autorizacao.txt' (mesma pasta).")
     print("Abra com o Bloco de Notas, copie tudo e cole no Brave.")
     print("Ou, se preferir, copie o link abaixo direto:\n")
@@ -127,10 +128,15 @@ def main() -> None:
     print(f" PRONTO! Tudo salvo em 'contas/{nome_conta}/credenciais.json'")
     print("=" * 60)
     print(f" Seu numero de vendedor (seller_id): {credenciais['seller_id']}")
-    print(" Pode fechar. Nao precisa mais rodar este programa.")
-    print(f"\n Lembre de definir esta conta como ativa no config.json:")
-    print(f'   "conta_ativa": "{nome_conta}"')
+    print(f" Conta '{nome_conta}' configurada.")
+    print(" Abra o Separador: a conta ja aparece no seletor (com 2+ contas).")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        print("\n[ERRO INESPERADO] Algo deu errado. Detalhes abaixo:")
+        traceback.print_exc()
+    # Pausa SEMPRE no final para a janela nao fechar antes de voce ler a mensagem.
+    input("\nPressione Enter para fechar...")
