@@ -915,6 +915,25 @@ def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:
     return pendentes
 
 
+def reimprimir(token: str, grupo: Grupo) -> list[int]:
+    """Reimprime TODAS as etiquetas do grupo, independente do estado.
+
+    Util quando uma etiqueta atolou/estragou. NAO altera o estado (o grupo
+    continua como estava). Lanca SeparadorError em falha de download ou ZPL
+    invalido. So funciona enquanto o ML ainda devolver a etiqueta dos envios.
+    """
+    ids = list(grupo.shipment_ids)
+    if not ids:
+        return []
+    zpl = baixar_zpl(token, ids)
+    if "^XA" not in zpl:
+        raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+    if CARIMBAR_SKU:
+        zpl = carimbar_zpl(zpl, _texto_carimbo(grupo))
+    gerar_zip_etiquetas(grupo, zpl)
+    return ids
+
+
 # ---------------------------------------------------------------------------
 # SAIDA
 # ---------------------------------------------------------------------------
@@ -1035,6 +1054,21 @@ def main() -> None:
             return
         imprimir_grupo(token, alvo_g, estado)
 
+    elif comando == "reimprimir" and len(args) >= 3:
+        alvo_g = achar_grupo(grupos, args[1], int(args[2]))
+        if not alvo_g:
+            print("Grupo nao encontrado.")
+            return
+        print(f"Reimprimindo {alvo_g.total_etiquetas} etiqueta(s) de: "
+              f"{alvo_g.nome} (qtd {alvo_g.quantidade}) ...")
+        try:
+            reimpressos = reimprimir(token, alvo_g)
+        except SeparadorError as e:
+            print(f"  ERRO: {e}")
+            return
+        print(f"  {len(reimpressos)} etiqueta(s) -> ZIP gerado em: {PASTA_DOWNLOADS}")
+        print("  (O estado de impresso nao foi alterado.)")
+
     elif comando == "proximo":
         pendente = next((g for g in grupos if status_grupo(estado, g) == "pendente"), None)
         if not pendente:
@@ -1044,7 +1078,8 @@ def main() -> None:
 
     else:
         print('Uso: listar | amanha | dia <AAAA-MM-DD> | todos | envios | resumo | '
-              'detalhar "<nome>" <QTD> | imprimir "<nome>" <QTD> | proximo')
+              'detalhar "<nome>" <QTD> | imprimir "<nome>" <QTD> | '
+              'reimprimir "<nome>" <QTD> | proximo')
 
 
 if __name__ == "__main__":

@@ -201,6 +201,10 @@ class SeparadorApp:
             sub = f"{g.total_etiquetas} etiqueta(s)"
         ttk.Label(esq, text=sub, foreground=CINZA, font=("Segoe UI", 8)).pack(anchor="w")
 
+        # Reimprimir: refaz as etiquetas do grupo sem mexer no controle de impresso.
+        ttk.Button(fr, text="↻ Reimprimir",
+                   command=lambda gg=g: self.reimprimir(gg)).pack(side="right", padx=(6, 0))
+
         if status == "impresso":
             ttk.Label(fr, text="✓ Impresso", foreground=VERDE,
                       font=("Segoe UI", 9, "bold")).pack(side="right")
@@ -219,6 +223,25 @@ class SeparadorApp:
     def _imprimir_thread(self, g) -> None:
         try:
             core.imprimir_pendentes(self.token, g, self.estado)
+        except Exception as e:
+            self.root.after(0, lambda erro=e: self._erro(str(erro)))
+            return
+        self.root.after(0, self._render)
+
+    def reimprimir(self, g) -> None:
+        if self.ocupado:
+            return
+        if not messagebox.askyesno(
+                "Reimprimir",
+                f"Reimprimir TODAS as {g.total_etiquetas} etiqueta(s) de:\n\n{g.nome}"
+                f" (qtd {g.quantidade})?\n\nO controle de impresso não muda."):
+            return
+        self._ocupar(True, f"Reimprimindo: {g.nome} ...")
+        threading.Thread(target=self._reimprimir_thread, args=(g,), daemon=True).start()
+
+    def _reimprimir_thread(self, g) -> None:
+        try:
+            core.reimprimir(self.token, g)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
