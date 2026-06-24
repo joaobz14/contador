@@ -182,10 +182,17 @@ Onde rodar: numa máquina **sempre ligada e com internet** que tenha o projeto e
 **Ligar por duplo-clique:** use **`Iniciar Bot.bat`** (mantenha a janela aberta — o
 bot só responde enquanto ela estiver rodando).
 
+**Ligar com reinício automático (recomendado para o PC do escritório):** use
+**`Iniciar Bot (auto).bat`**. Se o bot cair (erro, queda de rede, etc.), ele
+**religa sozinho** depois de alguns segundos, em vez de ficar fora do ar sem
+ninguém perceber. Para parar de vez, feche a janela (ou `Ctrl+C` → responda *Sim*).
+O motivo de cada queda fica registrado em `bot.log`.
+
 **Ligar junto com o Windows (opcional):** clique com o botão direito no
-`Iniciar Bot.bat` → *Enviar para → Área de trabalho (criar atalho)*; depois
-pressione `Win+R`, digite `shell:startup` e mova esse atalho para a pasta que
-abrir. Assim o bot inicia sozinho quando o PC liga.
+`Iniciar Bot (auto).bat` (ou no `Iniciar Bot.bat`) → *Enviar para → Área de
+trabalho (criar atalho)*; depois pressione `Win+R`, digite `shell:startup` e mova
+esse atalho para a pasta que abrir. Assim o bot inicia sozinho quando o PC liga —
+e, com o lançador automático, se mantém no ar mesmo que caia.
 
 ## Shopee (experimental — Fase 1: leitura)
 

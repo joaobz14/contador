@@ -542,7 +542,13 @@ def main() -> None:
 
 
 def _pausar() -> None:
-    """Segura a janela aberta para a mensagem ser lida (cmd fecha rapido senao)."""
+    """Segura a janela aberta para a mensagem ser lida (cmd fecha rapido senao).
+
+    No modo de reinicio automatico (BOT_SEM_PAUSA=1, setado pelo
+    'Iniciar Bot (auto).bat') NAO pausa: quem reinicia e o .bat, entao o
+    processo precisa terminar para o loop subir o bot de novo."""
+    if os.getenv("BOT_SEM_PAUSA"):
+        return
     try:
         input("\nPressione Enter para fechar...")
     except EOFError:
