@@ -134,7 +134,13 @@ leitura; a impressão reaproveita exatamente a mesma lógica da tela/CLI. Comand
 - `/hoje`, `/amanha`, `/dia AAAA-MM-DD`, `/todos` — grupos por dia de despacho
 - `/detalhar SKU` — composição de um SKU (itens/variações que o formam)
 - `/resumo` — quantos pacotes por dia
+- `/conta` — vê/troca a conta ativa pelo Telegram (aparece com 2+ contas)
 - `/id` — mostra seu chat id (para liberar no `chat_ids`)
+
+**Várias contas pelo bot:** o bot usa a **conta ativa** (a mesma do `config.json`,
+compartilhada com a tela). Com 2+ contas, `/conta` lista botões para alternar —
+a troca vale também para a tela. Se a conta salva sumir, o bot escolhe a primeira
+automaticamente (igual à tela), em vez de falhar.
 
 **Imprimir pelo bot:** em qualquer listagem (Hoje/Amanhã/Dia/Todos), cada grupo
 ganha um botão **🖨 Imprimir**. Ao tocar, o bot pede uma confirmação

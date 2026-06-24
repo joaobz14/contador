@@ -10,6 +10,16 @@ Histórico das principais mudanças do projeto.
   `imprimir_pendentes` do núcleo (imprime só os pendentes e marca o estado).
 - O bot passa a aplicar a config do núcleo (`aplicar_config`): usa a **conta
   ativa** e respeita o `carimbar_sku` do `config.json`, igual à tela.
+- **Multi-conta no bot:** comando `/conta` para ver/trocar a conta ativa pelo
+  Telegram (com 2+ contas) e fallback para a primeira conta quando a salva
+  some/é inválida (antes o bot caía no `credenciais.json` da raiz e falhava).
+  A impressão recusa grupos de uma conta diferente da ativa (evita imprimir
+  com o token errado depois de trocar de conta).
+
+### Robustez
+- `marcar_impresso` recarrega o estado do disco e **mescla** antes de gravar:
+  a tela e o bot na mesma conta ao mesmo tempo não apagam mais a marcação um
+  do outro (last-writer-merge em vez de last-writer-wins).
 
 ## [1.0.0]
 

@@ -70,3 +70,73 @@ def test_grupo_do_indice_sem_lista():
         chat_data: dict = {}
 
     assert bot._grupo_do_indice(Ctx(), 0) is None
+
+
+# --------------------------------------------------------------------- contas
+def _patch_contas(monkeypatch, tmp_path):
+    pasta = tmp_path / "app"
+    pasta.mkdir()
+    monkeypatch.setattr(core, "PASTA_SCRIPT", pasta)
+    monkeypatch.setattr(core, "PASTA_CONTAS", pasta / "contas")
+    monkeypatch.setattr(core, "ARQUIVO_CONFIG", pasta / "config.json")
+    monkeypatch.setattr(core, "ARQUIVO_CRED", pasta / "credenciais.json")
+    return pasta
+
+
+def _criar_conta(pasta, nome):
+    p = pasta / "contas" / nome
+    p.mkdir(parents=True)
+    (p / "credenciais.json").write_text("{}", encoding="utf-8")
+
+
+def test_garantir_conta_ativa_escolhe_primeira_quando_invalida(monkeypatch, tmp_path):
+    pasta = _patch_contas(monkeypatch, tmp_path)
+    _criar_conta(pasta, "Cozilatti")
+    _criar_conta(pasta, "Gastromaq")
+    # nenhuma conta_ativa salva -> deve escolher a 1a (ordem alfabetica) e gravar
+    ativa = bot._garantir_conta_ativa()
+    assert ativa == "Cozilatti"
+    assert core.conta_ativa() == "Cozilatti"
+    assert core.ARQUIVO_CRED == pasta / "contas" / "Cozilatti" / "credenciais.json"
+
+
+def test_garantir_conta_ativa_respeita_a_salva(monkeypatch, tmp_path):
+    pasta = _patch_contas(monkeypatch, tmp_path)
+    _criar_conta(pasta, "Cozilatti")
+    _criar_conta(pasta, "Gastromaq")
+    bot._trocar_conta("Gastromaq")
+    assert bot._garantir_conta_ativa() == "Gastromaq"
+
+
+def test_garantir_conta_ativa_sem_contas(monkeypatch, tmp_path):
+    _patch_contas(monkeypatch, tmp_path)
+    assert bot._garantir_conta_ativa() == ""
+
+
+def test_trocar_conta_aponta_arquivos_e_grava(monkeypatch, tmp_path):
+    pasta = _patch_contas(monkeypatch, tmp_path)
+    _criar_conta(pasta, "Gastromaq")
+    bot._trocar_conta("Gastromaq")
+    assert core.conta_ativa() == "Gastromaq"
+    assert core.ARQUIVO_ESTADO == pasta / "contas" / "Gastromaq" / "estado_grupos.json"
+
+
+def test_teclado_contas_marca_a_ativa(monkeypatch, tmp_path):
+    teclado = bot._teclado_contas(["Cozilatti", "Gastromaq"], "Gastromaq")
+    linhas = teclado.inline_keyboard
+    assert [linha[0].callback_data for linha in linhas] == ["conta:0", "conta:1"]
+    assert linhas[1][0].text.startswith("✓")      # a ativa leva o ✓
+    assert not linhas[0][0].text.startswith("✓")
+
+
+def test_conta_mudou(monkeypatch, tmp_path):
+    pasta = _patch_contas(monkeypatch, tmp_path)
+    _criar_conta(pasta, "Gastromaq")
+    bot._trocar_conta("Gastromaq")
+
+    class Ctx:
+        chat_data = {"conta": "Gastromaq"}
+
+    assert bot._conta_mudou(Ctx()) is False
+    Ctx.chat_data = {"conta": "Cozilatti"}
+    assert bot._conta_mudou(Ctx()) is True
