@@ -196,20 +196,27 @@ trabalho (criar atalho)*; depois pressione `Win+R`, digite `shell:startup` e mov
 esse atalho para a pasta que abrir. Assim o bot inicia sozinho quando o PC liga —
 e, com o lançador automático, se mantém no ar mesmo que caia.
 
-## Shopee (experimental — Fase 1: leitura)
+## Shopee (experimental)
 
-Integração inicial com a Shopee Open Platform (somente **listar/agrupar**, ainda
-sem impressão). Pré-requisito: criar um app em https://open.shopee.com e autorizar
-a loja.
+Integração com a Shopee Open Platform (API v2). Pré-requisito: criar um app em
+https://open.shopee.com, deixá-lo **Live** e cadastrar a **Redirect URL**
+`https://joaobz14.github.io/contador/` (página em `docs/`, servida pelo GitHub Pages).
 
 ```bash
 python pegar_token_shopee.py      # uma vez: autoriza a loja -> credenciais_shopee.json
 python shopee_api.py              # grupos prontos para enviar HOJE
 python shopee_api.py amanha | todos | dia <AAAA-MM-DD>
+python shopee_api.py etiqueta <order_sn>   # gera/baixa a etiqueta e mostra o formato
 ```
 
-Reaproveita o agrupamento por SKU + quantidade, os nomes (`nomes_sku.json`) e o
-fuso de Brasília. A impressão das etiquetas da Shopee fica para a Fase 2.
+**Fase 1 (leitura):** lista e agrupa por SKU + quantidade, reaproveitando os nomes
+(`nomes_sku.json`) e o fuso de Brasília.
+
+**Fase 2 (etiqueta):** o comando `etiqueta` segue o fluxo da Shopee
+(`create_shipping_document` → `get_shipping_document_result` até `READY` →
+`download_shipping_document`), pedindo o tipo **`THERMAL_AIR_WAYBILL`**, salva o
+arquivo em Downloads e **detecta o formato** (PDF, ZPL, PNG…). O caminho de
+impressão final depende desse formato (a confirmar no primeiro teste real).
 
 ## Como a impressão funciona
 

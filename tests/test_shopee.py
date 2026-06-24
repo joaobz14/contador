@@ -15,6 +15,32 @@ def test_assinatura_hmac_sha256_deterministica():
     assert sign == esperado
 
 
+def test_detectar_formato_etiqueta():
+    assert sh.detectar_formato(b"%PDF-1.7\n...") == "PDF"
+    assert sh.detectar_formato(b"^XA^FO50,50^FDx^FS^XZ") == "ZPL"
+    assert sh.detectar_formato(b"\x89PNG\r\n\x1a\n") == "PNG"
+    assert sh.detectar_formato(b"PK\x03\x04") == "ZIP"
+    assert sh.detectar_formato(b"qualquer coisa") == "DESCONHECIDO"
+
+
+def test_envio_ja_arranjado():
+    # sem pickup nem dropoff pendentes -> ja arranjado
+    assert sh.envio_ja_arranjado({"response": {"info_needed": {}}}) is True
+    assert sh.envio_ja_arranjado(
+        {"response": {"info_needed": {"pickup": [], "dropoff": []}}}) is True
+    # precisa de pickup -> ainda nao arranjado
+    assert sh.envio_ja_arranjado(
+        {"response": {"info_needed": {"pickup": ["address_id"]}}}) is False
+
+
+def test_status_documento_extrai_status_por_order():
+    res = {"response": {"result_list": [
+        {"order_sn": "A1", "status": "READY"},
+        {"order_sn": "A2", "document_status": "PROCESSING"},
+    ]}}
+    assert sh._status_documento(res) == {"A1": "READY", "A2": "PROCESSING"}
+
+
 def test_assinatura_publica():
     cred = {"partner_id": 111, "partner_key": "segredo"}
     sign = sh._assinatura_publica(cred, "/api/v2/auth/token/get", 1700000000)

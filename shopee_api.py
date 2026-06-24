@@ -16,6 +16,8 @@ Comandos:
   python shopee_api.py amanha     -> grupos de amanha
   python shopee_api.py todos      -> todos os dias da janela
   python shopee_api.py dia <AAAA-MM-DD>
+  python shopee_api.py etiqueta <order_sn>   -> gera/baixa a etiqueta e mostra o formato
+  python shopee_api.py parametros <order_sn> -> tipos de documento disponiveis (diagnostico)
 """
 
 from __future__ import annotations
@@ -81,23 +83,49 @@ def _assinatura_publica(cred: dict, path: str, ts: int) -> str:
     return _assinar(cred["partner_key"], base)
 
 
-def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
-    """GET assinado em uma API de loja, com a resiliencia de rede do core."""
+def _params_assinados(cred: dict, token: str, path: str) -> dict:
     ts = int(time.time())
-    query = {
+    return {
         "partner_id": cred["partner_id"],
         "timestamp": ts,
         "access_token": token,
         "shop_id": cred["shop_id"],
         "sign": _assinatura_shop(cred, path, ts, token),
-        **params,
     }
+
+
+def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
+    """GET assinado em uma API de loja, com a resiliencia de rede do core."""
+    query = {**_params_assinados(cred, token, path), **params}
     resp = core._requisicao_get(f"{HOST}{path}", headers={}, params=query)
     resp.raise_for_status()
     dados = resp.json()
     if dados.get("error"):
         raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
     return dados
+
+
+def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
+    """POST assinado em uma API de loja (sign na query, dados no corpo JSON)."""
+    resp = requests.post(f"{HOST}{path}", params=_params_assinados(cred, token, path),
+                         json=body, timeout=TIMEOUT)
+    resp.raise_for_status()
+    dados = resp.json()
+    if dados.get("error"):
+        raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
+    return dados
+
+
+def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
+    """POST assinado que devolve um ARQUIVO (etiqueta). Se vier JSON, e erro."""
+    resp = requests.post(f"{HOST}{path}", params=_params_assinados(cred, token, path),
+                         json=body, timeout=TIMEOUT)
+    resp.raise_for_status()
+    if "application/json" in resp.headers.get("Content-Type", ""):
+        dados = resp.json()
+        raise core.SeparadorError(
+            f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
+    return resp.content
 
 
 # ---------------------------------------------------------------------------
@@ -213,11 +241,150 @@ def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = T
 
 
 # ---------------------------------------------------------------------------
+# ETIQUETA (FASE 2): create -> result(READY) -> download
+# Fluxo confirmado pela documentacao/IA da Shopee. Nomes de campos marcados
+# com "# CONFIRMAR" devem ser validados no primeiro teste real.
+# ---------------------------------------------------------------------------
+TIPO_ETIQUETA = "THERMAL_AIR_WAYBILL"   # etiqueta ja dimensionada p/ impressora termica
+
+
+def parametros_documento(cred: dict, token: str, order_sn: str) -> dict:
+    """Tipos de documento disponiveis para o pedido (para conferir o que da pra gerar)."""
+    return _post_shop(cred, token, "/api/v2/logistics/get_shipping_document_parameter",
+                      {"order_list": [{"order_sn": order_sn}]})
+
+
+def parametros_envio(cred: dict, token: str, order_sn: str) -> dict:
+    """get_shipping_parameter (LEITURA): diz se o pedido precisa de pickup ou
+    dropoff e quais opcoes existem. Use antes de ship_order para saber o que enviar."""
+    return _post_shop(cred, token, "/api/v2/logistics/get_shipping_parameter",
+                      {"order_sn": order_sn})
+
+
+def ship_order(cred: dict, token: str, order_sn: str, *,
+               pickup: dict | None = None, dropoff: dict | None = None) -> dict:
+    """Finaliza o arranjo de envio (pickup OU dropoff) antes de gerar a etiqueta.
+    ATENCAO: acao que COMPROMETE o envio. So chamar com os parametros corretos,
+    obtidos de parametros_envio(). # CONFIRMAR campos no primeiro teste real."""
+    body: dict = {"order_sn": order_sn}
+    if pickup is not None:
+        body["pickup"] = pickup
+    if dropoff is not None:
+        body["dropoff"] = dropoff
+    return _post_shop(cred, token, "/api/v2/logistics/ship_order", body)
+
+
+def envio_ja_arranjado(param: dict) -> bool:
+    """Heuristica: se get_shipping_parameter nao pede nem pickup nem dropoff,
+    o envio ja esta arranjado e da para gerar a etiqueta direto."""
+    info = param.get("response", {}).get("info_needed", {})
+    return not info.get("pickup") and not info.get("dropoff")
+
+
+def criar_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> dict:
+    body = {"order_list": [{"order_sn": sn, "shipping_document_type": tipo} for sn in order_sns]}
+    return _post_shop(cred, token, "/api/v2/logistics/create_shipping_document", body)
+
+
+def resultado_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> dict:
+    body = {"order_list": [{"order_sn": sn, "shipping_document_type": tipo} for sn in order_sns]}
+    return _post_shop(cred, token, "/api/v2/logistics/get_shipping_document_result", body)
+
+
+def baixar_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> bytes:
+    body = {"shipping_document_type": tipo,
+            "order_list": [{"order_sn": sn} for sn in order_sns]}
+    return _download_shop(cred, token, "/api/v2/logistics/download_shipping_document", body)
+
+
+def _status_documento(res: dict) -> dict:
+    """Extrai {order_sn: status} do retorno do get_shipping_document_result."""
+    lista = res.get("response", {}).get("result_list", [])
+    return {it.get("order_sn"): (it.get("status") or it.get("document_status") or "").upper()
+            for it in lista}
+
+
+def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUETA,
+                   tentativas: int = 12, espera: float = 2.0) -> bytes:
+    """Gera (assincrono) e baixa as etiquetas dos pedidos. Espera ficar READY."""
+    token = obter_token(cred)
+    criar_documento(cred, token, order_sns, tipo)
+    for _ in range(tentativas):
+        status = _status_documento(resultado_documento(cred, token, order_sns, tipo))
+        if any(s == "FAILED" for s in status.values()):
+            raise core.SeparadorError(f"Geracao da etiqueta falhou: {status}")
+        if status and all(s == "READY" for s in status.values()):
+            return baixar_documento(cred, token, order_sns, tipo)
+        time.sleep(espera)
+    raise core.SeparadorError("A etiqueta nao ficou pronta (READY) a tempo. Tente de novo.")
+
+
+def detectar_formato(conteudo: bytes) -> str:
+    """Identifica o formato do arquivo baixado pelos primeiros bytes."""
+    if conteudo[:4] == b"%PDF":
+        return "PDF"
+    if b"^XA" in conteudo[:64]:
+        return "ZPL"
+    if conteudo[:4] == b"\x89PNG":
+        return "PNG"
+    if conteudo[:2] == b"PK":
+        return "ZIP"
+    return "DESCONHECIDO"
+
+
+def salvar_etiqueta(conteudo: bytes, order_sn: str):
+    """Grava a etiqueta na pasta Downloads e devolve (caminho, formato detectado)."""
+    fmt = detectar_formato(conteudo)
+    ext = {"PDF": "pdf", "ZPL": "zpl", "PNG": "png", "ZIP": "zip"}.get(fmt, "bin")
+    core.PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
+    destino = core.PASTA_DOWNLOADS / f"etiqueta shopee - {order_sn}.{ext}"
+    destino.write_bytes(conteudo)
+    return destino, fmt
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def main() -> None:
     args = sys.argv[1:]
     comando = args[0] if args else "listar"
+
+    # Etiqueta de um pedido: confere o arranjo de envio, gera, baixa e mostra o formato.
+    if comando == "etiqueta" and len(args) >= 2:
+        order_sn = args[1]
+        try:
+            cred = carregar_credenciais()
+            token = obter_token(cred)
+            # 1) Confere se o envio ja esta arranjado (pickup/dropoff).
+            param = parametros_envio(cred, token, order_sn)
+            if not envio_ja_arranjado(param):
+                info = param.get("response", {}).get("info_needed", {})
+                print("Este pedido precisa de ship_order (arranjo de envio) ANTES da etiqueta.")
+                print(f"info_needed: {info}")
+                print("\n>> Me envie esse 'info_needed' que eu finalizo o ship_order com os")
+                print("   parametros certos da sua logistica (sem risco de comprometer errado).")
+                return
+            # 2) Envio ja arranjado: gera e baixa a etiqueta.
+            print(f"Gerando etiqueta ({TIPO_ETIQUETA}) do pedido {order_sn} ...")
+            conteudo = gerar_etiqueta(cred, [order_sn])
+            caminho, fmt = salvar_etiqueta(conteudo, order_sn)
+        except core.SeparadorError as e:
+            sys.exit(f"ERRO: {e}")
+        print(f"\nBaixado em: {caminho}")
+        print(f"Formato detectado: {fmt}  ({len(conteudo)} bytes)")
+        print("\n>> Me envie esse 'Formato detectado' para definirmos a impressao.")
+        return
+
+    # Tipos de documento disponiveis para um pedido (diagnostico).
+    if comando == "parametros" and len(args) >= 2:
+        try:
+            cred = carregar_credenciais()
+            token = obter_token(cred)
+            print(parametros_documento(cred, token, args[1]))
+        except core.SeparadorError as e:
+            sys.exit(f"ERRO: {e}")
+        return
+
     try:
         cred = carregar_credenciais()
         dia = None
