@@ -1,5 +1,7 @@
 # Separador de Etiquetas — Mercado Livre
 
+[![Testes](https://github.com/joaobz14/contador/actions/workflows/testes.yml/badge.svg)](https://github.com/joaobz14/contador/actions/workflows/testes.yml)
+
 Ferramenta em Python para **separar e imprimir etiquetas de envio do Mercado Livre**
 em lote. Ela lê os pedidos da conta, mantém apenas os que estão em
 **"Etiquetas para imprimir"** (`ready_to_ship` + `ready_to_print`) e os agrupa por

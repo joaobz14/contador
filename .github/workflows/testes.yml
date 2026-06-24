@@ -1,0 +1,35 @@
+name: Testes
+
+# Roda a suite de testes (pytest) em cada Pull Request e em pushes no main.
+# Assim cada PR mostra um check verde/vermelho automaticamente no GitHub.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Instalar dependencias
+        # Inclui as do bot para a suite do bot rodar de verdade no runner
+        # (no GitHub o python-telegram-bot importa normalmente).
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt -r requirements-bot.txt
+
+      - name: Rodar os testes
+        run: pytest -q
