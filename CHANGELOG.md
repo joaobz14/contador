@@ -2,6 +2,15 @@
 
 Histórico das principais mudanças do projeto.
 
+## [Não lançado]
+
+### Bot do Telegram
+- Impressão pelo bot: botão **🖨 Imprimir** por grupo nas listagens, com
+  confirmação (Confirmar/Cancelar) antes de gerar a etiqueta. Reaproveita
+  `imprimir_pendentes` do núcleo (imprime só os pendentes e marca o estado).
+- O bot passa a aplicar a config do núcleo (`aplicar_config`): usa a **conta
+  ativa** e respeita o `carimbar_sku` do `config.json`, igual à tela.
+
 ## [1.0.0]
 
 ### Organização e segurança
