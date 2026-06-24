@@ -21,6 +21,11 @@ Histórico das principais mudanças do projeto.
   a tela e o bot na mesma conta ao mesmo tempo não apagam mais a marcação um
   do outro (last-writer-merge em vez de last-writer-wins).
 
+### Qualidade
+- **CI (GitHub Actions):** roda o `pytest` em cada Pull Request e push no `main`
+  (Python 3.11 e 3.12), mostrando um check verde/vermelho automático. Badge no
+  topo do README.
+
 ## [1.0.0]
 
 ### Organização e segurança
