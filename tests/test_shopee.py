@@ -24,13 +24,65 @@ def test_detectar_formato_etiqueta():
 
 
 def test_envio_ja_arranjado():
-    # sem pickup nem dropoff pendentes -> ja arranjado
+    # info_needed vazio -> ja organizado
     assert sh.envio_ja_arranjado({"response": {"info_needed": {}}}) is True
+    # metodo presente (mesmo com lista vazia de campos) -> ainda precisa organizar.
+    # Comportamento observado na API real: pedido nao organizado devolve
+    # info_needed = {"dropoff": []}.
     assert sh.envio_ja_arranjado(
-        {"response": {"info_needed": {"pickup": [], "dropoff": []}}}) is True
-    # precisa de pickup -> ainda nao arranjado
+        {"response": {"info_needed": {"dropoff": []}}}) is False
     assert sh.envio_ja_arranjado(
         {"response": {"info_needed": {"pickup": ["address_id"]}}}) is False
+
+
+def test_detectar_formato_zpl_cru_shopee():
+    # etiqueta termica Shopee crua comeca com ~DGR (download de grafico Z64)
+    assert sh.detectar_formato(b"~DGR:DEMO.GRF,1234,12,:Z64:abc") == "ZPL"
+
+
+def test_criar_documento_inclui_tracking_number(monkeypatch):
+    capturado = {}
+
+    def fake_post(cred, token, path, body):
+        capturado["path"] = path
+        capturado["body"] = body
+        return {"error": "", "response": {"result_list": [{"order_sn": "A1"}]}}
+
+    monkeypatch.setattr(sh, "_post_shop", fake_post)
+    sh.criar_documento({"x": 1}, "TOK", ["A1"], rastreios={"A1": "BR123"})
+    item = capturado["body"]["order_list"][0]
+    assert capturado["path"].endswith("create_shipping_document")
+    assert item["order_sn"] == "A1"
+    assert item["tracking_number"] == "BR123"        # AWB no corpo (senao da 404/invalid)
+    assert item["shipping_document_type"] == sh.TIPO_ETIQUETA
+
+
+def test_criar_documento_sem_rastreio_omite_campo(monkeypatch):
+    capturado = {}
+    monkeypatch.setattr(sh, "_post_shop",
+                        lambda cred, token, path, body: capturado.update(body=body) or {})
+    sh.criar_documento({"x": 1}, "TOK", ["A1"])
+    assert "tracking_number" not in capturado["body"]["order_list"][0]
+
+
+def test_gerar_etiqueta_aborta_sem_awb(monkeypatch):
+    # sem AWB (envio nao organizado) -> erro claro, sem chamar o create
+    monkeypatch.setattr(sh, "obter_token", lambda cred: "TOK")
+    monkeypatch.setattr(sh, "numero_rastreio", lambda cred, token, sn: "")
+
+    def nao_deveria(*a, **k):
+        raise AssertionError("create nao deveria ser chamado sem AWB")
+
+    monkeypatch.setattr(sh, "criar_documento", nao_deveria)
+    import pytest
+    with pytest.raises(sh.core.SeparadorError, match="rastreio"):
+        sh.gerar_etiqueta({"x": 1}, ["A1"])
+
+
+def test_numero_rastreio_le_response(monkeypatch):
+    monkeypatch.setattr(sh, "_get_shop",
+                        lambda cred, token, path, params: {"response": {"tracking_number": "BR9 "}})
+    assert sh.numero_rastreio({"x": 1}, "TOK", "A1") == "BR9"
 
 
 def test_status_documento_extrai_status_por_order():

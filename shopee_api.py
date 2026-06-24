@@ -255,10 +255,21 @@ def parametros_documento(cred: dict, token: str, order_sn: str) -> dict:
 
 
 def parametros_envio(cred: dict, token: str, order_sn: str) -> dict:
-    """get_shipping_parameter (LEITURA): diz se o pedido precisa de pickup ou
-    dropoff e quais opcoes existem. Use antes de ship_order para saber o que enviar."""
-    return _post_shop(cred, token, "/api/v2/logistics/get_shipping_parameter",
+    """get_shipping_parameter (LEITURA, GET): diz se o pedido precisa de pickup ou
+    dropoff e quais opcoes existem. Use antes de ship_order para saber o que enviar.
+    E um endpoint GET (order_sn na query) — POST devolve 404."""
+    return _get_shop(cred, token, "/api/v2/logistics/get_shipping_parameter",
+                     {"order_sn": order_sn})
+
+
+def numero_rastreio(cred: dict, token: str, order_sn: str) -> str:
+    """get_tracking_number (GET): numero de rastreio/AWB do pedido. So existe depois
+    que o envio foi organizado (Organizar Envio / ship_order); vazio caso contrario.
+    A Shopee exige esse AWB no create_shipping_document (senao da
+    logistics.tracking_number_invalid)."""
+    dados = _get_shop(cred, token, "/api/v2/logistics/get_tracking_number",
                       {"order_sn": order_sn})
+    return ((dados.get("response") or {}).get("tracking_number") or "").strip()
 
 
 def ship_order(cred: dict, token: str, order_sn: str, *,
@@ -275,15 +286,26 @@ def ship_order(cred: dict, token: str, order_sn: str, *,
 
 
 def envio_ja_arranjado(param: dict) -> bool:
-    """Heuristica: se get_shipping_parameter nao pede nem pickup nem dropoff,
-    o envio ja esta arranjado e da para gerar a etiqueta direto."""
-    info = param.get("response", {}).get("info_needed", {})
-    return not info.get("pickup") and not info.get("dropoff")
+    """True se o envio ja foi organizado. info_needed traz as chaves dos metodos
+    (pickup/dropoff/non_integrated) que ainda PRECISAM ser arranjados; se qualquer
+    uma estiver presente, o envio ainda nao foi organizado."""
+    info = param.get("response", {}).get("info_needed", {}) or {}
+    return not any(k in info for k in ("pickup", "dropoff", "non_integrated"))
 
 
-def criar_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> dict:
-    body = {"order_list": [{"order_sn": sn, "shipping_document_type": tipo} for sn in order_sns]}
-    return _post_shop(cred, token, "/api/v2/logistics/create_shipping_document", body)
+def criar_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA,
+                    rastreios: dict | None = None) -> dict:
+    """Cria o documento da etiqueta. A Shopee exige o tracking_number (AWB) de cada
+    pedido no corpo — `rastreios` mapeia order_sn -> AWB (ver numero_rastreio)."""
+    rastreios = rastreios or {}
+    order_list = []
+    for sn in order_sns:
+        item = {"order_sn": sn, "shipping_document_type": tipo}
+        if rastreios.get(sn):
+            item["tracking_number"] = rastreios[sn]
+        order_list.append(item)
+    return _post_shop(cred, token, "/api/v2/logistics/create_shipping_document",
+                      {"order_list": order_list})
 
 
 def resultado_documento(cred: dict, token: str, order_sns: list[str], tipo: str = TIPO_ETIQUETA) -> dict:
@@ -306,9 +328,20 @@ def _status_documento(res: dict) -> dict:
 
 def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUETA,
                    tentativas: int = 12, espera: float = 2.0) -> bytes:
-    """Gera (assincrono) e baixa as etiquetas dos pedidos. Espera ficar READY."""
+    """Gera (assincrono) e baixa as etiquetas dos pedidos. Espera ficar READY.
+
+    Busca o tracking_number (AWB) de cada pedido antes do create — ele so existe
+    apos o envio ser organizado. Sem AWB, aborta com uma mensagem clara em vez de
+    deixar a Shopee devolver 'tracking_number_invalid'."""
     token = obter_token(cred)
-    criar_documento(cred, token, order_sns, tipo)
+    rastreios = {sn: numero_rastreio(cred, token, sn) for sn in order_sns}
+    sem_awb = [sn for sn, tn in rastreios.items() if not tn]
+    if sem_awb:
+        raise core.SeparadorError(
+            "Sem numero de rastreio (AWB) para: " + ", ".join(sem_awb) + ". "
+            "Organize o envio (botao 'Organizar Envio' na Shopee) antes de gerar a etiqueta."
+        )
+    criar_documento(cred, token, order_sns, tipo, rastreios=rastreios)
     for _ in range(tentativas):
         status = _status_documento(resultado_documento(cred, token, order_sns, tipo))
         if any(s == "FAILED" for s in status.values()):
@@ -320,10 +353,14 @@ def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUET
 
 
 def detectar_formato(conteudo: bytes) -> str:
-    """Identifica o formato do arquivo baixado pelos primeiros bytes."""
+    """Identifica o formato do arquivo baixado pelos primeiros bytes.
+
+    A etiqueta termica da Shopee vem como ZIP (assinatura 'PK') contendo um TXT
+    com ZPL (~DGR/Z64). O app da Zebra reconhece esse ZIP pelo nome
+    'etiqueta shopee - ...zip' e imprime direto."""
     if conteudo[:4] == b"%PDF":
         return "PDF"
-    if b"^XA" in conteudo[:64]:
+    if conteudo[:3] == b"~DG" or b"^XA" in conteudo[:64]:
         return "ZPL"
     if conteudo[:4] == b"\x89PNG":
         return "PNG"
@@ -349,30 +386,19 @@ def main() -> None:
     args = sys.argv[1:]
     comando = args[0] if args else "listar"
 
-    # Etiqueta de um pedido: confere o arranjo de envio, gera, baixa e mostra o formato.
+    # Etiqueta de um pedido: gera, baixa e salva na Downloads (o app da Zebra imprime).
     if comando == "etiqueta" and len(args) >= 2:
         order_sn = args[1]
         try:
             cred = carregar_credenciais()
-            token = obter_token(cred)
-            # 1) Confere se o envio ja esta arranjado (pickup/dropoff).
-            param = parametros_envio(cred, token, order_sn)
-            if not envio_ja_arranjado(param):
-                info = param.get("response", {}).get("info_needed", {})
-                print("Este pedido precisa de ship_order (arranjo de envio) ANTES da etiqueta.")
-                print(f"info_needed: {info}")
-                print("\n>> Me envie esse 'info_needed' que eu finalizo o ship_order com os")
-                print("   parametros certos da sua logistica (sem risco de comprometer errado).")
-                return
-            # 2) Envio ja arranjado: gera e baixa a etiqueta.
             print(f"Gerando etiqueta ({TIPO_ETIQUETA}) do pedido {order_sn} ...")
             conteudo = gerar_etiqueta(cred, [order_sn])
             caminho, fmt = salvar_etiqueta(conteudo, order_sn)
         except core.SeparadorError as e:
             sys.exit(f"ERRO: {e}")
-        print(f"\nBaixado em: {caminho}")
-        print(f"Formato detectado: {fmt}  ({len(conteudo)} bytes)")
-        print("\n>> Me envie esse 'Formato detectado' para definirmos a impressao.")
+        print(f"\nEtiqueta salva em: {caminho}")
+        print(f"Formato: {fmt}  ({len(conteudo)} bytes)")
+        print("O app da Zebra (impressora_zebra_usb.py) detecta esse arquivo e imprime sozinho.")
         return
 
     # Tipos de documento disponiveis para um pedido (diagnostico).

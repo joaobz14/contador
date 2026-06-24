@@ -206,17 +206,23 @@ https://open.shopee.com, deixá-lo **Live** e cadastrar a **Redirect URL**
 python pegar_token_shopee.py      # uma vez: autoriza a loja -> credenciais_shopee.json
 python shopee_api.py              # grupos prontos para enviar HOJE
 python shopee_api.py amanha | todos | dia <AAAA-MM-DD>
-python shopee_api.py etiqueta <order_sn>   # gera/baixa a etiqueta e mostra o formato
+python shopee_api.py etiqueta <order_sn>     # gera/baixa a etiqueta na pasta Downloads
+python shopee_api.py parametros <order_sn>   # tipos de documento disponiveis (diagnostico)
 ```
 
 **Fase 1 (leitura):** lista e agrupa por SKU + quantidade, reaproveitando os nomes
 (`nomes_sku.json`) e o fuso de Brasília.
 
-**Fase 2 (etiqueta):** o comando `etiqueta` segue o fluxo da Shopee
-(`create_shipping_document` → `get_shipping_document_result` até `READY` →
-`download_shipping_document`), pedindo o tipo **`THERMAL_AIR_WAYBILL`**, salva o
-arquivo em Downloads e **detecta o formato** (PDF, ZPL, PNG…). O caminho de
-impressão final depende desse formato (a confirmar no primeiro teste real).
+**Fase 2 (etiqueta):** a Shopee só gera a etiqueta **depois que o envio foi
+organizado** (botão "Organizar Envio" no Seller Center — é o que emite o número de
+rastreio/AWB). O comando `etiqueta` busca o AWB (`get_tracking_number`), cria o
+documento térmico (`create_shipping_document` com o `tracking_number`, tipo
+**`THERMAL_AIR_WAYBILL`**), espera ficar `READY` (`get_shipping_document_result`) e
+baixa (`download_shipping_document`). O resultado é um `.zip`
+(`etiqueta shopee - <order_sn>.zip`) salvo em **Downloads**, contendo o ZPL
+(`~DGR/Z64`). O app da Zebra (`impressora_zebra_usb.py`) reconhece esse ZIP pelo
+nome e imprime sozinho — o mesmo caminho do Mercado Livre. Se o envio ainda não foi
+organizado, o comando avisa em vez de falhar.
 
 ## Como a impressão funciona
 
