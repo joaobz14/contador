@@ -41,15 +41,28 @@ import logging
 import os
 from datetime import datetime, time
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CallbackQueryHandler,
-    CommandHandler,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
+try:
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+    from telegram.ext import (
+        ApplicationBuilder,
+        CallbackQueryHandler,
+        CommandHandler,
+        ContextTypes,
+        MessageHandler,
+        filters,
+    )
+except ImportError as _erro_import:
+    # Dependencia do bot ausente: avisa de forma legivel e MANTEM a janela
+    # aberta (senao o cmd fecha rapido e ninguem ve o motivo).
+    print("\nNao consegui carregar a biblioteca do Telegram.")
+    print("Instale as dependencias do bot rodando no terminal, nesta pasta:\n")
+    print("    pip install -r requirements-bot.txt\n")
+    print(f"(detalhe tecnico: {_erro_import})")
+    try:
+        input("\nPressione Enter para fechar...")
+    except EOFError:
+        pass
+    raise SystemExit(1)
 
 import relatorio
 import separador_etiquetas_ml as core
@@ -514,5 +527,30 @@ def main() -> None:
     app.run_polling()
 
 
+def _pausar() -> None:
+    """Segura a janela aberta para a mensagem ser lida (cmd fecha rapido senao)."""
+    try:
+        input("\nPressione Enter para fechar...")
+    except EOFError:
+        pass
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass  # Ctrl+C: encerrar e silencioso
+    except core.SeparadorError as e:
+        # Erro esperado e explicado (ex.: token ausente, credenciais faltando).
+        print(f"\nNAO FOI POSSIVEL INICIAR O BOT:\n  {e}")
+        if "Token" in str(e):
+            print("\nDica: copie bot_config.example.json para bot_config.json e "
+                  "preencha o token do @BotFather.")
+        _pausar()
+        raise SystemExit(1)
+    except Exception:  # noqa: BLE001 - qualquer outra falha precisa ser vista
+        import traceback
+        print("\nO bot parou por um erro inesperado:\n")
+        traceback.print_exc()
+        _pausar()
+        raise SystemExit(1)
