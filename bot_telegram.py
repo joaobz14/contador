@@ -193,16 +193,28 @@ def _rotulo_grupo(grupo) -> str:
 
 
 def _teclado_grupos(grupos: list) -> InlineKeyboardMarkup | None:
-    """Um botao 'Imprimir' por grupo (so para os que tem etiquetas).
+    """Botoes 'Imprimir' por grupo, SEPARADOS por quantidade do pedido (igual a
+    tela). Antes de cada bloco vai uma linha-cabecalho nao-clicavel
+    ('— Quantidade por pedido = N —'), ja que o Telegram nao deixa por texto
+    solto no meio dos botoes. So entram grupos com etiquetas; None se nao houver
+    nada imprimivel.
 
-    O callback carrega so o indice (curto); o grupo em si fica guardado no
-    chat_data ate o toque. None quando nao ha nada imprimivel.
+    O callback de cada botao carrega so o indice do grupo na lista guardada no
+    chat_data, entao o agrupamento visual nao altera qual grupo sera impresso.
     """
-    botoes = [
-        [InlineKeyboardButton(_rotulo_grupo(g), callback_data=f"ver:{i}")]
-        for i, g in enumerate(grupos) if g.total_etiquetas
-    ]
-    return InlineKeyboardMarkup(botoes) if botoes else None
+    por_qtd: dict[int, list] = {}
+    for i, g in enumerate(grupos):
+        if g.total_etiquetas:
+            por_qtd.setdefault(g.quantidade, []).append((i, g))
+    if not por_qtd:
+        return None
+    linhas: list = []
+    for qtd in sorted(por_qtd):
+        linhas.append([InlineKeyboardButton(
+            f"— Quantidade por pedido = {qtd} —", callback_data="noop")])
+        for i, g in por_qtd[qtd]:
+            linhas.append([InlineKeyboardButton(_rotulo_grupo(g), callback_data=f"ver:{i}")])
+    return InlineKeyboardMarkup(linhas)
 
 
 async def _responder(update, context, nome: str, executor) -> None:
@@ -434,6 +446,8 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
         return
 
+    if data == "noop":
+        return  # linha-cabecalho de quantidade: nao faz nada (so divisoria visual)
     if data == "cancelar":
         await query.edit_message_text("Impressao cancelada.")
         return
