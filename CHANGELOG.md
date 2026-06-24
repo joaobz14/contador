@@ -5,6 +5,10 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Bot do Telegram
+- **Reinício automático:** lançador `Iniciar Bot (auto).bat` que religa o bot
+  sozinho se ele cair (erro/queda de rede), em vez de ficar fora do ar. No modo
+  automático o bot não pausa pedindo Enter (`BOT_SEM_PAUSA`); o motivo da queda
+  fica no `bot.log`.
 - Impressão pelo bot: botão **🖨 Imprimir** por grupo nas listagens, com
   confirmação (Confirmar/Cancelar) antes de gerar a etiqueta. Reaproveita
   `imprimir_pendentes` do núcleo (imprime só os pendentes e marca o estado).
