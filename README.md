@@ -126,15 +126,28 @@ duplo-clique não fizer nada, fique com o `Abrir Separador.bat` (mais garantido)
 python separador_gui.py
 ```
 
-## Bot do Telegram (opcional — consulta)
+## Bot do Telegram (opcional — consulta e impressão)
 
-Permite consultar os pedidos pelo celular (somente leitura). Não imprime nem
-altera nada — só lê via o núcleo. Comandos:
+Permite consultar **e imprimir** os pedidos pelo celular. A consulta é somente
+leitura; a impressão reaproveita exatamente a mesma lógica da tela/CLI. Comandos:
 
 - `/hoje`, `/amanha`, `/dia AAAA-MM-DD`, `/todos` — grupos por dia de despacho
 - `/detalhar SKU` — composição de um SKU (itens/variações que o formam)
 - `/resumo` — quantos pacotes por dia
 - `/id` — mostra seu chat id (para liberar no `chat_ids`)
+
+**Imprimir pelo bot:** em qualquer listagem (Hoje/Amanhã/Dia/Todos), cada grupo
+ganha um botão **🖨 Imprimir**. Ao tocar, o bot pede uma confirmação
+(**Confirmar / Cancelar**) antes de gerar a etiqueta — evita impressão acidental.
+Confirmado, ele imprime só os envios ainda **pendentes** do grupo e marca o
+estado, igual à tela.
+
+> ⚠️ **A impressão sai na máquina onde o bot está rodando.** Imprimir gera o
+> `.zip` na pasta Downloads desse PC, que o app da Zebra (`impressora_zebra_usb.py`)
+> vigia e manda para a impressora. Por isso, para imprimir pelo celular o bot
+> precisa estar ligado **no PC do escritório**, com a Zebra e o monitor da Zebra
+> ativos. De longe você dispara; o papel sai lá. O bot usa a **conta ativa**
+> (a mesma escolhida na tela, lida do `config.json`).
 
 Mensagens longas são divididas automaticamente; a atividade fica registrada em
 `bot.log`.

@@ -1,16 +1,26 @@
 """
 bot_telegram.py
-Bot do Telegram para CONSULTAR os pedidos (somente leitura) de qualquer lugar.
-Reaproveita o nucleo (separador_etiquetas_ml.py); nao imprime nem altera estado.
+Bot do Telegram para CONSULTAR e IMPRIMIR os pedidos de qualquer lugar.
+Reaproveita o nucleo (separador_etiquetas_ml.py): a consulta e somente leitura;
+a impressao reusa exatamente a mesma logica da tela/CLI (imprimir_pendentes).
+
+IMPORTANTE (impressao): imprimir gera um .zip na pasta Downloads DA MAQUINA ONDE
+O BOT RODA, que o app da Zebra (impressora_zebra_usb.py) vigia e manda para a
+impressora. Logo, para imprimir pelo bot ele precisa estar rodando no PC do
+escritorio (com a Zebra e o monitor da Zebra ligados). De longe voce dispara a
+impressao; o papel sai la.
 
 Seguranca:
   - o token NUNCA fica no codigo: vem da variavel TELEGRAM_BOT_TOKEN ou do
     arquivo bot_config.json (que NAO e versionado);
-  - so responde aos chat ids autorizados (whitelist em bot_config.json).
+  - so responde aos chat ids autorizados (whitelist em bot_config.json);
+  - imprimir sempre pede uma confirmacao (Confirmar/Cancelar) antes de gerar a
+    etiqueta, para evitar toque acidental pelo celular.
 
 Recursos:
   - comandos /hoje /amanha /dia /todos /detalhar /resumo /id /menu;
   - botoes (toque em vez de digitar) via /start ou /menu;
+  - botao "Imprimir" por grupo nas listagens (Hoje/Amanha/Dia/Todos);
   - aviso automatico de manha (se "aviso_horario" estiver no bot_config.json).
 
 Como usar:
@@ -77,6 +87,19 @@ def _coletar(dia: str | None, somente_hoje: bool):
     return core.coletar_grupos(token, cred["seller_id"], dia=dia, somente_hoje=somente_hoje)
 
 
+def _imprimir_grupo(grupo):
+    """Imprime os envios ainda pendentes do grupo (reusa o nucleo).
+
+    Roda em thread (chamada de rede + I/O). Devolve a lista de shipment_ids
+    impressos (vazia se o grupo ja estava todo impresso). Lanca SeparadorError
+    em falha de download/ZPL invalido (nesse caso nada e marcado como impresso).
+    """
+    cred = core.carregar_credenciais()
+    token = core.renovar_token(cred)
+    estado = core.carregar_estado()
+    return core.imprimir_pendentes(token, grupo, estado)
+
+
 def _prontos():
     cred = core.carregar_credenciais()
     token = core.renovar_token(cred)
@@ -92,26 +115,20 @@ def _data_valida(texto: str) -> bool:
         return False
 
 
-# executores nomeados reutilizados por comandos e botoes
-def _exec_hoje():
-    return relatorio.texto_grupos(_coletar(None, True).grupos, "HOJE")
-
-
-def _exec_amanha():
-    dia = core._amanha_br()
-    return relatorio.texto_grupos(_coletar(dia, False).grupos, f"AMANHA ({dia})")
-
-
-def _exec_todos():
-    return relatorio.texto_grupos(_coletar(None, False).grupos, "TODOS OS DIAS")
-
-
 def _exec_resumo():
     return relatorio.texto_resumo(_prontos(), core._hoje_br(), core._amanha_br())
 
 
-EXECUTORES = {"hoje": _exec_hoje, "amanha": _exec_amanha,
-              "todos": _exec_todos, "resumo": _exec_resumo}
+# Coletores (rede) por nome de acao, com o titulo da listagem. A data de amanha
+# e calculada na hora da chamada para nunca "envelhecer" se o bot ficar ligado
+# virando o dia.
+def _coletores() -> dict:
+    amanha = core._amanha_br()
+    return {
+        "hoje": (lambda: _coletar(None, True), "HOJE"),
+        "amanha": (lambda: _coletar(amanha, False), f"AMANHA ({amanha})"),
+        "todos": (lambda: _coletar(None, False), "TODOS OS DIAS"),
+    }
 
 
 # ---------------------------------------------------------------- autorizacao / envio
@@ -127,6 +144,24 @@ def _teclado() -> InlineKeyboardMarkup:
         [InlineKeyboardButton("📊 Resumo", callback_data="resumo"),
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
     ])
+
+
+def _rotulo_grupo(grupo) -> str:
+    """Texto do botao de impressao de um grupo (cabe no limite do Telegram)."""
+    return f"🖨 {grupo.total_etiquetas}× {grupo.nome}"[:60]
+
+
+def _teclado_grupos(grupos: list) -> InlineKeyboardMarkup | None:
+    """Um botao 'Imprimir' por grupo (so para os que tem etiquetas).
+
+    O callback carrega so o indice (curto); o grupo em si fica guardado no
+    chat_data ate o toque. None quando nao ha nada imprimivel.
+    """
+    botoes = [
+        [InlineKeyboardButton(_rotulo_grupo(g), callback_data=f"ver:{i}")]
+        for i, g in enumerate(grupos) if g.total_etiquetas
+    ]
+    return InlineKeyboardMarkup(botoes) if botoes else None
 
 
 async def _responder(update, context, nome: str, executor) -> None:
@@ -154,14 +189,102 @@ async def _responder(update, context, nome: str, executor) -> None:
         await context.bot.send_message(chat_id, bloco)
 
 
+async def _listar_grupos(update, context, nome: str, coletor, titulo: str) -> None:
+    """Lista os grupos de um dia e oferece um botao 'Imprimir' por grupo.
+
+    Guarda os grupos coletados no chat_data para que o toque no botao (que so
+    carrega o indice) saiba qual grupo imprimir, sem refazer a busca.
+    """
+    cfg = context.bot_data["cfg"]
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if not _autorizado(update, cfg):
+        log.warning("Acao /%s negada para chat %s", nome, chat_id)
+        if chat_id:
+            await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    log.info("Acao /%s de chat %s", nome, chat_id)
+    await context.bot.send_message(chat_id, "Consultando o Mercado Livre, um instante...")
+    try:
+        coleta = await asyncio.to_thread(coletor)
+    except core.SeparadorError as e:
+        await context.bot.send_message(chat_id, f"Erro: {e}")
+        return
+    except Exception as e:  # noqa: BLE001 - mostrar qualquer falha ao usuario
+        log.exception("Falha na acao /%s", nome)
+        await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
+        return
+    grupos = coleta.grupos
+    context.chat_data["grupos"] = grupos
+    texto = relatorio.texto_grupos(grupos, titulo)
+    for bloco in relatorio.dividir_mensagem(texto):
+        await context.bot.send_message(chat_id, bloco)
+    teclado = _teclado_grupos(grupos)
+    if teclado:
+        await context.bot.send_message(chat_id, "🖨 Toque num grupo para imprimir:", reply_markup=teclado)
+
+
+def _grupo_do_indice(context, idx: int):
+    """Recupera o grupo guardado no chat_data; None se a lista expirou/saiu de faixa."""
+    grupos = context.chat_data.get("grupos") or []
+    return grupos[idx] if 0 <= idx < len(grupos) else None
+
+
+async def _confirmar_impressao(update, context, idx: int) -> None:
+    """Mostra 'Imprimir N etiquetas de <grupo>?' com Confirmar/Cancelar."""
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    grupo = _grupo_do_indice(context, idx)
+    if grupo is None:
+        await context.bot.send_message(chat_id, "Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    teclado = InlineKeyboardMarkup([[
+        InlineKeyboardButton("✅ Confirmar", callback_data=f"imp:{idx}"),
+        InlineKeyboardButton("✖️ Cancelar", callback_data="cancelar"),
+    ]])
+    await context.bot.send_message(
+        chat_id,
+        f"Imprimir {grupo.total_etiquetas} etiqueta(s) de:\n{grupo.nome} (qtd {grupo.quantidade})?",
+        reply_markup=teclado,
+    )
+
+
+async def _executar_impressao(update, context, idx: int) -> None:
+    """Imprime de fato o grupo escolhido (apos a confirmacao)."""
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    query = update.callback_query
+    grupo = _grupo_do_indice(context, idx)
+    if grupo is None:
+        await query.edit_message_text("Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    log.info("Impressao de '%s' (qtd %s) por chat %s", grupo.nome, grupo.quantidade, chat_id)
+    await query.edit_message_text(f"Imprimindo {grupo.nome} (qtd {grupo.quantidade})...")
+    try:
+        impressos = await asyncio.to_thread(_imprimir_grupo, grupo)
+    except core.SeparadorError as e:
+        await context.bot.send_message(chat_id, f"Erro ao imprimir: {e}")
+        return
+    except Exception as e:  # noqa: BLE001
+        log.exception("Falha ao imprimir '%s'", grupo.nome)
+        await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
+        return
+    if impressos:
+        await context.bot.send_message(
+            chat_id,
+            f"✅ {len(impressos)} etiqueta(s) enviada(s) para a fila da Zebra.\n"
+            f"Status do grupo: IMPRESSO.",
+        )
+    else:
+        await context.bot.send_message(chat_id, "Nada pendente — esse grupo ja estava impresso.")
+
+
 # ---------------------------------------------------------------- comandos
 AJUDA = (
-    "Bot de consulta de pedidos (somente leitura).\n\n"
+    "Bot de pedidos do Mercado Livre.\n\n"
     "Toque num botao abaixo ou use os comandos:\n"
     "/hoje  /amanha  /todos  /resumo\n"
     "/dia AAAA-MM-DD — um dia especifico\n"
     "/detalhar SKU — composicao de um SKU (hoje)\n"
-    "/id — mostra seu chat id"
+    "/id — mostra seu chat id\n\n"
+    "Nas listagens, toque em 🖨 num grupo para imprimir (pede confirmacao)."
 )
 
 
@@ -174,15 +297,18 @@ async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_hoje(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _responder(update, context, "hoje", _exec_hoje)
+    coletor, titulo = _coletores()["hoje"]
+    await _listar_grupos(update, context, "hoje", coletor, titulo)
 
 
 async def cmd_amanha(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _responder(update, context, "amanha", _exec_amanha)
+    coletor, titulo = _coletores()["amanha"]
+    await _listar_grupos(update, context, "amanha", coletor, titulo)
 
 
 async def cmd_todos(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _responder(update, context, "todos", _exec_todos)
+    coletor, titulo = _coletores()["todos"]
+    await _listar_grupos(update, context, "todos", coletor, titulo)
 
 
 async def cmd_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -195,8 +321,8 @@ async def cmd_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Use: /dia AAAA-MM-DD  (ex.: /dia 2026-06-22)")
         return
     dia = args[0]
-    await _responder(update, context, "dia",
-                     lambda: relatorio.texto_grupos(_coletar(dia, False).grupos, f"DIA {dia}"))
+    await _listar_grupos(update, context, "dia",
+                         lambda: _coletar(dia, False), f"DIA {dia}")
 
 
 async def cmd_detalhar(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -210,12 +336,35 @@ async def cmd_detalhar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Tratador dos botoes (Hoje/Amanha/Resumo/Todos)."""
+    """Tratador dos botoes: menu (Hoje/Amanha/Resumo/Todos), escolha de grupo
+    para imprimir (ver:N), confirmacao (imp:N) e cancelamento."""
     query = update.callback_query
     await query.answer()
-    executor = EXECUTORES.get(query.data)
-    if executor:
-        await _responder(update, context, query.data, executor)
+    data = query.data or ""
+
+    cfg = context.bot_data["cfg"]
+    if not _autorizado(update, cfg):
+        chat_id = update.effective_chat.id if update.effective_chat else None
+        log.warning("Botao '%s' negado para chat %s", data, chat_id)
+        if chat_id:
+            await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+
+    if data == "cancelar":
+        await query.edit_message_text("Impressao cancelada.")
+        return
+    if data.startswith("ver:"):
+        await _confirmar_impressao(update, context, int(data[4:]))
+        return
+    if data.startswith("imp:"):
+        await _executar_impressao(update, context, int(data[4:]))
+        return
+    if data == "resumo":
+        await _responder(update, context, "resumo", _exec_resumo)
+        return
+    if data in _coletores():
+        coletor, titulo = _coletores()[data]
+        await _listar_grupos(update, context, data, coletor, titulo)
 
 
 async def cmd_desconhecido(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -255,6 +404,9 @@ def _agendar_aviso(app, cfg: dict) -> None:
 
 # ---------------------------------------------------------------- inicializacao
 def main() -> None:
+    # Aplica as preferencias do nucleo (conta ativa e carimbar_sku do config.json)
+    # para o bot usar a mesma conta/ajustes da tela ao consultar e imprimir.
+    core.aplicar_config()
     cfg = carregar_config()
     app = ApplicationBuilder().token(cfg["token"]).build()
     app.bot_data["cfg"] = cfg
