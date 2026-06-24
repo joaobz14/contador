@@ -35,19 +35,31 @@ def test_rotulo_grupo_cabe_no_limite():
 
 
 def test_teclado_grupos_um_botao_por_grupo_com_etiquetas():
-    grupos = [_grupo("A", ships=(1, 2)), _grupo("B", ships=(3,))]
-    teclado = bot._teclado_grupos(grupos)
-    linhas = teclado.inline_keyboard
-    assert len(linhas) == 2
-    # o callback carrega o indice do grupo
-    assert [linha[0].callback_data for linha in linhas] == ["ver:0", "ver:1"]
+    # Dois grupos de mesma quantidade -> 1 cabecalho + 2 botoes
+    grupos = [_grupo("A", qtd=1, ships=(1, 2)), _grupo("B", qtd=1, ships=(3,))]
+    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    assert [linha[0].callback_data for linha in linhas] == ["noop", "ver:0", "ver:1"]
+    assert "Quantidade por pedido = 1" in linhas[0][0].text
+
+
+def test_teclado_grupos_separa_por_quantidade():
+    # Quantidades diferentes -> um cabecalho por quantidade, na ordem crescente.
+    # O indice do callback aponta para a posicao na lista ORIGINAL (nao reordena).
+    grupos = [_grupo("A", qtd=2, ships=(1,)), _grupo("B", qtd=1, ships=(2,))]
+    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    textos_callbacks = [(l[0].text, l[0].callback_data) for l in linhas]
+    assert textos_callbacks[0][1] == "noop"
+    assert "= 1" in textos_callbacks[0][0]
+    assert textos_callbacks[1] == ("🖨 1× B — Produto", "ver:1")   # B (qtd 1) primeiro
+    assert textos_callbacks[2][1] == "noop"
+    assert "= 2" in textos_callbacks[2][0]
+    assert textos_callbacks[3][1] == "ver:0"                      # A (qtd 2) depois
 
 
 def test_teclado_grupos_ignora_grupos_sem_etiqueta():
     grupos = [_grupo("A", ships=(1,)), _grupo("B", ships=())]
-    teclado = bot._teclado_grupos(grupos)
-    assert len(teclado.inline_keyboard) == 1
-    assert teclado.inline_keyboard[0][0].callback_data == "ver:0"
+    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    assert [linha[0].callback_data for linha in linhas] == ["noop", "ver:0"]
 
 
 def test_teclado_grupos_vazio_retorna_none():
