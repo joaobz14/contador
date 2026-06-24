@@ -962,12 +962,23 @@ def envios_pendentes(estado: dict, grupo: Grupo) -> list[int]:
 
 def marcar_impresso(estado: dict, grupo: Grupo, shipment_ids: list[int] | None = None) -> None:
     """Marca como impressos os shipment_ids informados (ou todos do grupo),
-    acumulando com os ja registrados no dia."""
+    acumulando com os ja registrados no dia.
+
+    Antes de gravar, RECARREGA o estado do disco e mescla (uniao). Assim, se a
+    tela e o bot estiverem rodando ao mesmo tempo na mesma conta, a marcacao de
+    um nao apaga a do outro feita nesse meio-tempo (last-writer-merge em vez de
+    last-writer-wins). O dict em memoria do chamador tambem e atualizado para o
+    render seguinte refletir o que foi gravado."""
     ids = grupo.shipment_ids if shipment_ids is None else shipment_ids
-    impressos = _impressos(estado, grupo)
-    impressos.update(ids)
-    estado[_chave_estado(grupo)] = sorted(impressos)
-    salvar_estado(estado)
+    chave = _chave_estado(grupo)
+    disco = _ler_json(ARQUIVO_ESTADO)
+    impressos = _impressos(estado, grupo)       # o que ja sabiamos em memoria
+    impressos.update(_impressos(disco, grupo))  # + o que outro processo gravou
+    impressos.update(ids)                       # + os recem-impressos
+    ordenados = sorted(impressos)
+    disco[chave] = ordenados                    # grava por cima do disco atual
+    salvar_estado(disco)
+    estado[chave] = ordenados                   # reflete na memoria do chamador
 
 
 def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:

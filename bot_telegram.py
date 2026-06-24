@@ -107,6 +107,34 @@ def _prontos():
     return core.filtrar_para_imprimir(token, pedidos)
 
 
+# ---------------------------------------------------------------- contas
+def _garantir_conta_ativa() -> str:
+    """Garante que aponte para uma conta valida (mesma logica da tela).
+
+    Se a conta salva no config sumiu/for invalida e existirem contas em
+    contas/, escolhe a primeira e a torna ativa. Devolve o nome da conta ativa
+    ('' quando nao ha nenhuma conta configurada). Sem isto, o bot cairia no
+    credenciais.json da raiz (inexistente no setup multi-conta) e falharia.
+    """
+    contas = core.listar_contas()
+    if not contas:
+        return ""
+    ativa = core.conta_ativa()
+    if ativa not in contas:
+        ativa = contas[0]
+        _trocar_conta(ativa)
+    return ativa
+
+
+def _trocar_conta(nome: str) -> None:
+    """Torna `nome` a conta ativa: aponta os arquivos e grava no config.json
+    (compartilhado com a tela, para as duas ficarem na mesma conta)."""
+    core.definir_conta(nome)
+    cfg = core.carregar_config()
+    cfg["conta_ativa"] = nome
+    core.salvar_config(cfg)
+
+
 def _data_valida(texto: str) -> bool:
     try:
         datetime.strptime(texto, "%Y-%m-%d")
@@ -215,6 +243,9 @@ async def _listar_grupos(update, context, nome: str, coletor, titulo: str) -> No
         return
     grupos = coleta.grupos
     context.chat_data["grupos"] = grupos
+    # Guarda de qual conta sao esses grupos: se a conta mudar antes do toque,
+    # os shipment_ids seriam de outra conta e nao devem ser impressos.
+    context.chat_data["conta"] = core.conta_ativa()
     texto = relatorio.texto_grupos(grupos, titulo)
     for bloco in relatorio.dividir_mensagem(texto):
         await context.bot.send_message(chat_id, bloco)
@@ -229,12 +260,20 @@ def _grupo_do_indice(context, idx: int):
     return grupos[idx] if 0 <= idx < len(grupos) else None
 
 
+def _conta_mudou(context) -> bool:
+    """True se a conta ativa nao for mais a que gerou os grupos guardados."""
+    return context.chat_data.get("conta") != core.conta_ativa()
+
+
 async def _confirmar_impressao(update, context, idx: int) -> None:
     """Mostra 'Imprimir N etiquetas de <grupo>?' com Confirmar/Cancelar."""
     chat_id = update.effective_chat.id if update.effective_chat else None
     grupo = _grupo_do_indice(context, idx)
     if grupo is None:
         await context.bot.send_message(chat_id, "Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    if _conta_mudou(context):
+        await context.bot.send_message(chat_id, "A conta ativa mudou. Refaca a consulta (/hoje, /amanha...).")
         return
     teclado = InlineKeyboardMarkup([[
         InlineKeyboardButton("✅ Confirmar", callback_data=f"imp:{idx}"),
@@ -254,6 +293,9 @@ async def _executar_impressao(update, context, idx: int) -> None:
     grupo = _grupo_do_indice(context, idx)
     if grupo is None:
         await query.edit_message_text("Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    if _conta_mudou(context):
+        await query.edit_message_text("A conta ativa mudou. Refaca a consulta (/hoje, /amanha...).")
         return
     log.info("Impressao de '%s' (qtd %s) por chat %s", grupo.nome, grupo.quantidade, chat_id)
     await query.edit_message_text(f"Imprimindo {grupo.nome} (qtd {grupo.quantidade})...")
@@ -283,6 +325,7 @@ AJUDA = (
     "/hoje  /amanha  /todos  /resumo\n"
     "/dia AAAA-MM-DD — um dia especifico\n"
     "/detalhar SKU — composicao de um SKU (hoje)\n"
+    "/conta — ver/trocar a conta ativa (com 2+ contas)\n"
     "/id — mostra seu chat id\n\n"
     "Nas listagens, toque em 🖨 num grupo para imprimir (pede confirmacao)."
 )
@@ -294,6 +337,34 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Seu chat id e: {update.effective_chat.id}")
+
+
+def _teclado_contas(contas: list, ativa: str) -> InlineKeyboardMarkup:
+    """Um botao por conta (a ativa marcada com ✓). Callback carrega o indice."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(("✓ " if n == ativa else "") + n, callback_data=f"conta:{i}")]
+        for i, n in enumerate(contas)
+    ])
+
+
+async def cmd_conta(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Mostra a conta ativa e, com 2+ contas, botoes para trocar."""
+    cfg = context.bot_data["cfg"]
+    if not _autorizado(update, cfg):
+        await update.message.reply_text("Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    contas = core.listar_contas()
+    if not contas:
+        await update.message.reply_text("Nenhuma conta configurada. Rode pegar_token.py no PC.")
+        return
+    ativa = core.conta_ativa()
+    if len(contas) == 1:
+        await update.message.reply_text(f"Conta ativa: {contas[0]} (unica configurada).")
+        return
+    await update.message.reply_text(
+        f"Conta ativa: {ativa}\nEscolha a conta:",
+        reply_markup=_teclado_contas(contas, ativa),
+    )
 
 
 async def cmd_hoje(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -353,6 +424,15 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "cancelar":
         await query.edit_message_text("Impressao cancelada.")
         return
+    if data.startswith("conta:"):
+        contas = core.listar_contas()
+        idx = int(data[6:])
+        if 0 <= idx < len(contas):
+            _trocar_conta(contas[idx])
+            context.chat_data.pop("grupos", None)   # grupos eram da conta anterior
+            await query.edit_message_text(
+                f"Conta ativa agora: {contas[idx]}.\nUse /hoje para listar os pedidos.")
+        return
     if data.startswith("ver:"):
         await _confirmar_impressao(update, context, int(data[4:]))
         return
@@ -407,12 +487,18 @@ def main() -> None:
     # Aplica as preferencias do nucleo (conta ativa e carimbar_sku do config.json)
     # para o bot usar a mesma conta/ajustes da tela ao consultar e imprimir.
     core.aplicar_config()
+    # Fallback: se a conta salva sumiu/for invalida mas ha contas, usa a 1a
+    # (a tela faz o mesmo). Evita o bot cair no credenciais.json da raiz.
+    conta = _garantir_conta_ativa()
+    if conta:
+        log.info("Conta ativa: %s (de %d configurada(s)).", conta, len(core.listar_contas()))
     cfg = carregar_config()
     app = ApplicationBuilder().token(cfg["token"]).build()
     app.bot_data["cfg"] = cfg
 
     app.add_handler(CommandHandler(["start", "menu", "ajuda"], cmd_start))
     app.add_handler(CommandHandler("id", cmd_id))
+    app.add_handler(CommandHandler("conta", cmd_conta))
     app.add_handler(CommandHandler("hoje", cmd_hoje))
     app.add_handler(CommandHandler("amanha", cmd_amanha))
     app.add_handler(CommandHandler("todos", cmd_todos))

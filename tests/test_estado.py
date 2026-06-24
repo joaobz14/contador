@@ -29,6 +29,25 @@ def test_marcar_impresso_acumula_e_deduplica(core, tmp_path, monkeypatch):
     assert core.status_grupo(estado, g) == "impresso"
 
 
+def test_marcar_impresso_mescla_com_o_disco(core, tmp_path, monkeypatch):
+    """Simula a tela e o bot juntos: um marca [5], o outro (que carregou o
+    estado ANTES disso) marca [6]; nenhuma marcacao pode ser perdida."""
+    arq = tmp_path / "estado.json"
+    monkeypatch.setattr(core, "ARQUIVO_ESTADO", arq)
+    g = make_grupo(core, [5, 6])
+
+    estado_tela = {}
+    estado_bot = {}                      # ambos carregaram o estado vazio
+    core.marcar_impresso(estado_tela, g, [5])   # a tela grava [5] no disco
+    core.marcar_impresso(estado_bot, g, [6])    # o bot, com memoria velha, grava [6]
+
+    # O disco deve conter os DOIS, nao so o ultimo a gravar.
+    no_disco = json.loads(arq.read_text(encoding="utf-8"))
+    assert no_disco[core._chave_estado(g)] == [5, 6]
+    # E o dict em memoria do ultimo chamador reflete o mesclado.
+    assert estado_bot[core._chave_estado(g)] == [5, 6]
+
+
 def test_envio_novo_reabre_como_parcial(core, tmp_path, monkeypatch):
     monkeypatch.setattr(core, "ARQUIVO_ESTADO", tmp_path / "estado.json")
     estado = {}
