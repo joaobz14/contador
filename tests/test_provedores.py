@@ -58,3 +58,16 @@ def test_shopee_imprimir_grupo_delega(monkeypatch):
     assert prov.imprimir_grupo("G", {}) == ["SN1"]
     # repassa o setup unico (ponto/remetente) para o shopee_api
     assert "branch_id" in capturado["k"] and "sender_real_name" in capturado["k"]
+
+
+def test_marcar_impresso_vai_para_o_estado_certo(monkeypatch):
+    # ML -> core.marcar_impresso ; Shopee -> shopee.marcar_impresso
+    import separador_etiquetas_ml as core
+    destino = {}
+    monkeypatch.setattr(core, "marcar_impresso",
+                        lambda estado, grupo, ids: destino.update(ml=ids))
+    monkeypatch.setattr(sh, "marcar_impresso",
+                        lambda estado, grupo, ids: destino.update(shopee=ids))
+    pv.ProvedorML().marcar_impresso({}, "g", ["A"])
+    pv.ProvedorShopee().marcar_impresso({}, "g", ["B"])
+    assert destino == {"ml": ["A"], "shopee": ["B"]}

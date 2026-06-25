@@ -15,6 +15,7 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, simpledialog, ttk
 
+import provedores
 import separador_etiquetas_ml as core
 
 VERDE = "#0f6e56"
@@ -24,8 +25,6 @@ CINZA = "#6b7280"
 class SeparadorApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.token = None
-        self.cred = None
         self.grupos: list = []
         self.estado: dict = {}
         self.ocupado = False
@@ -37,6 +36,10 @@ class SeparadorApp:
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
+        # Marketplace ativo (Mercado Livre / Shopee) e seu provedor.
+        self.marketplace = self.config.get("marketplace", "Mercado Livre")
+        self.prov = provedores.criar_provedor(self.marketplace)
+        self._aplicar_conta_no_provedor()
         self._build_ui()
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
         # Salva o tamanho/posicao da janela ao fechar, para reabrir igual.
@@ -79,12 +82,34 @@ class SeparadorApp:
         if ativa:
             core.definir_conta(ativa)
 
+    def _aplicar_conta_no_provedor(self) -> None:
+        """Para provedores com sub-contas (ML), aponta para a conta salva (ou a 1a)."""
+        if not self.prov.suporta_contas:
+            return
+        contas = self.prov.contas()
+        ativa = self.config.get("conta_ativa", "")
+        if contas:
+            self.prov.definir_conta(ativa if ativa in contas else contas[0])
+
     # ------------------------------------------------------------------ UI
     def _build_ui(self) -> None:
-        self.root.title("Separador de Etiquetas — Mercado Livre")
+        self.root.title("Separador de Etiquetas")
         # Restaura o tamanho/posicao salvos (ou usa o padrao na 1a vez).
         self.root.geometry(self.config.get("geometria") or "580x700")
         self.root.minsize(460, 480)
+
+        # Linha de marketplace (loja): Mercado Livre / Shopee.
+        topo_mkt = ttk.Frame(self.root, padding=(10, 8, 10, 0))
+        topo_mkt.pack(fill="x")
+        ttk.Label(topo_mkt, text="Loja:").pack(side="left", padx=(0, 6))
+        self.marketplace_var = tk.StringVar(value=self.marketplace)
+        self._radios_mkt: list = []
+        for nome in ("Mercado Livre", "Shopee"):
+            r = ttk.Radiobutton(topo_mkt, text=nome, value=nome,
+                                variable=self.marketplace_var,
+                                command=lambda n=nome: self._trocar_marketplace(n))
+            r.pack(side="left", padx=(0, 8))
+            self._radios_mkt.append(r)
 
         topo = ttk.Frame(self.root, padding=10)
         topo.pack(fill="x")
@@ -116,7 +141,8 @@ class SeparadorApp:
         self._ident_labels = {"carimbo": "Carimbo no DANFE",
                               "divisoria": "Etiqueta divisória", "nenhuma": "Nenhuma"}
         self._ident_valor = {v: k for k, v in self._ident_labels.items()}
-        ttk.Label(topo, text="Identificação:").pack(side="left", padx=(8, 2))
+        self.lbl_ident = ttk.Label(topo, text="Identificação:")
+        self.lbl_ident.pack(side="left", padx=(8, 2))
         self.cb_ident = ttk.Combobox(topo, width=16, state="readonly",
                                      values=list(self._ident_labels.values()))
         self.cb_ident.set(self._ident_labels[self.modo_ident])
@@ -125,6 +151,7 @@ class SeparadorApp:
 
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
+        self._atualizar_visibilidade_topo()   # esconde conta/identificacao p/ Shopee
 
         self.prog = ttk.Progressbar(self.root, mode="determinate")
         self.lbl_status = ttk.Label(self.root, text="", padding=(12, 0), foreground=CINZA)
@@ -147,11 +174,11 @@ class SeparadorApp:
                              lambda e: self.canvas.yview_scroll(int(-e.delta / 120), "units"))
 
     def _rebuild_conta_selector(self) -> None:
-        """Reconstroi os radio buttons de conta. Exibe so com 2+ contas."""
+        """Reconstroi os radios de conta. So aparece no ML com 2+ contas."""
         for w in self._frame_contas.winfo_children():
             w.destroy()
         self._radios_conta.clear()
-        contas = core.listar_contas()
+        contas = self.prov.contas() if self.prov.suporta_contas else []
         if len(contas) < 2:
             self._frame_contas.pack_forget()
             return
@@ -163,10 +190,35 @@ class SeparadorApp:
             r.pack(side="left", padx=(0, 4))
             self._radios_conta.append(r)
 
+    def _atualizar_visibilidade_topo(self) -> None:
+        """Mostra/esconde a Identificação conforme o provedor (Shopee não carimba).
+        O seletor de conta é refeito à parte (_rebuild_conta_selector)."""
+        if self.prov.suporta_identificacao:
+            self.lbl_ident.pack(side="left", padx=(8, 2))
+            self.cb_ident.pack(side="left", padx=(0, 8))
+        else:
+            self.lbl_ident.pack_forget()
+            self.cb_ident.pack_forget()
+
+    def _trocar_marketplace(self, nome: str) -> None:
+        """Troca o marketplace (ML/Shopee), recria o provedor e a tela inicial."""
+        if self.ocupado:
+            self.marketplace_var.set(self.marketplace)   # ignora troca durante busca
+            return
+        self.marketplace = nome
+        self.prov = provedores.criar_provedor(nome)
+        self._aplicar_conta_no_provedor()
+        self.config["marketplace"] = nome
+        core.salvar_config(self.config)
+        self._rebuild_conta_selector()
+        self._atualizar_visibilidade_topo()
+        self.grupos = []
+        self._tela_inicial()
+
     def _trocar_conta(self, nome: str) -> None:
-        """Troca a conta ativa e volta para a tela inicial (sem buscar).
-        A busca so acontece quando o usuario escolhe o dia e clica em Atualizar."""
-        core.definir_conta(nome)
+        """Troca a conta ativa (ML) e volta para a tela inicial (sem buscar).
+        A busca só acontece quando o usuário escolhe o dia e clica em Atualizar."""
+        self.prov.definir_conta(nome)
         self.config["conta_ativa"] = nome
         core.salvar_config(self.config)
         self._tela_inicial()
@@ -180,6 +232,8 @@ class SeparadorApp:
         for r in self.radios:
             r.config(state=estado)
         for r in self._radios_conta:
+            r.config(state=estado)
+        for r in self._radios_mkt:
             r.config(state=estado)
         self.lbl_status.config(text=msg)
 
@@ -195,7 +249,7 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
         self.lbl_resumo.config(text="")
-        tem_contas = len(core.listar_contas()) >= 2
+        tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
         prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia (Hoje ou Amanhã)"
         ttk.Label(
             self.lista, padding=24, justify="center", foreground=CINZA,
@@ -220,18 +274,16 @@ class SeparadorApp:
 
     def _atualizar_thread(self) -> None:
         try:
-            self.cred = core.carregar_credenciais()
-            self.token = core.renovar_token(self.cred)
+            somente_hoje = self.modo.get() != "amanha"
             dia = core._amanha_br() if self.modo.get() == "amanha" else None
-            coleta = core.coletar_grupos(
-                self.token, self.cred["seller_id"], dia=dia, progresso=self._progresso
-            )
-            grupos = coleta.grupos
+            grupos = self.prov.coletar(dia=dia, somente_hoje=somente_hoje,
+                                       progresso=self._progresso)
+            estado = self.prov.carregar_estado()
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
         self.grupos = grupos
-        self.estado = core.carregar_estado()
+        self.estado = estado
         self.root.after(0, self._render)
 
     def _erro(self, msg: str) -> None:
@@ -329,15 +381,31 @@ class SeparadorApp:
                        command=lambda gg=g: self.imprimir(gg)).pack(side="right")
 
     # -------------------------------------------------------------- IMPRIMIR
+    def _confirmar_organizar(self, grupos: list) -> bool:
+        """Na Shopee, organizar o envio compromete a Postagem — pede confirmação
+        antes (conta os pedidos pendentes, sem rede). O organizar é idempotente:
+        pula quem já tem AWB. No ML, nunca há o que organizar → segue direto."""
+        if not self.prov.organiza_envio:
+            return True
+        n = sum(len(core.envios_pendentes(self.estado, g)) for g in grupos)
+        if n == 0:
+            return True
+        return messagebox.askyesno(
+            "Organizar envio",
+            f"Organizar (se preciso) e imprimir {n} pedido(s) como Postagem (drop-off)?\n\n"
+            "Isso confirma o método de envio na Shopee.")
+
     def imprimir(self, g) -> None:
         if self.ocupado:
+            return
+        if not self._confirmar_organizar([g]):
             return
         self._ocupar(True, f"Imprimindo: {g.nome} ...")
         threading.Thread(target=self._imprimir_thread, args=(g,), daemon=True).start()
 
     def _imprimir_thread(self, g) -> None:
         try:
-            core.imprimir_pendentes(self.token, g, self.estado)
+            self.prov.imprimir_grupo(g, self.estado, modo=self.modo_ident)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
@@ -356,7 +424,7 @@ class SeparadorApp:
 
     def _reimprimir_thread(self, g) -> None:
         try:
-            core.reimprimir(self.token, g)
+            self.prov.reimprimir(g)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
@@ -371,15 +439,19 @@ class SeparadorApp:
             messagebox.showinfo("Imprimir lotes",
                                 "Marque ao menos um lote na caixinha à esquerda.")
             return
-        modo_txt = self._ident_labels.get(self.modo_ident, "")
-        self._ocupar(True, f"Imprimindo {len(selecionados)} lote(s) ({modo_txt}) ...")
+        if not self._confirmar_organizar(selecionados):
+            return
+        if self.prov.suporta_identificacao:
+            extra = f" ({self._ident_labels.get(self.modo_ident, '')})"
+        else:
+            extra = ""
+        self._ocupar(True, f"Imprimindo {len(selecionados)} lote(s){extra} ...")
         threading.Thread(target=self._imprimir_lotes_thread,
                          args=(selecionados,), daemon=True).start()
 
     def _imprimir_lotes_thread(self, grupos) -> None:
         try:
-            impressos = core.gerar_zip_lotes(self.token, grupos, self.estado,
-                                             modo=self.modo_ident)
+            impressos = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
@@ -402,7 +474,7 @@ class SeparadorApp:
                 "Não = mantém pendentes para reimprimir.")
         if marcar:
             for g, pend in impressos:
-                core.marcar_impresso(self.estado, g, pend)
+                self.prov.marcar_impresso(self.estado, g, pend)
         self._render()
 
     def imprimir_proximo(self) -> None:

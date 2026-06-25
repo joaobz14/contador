@@ -465,11 +465,11 @@ def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
 
 
-def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *,
-                   organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
+def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bool = True,
+                   marcar: bool = True, branch_id=None, sender_real_name=None) -> list:
     """Organiza (se preciso e organizar=True), gera/baixa a etiqueta dos envios
-    PENDENTES do grupo, salva na Downloads (a Zebra imprime) e marca o estado.
-    Retorna os order_sns impressos (vazio se nada pendente)."""
+    PENDENTES do grupo, salva na Downloads (a Zebra imprime) e, se marcar=True,
+    marca o estado. Retorna os order_sns impressos (vazio se nada pendente)."""
     pendentes = core.envios_pendentes(estado, grupo)
     if not pendentes:
         return []
@@ -480,17 +480,19 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *,
                             branch_id=branch_id, sender_real_name=sender_real_name)
     conteudo = gerar_etiqueta(cred, pendentes)
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
-    marcar_impresso(estado, grupo, pendentes)
+    if marcar:
+        marcar_impresso(estado, grupo, pendentes)
     return pendentes
 
 
 def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
                    organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
-    """Organiza+imprime varios grupos (um ZIP por grupo). Marca cada um conforme
-    imprime. Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    """Organiza+imprime varios grupos (um ZIP por grupo) SEM marcar o estado —
+    quem chama marca depois da confirmacao ('as etiquetas sairam certo?'), igual
+    ao fluxo de lotes do ML. Retorna [(grupo, order_sns), ...] do que foi impresso."""
     impressos = []
     for g in grupos:
-        ids = imprimir_grupo(cred, g, estado, organizar=organizar,
+        ids = imprimir_grupo(cred, g, estado, organizar=organizar, marcar=False,
                              branch_id=branch_id, sender_real_name=sender_real_name)
         if ids:
             impressos.append((g, ids))

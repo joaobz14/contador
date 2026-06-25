@@ -110,6 +110,15 @@ A lista é separada em **🖨 Para imprimir** (em cima) e **✓ Já impressas �
 Cada grupo também tem **↻ Reimprimir**, que refaz as etiquetas daquele grupo (útil
 se uma etiqueta atolar/estragar) sem alterar o controle de impresso.
 
+**Marketplace (Mercado Livre / Shopee):** no topo há um seletor **Loja**. No
+Mercado Livre aparecem o seletor de conta (Gastromaq/Cozilatti) e o de
+identificação (carimbo/divisória); na Shopee esses somem (a etiqueta Shopee é
+imagem, sem DANFE). Imprimir um pedido Shopee **organiza o envio como Postagem
+(drop-off) automaticamente** — com uma confirmação antes — e baixa a etiqueta, que
+o app da Zebra imprime igual ao Mercado Livre. O controle de "já impresso" é
+separado por marketplace. A arquitetura fica em `provedores.py` (um provedor por
+marketplace), então a tela é a mesma para os dois.
+
 **Jeito prático (Windows):** dê um duplo-clique em **`Abrir Separador.bat`**.
 Ele abre a tela direto, sem a janela preta do terminal. Para ter um ícone na
 área de trabalho, clique com o botão direito nesse arquivo →
