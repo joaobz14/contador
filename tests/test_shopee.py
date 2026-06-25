@@ -141,3 +141,93 @@ def test_data_envio_converte_epoch_para_brasilia():
     epoch = int(datetime.fromisoformat("2026-06-19T12:00:00-03:00").timestamp())
     assert sh._data_envio(epoch) == "2026-06-19"
     assert sh._data_envio(0) == ""
+
+
+# ----------------------------------------------------- organizar envio (drop-off)
+def test_montar_dropoff_vazio_quando_nada_exigido():
+    assert sh._montar_dropoff({"dropoff": []}) == {}
+    assert sh._montar_dropoff({}) == {}
+
+
+def test_montar_dropoff_inclui_campos_exigidos():
+    d = sh._montar_dropoff({"dropoff": ["branch_id", "sender_real_name"]},
+                           branch_id=7, sender_real_name="Gastromaq")
+    assert d == {"branch_id": 7, "sender_real_name": "Gastromaq"}
+
+
+def test_montar_dropoff_ignora_tracking_number():
+    # tracking_number e gerado pela Shopee — nunca enviado
+    assert sh._montar_dropoff({"dropoff": ["tracking_number"]}) == {}
+
+
+def test_montar_dropoff_erro_se_campo_faltando():
+    import pytest
+    with pytest.raises(sh.core.SeparadorError, match="branch_id"):
+        sh._montar_dropoff({"dropoff": ["branch_id"]})   # sem fornecer branch_id
+
+
+def test_organizar_envio_pula_se_ja_tem_awb(monkeypatch):
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "BR123")
+    monkeypatch.setattr(sh, "ship_order",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao chamar")))
+    assert sh.organizar_envio({}, "TOK", "A1") is False
+
+
+def test_organizar_envio_posta_como_dropoff(monkeypatch):
+    capturado = {}
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")        # sem AWB
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+    monkeypatch.setattr(sh, "ship_order",
+                        lambda c, t, sn, **k: capturado.update(sn=sn, kw=k) or {})
+    assert sh.organizar_envio({}, "TOK", "A1") is True
+    assert capturado["sn"] == "A1" and capturado["kw"]["dropoff"] == {}
+
+
+def test_organizar_envio_erro_se_so_pickup(monkeypatch):
+    import pytest
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"pickup": []}}})
+    with pytest.raises(sh.core.SeparadorError, match="drop-off"):
+        sh.organizar_envio({}, "TOK", "A1")
+
+
+# ----------------------------------------------------- imprimir grupo / estado
+def _grupo(chave="A01", ids=("SN1", "SN2"), dia=""):
+    g = sh.core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=list(ids))
+    g.dia = dia
+    return g
+
+
+def test_marcar_impresso_namespaceia_por_dia(monkeypatch):
+    monkeypatch.setattr(sh, "salvar_estado", lambda estado: None)
+    estado = {}
+    g = _grupo(dia="2026-06-25")
+    sh.marcar_impresso(estado, g, ["SN1"])
+    assert estado["2026-06-25|A01|q1"] == ["SN1"]
+
+
+def test_imprimir_grupo_organiza_gera_marca(monkeypatch):
+    chamadas = {"organizar": [], "salvou": []}
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio",
+                        lambda c, t, sn, **k: chamadas["organizar"].append(sn))
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh, "salvar_etiqueta",
+                        lambda conteudo, rotulo: chamadas["salvou"].append(rotulo) or ("p", "ZIP"))
+    monkeypatch.setattr(sh, "salvar_estado", lambda estado: None)
+    estado = {}
+    g = _grupo(dia="2026-06-25")
+    impressos = sh.imprimir_grupo({}, g, estado)
+    assert impressos == ["SN1", "SN2"]
+    assert chamadas["organizar"] == ["SN1", "SN2"]          # organizou os dois
+    assert estado["2026-06-25|A01|q1"] == ["SN1", "SN2"]    # marcou impresso
+
+
+def test_imprimir_grupo_pula_ja_impressos(monkeypatch):
+    monkeypatch.setattr(sh, "gerar_etiqueta",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao gerar")))
+    g = _grupo(dia="2026-06-25")
+    estado = {"2026-06-25|A01|q1": ["SN1", "SN2"]}          # tudo ja impresso
+    assert sh.imprimir_grupo({}, g, estado) == []
