@@ -224,6 +224,9 @@ baixa (`download_shipping_document`). O resultado é um `.zip`
 nome e imprime sozinho — o mesmo caminho do Mercado Livre. Se o envio ainda não foi
 organizado, o comando avisa em vez de falhar.
 
+**Atalho (Windows):** dê um duplo-clique em **`Etiqueta Shopee.bat`** — ele lista os
+pedidos de hoje, pergunta o `order_sn` e gera a etiqueta, deixando a janela aberta.
+
 ## Como a impressão funciona
 
 Ao imprimir um grupo, o programa baixa o ZPL pela API (`/shipment_labels`) e grava
