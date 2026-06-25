@@ -170,18 +170,36 @@ def test_organizar_envio_pula_se_ja_tem_awb(monkeypatch):
     monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "BR123")
     monkeypatch.setattr(sh, "ship_order",
                         lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao chamar")))
-    assert sh.organizar_envio({}, "TOK", "A1") is False
+    assert sh.organizar_envio({}, "TOK", "A1") == "BR123"      # devolve o AWB existente
 
 
-def test_organizar_envio_posta_como_dropoff(monkeypatch):
+def test_organizar_envio_posta_e_espera_o_awb(monkeypatch):
     capturado = {}
-    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")        # sem AWB
+    chamadas = {"n": 0}
+
+    def fake_rastreio(c, t, sn):       # vazio na 1a checagem; AWB so apos o ship_order
+        chamadas["n"] += 1
+        return "" if chamadas["n"] == 1 else "BR9"
+
+    monkeypatch.setattr(sh, "numero_rastreio", fake_rastreio)
     monkeypatch.setattr(sh, "parametros_envio",
                         lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
     monkeypatch.setattr(sh, "ship_order",
                         lambda c, t, sn, **k: capturado.update(sn=sn, kw=k) or {})
-    assert sh.organizar_envio({}, "TOK", "A1") is True
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    assert sh.organizar_envio({}, "TOK", "A1") == "BR9"        # esperou o AWB sair
     assert capturado["sn"] == "A1" and capturado["kw"]["dropoff"] == {}
+
+
+def test_organizar_envio_erro_se_awb_nao_sai(monkeypatch):
+    import pytest
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")        # AWB nunca sai
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+    monkeypatch.setattr(sh, "ship_order", lambda c, t, sn, **k: {})
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    with pytest.raises(sh.core.SeparadorError, match="AWB"):
+        sh.organizar_envio({}, "TOK", "A1", tentativas=2)
 
 
 def test_organizar_envio_erro_se_so_pickup(monkeypatch):
