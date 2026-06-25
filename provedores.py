@@ -43,6 +43,10 @@ class Provedor:
     def envios_pendentes(self, estado: dict, grupo) -> list:
         return core.envios_pendentes(estado, grupo)
 
+    def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
+        """Marca order_sns/shipment_ids como impressos no estado do provedor."""
+        raise NotImplementedError
+
     def a_organizar(self, grupos: list, estado: dict) -> list:
         """order_sns que precisam de Organizar Envio antes de imprimir (so Shopee)."""
         return []
@@ -89,6 +93,9 @@ class ProvedorML(Provedor):
     def carregar_estado(self) -> dict:
         return core.carregar_estado()
 
+    def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
+        core.marcar_impresso(estado, grupo, ids)
+
     def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
         token = self.token or self._renovar()
         return core.imprimir_pendentes(token, grupo, estado)
@@ -125,6 +132,9 @@ class ProvedorShopee(Provedor):
 
     def carregar_estado(self) -> dict:
         return shopee.carregar_estado()
+
+    def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
+        shopee.marcar_impresso(estado, grupo, ids)
 
     def a_organizar(self, grupos: list, estado: dict) -> list:
         pendentes: list = []

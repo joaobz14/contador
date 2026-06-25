@@ -231,3 +231,18 @@ def test_imprimir_grupo_pula_ja_impressos(monkeypatch):
     g = _grupo(dia="2026-06-25")
     estado = {"2026-06-25|A01|q1": ["SN1", "SN2"]}          # tudo ja impresso
     assert sh.imprimir_grupo({}, g, estado) == []
+
+
+def test_imprimir_lotes_nao_marca_estado(monkeypatch):
+    # lotes geram/imprimem mas NAO marcam — a GUI marca apos a confirmacao
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: True)
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    monkeypatch.setattr(sh, "salvar_estado",
+                        lambda estado: (_ for _ in ()).throw(AssertionError("nao marcar")))
+    estado = {}
+    g = _grupo(dia="2026-06-25")
+    impressos = sh.imprimir_lotes({}, [g], estado)
+    assert impressos == [(g, ["SN1", "SN2"])]
+    assert estado == {}                                    # nada marcado
