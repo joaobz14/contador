@@ -15,4 +15,12 @@ cd "${CLAUDE_PROJECT_DIR:-.}"
 # para nao poluir o contexto da sessao.
 python -m pip install --quiet -r requirements-dev.txt 1>&2
 
-echo "Ambiente pronto: dependencias instaladas (pytest disponivel)."
+# Teste da GUI (Tkinter) headless: o python do projeto (3.11) nao tem tkinter,
+# entao preparamos o python3.12 do sistema + xvfb + imagemagick EM SEGUNDO PLANO
+# (nao atrasa a sessao). Quando estiver pronto, valida-se a tela com:
+#   xvfb-run -a python3.12 tools/gui_screenshot.py out.png [Shopee]
+if [ -f tools/setup_gui_tests.sh ]; then
+  nohup bash tools/setup_gui_tests.sh >/tmp/setup_gui_tests.log 2>&1 &
+fi
+
+echo "Ambiente pronto: dependencias instaladas (pytest). GUI headless preparando em 2o plano."
