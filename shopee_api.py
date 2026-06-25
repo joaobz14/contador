@@ -235,6 +235,10 @@ def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = T
     detalhes = buscar_detalhes(cred, token, order_sns) if order_sns else []
     alvo_dia = (core._hoje_br() if somente_hoje else None) if dia is None else dia
     grupos = grupos_de_detalhes(detalhes, core.carregar_nomes(), alvo_dia)
+    if alvo_dia is not None:
+        # Namespaceia o estado de impressao por dia de despacho (igual ao ML).
+        for g in grupos:
+            g.dia = alvo_dia
     qtd = sum(len(d.get("item_list", [])) for d in detalhes) if alvo_dia is None else \
         sum(1 for d in detalhes if _data_envio(d.get("ship_by_date")) == alvo_dia)
     return grupos, qtd
@@ -369,14 +373,138 @@ def detectar_formato(conteudo: bytes) -> str:
     return "DESCONHECIDO"
 
 
-def salvar_etiqueta(conteudo: bytes, order_sn: str):
-    """Grava a etiqueta na pasta Downloads e devolve (caminho, formato detectado)."""
+def salvar_etiqueta(conteudo: bytes, rotulo: str):
+    """Grava a etiqueta na pasta Downloads e devolve (caminho, formato detectado).
+    O nome comeca com 'etiqueta shopee - ' (prefixo que o app da Zebra reconhece);
+    `rotulo` (order_sn ou rotulo do grupo) e saneado para virar nome de arquivo."""
     fmt = detectar_formato(conteudo)
     ext = {"PDF": "pdf", "ZPL": "zpl", "PNG": "png", "ZIP": "zip"}.get(fmt, "bin")
+    base = "".join(c if (c.isalnum() or c in " -_") else "_" for c in str(rotulo))[:50].strip()
     core.PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    destino = core.PASTA_DOWNLOADS / f"etiqueta shopee - {order_sn}.{ext}"
+    destino = core.PASTA_DOWNLOADS / f"etiqueta shopee - {base}.{ext}"
     destino.write_bytes(conteudo)
     return destino, fmt
+
+
+# ---------------------------------------------------------------------------
+# ORGANIZAR ENVIO (ship_order como Postagem / drop-off)
+# ---------------------------------------------------------------------------
+def _montar_dropoff(info_needed: dict, *, branch_id=None, sender_real_name=None) -> dict:
+    """Monta o corpo `dropoff` do ship_order a partir dos campos exigidos em
+    info_needed.dropoff. Campos nao exigidos sao omitidos; `tracking_number` e
+    gerado pela Shopee, nunca enviado. Levanta SeparadorError se um campo exigido
+    nao foi fornecido (a GUI configura o ponto/remetente uma vez)."""
+    exigidos = (info_needed or {}).get("dropoff") or []
+    valores = {"branch_id": branch_id, "sender_real_name": sender_real_name}
+    dropoff: dict = {}
+    for campo in exigidos:
+        if campo == "tracking_number":
+            continue
+        valor = valores.get(campo)
+        if valor in (None, ""):
+            raise core.SeparadorError(
+                f"O envio exige '{campo}' para postar (drop-off). Configure o ponto "
+                f"de coleta / nome do remetente da Shopee uma vez nas preferencias."
+            )
+        dropoff[campo] = valor
+    return dropoff
+
+
+def organizar_envio(cred: dict, token: str, order_sn: str, *,
+                    branch_id=None, sender_real_name=None) -> bool:
+    """Organiza o envio como Postagem (drop-off) — equivale a escolher 'vou postar
+    no ponto de coleta' no painel. Idempotente: se ja houver AWB, nao faz nada.
+    Retorna True se organizou agora; False se ja estava organizado."""
+    if numero_rastreio(cred, token, order_sn):
+        return False
+    info = parametros_envio(cred, token, order_sn).get("response", {}).get("info_needed", {}) or {}
+    if "dropoff" not in info:
+        raise core.SeparadorError(
+            f"O pedido {order_sn} nao oferece Postagem (drop-off) — info_needed={info}. "
+            f"Organize manualmente no painel da Shopee."
+        )
+    dropoff = _montar_dropoff(info, branch_id=branch_id, sender_real_name=sender_real_name)
+    ship_order(cred, token, order_sn, dropoff=dropoff)
+    return True
+
+
+def envios_a_organizar(cred: dict, order_sns: list[str]) -> list[str]:
+    """Quais order_sns ainda nao tem AWB (precisam de Organizar Envio)."""
+    token = obter_token(cred)
+    return [sn for sn in order_sns if not numero_rastreio(cred, token, sn)]
+
+
+# ---------------------------------------------------------------------------
+# ESTADO (controle de "ja impresso") — arquivo proprio da Shopee
+# ---------------------------------------------------------------------------
+ARQUIVO_ESTADO = core.PASTA_SCRIPT / "estado_shopee.json"
+
+
+def carregar_estado() -> dict:
+    return core._limpar_estado_antigo(core._ler_json(ARQUIVO_ESTADO))
+
+
+def salvar_estado(estado: dict) -> None:
+    core._gravar_json(ARQUIVO_ESTADO, estado)
+
+
+def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = None) -> None:
+    """Marca order_sns como impressos (ou todos do grupo), reaproveitando a chave
+    de estado do nucleo (namespaceada por dia de despacho)."""
+    ids = grupo.shipment_ids if order_sns is None else order_sns
+    impressos = core._impressos(estado, grupo)
+    impressos.update(ids)
+    estado[core._chave_estado(grupo)] = sorted(impressos)
+    salvar_estado(estado)
+
+
+# ---------------------------------------------------------------------------
+# IMPRESSAO DE GRUPO / LOTES (organiza -> gera -> salva -> marca)
+# ---------------------------------------------------------------------------
+def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
+    return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
+
+
+def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *,
+                   organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
+    """Organiza (se preciso e organizar=True), gera/baixa a etiqueta dos envios
+    PENDENTES do grupo, salva na Downloads (a Zebra imprime) e marca o estado.
+    Retorna os order_sns impressos (vazio se nada pendente)."""
+    pendentes = core.envios_pendentes(estado, grupo)
+    if not pendentes:
+        return []
+    token = obter_token(cred)
+    if organizar:
+        for sn in pendentes:
+            organizar_envio(cred, token, sn,
+                            branch_id=branch_id, sender_real_name=sender_real_name)
+    conteudo = gerar_etiqueta(cred, pendentes)
+    salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
+    marcar_impresso(estado, grupo, pendentes)
+    return pendentes
+
+
+def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
+                   organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
+    """Organiza+imprime varios grupos (um ZIP por grupo). Marca cada um conforme
+    imprime. Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    impressos = []
+    for g in grupos:
+        ids = imprimir_grupo(cred, g, estado, organizar=organizar,
+                             branch_id=branch_id, sender_real_name=sender_real_name)
+        if ids:
+            impressos.append((g, ids))
+    return impressos
+
+
+def reimprimir_grupo(cred: dict, grupo: core.Grupo) -> list:
+    """Regera a etiqueta de TODOS os envios do grupo, sem mexer no estado (util
+    quando uma etiqueta atola). Assume o envio ja organizado."""
+    ids = list(grupo.shipment_ids)
+    if not ids:
+        return []
+    salvar_etiqueta(gerar_etiqueta(cred, ids), _rotulo_lote(grupo, ids))
+    return ids
 
 
 # ---------------------------------------------------------------------------
