@@ -68,7 +68,7 @@ PASTA_DOWNLOADS = Path.home() / "Downloads"
 # LIVRE CENTRAL (sempre vazia), centralizado, para identificar o produto. A
 # etiqueta de envio nao e carimbada. Posicao/tamanho em "dots" (203 dpi ~= 8/mm).
 CARIMBAR_SKU = False  # ligado pela tela quando o modo de identificacao = "carimbo"
-CARIMBO_Y = 600       # dots a partir do topo (area livre central da DANFE)
+CARIMBO_Y = 800       # dots a partir do topo (mais abaixo, no centro da area livre da DANFE)
 CARIMBO_ALTURA = 70   # altura da fonte em dots (~8 mm)
 LARGURA_ETIQUETA = 812  # largura ~10 cm @203 dpi; usada para centralizar texto
 
