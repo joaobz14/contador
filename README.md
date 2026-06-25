@@ -282,3 +282,17 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
+### Testar a GUI sem monitor (headless)
+
+A tela (Tkinter) não tem testes automáticos, mas dá para **abrir e tirar um
+screenshot** dela em máquinas sem display (ex.: CI / Claude Code na web):
+
+```bash
+bash tools/setup_gui_tests.sh          # instala tkinter, xvfb e imagemagick (uma vez)
+xvfb-run -a python3.12 tools/gui_screenshot.py out.png            # modo Mercado Livre
+xvfb-run -a python3.12 tools/gui_screenshot.py shopee.png Shopee  # modo Shopee
+```
+
+Gera um PNG da tela inicial (sem rede/credenciais), útil para conferir o layout
+após mudanças visuais. O SessionStart hook já prepara isso em segundo plano.
+
