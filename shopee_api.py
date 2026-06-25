@@ -411,12 +411,15 @@ def _montar_dropoff(info_needed: dict, *, branch_id=None, sender_real_name=None)
 
 
 def organizar_envio(cred: dict, token: str, order_sn: str, *,
-                    branch_id=None, sender_real_name=None) -> bool:
-    """Organiza o envio como Postagem (drop-off) — equivale a escolher 'vou postar
-    no ponto de coleta' no painel. Idempotente: se ja houver AWB, nao faz nada.
-    Retorna True se organizou agora; False se ja estava organizado."""
-    if numero_rastreio(cred, token, order_sn):
-        return False
+                    branch_id=None, sender_real_name=None,
+                    tentativas: int = 15, espera: float = 2.0) -> str:
+    """Organiza o envio como Postagem (drop-off) — equivale a 'vou postar no ponto
+    de coleta' no painel — e ESPERA o rastreio (AWB) ser emitido (a Shopee leva
+    alguns segundos apos o ship_order). Idempotente: se ja houver AWB, devolve na
+    hora. Retorna o tracking_number; erro claro se o AWB nao sair a tempo."""
+    tn = numero_rastreio(cred, token, order_sn)
+    if tn:
+        return tn
     info = parametros_envio(cred, token, order_sn).get("response", {}).get("info_needed", {}) or {}
     if "dropoff" not in info:
         raise core.SeparadorError(
@@ -425,7 +428,16 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
         )
     dropoff = _montar_dropoff(info, branch_id=branch_id, sender_real_name=sender_real_name)
     ship_order(cred, token, order_sn, dropoff=dropoff)
-    return True
+    # O AWB nao sai na hora: a Shopee leva alguns segundos para emiti-lo.
+    for _ in range(tentativas):
+        time.sleep(espera)
+        tn = numero_rastreio(cred, token, order_sn)
+        if tn:
+            return tn
+    raise core.SeparadorError(
+        f"Envio organizado, mas o rastreio (AWB) do pedido {order_sn} ainda nao saiu. "
+        f"Aguarde alguns segundos e clique em Imprimir novamente."
+    )
 
 
 def envios_a_organizar(cred: dict, order_sns: list[str]) -> list[str]:
