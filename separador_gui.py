@@ -157,10 +157,17 @@ class SeparadorApp:
         self.lbl_status = ttk.Label(self.root, text="", padding=(12, 0), foreground=CINZA)
         self.lbl_status.pack(fill="x")
 
-        cont = ttk.Frame(self.root)
-        cont.pack(fill="both", expand=True, padx=10, pady=(6, 10))
-        self.canvas = tk.Canvas(cont, highlightthickness=0)
-        sb = ttk.Scrollbar(cont, orient="vertical", command=self.canvas.yview)
+        # Rodape FIXO com "Imprimir selecionados" — sempre visivel, nao rola com a
+        # lista. Aparece so quando ha grupos para imprimir (mostrado em _render).
+        self.rodape = ttk.Frame(self.root, padding=(10, 6))
+        self.btn_lotes = ttk.Button(self.rodape, text="🖨 Imprimir selecionados",
+                                    command=self.imprimir_lotes, state="disabled")
+        self.btn_lotes.pack(side="right")
+
+        self.cont = ttk.Frame(self.root)
+        self.cont.pack(fill="both", expand=True, padx=10, pady=(6, 10))
+        self.canvas = tk.Canvas(self.cont, highlightthickness=0)
+        sb = ttk.Scrollbar(self.cont, orient="vertical", command=self.canvas.yview)
         self.lista = ttk.Frame(self.canvas)
         self.lista.bind("<Configure>",
                         lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
@@ -235,7 +242,24 @@ class SeparadorApp:
             r.config(state=estado)
         for r in self._radios_mkt:
             r.config(state=estado)
+        self._atualizar_contagem()          # reavalia o botao do rodape
         self.lbl_status.config(text=msg)
+
+    def _mostrar_rodape(self, mostrar: bool) -> None:
+        """Mostra/esconde o rodape fixo do 'Imprimir selecionados' (fica sobre a
+        lista, antes do canvas, para nao rolar junto)."""
+        if mostrar:
+            self.rodape.pack(side="bottom", fill="x", before=self.cont)
+        else:
+            self.rodape.pack_forget()
+
+    def _atualizar_contagem(self) -> None:
+        """Atualiza o texto/estado do botao 'Imprimir selecionados' conforme as
+        caixinhas marcadas. Chamado a cada clique numa caixinha."""
+        n = sum(1 for _g, v in self._sel_vars if v.get())
+        sufixo = f" ({n})" if n else ""
+        self.btn_lotes.config(text=f"🖨 Imprimir selecionados{sufixo}",
+                              state=("normal" if (n and not self.ocupado) else "disabled"))
 
     def _trocar_identificacao(self, event=None) -> None:
         """Troca o modo de identificacao (carimbo/divisoria/nenhuma) e lembra."""
@@ -248,6 +272,8 @@ class SeparadorApp:
         """Tela de abertura: nada e buscado ate o usuario escolher e clicar."""
         for w in self.lista.winfo_children():
             w.destroy()
+        self._sel_vars = []
+        self._mostrar_rodape(False)
         self.lbl_resumo.config(text="")
         tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
         prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia (Hoje ou Amanhã)"
@@ -310,6 +336,9 @@ class SeparadorApp:
                  f"{len(arquivadas)} impressos")
 
         dia_txt = "amanhã" if self.modo.get() == "amanha" else "hoje"
+        # Rodape do "Imprimir selecionados" aparece so quando ha grupos pendentes.
+        self._mostrar_rodape(bool(pendentes))
+
         if not self.grupos:
             ttk.Label(self.lista, text=f"Nenhum grupo para imprimir {dia_txt}. 🎉",
                       padding=24).pack()
@@ -318,12 +347,8 @@ class SeparadorApp:
 
         # ----- Seção: para imprimir (pendentes/parciais), agrupado por quantidade
         if pendentes:
-            cab = ttk.Frame(self.lista)
-            cab.pack(fill="x", pady=(8, 2))
-            ttk.Label(cab, text="🖨  Para imprimir",
-                      font=("Segoe UI", 11, "bold")).pack(side="left")
-            ttk.Button(cab, text="🖨 Imprimir selecionados",
-                       command=self.imprimir_lotes).pack(side="right")
+            ttk.Label(self.lista, text="🖨  Para imprimir",
+                      font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
             por_qtd: dict[int, list] = {}
             for g in pendentes:
                 por_qtd.setdefault(g.quantidade, []).append(g)
@@ -355,7 +380,8 @@ class SeparadorApp:
 
         if selecionavel:                       # caixinha para "Imprimir selecionados"
             var = tk.BooleanVar(value=False)
-            ttk.Checkbutton(fr, variable=var).pack(side="left", padx=(0, 6))
+            ttk.Checkbutton(fr, variable=var,
+                            command=self._atualizar_contagem).pack(side="left", padx=(0, 6))
             self._sel_vars.append((g, var))
 
         esq = ttk.Frame(fr)
