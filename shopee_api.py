@@ -26,6 +26,7 @@ import hashlib
 import hmac
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
@@ -446,6 +447,26 @@ def envios_a_organizar(cred: dict, order_sns: list[str]) -> list[str]:
     return [sn for sn in order_sns if not numero_rastreio(cred, token, sn)]
 
 
+def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
+    """Para grupos de UM unico pedido JA IMPRESSO, busca o AWB (get_tracking_number)
+    em paralelo e seta g.rastreio — para conferencia na tela. Grupos com varios
+    pedidos sao ignorados de proposito (o usuario nao precisa, e poupa chamadas)."""
+    alvo = [g for g in grupos
+            if len(g.shipment_ids) == 1 and core.status_grupo(estado, g) == "impresso"]
+    if not alvo:
+        return
+    token = obter_token(cred)
+
+    def _um(g):
+        try:
+            g.rastreio = numero_rastreio(cred, token, str(g.shipment_ids[0]))
+        except Exception:                       # best-effort: rastreio e so conferencia
+            pass
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(_um, alvo))
+
+
 # ---------------------------------------------------------------------------
 # ESTADO (controle de "ja impresso") — arquivo proprio da Shopee
 # ---------------------------------------------------------------------------
@@ -492,6 +513,12 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
                             branch_id=branch_id, sender_real_name=sender_real_name)
     conteudo = gerar_etiqueta(cred, pendentes)
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
+    # Grupo de 1 pedido: guarda o rastreio (AWB) para conferencia na tela.
+    if len(grupo.shipment_ids) == 1:
+        try:
+            grupo.rastreio = numero_rastreio(cred, token, str(grupo.shipment_ids[0]))
+        except Exception:
+            pass
     if marcar:
         marcar_impresso(estado, grupo, pendentes)
     return pendentes

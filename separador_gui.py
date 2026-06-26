@@ -406,6 +406,13 @@ class SeparadorApp:
             ttk.Button(fr, text=texto,
                        command=lambda gg=g: self.imprimir(gg)).pack(side="right")
 
+        # Rastreio (AWB) — so em grupos Shopee de 1 pedido ja impresso. Empacotado
+        # por ultimo entre os "right", aparece a esquerda dos botoes (no meio da
+        # linha), para conferir com a etiqueta e o site.
+        if getattr(g, "rastreio", ""):
+            ttk.Label(fr, text=f"🏷 {g.rastreio}", foreground=VERDE,
+                      font=("Consolas", 10, "bold")).pack(side="right", padx=12)
+
     # -------------------------------------------------------------- IMPRIMIR
     def _confirmar_organizar(self, grupos: list) -> bool:
         """Na Shopee, organizar o envio compromete a Postagem — pede confirmação

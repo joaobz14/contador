@@ -319,6 +319,9 @@ class Grupo:
     # Para envios "combo" (varios SKUs no mesmo pacote): lista de (sku, qtd).
     # Vazio em grupos normais de um unico SKU.
     componentes: list = field(default_factory=list)
+    # Codigo de rastreio (AWB) — preenchido so para grupos Shopee de 1 pedido ja
+    # impresso, para conferencia (app x etiqueta x site). Vazio nos demais.
+    rastreio: str = ""
 
     @property
     def chave_grupo(self) -> str:
