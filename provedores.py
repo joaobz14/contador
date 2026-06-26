@@ -128,6 +128,8 @@ class ProvedorShopee(Provedor):
 
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
         grupos, _ = shopee.coletar_grupos(self._creds(), dia=dia, somente_hoje=somente_hoje)
+        # Rastreio (AWB) dos grupos de 1 pedido ja impresso, para conferencia.
+        shopee.preencher_rastreios(self._creds(), grupos, shopee.carregar_estado())
         return grupos
 
     def carregar_estado(self) -> dict:

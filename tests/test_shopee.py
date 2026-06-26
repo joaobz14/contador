@@ -251,6 +251,22 @@ def test_imprimir_grupo_pula_ja_impressos(monkeypatch):
     assert sh.imprimir_grupo({}, g, estado) == []
 
 
+def test_preencher_rastreios_so_grupo_unico_impresso(monkeypatch):
+    def g(chave, ids):
+        x = sh.core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=list(ids))
+        x.dia = "2026-06-25"
+        return x
+    g1, g2, g3 = g("A", ["SN1"]), g("B", ["SN2", "SN3"]), g("C", ["SN4"])
+    estado = {"2026-06-25|A|q1": ["SN1"],            # unico + impresso
+              "2026-06-25|B|q1": ["SN2", "SN3"]}     # varios + impresso
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: f"BR-{sn}")
+    sh.preencher_rastreios({}, [g1, g2, g3], estado)
+    assert g1.rastreio == "BR-SN1"     # 1 pedido impresso -> mostra
+    assert g2.rastreio == ""           # varios pedidos -> ignora (poupa chamada)
+    assert g3.rastreio == ""           # pendente (sem AWB) -> ignora
+
+
 def test_imprimir_lotes_nao_marca_estado(monkeypatch):
     # lotes geram/imprimem mas NAO marcam — a GUI marca apos a confirmacao
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
