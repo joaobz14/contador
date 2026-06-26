@@ -66,6 +66,7 @@ except ImportError as _erro_import:
 
 import relatorio
 import separador_etiquetas_ml as core
+import shopee_api as shopee
 
 ARQUIVO_CONFIG = core.PASTA_SCRIPT / "bot_config.json"
 ARQUIVO_LOG = core.PASTA_SCRIPT / "bot.log"
@@ -160,16 +161,40 @@ def _exec_resumo():
     return relatorio.texto_resumo(_prontos(), core._hoje_br(), core._amanha_br())
 
 
-# Coletores (rede) por nome de acao, com o titulo da listagem. A data de amanha
-# e calculada na hora da chamada para nunca "envelhecer" se o bot ficar ligado
-# virando o dia.
-def _coletores() -> dict:
+# ---------------------------------------------------------------- loja (marketplace)
+# A loja ativa e POR CHAT (cada conversa escolhe a sua). Mercado Livre e o padrao.
+# Shopee no bot e SOMENTE CONSULTA (a impressao da Shopee fica no app).
+LOJA_ML = "Mercado Livre"
+LOJA_SHOPEE = "Shopee"
+
+
+def _loja(context) -> str:
+    return context.chat_data.get("loja", LOJA_ML)
+
+
+def _eh_shopee(context) -> bool:
+    return _loja(context) == LOJA_SHOPEE
+
+
+def _coletar_grupos(context, dia: str | None, somente_hoje: bool) -> list:
+    """Coleta os grupos da LOJA ativa do chat (somente leitura).
+    ML: via nucleo (usa a conta ativa). Shopee: via shopee_api."""
+    if _eh_shopee(context):
+        grupos, _ = shopee.coletar_grupos(shopee.carregar_credenciais(),
+                                          dia=dia, somente_hoje=somente_hoje)
+        return grupos
+    return _coletar(dia, somente_hoje).grupos
+
+
+# Parametros de cada listagem (dia, somente_hoje, titulo). A data de amanha e
+# calculada na hora para nunca "envelhecer" se o bot ficar ligado virando o dia.
+def _params_listagem(acao: str):
     amanha = core._amanha_br()
     return {
-        "hoje": (lambda: _coletar(None, True), "HOJE"),
-        "amanha": (lambda: _coletar(amanha, False), f"AMANHA ({amanha})"),
-        "todos": (lambda: _coletar(None, False), "TODOS OS DIAS"),
-    }
+        "hoje": (None, True, "HOJE"),
+        "amanha": (amanha, False, f"AMANHA ({amanha})"),
+        "todos": (None, False, "TODOS OS DIAS"),
+    }.get(acao)
 
 
 # ---------------------------------------------------------------- autorizacao / envio
@@ -178,12 +203,21 @@ def _autorizado(update: Update, cfg: dict) -> bool:
     return bool(chat and chat.id in cfg["chat_ids"])
 
 
-def _teclado() -> InlineKeyboardMarkup:
+def _teclado(loja: str = LOJA_ML) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📦 Hoje", callback_data="hoje"),
          InlineKeyboardButton("📅 Amanhã", callback_data="amanha")],
         [InlineKeyboardButton("📊 Resumo", callback_data="resumo"),
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
+        [InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")],
+    ])
+
+
+def _teclado_lojas(loja_ativa: str) -> InlineKeyboardMarkup:
+    """Escolha da loja (a ativa marcada com ✓)."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(("✓ " if n == loja_ativa else "") + n, callback_data=f"loja:{n}")]
+        for n in (LOJA_ML, LOJA_SHOPEE)
     ])
 
 
@@ -242,11 +276,13 @@ async def _responder(update, context, nome: str, executor) -> None:
         await context.bot.send_message(chat_id, bloco)
 
 
-async def _listar_grupos(update, context, nome: str, coletor, titulo: str) -> None:
-    """Lista os grupos de um dia e oferece um botao 'Imprimir' por grupo.
+async def _listar_grupos(update, context, nome: str, dia: str | None,
+                         somente_hoje: bool, titulo: str) -> None:
+    """Lista os grupos de um dia da LOJA ativa. No Mercado Livre, oferece um botao
+    'Imprimir' por grupo; na Shopee e somente consulta (a impressao fica no app).
 
-    Guarda os grupos coletados no chat_data para que o toque no botao (que so
-    carrega o indice) saiba qual grupo imprimir, sem refazer a busca.
+    Guarda os grupos no chat_data para que o toque no botao (que so carrega o
+    indice) saiba qual grupo imprimir, sem refazer a busca.
     """
     cfg = context.bot_data["cfg"]
     chat_id = update.effective_chat.id if update.effective_chat else None
@@ -255,10 +291,11 @@ async def _listar_grupos(update, context, nome: str, coletor, titulo: str) -> No
         if chat_id:
             await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
         return
-    log.info("Acao /%s de chat %s", nome, chat_id)
-    await context.bot.send_message(chat_id, "Consultando o Mercado Livre, um instante...")
+    loja = _loja(context)
+    log.info("Acao /%s (loja %s) de chat %s", nome, loja, chat_id)
+    await context.bot.send_message(chat_id, f"Consultando a {loja}, um instante...")
     try:
-        coleta = await asyncio.to_thread(coletor)
+        grupos = await asyncio.to_thread(_coletar_grupos, context, dia, somente_hoje)
     except core.SeparadorError as e:
         await context.bot.send_message(chat_id, f"Erro: {e}")
         return
@@ -266,14 +303,15 @@ async def _listar_grupos(update, context, nome: str, coletor, titulo: str) -> No
         log.exception("Falha na acao /%s", nome)
         await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
         return
-    grupos = coleta.grupos
     context.chat_data["grupos"] = grupos
     # Guarda de qual conta sao esses grupos: se a conta mudar antes do toque,
     # os shipment_ids seriam de outra conta e nao devem ser impressos.
     context.chat_data["conta"] = core.conta_ativa()
-    texto = relatorio.texto_grupos(grupos, titulo)
+    texto = relatorio.texto_grupos(grupos, f"[{loja}] {titulo}")
     for bloco in relatorio.dividir_mensagem(texto):
         await context.bot.send_message(chat_id, bloco)
+    if _eh_shopee(context):
+        return  # Shopee no bot e somente consulta
     teclado = _teclado_grupos(grupos)
     if teclado:
         await context.bot.send_message(chat_id, "🖨 Toque num grupo para imprimir:", reply_markup=teclado)
@@ -345,19 +383,22 @@ async def _executar_impressao(update, context, idx: int) -> None:
 
 # ---------------------------------------------------------------- comandos
 AJUDA = (
-    "Bot de pedidos do Mercado Livre.\n\n"
+    "Bot de pedidos (Mercado Livre e Shopee).\n\n"
     "Toque num botao abaixo ou use os comandos:\n"
     "/hoje  /amanha  /todos  /resumo\n"
     "/dia AAAA-MM-DD — um dia especifico\n"
-    "/detalhar SKU — composicao de um SKU (hoje)\n"
-    "/conta — ver/trocar a conta ativa (com 2+ contas)\n"
+    "/detalhar SKU — composicao de um SKU (hoje, ML)\n"
+    "/loja — trocar entre Mercado Livre e Shopee\n"
+    "/conta — ver/trocar a conta ML (com 2+ contas)\n"
     "/id — mostra seu chat id\n\n"
-    "Nas listagens, toque em 🖨 num grupo para imprimir (pede confirmacao)."
+    "ML: toque em 🖨 num grupo para imprimir (pede confirmacao).\n"
+    "Shopee: somente consulta (a impressao fica no app)."
 )
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(AJUDA, reply_markup=_teclado())
+    await update.message.reply_text(
+        f"{AJUDA}\n\nLoja ativa: {_loja(context)}", reply_markup=_teclado(_loja(context)))
 
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -392,23 +433,37 @@ async def cmd_conta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def _listar_acao(update, context, acao: str) -> None:
+    dia, somente_hoje, titulo = _params_listagem(acao)
+    await _listar_grupos(update, context, acao, dia, somente_hoje, titulo)
+
+
 async def cmd_hoje(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    coletor, titulo = _coletores()["hoje"]
-    await _listar_grupos(update, context, "hoje", coletor, titulo)
+    await _listar_acao(update, context, "hoje")
 
 
 async def cmd_amanha(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    coletor, titulo = _coletores()["amanha"]
-    await _listar_grupos(update, context, "amanha", coletor, titulo)
+    await _listar_acao(update, context, "amanha")
 
 
 async def cmd_todos(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    coletor, titulo = _coletores()["todos"]
-    await _listar_grupos(update, context, "todos", coletor, titulo)
+    await _listar_acao(update, context, "todos")
 
 
 async def cmd_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _responder(update, context, "resumo", _exec_resumo)
+
+
+async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Mostra a loja ativa e botoes para trocar (Mercado Livre / Shopee)."""
+    cfg = context.bot_data["cfg"]
+    if not _autorizado(update, cfg):
+        await update.message.reply_text("Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    await update.message.reply_text(
+        f"Loja ativa: {_loja(context)}\nEscolha a loja:",
+        reply_markup=_teclado_lojas(_loja(context)),
+    )
 
 
 async def cmd_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -417,8 +472,7 @@ async def cmd_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Use: /dia AAAA-MM-DD  (ex.: /dia 2026-06-22)")
         return
     dia = args[0]
-    await _listar_grupos(update, context, "dia",
-                         lambda: _coletar(dia, False), f"DIA {dia}")
+    await _listar_grupos(update, context, "dia", dia, False, f"DIA {dia}")
 
 
 async def cmd_detalhar(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -466,12 +520,25 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("imp:"):
         await _executar_impressao(update, context, int(data[4:]))
         return
+    if data == "loja":
+        await query.edit_message_text(
+            f"Loja ativa: {_loja(context)}\nEscolha a loja:",
+            reply_markup=_teclado_lojas(_loja(context)))
+        return
+    if data.startswith("loja:"):
+        nova = data[5:]
+        if nova in (LOJA_ML, LOJA_SHOPEE):
+            context.chat_data["loja"] = nova
+            context.chat_data.pop("grupos", None)   # grupos eram da loja anterior
+            extra = " (somente consulta no bot)" if nova == LOJA_SHOPEE else ""
+            await query.edit_message_text(
+                f"Loja ativa agora: {nova}{extra}.\nUse /hoje para listar os pedidos.")
+        return
     if data == "resumo":
         await _responder(update, context, "resumo", _exec_resumo)
         return
-    if data in _coletores():
-        coletor, titulo = _coletores()[data]
-        await _listar_grupos(update, context, data, coletor, titulo)
+    if _params_listagem(data):
+        await _listar_acao(update, context, data)
 
 
 async def cmd_desconhecido(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -525,6 +592,7 @@ def main() -> None:
 
     app.add_handler(CommandHandler(["start", "menu", "ajuda"], cmd_start))
     app.add_handler(CommandHandler("id", cmd_id))
+    app.add_handler(CommandHandler("loja", cmd_loja))
     app.add_handler(CommandHandler("conta", cmd_conta))
     app.add_handler(CommandHandler("hoje", cmd_hoje))
     app.add_handler(CommandHandler("amanha", cmd_amanha))

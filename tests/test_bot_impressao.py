@@ -152,3 +152,55 @@ def test_conta_mudou(monkeypatch, tmp_path):
     assert bot._conta_mudou(Ctx()) is False
     Ctx.chat_data = {"conta": "Cozilatti"}
     assert bot._conta_mudou(Ctx()) is True
+
+
+# ----------------------------------------------------------------------- loja
+class _Ctx:
+    def __init__(self, **chat):
+        self.chat_data = dict(chat)
+
+
+def test_loja_default_e_eh_shopee():
+    assert bot._loja(_Ctx()) == "Mercado Livre"          # padrao = ML
+    assert bot._eh_shopee(_Ctx()) is False
+    assert bot._eh_shopee(_Ctx(loja="Shopee")) is True
+
+
+def test_params_listagem():
+    assert bot._params_listagem("hoje")[:2] == (None, True)
+    assert bot._params_listagem("todos")[:2] == (None, False)
+    assert bot._params_listagem("amanha")[1] is False
+    assert bot._params_listagem("xpto") is None
+
+
+def test_teclado_tem_botao_de_loja():
+    linhas = bot._teclado("Shopee").inline_keyboard
+    assert linhas[-1][0].callback_data == "loja"
+    assert "Shopee" in linhas[-1][0].text
+
+
+def test_teclado_lojas_marca_a_ativa():
+    linhas = bot._teclado_lojas("Shopee").inline_keyboard
+    assert [l[0].callback_data for l in linhas] == ["loja:Mercado Livre", "loja:Shopee"]
+    assert linhas[1][0].text.startswith("✓")             # Shopee ativa
+    assert not linhas[0][0].text.startswith("✓")
+
+
+def test_coletar_grupos_shopee_usa_shopee_api(monkeypatch):
+    chamou = {}
+    monkeypatch.setattr(bot.shopee, "carregar_credenciais", lambda: {"x": 1})
+
+    def fake(cred, *, dia, somente_hoje):
+        chamou.update(dia=dia, somente_hoje=somente_hoje)
+        return (["g1", "g2"], 2)
+
+    monkeypatch.setattr(bot.shopee, "coletar_grupos", fake)
+    out = bot._coletar_grupos(_Ctx(loja="Shopee"), "2026-06-25", False)
+    assert out == ["g1", "g2"]
+    assert chamou == {"dia": "2026-06-25", "somente_hoje": False}
+
+
+def test_coletar_grupos_ml_usa_nucleo(monkeypatch):
+    monkeypatch.setattr(bot, "_coletar",
+                        lambda dia, somente_hoje: type("C", (), {"grupos": ["mlg"]})())
+    assert bot._coletar_grupos(_Ctx(), None, True) == ["mlg"]
