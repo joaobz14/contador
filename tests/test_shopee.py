@@ -239,7 +239,7 @@ def test_imprimir_grupo_organiza_gera_marca(monkeypatch):
     g = _grupo(dia="2026-06-25")
     impressos = sh.imprimir_grupo({}, g, estado)
     assert impressos == ["SN1", "SN2"]
-    assert chamadas["organizar"] == ["SN1", "SN2"]          # organizou os dois
+    assert sorted(chamadas["organizar"]) == ["SN1", "SN2"]  # organizou os dois (em paralelo)
     assert estado["2026-06-25|A01|q1"] == ["SN1", "SN2"]    # marcou impresso
 
 
