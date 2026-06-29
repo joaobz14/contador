@@ -277,6 +277,45 @@ def numero_rastreio(cred: dict, token: str, order_sn: str) -> str:
     return ((dados.get("response") or {}).get("tracking_number") or "").strip()
 
 
+def _rastreios_paralelo(cred: dict, token: str, order_sns: list) -> dict:
+    """Busca o AWB de varios pedidos EM PARALELO. Devolve {order_sn: awb} ('' em
+    falha). Muito mais rapido que buscar um a um quando ha varios pedidos."""
+    out: dict = {}
+
+    def _um(sn):
+        try:
+            out[sn] = numero_rastreio(cred, token, str(sn))
+        except Exception:
+            out[sn] = ""
+
+    if order_sns:
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            list(executor.map(_um, order_sns))
+    return out
+
+
+def _organizar_varios(cred: dict, token: str, order_sns: list, *,
+                      branch_id=None, sender_real_name=None) -> dict:
+    """Organiza varios envios EM PARALELO (cada um espera o seu AWB). Devolve
+    {order_sn: awb}. Se algum falhar, propaga o primeiro erro."""
+    resultados: dict = {}
+    erros: list = []
+
+    def _um(sn):
+        try:
+            resultados[sn] = organizar_envio(cred, token, str(sn),
+                                             branch_id=branch_id, sender_real_name=sender_real_name)
+        except core.SeparadorError as e:
+            erros.append(str(e))
+
+    if order_sns:
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            list(executor.map(_um, order_sns))
+    if erros:
+        raise core.SeparadorError(erros[0])
+    return resultados
+
+
 def ship_order(cred: dict, token: str, order_sn: str, *,
                pickup: dict | None = None, dropoff: dict | None = None) -> dict:
     """Finaliza o arranjo de envio (pickup OU dropoff) antes de gerar a etiqueta.
@@ -332,14 +371,17 @@ def _status_documento(res: dict) -> dict:
 
 
 def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUETA,
-                   tentativas: int = 12, espera: float = 2.0) -> bytes:
+                   rastreios: dict | None = None,
+                   tentativas: int = 30, espera: float = 1.0) -> bytes:
     """Gera (assincrono) e baixa as etiquetas dos pedidos. Espera ficar READY.
 
-    Busca o tracking_number (AWB) de cada pedido antes do create — ele so existe
-    apos o envio ser organizado. Sem AWB, aborta com uma mensagem clara em vez de
-    deixar a Shopee devolver 'tracking_number_invalid'."""
+    O tracking_number (AWB) de cada pedido e exigido no create; passe-o em
+    `rastreios` ({sn: awb}) para nao buscar de novo (quem organiza ja tem). Se
+    None, busca em paralelo. Sem AWB, aborta com mensagem clara em vez de deixar
+    a Shopee devolver 'tracking_number_invalid'. Polling de 1s."""
     token = obter_token(cred)
-    rastreios = {sn: numero_rastreio(cred, token, sn) for sn in order_sns}
+    if rastreios is None:
+        rastreios = _rastreios_paralelo(cred, token, order_sns)
     sem_awb = [sn for sn, tn in rastreios.items() if not tn]
     if sem_awb:
         raise core.SeparadorError(
@@ -413,11 +455,12 @@ def _montar_dropoff(info_needed: dict, *, branch_id=None, sender_real_name=None)
 
 def organizar_envio(cred: dict, token: str, order_sn: str, *,
                     branch_id=None, sender_real_name=None,
-                    tentativas: int = 15, espera: float = 2.0) -> str:
+                    tentativas: int = 40, espera: float = 1.0) -> str:
     """Organiza o envio como Postagem (drop-off) — equivale a 'vou postar no ponto
     de coleta' no painel — e ESPERA o rastreio (AWB) ser emitido (a Shopee leva
     alguns segundos apos o ship_order). Idempotente: se ja houver AWB, devolve na
-    hora. Retorna o tracking_number; erro claro se o AWB nao sair a tempo."""
+    hora. Retorna o tracking_number; erro claro se o AWB nao sair a tempo.
+    Polling de 1s (checa mais vezes -> encontra o AWB mais cedo)."""
     tn = numero_rastreio(cred, token, order_sn)
     if tn:
         return tn
@@ -498,27 +541,37 @@ def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
 
 
+def _awbs_para(cred: dict, token: str, pendentes: list, *, organizar: bool,
+               branch_id=None, sender_real_name=None) -> dict:
+    """Obtem os AWBs dos pedidos pendentes (organizando em paralelo se preciso)."""
+    if organizar:
+        return _organizar_varios(cred, token, pendentes,
+                                 branch_id=branch_id, sender_real_name=sender_real_name)
+    return _rastreios_paralelo(cred, token, pendentes)
+
+
+def _gerar_salvar(cred: dict, grupo: core.Grupo, pendentes: list, awbs: dict) -> None:
+    """Gera/baixa a etiqueta (reusando os AWBs ja obtidos), salva na Downloads e
+    guarda o rastreio do grupo de 1 pedido."""
+    conteudo = gerar_etiqueta(cred, pendentes,
+                              rastreios={sn: awbs.get(sn, "") for sn in pendentes})
+    salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
+    if len(grupo.shipment_ids) == 1:
+        grupo.rastreio = awbs.get(pendentes[0], "")
+
+
 def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bool = True,
                    marcar: bool = True, branch_id=None, sender_real_name=None) -> list:
-    """Organiza (se preciso e organizar=True), gera/baixa a etiqueta dos envios
-    PENDENTES do grupo, salva na Downloads (a Zebra imprime) e, se marcar=True,
-    marca o estado. Retorna os order_sns impressos (vazio se nada pendente)."""
+    """Organiza (se preciso e organizar=True, em paralelo), gera/baixa a etiqueta
+    dos envios PENDENTES do grupo, salva na Downloads (a Zebra imprime) e, se
+    marcar=True, marca o estado. Retorna os order_sns impressos."""
     pendentes = core.envios_pendentes(estado, grupo)
     if not pendentes:
         return []
     token = obter_token(cred)
-    if organizar:
-        for sn in pendentes:
-            organizar_envio(cred, token, sn,
-                            branch_id=branch_id, sender_real_name=sender_real_name)
-    conteudo = gerar_etiqueta(cred, pendentes)
-    salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
-    # Grupo de 1 pedido: guarda o rastreio (AWB) para conferencia na tela.
-    if len(grupo.shipment_ids) == 1:
-        try:
-            grupo.rastreio = numero_rastreio(cred, token, str(grupo.shipment_ids[0]))
-        except Exception:
-            pass
+    awbs = _awbs_para(cred, token, pendentes, organizar=organizar,
+                      branch_id=branch_id, sender_real_name=sender_real_name)
+    _gerar_salvar(cred, grupo, pendentes, awbs)
     if marcar:
         marcar_impresso(estado, grupo, pendentes)
     return pendentes
@@ -526,15 +579,22 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
 
 def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
                    organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
-    """Organiza+imprime varios grupos (um ZIP por grupo) SEM marcar o estado —
-    quem chama marca depois da confirmacao ('as etiquetas sairam certo?'), igual
-    ao fluxo de lotes do ML. Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    """Organiza+imprime varios grupos SEM marcar o estado (quem chama marca apos a
+    confirmacao, igual ao ML). Organiza TODOS os pedidos de TODOS os grupos de uma
+    vez, EM PARALELO (bem mais rapido que grupo a grupo), e so entao gera/salva
+    cada um. Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    pend_por_grupo = [(g, core.envios_pendentes(estado, g)) for g in grupos]
+    pend_por_grupo = [(g, p) for g, p in pend_por_grupo if p]
+    if not pend_por_grupo:
+        return []
+    token = obter_token(cred)
+    todos = [sn for _, pend in pend_por_grupo for sn in pend]
+    awbs = _awbs_para(cred, token, todos, organizar=organizar,
+                      branch_id=branch_id, sender_real_name=sender_real_name)
     impressos = []
-    for g in grupos:
-        ids = imprimir_grupo(cred, g, estado, organizar=organizar, marcar=False,
-                             branch_id=branch_id, sender_real_name=sender_real_name)
-        if ids:
-            impressos.append((g, ids))
+    for g, pend in pend_por_grupo:
+        _gerar_salvar(cred, g, pend, awbs)
+        impressos.append((g, pend))
     return impressos
 
 
