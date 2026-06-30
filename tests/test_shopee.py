@@ -85,6 +85,36 @@ def test_numero_rastreio_le_response(monkeypatch):
     assert sh.numero_rastreio({"x": 1}, "TOK", "A1") == "BR9"
 
 
+def test_gerar_etiqueta_espera_todos_os_pedidos_ready(monkeypatch):
+    # so baixa quando A E B estao READY; um subconjunto nao basta
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "criar_documento", lambda *a, **k: {})
+    monkeypatch.setattr(sh, "baixar_documento", lambda c, t, ids, tipo=sh.TIPO_ETIQUETA: b"PKzip")
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    seq = iter([
+        {"response": {"result_list": [{"order_sn": "A", "status": "READY"}]}},   # B ausente
+        {"response": {"result_list": [{"order_sn": "A", "status": "READY"},
+                                      {"order_sn": "B", "status": "READY"}]}},
+    ])
+    monkeypatch.setattr(sh, "resultado_documento", lambda *a, **k: next(seq))
+    out = sh.gerar_etiqueta({"x": 1}, ["A", "B"], rastreios={"A": "x", "B": "y"})
+    assert out == b"PKzip"
+
+
+def test_gerar_etiqueta_aborta_se_algum_falhou(monkeypatch):
+    import pytest
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "criar_documento", lambda *a, **k: {})
+    monkeypatch.setattr(sh, "baixar_documento",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao baixar")))
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    monkeypatch.setattr(sh, "resultado_documento", lambda *a, **k:
+                        {"response": {"result_list": [{"order_sn": "A", "status": "READY"},
+                                                      {"order_sn": "B", "status": "FAILED"}]}})
+    with pytest.raises(sh.core.SeparadorError):
+        sh.gerar_etiqueta({"x": 1}, ["A", "B"], rastreios={"A": "x", "B": "y"})
+
+
 def test_status_documento_extrai_status_por_order():
     res = {"response": {"result_list": [
         {"order_sn": "A1", "status": "READY"},

@@ -308,7 +308,7 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
         try:
             ok[sn] = organizar_envio(cred, token, str(sn),
                                      branch_id=branch_id, sender_real_name=sender_real_name)
-        except core.SeparadorError as e:
+        except Exception as e:                       # inclui erro de rede (HTTPError)
             falhas.append((sn, str(e)))
 
     if order_sns:
@@ -372,15 +372,18 @@ def _status_documento(res: dict) -> dict:
 
 
 def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUETA,
-                   rastreios: dict | None = None,
+                   rastreios: dict | None = None, token: str | None = None,
                    tentativas: int = 30, espera: float = 1.0) -> bytes:
-    """Gera (assincrono) e baixa as etiquetas dos pedidos. Espera ficar READY.
+    """Gera (assincrono) e baixa as etiquetas dos pedidos. So baixa quando TODOS
+    os pedidos pedidos estiverem READY (nao retorna num subconjunto), e aborta se
+    a Shopee marcar algum FAILED.
 
     O tracking_number (AWB) de cada pedido e exigido no create; passe-o em
     `rastreios` ({sn: awb}) para nao buscar de novo (quem organiza ja tem). Se
     None, busca em paralelo. Sem AWB, aborta com mensagem clara em vez de deixar
-    a Shopee devolver 'tracking_number_invalid'. Polling de 1s."""
-    token = obter_token(cred)
+    a Shopee devolver 'tracking_number_invalid'. `token` evita re-buscar o token
+    em chamadas paralelas. Polling de 1s."""
+    token = token or obter_token(cred)
     if rastreios is None:
         rastreios = _rastreios_paralelo(cred, token, order_sns)
     sem_awb = [sn for sn, tn in rastreios.items() if not tn]
@@ -392,9 +395,11 @@ def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUET
     criar_documento(cred, token, order_sns, tipo, rastreios=rastreios)
     for _ in range(tentativas):
         status = _status_documento(resultado_documento(cred, token, order_sns, tipo))
-        if any(s == "FAILED" for s in status.values()):
+        # Avalia por pedido PEDIDO (nao so os que vieram no result_list): um pedido
+        # ausente conta como ainda-nao-pronto, evitando baixar antes da hora.
+        if any(status.get(sn) == "FAILED" for sn in order_sns):
             raise core.SeparadorError(f"Geracao da etiqueta falhou: {status}")
-        if status and all(s == "READY" for s in status.values()):
+        if all(status.get(sn) == "READY" for sn in order_sns):
             return baixar_documento(cred, token, order_sns, tipo)
         time.sleep(espera)
     raise core.SeparadorError("A etiqueta nao ficou pronta (READY) a tempo. Tente de novo.")
@@ -526,13 +531,19 @@ def salvar_estado(estado: dict) -> None:
 
 
 def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = None) -> None:
-    """Marca order_sns como impressos (ou todos do grupo), reaproveitando a chave
-    de estado do nucleo (namespaceada por dia de despacho)."""
+    """Marca order_sns como impressos (ou todos do grupo). RECARREGA o estado do
+    disco e mescla (uniao) antes de gravar, para nao apagar marcacoes de outro
+    processo feitas nesse meio-tempo (mesma convencao do nucleo)."""
     ids = grupo.shipment_ids if order_sns is None else order_sns
+    chave = core._chave_estado(grupo)
+    disco = core._ler_json(ARQUIVO_ESTADO)
     impressos = core._impressos(estado, grupo)
+    impressos.update(core._impressos(disco, grupo))
     impressos.update(ids)
-    estado[core._chave_estado(grupo)] = sorted(impressos)
-    salvar_estado(estado)
+    ordenados = sorted(impressos)
+    disco[chave] = ordenados
+    salvar_estado(disco)
+    estado[chave] = ordenados
 
 
 # ---------------------------------------------------------------------------
@@ -542,20 +553,21 @@ def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
 
 
-def _zpl_do_zip(conteudo: bytes) -> str:
-    """Extrai o ZPL de dentro de um .zip de etiqueta Shopee (ou devolve o proprio
-    conteudo se ja for ZPL cru)."""
+def _zpl_do_zip(conteudo: bytes) -> bytes:
+    """Extrai o ZPL (em BYTES, sem reencodar — evita corromper o ~DG/Z64) de dentro
+    de um .zip de etiqueta Shopee, ou devolve o proprio conteudo se ja for ZPL cru."""
     try:
         with zipfile.ZipFile(io.BytesIO(conteudo)) as z:
-            return "\n".join(z.read(n).decode("utf-8", "ignore") for n in z.namelist())
+            return b"\n".join(z.read(n) for n in z.namelist())
     except zipfile.BadZipFile:
-        return conteudo.decode("utf-8", "ignore")
+        return conteudo
 
 
 def _combinar_etiquetas(zips: list) -> bytes:
     """Junta o ZPL de varias etiquetas Shopee num UNICO .zip (um TXT) — para a
-    Zebra imprimir tudo de uma vez, sem intervalo entre arquivos."""
-    texto = "\n".join(_zpl_do_zip(b) for b in zips)
+    Zebra imprimir tudo de uma vez, sem intervalo entre arquivos. Trabalha em
+    bytes para preservar o conteudo exato das etiquetas."""
+    texto = b"\n".join(_zpl_do_zip(b) for b in zips)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("thermal_zpl_shipping_label.txt", texto)
@@ -579,7 +591,7 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
             raise core.SeparadorError(falhas[0][1])
     else:
         awbs = _rastreios_paralelo(cred, token, pendentes)
-    conteudo = gerar_etiqueta(cred, pendentes,
+    conteudo = gerar_etiqueta(cred, pendentes, token=token,
                               rastreios={sn: awbs.get(sn, "") for sn in pendentes})
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
     if len(grupo.shipment_ids) == 1:
@@ -597,18 +609,18 @@ def _gerar_lote(cred: dict, token: str, alvo: list, awbs: dict) -> tuple:
     if not alvo:
         return None, [], []
     try:
-        conteudo = gerar_etiqueta(cred, alvo, rastreios={sn: awbs[sn] for sn in alvo})
+        conteudo = gerar_etiqueta(cred, alvo, rastreios={sn: awbs[sn] for sn in alvo}, token=token)
         return conteudo, list(alvo), []
-    except core.SeparadorError:
-        pass  # alguma etiqueta falhou no lote -> tenta uma a uma
+    except Exception:
+        pass  # alguma etiqueta falhou no lote -> tenta uma a uma (isola a falha)
 
     resultados: dict = {}
     falhas: list = []
 
     def _um(sn):
         try:
-            resultados[sn] = gerar_etiqueta(cred, [sn], rastreios={sn: awbs[sn]})
-        except core.SeparadorError as e:
+            resultados[sn] = gerar_etiqueta(cred, [sn], rastreios={sn: awbs[sn]}, token=token)
+        except Exception as e:
             falhas.append((sn, str(e)))
 
     with ThreadPoolExecutor(max_workers=8) as executor:

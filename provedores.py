@@ -47,15 +47,12 @@ class Provedor:
         """Marca order_sns/shipment_ids como impressos no estado do provedor."""
         raise NotImplementedError
 
-    def a_organizar(self, grupos: list, estado: dict) -> list:
-        """order_sns que precisam de Organizar Envio antes de imprimir (so Shopee)."""
-        return []
-
     # ---- impressao --------------------------------------------------------
     def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
         raise NotImplementedError
 
-    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> list:
+    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
+        """Imprime varios grupos. Devolve (impressos, falhas)."""
         raise NotImplementedError
 
     def reimprimir(self, grupo) -> list:
@@ -139,21 +136,13 @@ class ProvedorShopee(Provedor):
     def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
         shopee.marcar_impresso(estado, grupo, ids)
 
-    def a_organizar(self, grupos: list, estado: dict) -> list:
-        pendentes: list = []
-        for g in grupos:
-            pendentes.extend(core.envios_pendentes(estado, g))
-        if not pendentes:
-            return []
-        return shopee.envios_a_organizar(self._creds(), pendentes)
-
     def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
         return shopee.imprimir_grupo(
             self._creds(), grupo, estado,
             branch_id=self.branch_id, sender_real_name=self.sender_real_name,
         )
 
-    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> list:
+    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
         return shopee.imprimir_lotes(
             self._creds(), grupos, estado,
             branch_id=self.branch_id, sender_real_name=self.sender_real_name,

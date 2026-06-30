@@ -519,8 +519,9 @@ class SeparadorApp:
         self._render()
 
     def imprimir_proximo(self) -> None:
+        # Inclui grupos "parcial" (alguns envios novos a imprimir), nao so "pendente".
         pend = next((g for g in self.grupos
-                     if core.status_grupo(self.estado, g) == "pendente"), None)
+                     if core.status_grupo(self.estado, g) != "impresso"), None)
         if not pend:
             messagebox.showinfo("Tudo certo", "Nenhum grupo pendente. 🎉")
             return
