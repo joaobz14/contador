@@ -24,8 +24,10 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import io
 import sys
 import time
+import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -295,25 +297,24 @@ def _rastreios_paralelo(cred: dict, token: str, order_sns: list) -> dict:
 
 
 def _organizar_varios(cred: dict, token: str, order_sns: list, *,
-                      branch_id=None, sender_real_name=None) -> dict:
+                      branch_id=None, sender_real_name=None) -> tuple[dict, list]:
     """Organiza varios envios EM PARALELO (cada um espera o seu AWB). Devolve
-    {order_sn: awb}. Se algum falhar, propaga o primeiro erro."""
-    resultados: dict = {}
-    erros: list = []
+    (ok, falhas): ok={order_sn: awb} dos que organizaram; falhas=[(sn, motivo)].
+    NAO levanta — quem chama decide (grupo unico aborta; lote tolera)."""
+    ok: dict = {}
+    falhas: list = []
 
     def _um(sn):
         try:
-            resultados[sn] = organizar_envio(cred, token, str(sn),
-                                             branch_id=branch_id, sender_real_name=sender_real_name)
+            ok[sn] = organizar_envio(cred, token, str(sn),
+                                     branch_id=branch_id, sender_real_name=sender_real_name)
         except core.SeparadorError as e:
-            erros.append(str(e))
+            falhas.append((sn, str(e)))
 
     if order_sns:
         with ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(_um, order_sns))
-    if erros:
-        raise core.SeparadorError(erros[0])
-    return resultados
+    return ok, falhas
 
 
 def ship_order(cred: dict, token: str, order_sn: str, *,
@@ -541,66 +542,117 @@ def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
 
 
-def _awbs_para(cred: dict, token: str, pendentes: list, *, organizar: bool,
-               branch_id=None, sender_real_name=None) -> dict:
-    """Obtem os AWBs dos pedidos pendentes (organizando em paralelo se preciso)."""
-    if organizar:
-        return _organizar_varios(cred, token, pendentes,
-                                 branch_id=branch_id, sender_real_name=sender_real_name)
-    return _rastreios_paralelo(cred, token, pendentes)
+def _zpl_do_zip(conteudo: bytes) -> str:
+    """Extrai o ZPL de dentro de um .zip de etiqueta Shopee (ou devolve o proprio
+    conteudo se ja for ZPL cru)."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(conteudo)) as z:
+            return "\n".join(z.read(n).decode("utf-8", "ignore") for n in z.namelist())
+    except zipfile.BadZipFile:
+        return conteudo.decode("utf-8", "ignore")
 
 
-def _gerar_salvar(cred: dict, grupo: core.Grupo, pendentes: list, awbs: dict) -> None:
-    """Gera/baixa a etiqueta (reusando os AWBs ja obtidos), salva na Downloads e
-    guarda o rastreio do grupo de 1 pedido."""
-    conteudo = gerar_etiqueta(cred, pendentes,
-                              rastreios={sn: awbs.get(sn, "") for sn in pendentes})
-    salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
-    if len(grupo.shipment_ids) == 1:
-        grupo.rastreio = awbs.get(pendentes[0], "")
+def _combinar_etiquetas(zips: list) -> bytes:
+    """Junta o ZPL de varias etiquetas Shopee num UNICO .zip (um TXT) — para a
+    Zebra imprimir tudo de uma vez, sem intervalo entre arquivos."""
+    texto = "\n".join(_zpl_do_zip(b) for b in zips)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("thermal_zpl_shipping_label.txt", texto)
+    return buf.getvalue()
 
 
 def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bool = True,
                    marcar: bool = True, branch_id=None, sender_real_name=None) -> list:
     """Organiza (se preciso e organizar=True, em paralelo), gera/baixa a etiqueta
     dos envios PENDENTES do grupo, salva na Downloads (a Zebra imprime) e, se
-    marcar=True, marca o estado. Retorna os order_sns impressos."""
+    marcar=True, marca o estado. Retorna os order_sns impressos. Grupo unico:
+    aborta com erro se algum pedido falhar (o lote e que tolera parcial)."""
     pendentes = core.envios_pendentes(estado, grupo)
     if not pendentes:
         return []
     token = obter_token(cred)
-    awbs = _awbs_para(cred, token, pendentes, organizar=organizar,
-                      branch_id=branch_id, sender_real_name=sender_real_name)
-    _gerar_salvar(cred, grupo, pendentes, awbs)
+    if organizar:
+        awbs, falhas = _organizar_varios(cred, token, pendentes,
+                                         branch_id=branch_id, sender_real_name=sender_real_name)
+        if falhas:
+            raise core.SeparadorError(falhas[0][1])
+    else:
+        awbs = _rastreios_paralelo(cred, token, pendentes)
+    conteudo = gerar_etiqueta(cred, pendentes,
+                              rastreios={sn: awbs.get(sn, "") for sn in pendentes})
+    salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
+    if len(grupo.shipment_ids) == 1:
+        grupo.rastreio = awbs.get(pendentes[0], "")
     if marcar:
         marcar_impresso(estado, grupo, pendentes)
     return pendentes
 
 
-def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
-                   organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
-    """Organiza+imprime varios grupos SEM marcar o estado (quem chama marca apos a
-    confirmacao, igual ao ML).
+def _gerar_lote(cred: dict, token: str, alvo: list, awbs: dict) -> tuple:
+    """Gera as etiquetas dos pedidos `alvo` num so ZIP, tolerando falha parcial.
+    Tenta tudo de uma vez (rapido); se a Shopee recusar algum, cai para geracao
+    individual em paralelo, combinando os que derem. Devolve (conteudo|None,
+    sns_ok, falhas)."""
+    if not alvo:
+        return None, [], []
+    try:
+        conteudo = gerar_etiqueta(cred, alvo, rastreios={sn: awbs[sn] for sn in alvo})
+        return conteudo, list(alvo), []
+    except core.SeparadorError:
+        pass  # alguma etiqueta falhou no lote -> tenta uma a uma
 
-    Gera UM UNICO .zip com TODAS as etiquetas do lote (a API baixa varios pedidos
-    de uma vez). Assim a Zebra imprime tudo de enfiada, sem o intervalo que havia
-    com um .zip por grupo (o monitor da Zebra processava um arquivo de cada vez).
-    Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    resultados: dict = {}
+    falhas: list = []
+
+    def _um(sn):
+        try:
+            resultados[sn] = gerar_etiqueta(cred, [sn], rastreios={sn: awbs[sn]})
+        except core.SeparadorError as e:
+            falhas.append((sn, str(e)))
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(_um, alvo))
+    sns_ok = [sn for sn in alvo if sn in resultados]
+    conteudo = _combinar_etiquetas([resultados[sn] for sn in sns_ok]) if sns_ok else None
+    return conteudo, sns_ok, falhas
+
+
+def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
+                   organizar: bool = True, branch_id=None, sender_real_name=None) -> tuple:
+    """Organiza+imprime varios grupos SEM marcar o estado (quem chama marca apos a
+    confirmacao, igual ao ML). Gera UM UNICO .zip com todas as etiquetas que derem
+    certo (a Zebra imprime de enfiada, sem intervalo). TOLERA FALHA PARCIAL.
+
+    Devolve (impressos, falhas): impressos=[(grupo, ids_ok), ...] (so o que gerou),
+    falhas=[(order_sn, motivo), ...] (sem AWB, ou recusado pela Shopee)."""
     pend_por_grupo = [(g, core.envios_pendentes(estado, g)) for g in grupos]
     pend_por_grupo = [(g, p) for g, p in pend_por_grupo if p]
     if not pend_por_grupo:
-        return []
+        return [], []
     token = obter_token(cred)
     todos = [sn for _, pend in pend_por_grupo for sn in pend]
-    awbs = _awbs_para(cred, token, todos, organizar=organizar,
-                      branch_id=branch_id, sender_real_name=sender_real_name)
-    # Um download com todos os pedidos -> um unico ZIP -> impressao continua.
-    conteudo = gerar_etiqueta(cred, todos, rastreios=awbs)
-    salvar_etiqueta(conteudo, f"lote {todos[0]} x{len(todos)}")
+    if organizar:
+        awbs, falhas = _organizar_varios(cred, token, todos,
+                                         branch_id=branch_id, sender_real_name=sender_real_name)
+    else:
+        awbs = _rastreios_paralelo(cred, token, todos)
+        falhas = [(sn, "sem numero de rastreio (AWB) — organize o envio")
+                  for sn in todos if not awbs.get(sn)]
+    alvo = [sn for sn in todos if awbs.get(sn)]
+    conteudo, sns_ok, falhas_gen = _gerar_lote(cred, token, alvo, awbs)
+    falhas += falhas_gen
+    if conteudo:
+        salvar_etiqueta(conteudo, f"lote {sns_ok[0]} x{len(sns_ok)}")
+    ok = set(sns_ok)
+    impressos = []
     for g, pend in pend_por_grupo:
-        if len(g.shipment_ids) == 1:                    # rastreio so do grupo de 1 pedido
-            g.rastreio = awbs.get(pend[0], "")
-    return [(g, pend) for g, pend in pend_por_grupo]
+        ids_ok = [sn for sn in pend if sn in ok]
+        if ids_ok:
+            if len(g.shipment_ids) == 1:
+                g.rastreio = awbs.get(ids_ok[0], "")
+            impressos.append((g, ids_ok))
+    return impressos, falhas
 
 
 def reimprimir_grupo(cred: dict, grupo: core.Grupo) -> list:

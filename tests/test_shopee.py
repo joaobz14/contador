@@ -277,8 +277,9 @@ def test_imprimir_lotes_nao_marca_estado(monkeypatch):
                         lambda estado: (_ for _ in ()).throw(AssertionError("nao marcar")))
     estado = {}
     g = _grupo(dia="2026-06-25")
-    impressos = sh.imprimir_lotes({}, [g], estado)
+    impressos, falhas = sh.imprimir_lotes({}, [g], estado)
     assert impressos == [(g, ["SN1", "SN2"])]
+    assert falhas == []
     assert estado == {}                                    # nada marcado
 
 
@@ -297,8 +298,51 @@ def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
                         lambda conteudo, rotulo: chamadas.update(salvou=chamadas["salvou"] + 1) or ("p", "ZIP"))
     g1 = _grupo("A", ids=["SN1"], dia="2026-06-25")
     g2 = _grupo("B", ids=["SN2", "SN3"], dia="2026-06-25")
-    out = sh.imprimir_lotes({}, [g1, g2], {})
+    impressos, falhas = sh.imprimir_lotes({}, [g1, g2], {})
     assert chamadas["salvou"] == 1                          # UM zip so
     assert sorted(chamadas["gerou"][0]) == ["SN1", "SN2", "SN3"]   # todas juntas
-    assert out == [(g1, ["SN1"]), (g2, ["SN2", "SN3"])]
+    assert impressos == [(g1, ["SN1"]), (g2, ["SN2", "SN3"])]
+    assert falhas == []
     assert g1.rastreio == "BR-SN1"                          # grupo de 1 pedido leva rastreio
+
+
+def test_combinar_etiquetas_junta_zpl_num_unico_zip():
+    import io
+    import zipfile
+
+    def _zip(texto):
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            z.writestr("thermal_zpl_shipping_label.txt", texto)
+        return buf.getvalue()
+
+    out = sh._combinar_etiquetas([_zip("~DGR:A ^XA a ^XZ"), _zip("~DGR:B ^XA b ^XZ")])
+    with zipfile.ZipFile(io.BytesIO(out)) as z:
+        nomes = z.namelist()
+        conteudo = z.read(nomes[0]).decode()
+    assert len(nomes) == 1                                  # um TXT so
+    assert "~DGR:A" in conteudo and "~DGR:B" in conteudo    # as duas etiquetas
+    assert "thermal_zpl_shipping_label" in nomes[0]         # nome que a Zebra reconhece
+
+
+def test_imprimir_lotes_tolera_falha_parcial(monkeypatch):
+    # SN2 nao organiza -> entra em falhas; SN1 e SN3 imprimem num zip so.
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+
+    def fake_org(c, t, sn, **k):
+        if sn == "SN2":
+            raise sh.core.SeparadorError("rastreio (AWB) nao saiu")
+        return f"BR-{sn}"
+
+    capt = {}
+    monkeypatch.setattr(sh, "organizar_envio", fake_org)
+    monkeypatch.setattr(sh, "gerar_etiqueta",
+                        lambda c, ids, **k: capt.update(ids=list(ids)) or b"PK\x03\x04")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    g1 = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    g2 = _grupo("B", ids=["SN2"], dia="2026-06-25")
+    g3 = _grupo("C", ids=["SN3"], dia="2026-06-25")
+    impressos, falhas = sh.imprimir_lotes({}, [g1, g2, g3], {})
+    assert sorted(capt["ids"]) == ["SN1", "SN3"]           # gerou so os que deram
+    assert impressos == [(g1, ["SN1"]), (g3, ["SN3"])]     # g2 ficou de fora
+    assert [sn for sn, _ in falhas] == ["SN2"]             # e foi reportado
