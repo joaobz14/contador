@@ -100,9 +100,10 @@ class ProvedorML(Provedor):
         token = self.token or self._renovar()
         return core.imprimir_pendentes(token, grupo, estado)
 
-    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> list:
+    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
+        # (impressos, falhas) — o ML nao tem falha parcial, entao falhas=[].
         token = self.token or self._renovar()
-        return core.gerar_zip_lotes(token, grupos, estado, modo=modo)
+        return core.gerar_zip_lotes(token, grupos, estado, modo=modo), []
 
     def reimprimir(self, grupo) -> list:
         token = self.token or self._renovar()

@@ -484,17 +484,25 @@ class SeparadorApp:
 
     def _imprimir_lotes_thread(self, grupos) -> None:
         try:
-            impressos = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
+            impressos, falhas = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
-        self.root.after(0, lambda: self._pos_lotes(impressos))
+        self.root.after(0, lambda: self._pos_lotes(impressos, falhas))
 
-    def _pos_lotes(self, impressos: list) -> None:
+    def _pos_lotes(self, impressos: list, falhas: list | None = None) -> None:
         self._ocupar(False, "")
+        falhas = falhas or []
+        if falhas:                              # alguns pedidos nao geraram (parcial)
+            linhas = "\n".join(f"• {sn}: {motivo}" for sn, motivo in falhas[:8])
+            mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outro(s))"
+            messagebox.showwarning(
+                "Alguns pedidos não saíram",
+                f"{len(falhas)} pedido(s) não foram impressos:\n\n{linhas}{mais}\n\n"
+                "Os demais foram enviados para a impressora.")
         if not impressos:
-            messagebox.showinfo("Imprimir lotes",
-                                "Nada pendente nos lotes selecionados.")
+            if not falhas:
+                messagebox.showinfo("Imprimir lotes", "Nada pendente nos lotes selecionados.")
             return
         n = len(impressos)
         marcar = True
