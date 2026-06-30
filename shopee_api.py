@@ -580,9 +580,12 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
 def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
                    organizar: bool = True, branch_id=None, sender_real_name=None) -> list:
     """Organiza+imprime varios grupos SEM marcar o estado (quem chama marca apos a
-    confirmacao, igual ao ML). Organiza TODOS os pedidos de TODOS os grupos de uma
-    vez, EM PARALELO (bem mais rapido que grupo a grupo), e so entao gera/salva
-    cada um. Retorna [(grupo, order_sns), ...] do que foi impresso."""
+    confirmacao, igual ao ML).
+
+    Gera UM UNICO .zip com TODAS as etiquetas do lote (a API baixa varios pedidos
+    de uma vez). Assim a Zebra imprime tudo de enfiada, sem o intervalo que havia
+    com um .zip por grupo (o monitor da Zebra processava um arquivo de cada vez).
+    Retorna [(grupo, order_sns), ...] do que foi impresso."""
     pend_por_grupo = [(g, core.envios_pendentes(estado, g)) for g in grupos]
     pend_por_grupo = [(g, p) for g, p in pend_por_grupo if p]
     if not pend_por_grupo:
@@ -591,11 +594,13 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
     todos = [sn for _, pend in pend_por_grupo for sn in pend]
     awbs = _awbs_para(cred, token, todos, organizar=organizar,
                       branch_id=branch_id, sender_real_name=sender_real_name)
-    impressos = []
+    # Um download com todos os pedidos -> um unico ZIP -> impressao continua.
+    conteudo = gerar_etiqueta(cred, todos, rastreios=awbs)
+    salvar_etiqueta(conteudo, f"lote {todos[0]} x{len(todos)}")
     for g, pend in pend_por_grupo:
-        _gerar_salvar(cred, g, pend, awbs)
-        impressos.append((g, pend))
-    return impressos
+        if len(g.shipment_ids) == 1:                    # rastreio so do grupo de 1 pedido
+            g.rastreio = awbs.get(pend[0], "")
+    return [(g, pend) for g, pend in pend_por_grupo]
 
 
 def reimprimir_grupo(cred: dict, grupo: core.Grupo) -> list:

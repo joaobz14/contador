@@ -280,3 +280,25 @@ def test_imprimir_lotes_nao_marca_estado(monkeypatch):
     impressos = sh.imprimir_lotes({}, [g], estado)
     assert impressos == [(g, ["SN1", "SN2"])]
     assert estado == {}                                    # nada marcado
+
+
+def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
+    # Varios grupos -> UM zip so com todas as etiquetas (Zebra imprime sem gap).
+    chamadas = {"gerou": [], "salvou": 0}
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
+
+    def fake_gerar(c, ids, **k):
+        chamadas["gerou"].append(list(ids))
+        return b"PK\x03\x04"
+
+    monkeypatch.setattr(sh, "gerar_etiqueta", fake_gerar)
+    monkeypatch.setattr(sh, "salvar_etiqueta",
+                        lambda conteudo, rotulo: chamadas.update(salvou=chamadas["salvou"] + 1) or ("p", "ZIP"))
+    g1 = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    g2 = _grupo("B", ids=["SN2", "SN3"], dia="2026-06-25")
+    out = sh.imprimir_lotes({}, [g1, g2], {})
+    assert chamadas["salvou"] == 1                          # UM zip so
+    assert sorted(chamadas["gerou"][0]) == ["SN1", "SN2", "SN3"]   # todas juntas
+    assert out == [(g1, ["SN1"]), (g2, ["SN2", "SN3"])]
+    assert g1.rastreio == "BR-SN1"                          # grupo de 1 pedido leva rastreio
