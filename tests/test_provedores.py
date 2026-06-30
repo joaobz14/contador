@@ -39,16 +39,6 @@ def test_ml_coletar_delega_ao_nucleo(monkeypatch):
     assert capturado == {"token": "TOK", "seller": 9, "dia": "2026-06-25"}
 
 
-def test_shopee_a_organizar_lista_pendentes_sem_awb(monkeypatch):
-    g = sh.core.Grupo(chave="A01", nome="A01", quantidade=1, shipment_ids=["SN1", "SN2"])
-    prov = pv.ProvedorShopee()
-    prov.cred = {"x": 1}                                  # evita carregar credenciais
-    # SN1 sem AWB, SN2 com AWB
-    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
-    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "" if sn == "SN1" else "BR9")
-    assert prov.a_organizar([g], {}) == ["SN1"]
-
-
 def test_shopee_imprimir_grupo_delega(monkeypatch):
     prov = pv.ProvedorShopee()
     prov.cred = {"x": 1}

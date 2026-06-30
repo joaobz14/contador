@@ -204,3 +204,11 @@ def test_coletar_grupos_ml_usa_nucleo(monkeypatch):
     monkeypatch.setattr(bot, "_coletar",
                         lambda dia, somente_hoje: type("C", (), {"grupos": ["mlg"]})())
     assert bot._coletar_grupos(_Ctx(), None, True) == ["mlg"]
+
+
+def test_lista_imprimivel_so_mercado_livre():
+    # imprimir e so do ML: protege contra tocar num botao antigo do ML apos
+    # listar a Shopee (cujos grupos nao podem passar pelo imprimir_pendentes do ML)
+    assert bot._lista_imprimivel(_Ctx(loja_grupos="Mercado Livre")) is True
+    assert bot._lista_imprimivel(_Ctx(loja_grupos="Shopee")) is False
+    assert bot._lista_imprimivel(_Ctx()) is False        # sem registro -> nao imprime

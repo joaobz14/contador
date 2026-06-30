@@ -304,9 +304,10 @@ async def _listar_grupos(update, context, nome: str, dia: str | None,
         await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
         return
     context.chat_data["grupos"] = grupos
-    # Guarda de qual conta sao esses grupos: se a conta mudar antes do toque,
-    # os shipment_ids seriam de outra conta e nao devem ser impressos.
+    # Guarda de qual conta E de qual loja sao esses grupos: se a conta/loja mudar
+    # antes do toque, os shipment_ids seriam de outra origem e nao devem imprimir.
     context.chat_data["conta"] = core.conta_ativa()
+    context.chat_data["loja_grupos"] = loja
     texto = relatorio.texto_grupos(grupos, f"[{loja}] {titulo}")
     for bloco in relatorio.dividir_mensagem(texto):
         await context.bot.send_message(chat_id, bloco)
@@ -328,12 +329,22 @@ def _conta_mudou(context) -> bool:
     return context.chat_data.get("conta") != core.conta_ativa()
 
 
+def _lista_imprimivel(context) -> bool:
+    """Imprimir e SO do Mercado Livre. Os grupos guardados precisam ter sido
+    listados na loja ML — protege contra tocar num botao 'Imprimir' antigo do ML
+    depois de ter listado a Shopee (cujos shipment_ids sao order_sn de outra API)."""
+    return context.chat_data.get("loja_grupos") == LOJA_ML
+
+
 async def _confirmar_impressao(update, context, idx: int) -> None:
     """Mostra 'Imprimir N etiquetas de <grupo>?' com Confirmar/Cancelar."""
     chat_id = update.effective_chat.id if update.effective_chat else None
     grupo = _grupo_do_indice(context, idx)
     if grupo is None:
         await context.bot.send_message(chat_id, "Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    if not _lista_imprimivel(context):
+        await context.bot.send_message(chat_id, "Impressao e so do Mercado Livre. Na Shopee, imprima pelo app.")
         return
     if _conta_mudou(context):
         await context.bot.send_message(chat_id, "A conta ativa mudou. Refaca a consulta (/hoje, /amanha...).")
@@ -356,6 +367,9 @@ async def _executar_impressao(update, context, idx: int) -> None:
     grupo = _grupo_do_indice(context, idx)
     if grupo is None:
         await query.edit_message_text("Essa lista expirou. Refaca a consulta (/hoje, /amanha...).")
+        return
+    if not _lista_imprimivel(context):
+        await query.edit_message_text("Impressao e so do Mercado Livre. Na Shopee, imprima pelo app.")
         return
     if _conta_mudou(context):
         await query.edit_message_text("A conta ativa mudou. Refaca a consulta (/hoje, /amanha...).")
