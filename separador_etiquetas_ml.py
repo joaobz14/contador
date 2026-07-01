@@ -223,7 +223,9 @@ def salvar_credenciais(cred: dict) -> None:
 
 
 def renovar_token(cred: dict) -> str:
-    resp = requests.post(
+    # Refresh com retry (408/429/5xx e rede): um soluco transitorio nao derruba
+    # a atualizacao inteira logo na 1a chamada.
+    resp = _requisicao_post(
         f"{API}/oauth/token",
         data={
             "grant_type": "refresh_token",
@@ -231,8 +233,6 @@ def renovar_token(cred: dict) -> str:
             "client_secret": cred["client_secret"],
             "refresh_token": cred["refresh_token"],
         },
-        headers={"Accept": "application/json"},
-        timeout=TIMEOUT,
     )
     if resp.status_code != 200:
         raise SeparadorError(f"Falha ao renovar token: {resp.text}")
@@ -262,8 +262,8 @@ def _requisicao_get(
 ) -> requests.Response:
     """GET com retry em erros transitorios e em falhas de rede.
 
-    Re-tenta em respostas 429/500/502/503 (em 429 respeita o Retry-After do
-    ML e aplica jitter) e tambem em quedas/timeout de conexao, para um soluco
+    Re-tenta em respostas 408/429/500/502/503/504 (em 429 respeita o Retry-After
+    do ML e aplica jitter) e tambem em quedas/timeout de conexao, para um soluco
     de rede nao derrubar a atualizacao inteira. Retorna a Response da ultima
     tentativa; quem chama decide o que fazer com o status.
     """
@@ -277,7 +277,29 @@ def _requisicao_get(
                 raise
             time.sleep((2 ** (tentativa + 1)) + random.uniform(0, 0.5))
             continue
-        if resp.status_code not in (429, 500, 502, 503) or ultima:
+        if resp.status_code not in (408, 429, 500, 502, 503, 504) or ultima:
+            return resp
+        time.sleep(_espera_retry(resp, tentativa + 1))
+    return resp
+
+
+def _requisicao_post(url: str, *, params: dict | None = None, json: dict | None = None,
+                     data: dict | None = None, timeout: int = TIMEOUT,
+                     tentativas: int = 3) -> requests.Response:
+    """POST com retry em erros transitorios (408/429/5xx) e falhas de rede — mesma
+    politica do _requisicao_get. Usado pelo refresh de token e pela Shopee (cujos
+    POSTs, sem isto, nao re-tentavam num soluco de rede/429)."""
+    resp = None
+    for tentativa in range(tentativas):
+        ultima = tentativa == tentativas - 1
+        try:
+            resp = requests.post(url, params=params, json=json, data=data, timeout=timeout)
+        except (requests.ConnectionError, requests.Timeout):
+            if ultima:
+                raise
+            time.sleep((2 ** (tentativa + 1)) + random.uniform(0, 0.5))
+            continue
+        if resp.status_code not in (408, 429, 500, 502, 503, 504) or ultima:
             return resp
         time.sleep(_espera_retry(resp, tentativa + 1))
     return resp
@@ -343,27 +365,31 @@ def salvar_cache(cache: dict) -> None:
     _gravar_json(ARQUIVO_CACHE, cache)
 
 
+def _detalhe_item(token: str, item_id: str) -> tuple[str, dict]:
+    """Busca 1 item e extrai (titulo, {variacao: GTIN}). Falha vira entrada vazia."""
+    try:
+        det = _get(f"{API}/items/{item_id}", token, params={"include_attributes": "all"})
+    except requests.HTTPError:
+        return item_id, {"title": "", "variations": {}}
+    variacoes: dict[str, str] = {}
+    for v in det.get("variations", []):
+        gtin = ""
+        for a in v.get("attributes", []):
+            if a.get("id") == "GTIN":
+                gtin = a.get("value_name") or ""
+        variacoes[str(v.get("id"))] = gtin
+    return item_id, {"title": det.get("title", ""), "variations": variacoes}
+
+
 def buscar_detalhes(token: str, item_ids: set[str], cache: dict) -> None:
     faltando = [i for i in item_ids if i not in cache]
     if not faltando:
         return
     print(f"Buscando detalhes de {len(faltando)} produtos novos...")
-    for n, item_id in enumerate(faltando, 1):
-        print(f"  {n}/{len(faltando)}", end="\r")
-        try:
-            det = _get(f"{API}/items/{item_id}", token, params={"include_attributes": "all"})
-        except requests.HTTPError:
-            cache[item_id] = {"title": "", "variations": {}}
-            continue
-        variacoes: dict[str, str] = {}
-        for v in det.get("variations", []):
-            gtin = ""
-            for a in v.get("attributes", []):
-                if a.get("id") == "GTIN":
-                    gtin = a.get("value_name") or ""
-            variacoes[str(v.get("id"))] = gtin
-        cache[item_id] = {"title": det.get("title", ""), "variations": variacoes}
-    print()
+    # Em paralelo (antes era serial): so ocorre quando aparece produto novo.
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        for item_id, entry in ex.map(lambda i: _detalhe_item(token, i), faltando):
+            cache[item_id] = entry
     salvar_cache(cache)
 
 

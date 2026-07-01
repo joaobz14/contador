@@ -101,6 +101,27 @@ def test_gerar_etiqueta_espera_todos_os_pedidos_ready(monkeypatch):
     assert out == b"PKzip"
 
 
+def test_gerar_etiqueta_fatia_em_blocos_de_50(monkeypatch):
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    chamadas = []
+    monkeypatch.setattr(sh, "_gerar_bloco",
+                        lambda cred, token, sns, tipo, r, t, e: chamadas.append(list(sns)) or b"PKz")
+    monkeypatch.setattr(sh, "_combinar_etiquetas", lambda zips: b"COMBINED")
+    sns = [f"S{i}" for i in range(120)]
+    out = sh.gerar_etiqueta({"x": 1}, sns, rastreios={s: f"BR{s}" for s in sns})
+    assert [len(c) for c in chamadas] == [50, 50, 20]     # fatiou em 50/50/20
+    assert out == b"COMBINED"                             # varios blocos -> combinou
+
+
+def test_gerar_etiqueta_um_bloco_nao_combina(monkeypatch):
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "_gerar_bloco", lambda *a: b"PKsingle")
+    monkeypatch.setattr(sh, "_combinar_etiquetas",
+                        lambda zips: (_ for _ in ()).throw(AssertionError("nao combinar")))
+    out = sh.gerar_etiqueta({"x": 1}, ["A", "B"], rastreios={"A": "x", "B": "y"})
+    assert out == b"PKsingle"                             # 1 bloco -> retorna direto
+
+
 def test_gerar_etiqueta_aborta_se_algum_falhou(monkeypatch):
     import pytest
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
