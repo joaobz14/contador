@@ -26,13 +26,12 @@ import hashlib
 import hmac
 import io
 import sys
+import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
-
-import requests
 
 import separador_etiquetas_ml as core
 
@@ -43,6 +42,7 @@ TIMEOUT = core.TIMEOUT
 DIAS_JANELA = 15           # Shopee limita a janela de busca a 15 dias
 TAMANHO_LOTE = 50          # get_order_detail aceita ate 50 order_sn por chamada
 MARGEM_TOKEN = 300         # renova o token 5 min antes de expirar
+_LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_token)
 
 ARQUIVO_CRED = core.PASTA_SCRIPT / "credenciais_shopee.json"
 
@@ -109,9 +109,10 @@ def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
 
 
 def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
-    """POST assinado em uma API de loja (sign na query, dados no corpo JSON)."""
-    resp = requests.post(f"{HOST}{path}", params=_params_assinados(cred, token, path),
-                         json=body, timeout=TIMEOUT)
+    """POST assinado em uma API de loja (sign na query, dados no corpo JSON).
+    Passa pelo retry do nucleo (408/429/5xx e rede)."""
+    resp = core._requisicao_post(f"{HOST}{path}",
+                                 params=_params_assinados(cred, token, path), json=body)
     resp.raise_for_status()
     dados = resp.json()
     if dados.get("error"):
@@ -120,9 +121,10 @@ def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
 
 
 def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
-    """POST assinado que devolve um ARQUIVO (etiqueta). Se vier JSON, e erro."""
-    resp = requests.post(f"{HOST}{path}", params=_params_assinados(cred, token, path),
-                         json=body, timeout=TIMEOUT)
+    """POST assinado que devolve um ARQUIVO (etiqueta). Se vier JSON, e erro.
+    Passa pelo retry do nucleo (408/429/5xx e rede)."""
+    resp = core._requisicao_post(f"{HOST}{path}",
+                                 params=_params_assinados(cred, token, path), json=body)
     resp.raise_for_status()
     if "application/json" in resp.headers.get("Content-Type", ""):
         dados = resp.json()
@@ -137,13 +139,12 @@ def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
 def renovar_token(cred: dict) -> str:
     path = "/api/v2/auth/access_token/get"
     ts = int(time.time())
-    resp = requests.post(
+    resp = core._requisicao_post(
         f"{HOST}{path}",
         params={"partner_id": cred["partner_id"], "timestamp": ts,
                 "sign": _assinatura_publica(cred, path, ts)},
         json={"refresh_token": cred["refresh_token"],
               "partner_id": int(cred["partner_id"]), "shop_id": int(cred["shop_id"])},
-        timeout=TIMEOUT,
     )
     dados = resp.json()
     if resp.status_code != 200 or dados.get("error"):
@@ -157,10 +158,22 @@ def renovar_token(cred: dict) -> str:
     return cred["access_token"]
 
 
+def _token_valido(cred: dict) -> bool:
+    return bool(cred.get("access_token")) and \
+        time.time() < cred.get("access_token_exp", 0) - MARGEM_TOKEN
+
+
 def obter_token(cred: dict) -> str:
-    if cred.get("access_token") and time.time() < cred.get("access_token_exp", 0) - MARGEM_TOKEN:
+    """Token valido do cache, ou renova. Serializa o refresh com um lock e
+    re-checa dentro dele (double-checked): se varias threads paralelas pegarem o
+    token expirado ao mesmo tempo, apenas UMA renova — evitando a corrida que
+    poderia invalidar o refresh_token (rotacao) e travar a loja."""
+    if _token_valido(cred):
         return cred["access_token"]
-    return renovar_token(cred)
+    with _LOCK_TOKEN:
+        if _token_valido(cred):                      # outra thread ja renovou?
+            return cred["access_token"]
+        return renovar_token(cred)
 
 
 # ---------------------------------------------------------------------------
@@ -392,10 +405,22 @@ def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUET
             "Sem numero de rastreio (AWB) para: " + ", ".join(sem_awb) + ". "
             "Organize o envio (botao 'Organizar Envio' na Shopee) antes de gerar a etiqueta."
         )
+    # Os endpoints de documento tem limite de pedidos por chamada (TAMANHO_LOTE).
+    # Fatia em blocos e combina num unico ZIP no fim (a Zebra imprime tudo junto).
+    zips = [_gerar_bloco(cred, token, order_sns[i:i + TAMANHO_LOTE], tipo, rastreios,
+                         tentativas, espera)
+            for i in range(0, len(order_sns), TAMANHO_LOTE)]
+    return zips[0] if len(zips) == 1 else _combinar_etiquetas(zips)
+
+
+def _gerar_bloco(cred: dict, token: str, order_sns: list, tipo: str, rastreios: dict,
+                 tentativas: int, espera: float) -> bytes:
+    """Cria/espera(READY)/baixa UM bloco de pedidos (<= TAMANHO_LOTE). So baixa com
+    TODOS os pedidos do bloco READY; aborta se algum FAILED."""
     criar_documento(cred, token, order_sns, tipo, rastreios=rastreios)
     for _ in range(tentativas):
         status = _status_documento(resultado_documento(cred, token, order_sns, tipo))
-        # Avalia por pedido PEDIDO (nao so os que vieram no result_list): um pedido
+        # Avalia por pedido pedido (nao so os que vieram no result_list): um pedido
         # ausente conta como ainda-nao-pronto, evitando baixar antes da hora.
         if any(status.get(sn) == "FAILED" for sn in order_sns):
             raise core.SeparadorError(f"Geracao da etiqueta falhou: {status}")
@@ -488,12 +513,6 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
         f"Envio organizado, mas o rastreio (AWB) do pedido {order_sn} ainda nao saiu. "
         f"Aguarde alguns segundos e clique em Imprimir novamente."
     )
-
-
-def envios_a_organizar(cred: dict, order_sns: list[str]) -> list[str]:
-    """Quais order_sns ainda nao tem AWB (precisam de Organizar Envio)."""
-    token = obter_token(cred)
-    return [sn for sn in order_sns if not numero_rastreio(cred, token, sn)]
 
 
 def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:

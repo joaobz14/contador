@@ -53,6 +53,19 @@ def test_get_esgota_tentativas_e_levanta(core, monkeypatch):
         core._get("http://x", "tok")
 
 
+def test_get_retenta_em_504(core, monkeypatch):
+    estado = _sequencia(monkeypatch, core, [FakeResp(504), FakeResp(200, json_data={"ok": True})])
+    assert core._get("http://x", "tok") == {"ok": True}
+    assert estado["n"] == 2                # 504 agora e retentado
+
+
+def test_requisicao_post_retry_em_erro_transitorio(core, monkeypatch):
+    seq = iter([FakeResp(503), FakeResp(200, json_data={"ok": True})])
+    monkeypatch.setattr(core.requests, "post", lambda *a, **k: next(seq))
+    resp = core._requisicao_post("http://x", json={"a": 1})
+    assert resp.status_code == 200         # POST agora tambem re-tenta
+
+
 def test_zpl_de_zip_extrai_conteudo(core):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
