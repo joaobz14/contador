@@ -36,3 +36,19 @@ def test_carregar_nomes_json_invalido_retorna_vazio(core, tmp_path, monkeypatch)
     arq.write_text("{ isso nao e json", encoding="utf-8")
     monkeypatch.setattr(core, "ARQUIVO_NOMES", arq)
     assert core.carregar_nomes() == {}
+
+
+def test_salvar_nomes_grava_ordenado_e_relê(core, tmp_path, monkeypatch):
+    arq = tmp_path / "nomes.json"
+    monkeypatch.setattr(core, "ARQUIVO_NOMES", arq)
+    core.salvar_nomes({"B02": "Beta", "A01": "Alfa"})
+    # chaves ordenadas no arquivo (diff do git limpo) e o roundtrip bate
+    assert list(json.loads(arq.read_text(encoding="utf-8"))) == ["A01", "B02"]
+    assert core.carregar_nomes() == {"A01": "Alfa", "B02": "Beta"}
+
+
+def test_salvar_nomes_descarta_vazios_e_apara(core, tmp_path, monkeypatch):
+    arq = tmp_path / "nomes.json"
+    monkeypatch.setattr(core, "ARQUIVO_NOMES", arq)
+    core.salvar_nomes({" PRP ": " Picador ", "": "sem sku", "X01": "  "})
+    assert core.carregar_nomes() == {"PRP": "Picador"}   # apara e ignora vazios
