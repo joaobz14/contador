@@ -41,6 +41,45 @@ def test_carregar_credenciais_invalida_da_erro_amigavel(core, tmp_path, monkeypa
         core.carregar_credenciais()
 
 
+# ------------------------------------------ backup/auto-recuperacao de credenciais
+def test_salvar_credenciais_cria_backup_espelho(core, tmp_path, monkeypatch):
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    core.salvar_credenciais({"refresh_token": "abc"})
+    bak = tmp_path / "credenciais.json.bak"
+    assert json.loads(bak.read_text(encoding="utf-8")) == {"refresh_token": "abc"}
+
+
+def test_carregar_credenciais_restaura_do_backup_quando_corrompe(core, tmp_path, monkeypatch):
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    core.salvar_credenciais({"refresh_token": "bom"})     # gera o .bak
+    arq.write_text("\x00\x00\x00", encoding="utf-8")      # simula queda de energia
+    cred = core.carregar_credenciais()                    # deve recuperar do .bak
+    assert cred == {"refresh_token": "bom"}
+    # e reescreve o principal a partir do backup (proxima leitura ja le direto)
+    assert json.loads(arq.read_text(encoding="utf-8")) == {"refresh_token": "bom"}
+
+
+def test_carregar_credenciais_gera_backup_na_primeira_leitura(core, tmp_path, monkeypatch):
+    # arquivo veio do pegar_token.py (sem .bak ainda) -> a 1a leitura cria o .bak
+    arq = tmp_path / "credenciais.json"
+    arq.write_text(json.dumps({"refresh_token": "x"}), encoding="utf-8")
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    assert core.carregar_credenciais() == {"refresh_token": "x"}
+    assert (tmp_path / "credenciais.json.bak").exists()
+
+
+def test_backup_acompanha_token_girado(core, tmp_path, monkeypatch):
+    # apos o token girar, o .bak reflete o novo (restauracao devolve token valido)
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    core.salvar_credenciais({"refresh_token": "v1"})
+    core.salvar_credenciais({"refresh_token": "v2"})      # token girou
+    bak = tmp_path / "credenciais.json.bak"
+    assert json.loads(bak.read_text(encoding="utf-8")) == {"refresh_token": "v2"}
+
+
 # --------------------------------------------------- retry em falha de rede
 def test_requisicao_get_retenta_apos_falha_de_rede(core, monkeypatch):
     estado = {"n": 0}
