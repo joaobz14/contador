@@ -110,6 +110,9 @@ class SeparadorApp:
                                 command=lambda n=nome: self._trocar_marketplace(n))
             r.pack(side="left", padx=(0, 8))
             self._radios_mkt.append(r)
+        # Editor de nomes amigaveis (SKU -> nome), a direita da linha da loja.
+        ttk.Button(topo_mkt, text="✏ Nomes",
+                   command=self.abrir_editor_nomes).pack(side="right")
 
         topo = ttk.Frame(self.root, padding=10)
         topo.pack(fill="x")
@@ -526,6 +529,138 @@ class SeparadorApp:
             messagebox.showinfo("Tudo certo", "Nenhum grupo pendente. 🎉")
             return
         self.imprimir(pend)
+
+    # --------------------------------------------------------- EDITOR DE NOMES
+    def abrir_editor_nomes(self) -> None:
+        """Janela para incluir/alterar/remover os nomes amigaveis (SKU -> nome)
+        sem editar o JSON na mao. Grava via core.salvar_nomes (atomico) e aplica
+        na lista atual ao fechar, sem precisar reatualizar."""
+        EditorNomes(self)
+
+
+class EditorNomes:
+    """Janelinha de edicao do de-para SKU -> nome amigavel."""
+
+    def __init__(self, app: "SeparadorApp") -> None:
+        self.app = app
+        self.nomes = dict(core.carregar_nomes())     # copia de trabalho
+        self.alterado = False
+
+        win = tk.Toplevel(app.root)
+        self.win = win
+        win.title("Nomes amigáveis (SKU → nome)")
+        win.geometry("560x520")
+        win.transient(app.root)
+        win.protocol("WM_DELETE_WINDOW", self._fechar)
+
+        # Busca
+        topo = ttk.Frame(win, padding=(10, 10, 10, 4))
+        topo.pack(fill="x")
+        ttk.Label(topo, text="Buscar:").pack(side="left", padx=(0, 6))
+        self.busca_var = tk.StringVar()
+        self.busca_var.trace_add("write", lambda *_: self._preencher_lista())
+        e = ttk.Entry(topo, textvariable=self.busca_var)
+        e.pack(side="left", fill="x", expand=True)
+        e.focus_set()
+
+        # Lista (SKU | Nome)
+        meio = ttk.Frame(win, padding=(10, 0))
+        meio.pack(fill="both", expand=True)
+        cols = ("sku", "nome")
+        self.tree = ttk.Treeview(meio, columns=cols, show="headings", selectmode="browse")
+        self.tree.heading("sku", text="SKU")
+        self.tree.heading("nome", text="Nome")
+        self.tree.column("sku", width=120, anchor="w")
+        self.tree.column("nome", width=380, anchor="w")
+        sb = ttk.Scrollbar(meio, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=sb.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+        self.tree.bind("<<TreeviewSelect>>", self._selecionar)
+
+        # Campos de edicao
+        edit = ttk.Frame(win, padding=(10, 6))
+        edit.pack(fill="x")
+        ttk.Label(edit, text="SKU:").grid(row=0, column=0, sticky="w", padx=(0, 6), pady=2)
+        self.sku_var = tk.StringVar()
+        ttk.Entry(edit, textvariable=self.sku_var, width=18).grid(row=0, column=1, sticky="w")
+        ttk.Label(edit, text="Nome:").grid(row=1, column=0, sticky="w", padx=(0, 6), pady=2)
+        self.nome_var = tk.StringVar()
+        ent_nome = ttk.Entry(edit, textvariable=self.nome_var)
+        ent_nome.grid(row=1, column=1, columnspan=2, sticky="we", pady=2)
+        ent_nome.bind("<Return>", lambda _e: self._salvar_um())
+        edit.columnconfigure(1, weight=1)
+
+        # Botoes
+        acoes = ttk.Frame(win, padding=(10, 4, 10, 10))
+        acoes.pack(fill="x")
+        ttk.Button(acoes, text="🗑 Remover", command=self._remover).pack(side="left")
+        ttk.Button(acoes, text="Fechar", command=self._fechar).pack(side="right")
+        ttk.Button(acoes, text="💾 Salvar", command=self._salvar_um).pack(side="right", padx=6)
+
+        self._preencher_lista()
+
+    def _preencher_lista(self) -> None:
+        termo = self.busca_var.get().strip().lower()
+        self.tree.delete(*self.tree.get_children())
+        for sku, nome in sorted(self.nomes.items()):
+            if termo and termo not in sku.lower() and termo not in nome.lower():
+                continue
+            self.tree.insert("", "end", iid=sku, values=(sku, nome))
+
+    def _selecionar(self, _event=None) -> None:
+        sel = self.tree.selection()
+        if not sel:
+            return
+        sku = sel[0]
+        self.sku_var.set(sku)
+        self.nome_var.set(self.nomes.get(sku, ""))
+
+    def _salvar_um(self) -> None:
+        sku = self.sku_var.get().strip()
+        nome = self.nome_var.get().strip()
+        if not sku or not nome:
+            messagebox.showinfo("Nomes", "Preencha o SKU e o nome.", parent=self.win)
+            return
+        self.nomes[sku] = nome
+        self.alterado = True
+        self._gravar()
+        self._preencher_lista()
+        if self.tree.exists(sku):
+            self.tree.selection_set(sku)
+            self.tree.see(sku)
+
+    def _remover(self) -> None:
+        sku = self.sku_var.get().strip()
+        if sku not in self.nomes:
+            messagebox.showinfo("Nomes", "Selecione um SKU da lista para remover.",
+                                parent=self.win)
+            return
+        if not messagebox.askyesno("Remover", f"Remover o nome do SKU '{sku}'?",
+                                   parent=self.win):
+            return
+        del self.nomes[sku]
+        self.alterado = True
+        self._gravar()
+        self.sku_var.set("")
+        self.nome_var.set("")
+        self._preencher_lista()
+
+    def _gravar(self) -> None:
+        try:
+            core.salvar_nomes(self.nomes)
+        except Exception as e:                       # noqa: BLE001
+            messagebox.showerror("Nomes", f"Não consegui salvar:\n{e}", parent=self.win)
+
+    def _fechar(self) -> None:
+        # Reaplica os nomes na lista ja carregada, sem precisar reatualizar.
+        if self.alterado and self.app.grupos:
+            core.aplicar_nomes(self.app.grupos, self.nomes)
+            try:
+                self.app._render()
+            except Exception:                        # noqa: BLE001
+                pass
+        self.win.destroy()
 
 
 def main() -> None:

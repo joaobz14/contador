@@ -676,6 +676,15 @@ def carregar_nomes() -> dict:
     return _ler_json(ARQUIVO_NOMES)
 
 
+def salvar_nomes(nomes: dict) -> None:
+    """Grava o de-para SKU -> nome de forma atomica (.tmp -> rename), com as
+    chaves ordenadas para o diff do git ficar limpo. Descarta SKUs/nomes
+    vazios."""
+    limpo = {str(sku).strip(): str(nome).strip()
+             for sku, nome in nomes.items() if str(sku).strip() and str(nome).strip()}
+    _gravar_json(ARQUIVO_NOMES, dict(sorted(limpo.items())))
+
+
 def _rotulo_sku(sku: str, nomes: dict) -> str:
     amigavel = nomes.get(sku)
     return f"{sku} — {amigavel}" if amigavel else sku
