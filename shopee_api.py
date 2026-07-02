@@ -51,20 +51,21 @@ ARQUIVO_CRED = core.PASTA_SCRIPT / "credenciais_shopee.json"
 # CREDENCIAIS
 # ---------------------------------------------------------------------------
 def carregar_credenciais() -> dict:
+    # Com auto-recuperacao via .bak (queda de energia nao exige refazer o token).
+    cred = core._carregar_credenciais_com_backup(ARQUIVO_CRED)
+    if cred:
+        return cred
     if not ARQUIVO_CRED.exists():
         raise core.SeparadorError(
             "credenciais_shopee.json nao encontrado. Rode pegar_token_shopee.py primeiro."
         )
-    cred = core._ler_json(ARQUIVO_CRED)
-    if not cred:
-        raise core.SeparadorError(
-            "credenciais_shopee.json invalido. Rode pegar_token_shopee.py de novo."
-        )
-    return cred
+    raise core.SeparadorError(
+        "credenciais_shopee.json invalido. Rode pegar_token_shopee.py de novo."
+    )
 
 
 def salvar_credenciais(cred: dict) -> None:
-    core._gravar_json(ARQUIVO_CRED, cred)
+    core._gravar_credenciais_com_backup(ARQUIVO_CRED, cred)
 
 
 # ---------------------------------------------------------------------------

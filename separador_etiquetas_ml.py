@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import random
 import re
 import sys
@@ -129,10 +130,19 @@ def _ler_json(caminho: Path) -> dict:
 
 
 def _gravar_json(caminho: Path, dados) -> None:
-    """Grava JSON de forma atomica: escreve em .tmp e renomeia. Assim o arquivo
-    final nunca fica pela metade (corte de energia, crash ou sync do OneDrive)."""
+    """Grava JSON de forma atomica e DURAVEL: escreve em .tmp, forca o disco a
+    persistir (flush+fsync) e so entao renomeia. O fsync evita o classico
+    'arquivo de 1 KB cheio de bytes nulos' quando cai a energia logo apos gravar
+    (a renomeacao ja constava mas os dados ainda nao tinham ido pro disco)."""
     tmp = caminho.with_name(caminho.name + ".tmp")
-    tmp.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+    texto = json.dumps(dados, ensure_ascii=False, indent=2)
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(texto)
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except OSError:
+            pass                      # alguns sistemas de arquivo nao suportam
     tmp.replace(caminho)
 
 
@@ -205,21 +215,64 @@ def aplicar_config() -> dict:
 # ---------------------------------------------------------------------------
 # CREDENCIAIS
 # ---------------------------------------------------------------------------
+def _caminho_backup(arquivo: Path) -> Path:
+    return arquivo.with_name(arquivo.name + ".bak")
+
+
+def _gravar_credenciais_com_backup(arquivo: Path, cred: dict) -> None:
+    """Grava as credenciais e mantem um .bak espelho. O .bak acompanha SEMPRE a
+    ultima versao (inclusive apos o token girar), para uma restauracao devolver
+    um refresh_token ainda valido. Uma falha ao gravar o .bak nunca impede de
+    salvar o arquivo principal."""
+    _gravar_json(arquivo, cred)
+    try:
+        _gravar_json(_caminho_backup(arquivo), cred)
+    except OSError:
+        pass
+
+
+def _carregar_credenciais_com_backup(arquivo: Path) -> dict | None:
+    """Le credenciais tolerando corrupcao/energia, com auto-recuperacao.
+
+    - Principal OK (JSON nao-vazio): garante o .bak em dia e devolve os dados.
+    - Principal vazio/corrompido/ausente, mas ha um .bak valido: restaura o
+      principal a partir do .bak e devolve os dados (recupera de queda de
+      energia SEM refazer o token).
+    - Nada valido: devolve None (o chamador decide a mensagem de erro)."""
+    dados = _ler_json(arquivo) if arquivo.exists() else {}
+    bak = _caminho_backup(arquivo)
+    if dados:
+        if _ler_json(bak) != dados:              # so grava o .bak quando muda
+            try:
+                _gravar_json(bak, dados)
+            except OSError:
+                pass
+        return dados
+    backup = _ler_json(bak) if bak.exists() else {}
+    if backup:
+        try:
+            _gravar_json(arquivo, backup)         # restaura o principal
+        except OSError:
+            pass
+        return backup
+    return None
+
+
 def carregar_credenciais() -> dict:
+    dados = _carregar_credenciais_com_backup(ARQUIVO_CRED)
+    if dados:
+        return dados
     if not ARQUIVO_CRED.exists():
         raise SeparadorError(
             "credenciais.json nao encontrado. Rode pegar_token.py primeiro."
         )
-    try:
-        return json.loads(ARQUIVO_CRED.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
-        raise SeparadorError(
-            "credenciais.json invalido ou ilegivel. Rode pegar_token.py de novo."
-        ) from e
+    raise SeparadorError(
+        "credenciais.json invalido ou ilegivel. Rode pegar_token.py de novo."
+    )
 
 
 def salvar_credenciais(cred: dict) -> None:
-    _gravar_json(ARQUIVO_CRED, cred)
+    _gravar_credenciais_com_backup(ARQUIVO_CRED, cred)
 
 
 def renovar_token(cred: dict) -> str:
