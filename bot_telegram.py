@@ -97,7 +97,7 @@ def carregar_config() -> dict:
 # ---------------------------------------------------------------- coleta (rede)
 def _coletar(dia: str | None, somente_hoje: bool):
     cred = core.carregar_credenciais()
-    token = core.renovar_token(cred)
+    token = core.obter_token(cred)
     return core.coletar_grupos(token, cred["seller_id"], dia=dia, somente_hoje=somente_hoje)
 
 
@@ -109,14 +109,14 @@ def _imprimir_grupo(grupo):
     em falha de download/ZPL invalido (nesse caso nada e marcado como impresso).
     """
     cred = core.carregar_credenciais()
-    token = core.renovar_token(cred)
+    token = core.obter_token(cred)
     estado = core.carregar_estado()
     return core.imprimir_pendentes(token, grupo, estado)
 
 
 def _prontos():
     cred = core.carregar_credenciais()
-    token = core.renovar_token(cred)
+    token = core.obter_token(cred)
     pedidos = core.buscar_pedidos(token, cred["seller_id"])
     return core.filtrar_para_imprimir(token, pedidos)
 

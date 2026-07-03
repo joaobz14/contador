@@ -1,5 +1,6 @@
 """Robustez: IO de JSON atomico/tolerante, retry de rede, credenciais invalidas."""
 import json
+import time
 
 import pytest
 import requests
@@ -78,6 +79,34 @@ def test_backup_acompanha_token_girado(core, tmp_path, monkeypatch):
     core.salvar_credenciais({"refresh_token": "v2"})      # token girou
     bak = tmp_path / "credenciais.json.bak"
     assert json.loads(bak.read_text(encoding="utf-8")) == {"refresh_token": "v2"}
+
+
+# --------------------------------------------- token ML: cache + lock (double-check)
+def test_renovar_token_cacheia_access_token_e_rotaciona(core, monkeypatch):
+    monkeypatch.setattr(core, "_requisicao_post", lambda *a, **k: FakeResp(
+        200, json_data={"access_token": "AT", "expires_in": 21600, "refresh_token": "R1"}))
+    monkeypatch.setattr(core, "salvar_credenciais", lambda c: None)
+    cred = {"client_id": "c", "client_secret": "s", "refresh_token": "R0"}
+    assert core.renovar_token(cred) == "AT"
+    assert cred["access_token"] == "AT"
+    assert cred["access_token_exp"] > time.time()      # validade cacheada
+    assert cred["refresh_token"] == "R1"               # rotacionou
+
+
+def test_obter_token_reusa_cache_e_so_renova_quando_expira(core, monkeypatch):
+    chamou = {"n": 0}
+
+    def fake_renovar(cred):
+        chamou["n"] += 1
+        cred["access_token"] = "NOVO"
+        cred["access_token_exp"] = time.time() + 9999
+        return "NOVO"
+
+    monkeypatch.setattr(core, "renovar_token", fake_renovar)
+    valido = {"access_token": "OK", "access_token_exp": time.time() + 9999}
+    assert core.obter_token(valido) == "OK" and chamou["n"] == 0   # cache: nao renova
+    expirado = {"access_token": "VELHO", "access_token_exp": 0}
+    assert core.obter_token(expirado) == "NOVO" and chamou["n"] == 1  # renova 1x
 
 
 # --------------------------------------------------- retry em falha de rede

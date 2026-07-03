@@ -77,7 +77,7 @@ class ProvedorML(Provedor):
 
     def _renovar(self) -> str:
         self.cred = core.carregar_credenciais()
-        self.token = core.renovar_token(self.cred)
+        self.token = core.obter_token(self.cred)   # cache + lock (nao rotaciona a toa)
         return self.token
 
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
