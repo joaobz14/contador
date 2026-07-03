@@ -129,18 +129,6 @@ class SeparadorApp:
         self._radios_conta: list = []
         self._rebuild_conta_selector()
 
-        # Seletor de dia de despacho: Hoje (padrao) ou Amanha.
-        # So mudam a escolha; a busca so acontece quando o usuario clica em Atualizar.
-        self.modo = tk.StringVar(value="hoje")
-        seletor = ttk.Frame(topo)
-        seletor.pack(side="left", padx=6)
-        self.radios = [
-            ttk.Radiobutton(seletor, text="Hoje", value="hoje", variable=self.modo),
-            ttk.Radiobutton(seletor, text="Amanhã", value="amanha", variable=self.modo),
-        ]
-        for r in self.radios:
-            r.pack(side="left", padx=(0, 6))
-
         # Modo de identificacao do produto na impressao (preferencia lembrada).
         self._ident_labels = {"carimbo": "Carimbo SKU no DANFE",
                               "carimbo_nome": "Carimbo nome no DANFE",
@@ -157,6 +145,24 @@ class SeparadorApp:
         self.lbl_resumo = ttk.Label(topo, text="")
         self.lbl_resumo.pack(side="right")
         self._atualizar_visibilidade_topo()   # esconde conta/identificacao p/ Shopee
+
+        # Seletor de dia de despacho, em linha propria (5 dias uteis nao cabem na
+        # barra de cima). Mostra os proximos dias UTEIS (seg-sex), para poder ver,
+        # por ex., os pedidos de segunda ja na sexta (sab/dom nao tem coleta). O 1o
+        # (hoje/proximo util) ja vem marcado. So muda a escolha; a busca so acontece
+        # ao clicar em Atualizar.
+        self._dias_uteis = core.proximos_dias_uteis()
+        self.dia_sel = tk.StringVar(value=self._dias_uteis[0])
+        hoje_iso = core._hoje_br()
+        linha_dia = ttk.Frame(self.root, padding=(10, 0, 10, 6))
+        linha_dia.pack(fill="x")
+        ttk.Label(linha_dia, text="Dia de despacho:").pack(side="left", padx=(0, 8))
+        self.radios = []
+        for iso in self._dias_uteis:
+            texto = f"{core.rotulo_dia(iso)}{' (hoje)' if iso == hoje_iso else ''}"
+            r = ttk.Radiobutton(linha_dia, text=texto, value=iso, variable=self.dia_sel)
+            r.pack(side="left", padx=(0, 8))
+            self.radios.append(r)
 
         self.prog = ttk.Progressbar(self.root, mode="determinate")
         self.lbl_status = ttk.Label(self.root, text="", padding=(12, 0), foreground=CINZA)
@@ -282,7 +288,7 @@ class SeparadorApp:
         self._mostrar_rodape(False)
         self.lbl_resumo.config(text="")
         tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
-        prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia (Hoje ou Amanhã)"
+        prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia da semana"
         ttk.Label(
             self.lista, padding=24, justify="center", foreground=CINZA,
             text=(f"{prefixo} e clique em 🔄 Atualizar\npara buscar os pedidos."),
@@ -306,9 +312,8 @@ class SeparadorApp:
 
     def _atualizar_thread(self) -> None:
         try:
-            somente_hoje = self.modo.get() != "amanha"
-            dia = core._amanha_br() if self.modo.get() == "amanha" else None
-            grupos = self.prov.coletar(dia=dia, somente_hoje=somente_hoje,
+            dia = self.dia_sel.get()          # dia util escolhido (YYYY-MM-DD)
+            grupos = self.prov.coletar(dia=dia, somente_hoje=False,
                                        progresso=self._progresso)
             estado = self.prov.carregar_estado()
         except Exception as e:
@@ -341,12 +346,12 @@ class SeparadorApp:
             text=f"{len(self.grupos)} grupos · {total_et} etiquetas · "
                  f"{len(arquivadas)} impressos")
 
-        dia_txt = "amanhã" if self.modo.get() == "amanha" else "hoje"
+        dia_txt = core.rotulo_dia(self.dia_sel.get())
         # Rodape do "Imprimir selecionados" aparece so quando ha grupos pendentes.
         self._mostrar_rodape(bool(pendentes))
 
         if not self.grupos:
-            ttk.Label(self.lista, text=f"Nenhum grupo para imprimir {dia_txt}. 🎉",
+            ttk.Label(self.lista, text=f"Nenhum grupo para imprimir em {dia_txt}. 🎉",
                       padding=24).pack()
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
@@ -364,7 +369,7 @@ class SeparadorApp:
                 for g in por_qtd[qtd]:
                     self._linha(g, selecionavel=True)
         else:
-            ttk.Label(self.lista, text=f"Tudo impresso {dia_txt}! 🎉",
+            ttk.Label(self.lista, text=f"Tudo impresso em {dia_txt}! 🎉",
                       padding=(0, 12)).pack()
 
         # ----- Seção: já impressas (arquivadas), embaixo e separadas

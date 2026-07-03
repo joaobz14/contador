@@ -30,7 +30,7 @@ import zipfile
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -100,6 +100,29 @@ def _hoje_br() -> str:
 def _amanha_br() -> str:
     """Data de amanha (YYYY-MM-DD) no horario de Brasilia."""
     return (datetime.now(TZ_BR).date() + timedelta(days=1)).isoformat()
+
+
+# Dias da semana (0=segunda ... 6=domingo), abreviados para o seletor de dia.
+_DIAS_SEMANA_ABREV = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+
+def proximos_dias_uteis(qtd: int = 5, base: date | None = None) -> list[str]:
+    """As proximas `qtd` datas UTEIS (segunda a sexta) a partir de hoje
+    (inclusive), em YYYY-MM-DD no fuso de Brasilia. Pula sabado e domingo, que
+    nao tem coleta. Ex.: aberto numa sexta -> [sexta(hoje), seg, ter, qua, qui]."""
+    d = base or datetime.now(TZ_BR).date()
+    dias: list[str] = []
+    while len(dias) < qtd:
+        if d.weekday() < 5:                    # 0-4 = segunda a sexta
+            dias.append(d.isoformat())
+        d += timedelta(days=1)
+    return dias
+
+
+def rotulo_dia(iso: str) -> str:
+    """Rotulo curto de uma data ISO para o seletor: '2026-07-06' -> 'Seg 06/07'."""
+    d = date.fromisoformat(iso)
+    return f"{_DIAS_SEMANA_ABREV[d.weekday()]} {d.day:02d}/{d.month:02d}"
 
 
 def _data_despacho(expected_raw: str) -> str:
