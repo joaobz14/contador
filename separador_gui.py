@@ -37,6 +37,7 @@ class SeparadorApp:
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
         self._blocos: list = []               # (master_var, [vars]) por bloco de qtd
+        self._sel_antes: set = set()          # selecao preservada entre re-renders
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
         # Marketplace ativo (Mercado Livre / Shopee) e seu provedor.
         self.marketplace = self.config.get("marketplace", "Mercado Livre")
@@ -357,6 +358,9 @@ class SeparadorApp:
     def atualizar(self) -> None:
         if self.ocupado:
             return
+        # Dados novos (dia/conta/loja podem mudar): selecao antiga nao vale mais.
+        self._sel_vars = []
+        self._sel_antes = set()
         # Limpa a busca para um filtro antigo nao esconder os pedidos do novo dia.
         if self.busca_var.get():
             self.busca_var.set("")
@@ -392,6 +396,13 @@ class SeparadorApp:
     # --------------------------------------------------------------- RENDER
     def _render(self) -> None:
         self.prog.pack_forget()
+        # Preserva o que estava marcado: um re-render (ex.: digitar na busca) nao
+        # pode perder a selecao ja feita. Merge (nao recomputa): grupos escondidos
+        # pelo filtro mantem a marcacao; desmarcar um visivel remove. Zerado em
+        # atualizar() (dados novos).
+        for g, v in self._sel_vars:
+            chave = (g.chave, g.quantidade)
+            (self._sel_antes.add if v.get() else self._sel_antes.discard)(chave)
         for w in self.lista.winfo_children():
             w.destroy()
         self._sel_vars = []          # caixinhas sao recriadas a cada render
@@ -474,7 +485,7 @@ class SeparadorApp:
 
         var = None
         if selecionavel:                       # caixinha para "Imprimir selecionados"
-            var = tk.BooleanVar(value=False)
+            var = tk.BooleanVar(value=(g.chave, g.quantidade) in self._sel_antes)
             ttk.Checkbutton(fr, variable=var,
                             command=self._atualizar_contagem).pack(side="left", padx=(0, 6))
             self._sel_vars.append((g, var))

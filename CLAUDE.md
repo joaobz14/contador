@@ -13,7 +13,7 @@ repo) monitora e imprime.
 | `separador_etiquetas_ml.py` | Núcleo: API do ML, agrupamento, estado, ZPL, carimbo, CLI. |
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
-| `separador_gui.py` | Tela Tkinter (seletor de marketplace + conta + dia). Usa `provedores`. |
+| `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
 | `bot_telegram.py` | Bot de **consulta** (somente leitura). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
@@ -46,8 +46,24 @@ em 2º plano.
   `status_grupo`, `envios_pendentes`).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
-- **Escrita de JSON é atômica** (`.tmp` → `replace`) e leitura tolerante.
+- **Token: sempre `obter_token(cred)`** (ML e Shopee) — cache + lock double-checked.
+  Nunca chamar `renovar_token` direto: o refresh_token **rotaciona** e uma corrida
+  entre threads pode invalidá-lo (travando a conta).
+- **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e
+  leitura tolerante. Credenciais têm espelho **`.bak`** com auto-recuperação
+  (queda de energia não exige refazer o token); `.bak` é gitignorado.
 - **Fuso:** sempre Brasília (`TZ_BR`, `_hoje_br()`, `_amanha_br()`).
+- **Dia de despacho:** a GUI mostra os próximos **dias úteis** (`proximos_dias_uteis()`
+  + `rotulo_dia()`) e passa a data escolhida como `dia=` (ML e Shopee filtram igual).
+  Atenção: data exata — pedido com despacho no fim de semana não aparece (pendência
+  conhecida).
+- **Nomes amigáveis:** `nomes_sku.json` (versionado; sincroniza via git) mapeia
+  SKU → nome. Editável na GUI pelo botão **✏ Nomes** (`EditorNomes`); use
+  `carregar_nomes()`/`salvar_nomes()` (ordena chaves, apara, descarta vazios).
+- **Identificação na impressão** (`MODO_IDENT`): `carimbo` (SKU na DANFE),
+  `carimbo_nome` (nome da aba Nomes; fonte adaptativa via `_fonte_nome` — curto
+  maior, longo menor até 3 linhas; sem nome cadastrado cai no SKU), `divisoria`,
+  `nenhuma`. `CARIMBAR_SKU` é legado (compat de config antigo).
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
