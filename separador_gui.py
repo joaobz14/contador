@@ -36,6 +36,7 @@ class SeparadorApp:
         core.MODO_IDENT = self.modo_ident
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
+        self._blocos: list = []               # (master_var, [vars]) por bloco de qtd
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
         # Marketplace ativo (Mercado Livre / Shopee) e seu provedor.
         self.marketplace = self.config.get("marketplace", "Mercado Livre")
@@ -168,6 +169,18 @@ class SeparadorApp:
         self.lbl_status = ttk.Label(self.root, text="", padding=(12, 0), foreground=CINZA)
         self.lbl_status.pack(fill="x")
 
+        # Master do "Marcar todos" (os pendentes visiveis). Recriado a cada render.
+        self._sel_todos = tk.BooleanVar(value=False)
+
+        # Busca na lista do dia (filtra por nome/SKU, sem rede). Linha propria,
+        # mostrada so quando ha grupos carregados (ver _render/_tela_inicial).
+        self.busca_var = tk.StringVar()
+        self.busca_var.trace_add("write", lambda *_: self._on_busca())
+        self.linha_busca = ttk.Frame(self.root, padding=(10, 0, 10, 4))
+        ttk.Label(self.linha_busca, text="🔎 Buscar:").pack(side="left", padx=(0, 6))
+        self.ent_busca = ttk.Entry(self.linha_busca, textvariable=self.busca_var)
+        self.ent_busca.pack(side="left", fill="x", expand=True)
+
         # Rodape FIXO com "Imprimir selecionados" — sempre visivel, nao rola com a
         # lista. Aparece so quando ha grupos para imprimir (mostrado em _render).
         self.rodape = ttk.Frame(self.root, padding=(10, 6))
@@ -267,10 +280,53 @@ class SeparadorApp:
     def _atualizar_contagem(self) -> None:
         """Atualiza o texto/estado do botao 'Imprimir selecionados' conforme as
         caixinhas marcadas. Chamado a cada clique numa caixinha."""
+        self._sincronizar_selecao()         # mantem os 'marcar todos' coerentes
         n = sum(1 for _g, v in self._sel_vars if v.get())
         sufixo = f" ({n})" if n else ""
         self.btn_lotes.config(text=f"🖨 Imprimir selecionados{sufixo}",
                               state=("normal" if (n and not self.ocupado) else "disabled"))
+
+    def _sincronizar_selecao(self) -> None:
+        """Deixa os checkboxes 'marcar todos' (geral e por bloco) refletindo o
+        estado real das caixinhas individuais (marcado = todas marcadas)."""
+        for master, vars_ in self._blocos:
+            master.set(bool(vars_) and all(v.get() for v in vars_))
+        self._sel_todos.set(bool(self._sel_vars) and all(v.get() for _g, v in self._sel_vars))
+
+    def _marcar_todos(self) -> None:
+        """Marca/desmarca TODOS os pendentes visiveis de uma vez."""
+        val = self._sel_todos.get()
+        for _g, v in self._sel_vars:
+            v.set(val)
+        self._atualizar_contagem()
+
+    def _marcar_bloco(self, master, vars_) -> None:
+        """Marca/desmarca todos os grupos de um bloco de quantidade."""
+        val = master.get()
+        for v in vars_:
+            v.set(val)
+        self._atualizar_contagem()
+
+    def _casa(self, g, termo: str) -> bool:
+        """True se o grupo casa com o termo de busca (nome, SKU/chave ou itens do
+        combo). Termo vazio casa com tudo."""
+        if not termo:
+            return True
+        if termo in g.nome.lower() or termo in str(g.chave).lower():
+            return True
+        return any(termo in str(sku).lower() for sku, _ in getattr(g, "componentes", []))
+
+    def _mostrar_busca(self, mostrar: bool) -> None:
+        if mostrar:
+            self.linha_busca.pack(fill="x", before=self.cont)
+        else:
+            self.linha_busca.pack_forget()
+
+    def _on_busca(self) -> None:
+        """Re-renderiza a lista aplicando o filtro (usa os grupos ja em memoria,
+        sem rede)."""
+        if self.grupos and not self.ocupado:
+            self._render()
 
     def _trocar_identificacao(self, event=None) -> None:
         """Troca o modo de identificacao (carimbo/divisoria/nenhuma) e lembra."""
@@ -285,7 +341,9 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
         self._sel_vars = []
+        self._blocos = []
         self._mostrar_rodape(False)
+        self._mostrar_busca(False)
         self.lbl_resumo.config(text="")
         tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
         prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia da semana"
@@ -299,6 +357,9 @@ class SeparadorApp:
     def atualizar(self) -> None:
         if self.ocupado:
             return
+        # Limpa a busca para um filtro antigo nao esconder os pedidos do novo dia.
+        if self.busca_var.get():
+            self.busca_var.set("")
         self._ocupar(True, "Carregando pedidos...")
         self.prog.pack(fill="x", padx=12, pady=(0, 4))
         self.prog.config(value=0)
@@ -334,19 +395,26 @@ class SeparadorApp:
         for w in self.lista.winfo_children():
             w.destroy()
         self._sel_vars = []          # caixinhas sao recriadas a cada render
+        self._blocos = []
+
+        dia_txt = core.rotulo_dia(self.dia_sel.get())
+        # Busca aparece assim que ha grupos carregados (filtra sem rede).
+        self._mostrar_busca(bool(self.grupos))
+        termo = self.busca_var.get().strip().lower()
+        grupos = [g for g in self.grupos if self._casa(g, termo)]
 
         # Separa quem falta imprimir (topo) de quem ja foi impresso (arquivadas),
         # para que um grupo pendente nunca fique "perdido" no meio dos ✓ verdes.
-        estados = [(g, core.status_grupo(self.estado, g)) for g in self.grupos]
+        estados = [(g, core.status_grupo(self.estado, g)) for g in grupos]
         pendentes = [g for g, s in estados if s != "impresso"]
         arquivadas = [g for g, s in estados if s == "impresso"]
 
-        total_et = sum(g.total_etiquetas for g in self.grupos)
+        total_et = sum(g.total_etiquetas for g in grupos)
+        prefixo = "🔎 " if termo else ""
         self.lbl_resumo.config(
-            text=f"{len(self.grupos)} grupos · {total_et} etiquetas · "
+            text=f"{prefixo}{len(grupos)} grupos · {total_et} etiquetas · "
                  f"{len(arquivadas)} impressos")
 
-        dia_txt = core.rotulo_dia(self.dia_sel.get())
         # Rodape do "Imprimir selecionados" aparece so quando ha grupos pendentes.
         self._mostrar_rodape(bool(pendentes))
 
@@ -355,19 +423,34 @@ class SeparadorApp:
                       padding=24).pack()
             self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
             return
+        if not grupos:                       # ha grupos, mas nenhum casa com a busca
+            ttk.Label(self.lista, padding=24, foreground=CINZA,
+                      text=f"Nenhum grupo casa com “{termo}”.").pack()
+            self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
+            return
 
         # ----- Seção: para imprimir (pendentes/parciais), agrupado por quantidade
         if pendentes:
-            ttk.Label(self.lista, text="🖨  Para imprimir",
-                      font=("Segoe UI", 11, "bold")).pack(fill="x", pady=(8, 2))
+            cab = ttk.Frame(self.lista)
+            cab.pack(fill="x", pady=(8, 2))
+            ttk.Label(cab, text="🖨  Para imprimir",
+                      font=("Segoe UI", 11, "bold")).pack(side="left")
+            ttk.Checkbutton(cab, text="Marcar todos", variable=self._sel_todos,
+                            command=self._marcar_todos).pack(side="right")
             por_qtd: dict[int, list] = {}
             for g in pendentes:
                 por_qtd.setdefault(g.quantidade, []).append(g)
             for qtd in sorted(por_qtd):
-                ttk.Label(self.lista, text=f"  Quantidade por pedido = {qtd}",
-                          font=("Segoe UI", 10, "bold")).pack(fill="x", pady=(8, 4))
+                bloco_master = tk.BooleanVar(value=False)
+                bloco_vars: list = []
+                ttk.Checkbutton(
+                    self.lista, text=f"Quantidade por pedido = {qtd}",
+                    variable=bloco_master,
+                    command=lambda bv=bloco_vars, m=bloco_master: self._marcar_bloco(m, bv),
+                ).pack(fill="x", pady=(8, 4))
                 for g in por_qtd[qtd]:
-                    self._linha(g, selecionavel=True)
+                    bloco_vars.append(self._linha(g, selecionavel=True))
+                self._blocos.append((bloco_master, bloco_vars))
         else:
             ttk.Label(self.lista, text=f"Tudo impresso em {dia_txt}! 🎉",
                       padding=(0, 12)).pack()
@@ -383,12 +466,13 @@ class SeparadorApp:
 
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
 
-    def _linha(self, g, selecionavel: bool = False) -> None:
+    def _linha(self, g, selecionavel: bool = False):
         status = core.status_grupo(self.estado, g)
         faltam = len(core.envios_pendentes(self.estado, g))
         fr = ttk.Frame(self.lista, padding=(8, 6), relief="solid", borderwidth=1)
         fr.pack(fill="x", pady=2)
 
+        var = None
         if selecionavel:                       # caixinha para "Imprimir selecionados"
             var = tk.BooleanVar(value=False)
             ttk.Checkbutton(fr, variable=var,
@@ -423,6 +507,8 @@ class SeparadorApp:
         if getattr(g, "rastreio", ""):
             ttk.Label(fr, text=f"🏷 {g.rastreio}", foreground=VERDE,
                       font=("Consolas", 10, "bold")).pack(side="right", padx=12)
+
+        return var          # BooleanVar da caixinha (ou None se nao selecionavel)
 
     # -------------------------------------------------------------- IMPRIMIR
     def _confirmar_organizar(self, grupos: list) -> bool:
