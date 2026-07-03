@@ -65,12 +65,15 @@ STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
 
-# Carimbo do SKU: imprime o codigo do produto na DANFE (nota fiscal), na area
-# LIVRE CENTRAL (sempre vazia), centralizado, para identificar o produto. A
-# etiqueta de envio nao e carimbada. Posicao/tamanho em "dots" (203 dpi ~= 8/mm).
-CARIMBAR_SKU = False  # ligado pela tela quando o modo de identificacao = "carimbo"
-CARIMBO_Y = 800       # dots a partir do topo (mais abaixo, no centro da area livre da DANFE)
-CARIMBO_ALTURA = 70   # altura da fonte em dots (~8 mm)
+# Carimbo na DANFE (nota fiscal), na area LIVRE CENTRAL (sempre vazia),
+# centralizado, para identificar o produto. A etiqueta de envio nao e carimbada.
+# Dois conteudos possiveis: o SKU (modo 'carimbo') ou o NOME amigavel do produto,
+# vindo da aba Nomes (modo 'carimbo_nome'). Posicao/tamanho em "dots" (203 dpi ~= 8/mm).
+CARIMBAR_SKU = False   # legado: ligado quando o modo era o carimbo de SKU
+MODO_IDENT = "nenhuma"  # modo de identificacao atual: carimbo | carimbo_nome | divisoria | nenhuma
+CARIMBO_Y = 800        # dots a partir do topo (mais abaixo, no centro da area livre da DANFE)
+CARIMBO_ALTURA = 70    # altura da fonte do SKU em dots (~8 mm)
+CARIMBO_ALTURA_NOME = 45  # fonte menor para o nome (mais longo que o SKU, pode quebrar linha)
 LARGURA_ETIQUETA = 812  # largura ~10 cm @203 dpi; usada para centralizar texto
 
 
@@ -199,13 +202,15 @@ def conta_ativa() -> str:
 def aplicar_config() -> dict:
     """Le o config.json e aplica as preferencias ao modulo (ex.: CARIMBAR_SKU).
     Devolve o config lido. Chamado na abertura da tela/CLI."""
-    global CARIMBAR_SKU
+    global CARIMBAR_SKU, MODO_IDENT
     cfg = carregar_config()
     # Modo de identificacao novo tem prioridade; cai no carimbar_sku legado.
     if "modo_identificacao" in cfg:
-        CARIMBAR_SKU = cfg["modo_identificacao"] == "carimbo"
+        MODO_IDENT = cfg["modo_identificacao"]
+        CARIMBAR_SKU = MODO_IDENT == "carimbo"
     elif "carimbar_sku" in cfg:
         CARIMBAR_SKU = bool(cfg["carimbar_sku"])
+        MODO_IDENT = "carimbo" if CARIMBAR_SKU else "nenhuma"
     if "conta_ativa" in cfg:
         migrar_conta_legado(cfg["conta_ativa"])  # so age se necessario
         definir_conta(cfg["conta_ativa"])
@@ -877,21 +882,57 @@ def _texto_carimbo(grupo: Grupo) -> str:
     return grupo.chave
 
 
+def _texto_carimbo_nome(grupo: Grupo, nomes: dict | None = None) -> str:
+    """Nome amigavel do produto para carimbar (modo 'carimbo_nome'), vindo da
+    aba Nomes (nomes_sku.json). Combo: os nomes unidos por ' + '. Se um SKU nao
+    tem nome cadastrado, cai no proprio SKU, para o produto nunca ficar sem
+    identificacao."""
+    if nomes is None:
+        nomes = carregar_nomes()
+    if grupo.componentes:
+        return " + ".join(nomes.get(str(sku), str(sku)) for sku, _ in grupo.componentes)
+    return nomes.get(grupo.chave, grupo.chave)
+
+
+def _modo_ident_efetivo() -> str:
+    """Modo de identificacao em vigor para a impressao de UM grupo (caminhos que
+    usam o estado global, nao o parametro `modo`). Respeita o CARIMBAR_SKU legado."""
+    if MODO_IDENT in ("carimbo", "carimbo_nome"):
+        return MODO_IDENT
+    return "carimbo" if CARIMBAR_SKU else "nenhuma"
+
+
+def _carimbar_grupo(zpl: str, grupo: Grupo, modo: str, nomes: dict | None = None) -> str:
+    """Aplica na DANFE o carimbo do modo pedido, devolvendo o ZPL (intacto se o
+    modo nao carimba):
+      - 'carimbo':      o SKU, 1 linha, fonte cheia;
+      - 'carimbo_nome': o nome amigavel, fonte menor e ate 3 linhas (nomes sao
+                        mais longos que o SKU e podem quebrar linha)."""
+    if modo == "carimbo_nome":
+        return carimbar_zpl(zpl, _texto_carimbo_nome(grupo, nomes),
+                            altura=CARIMBO_ALTURA_NOME, linhas=3)
+    if modo == "carimbo":
+        return carimbar_zpl(zpl, _texto_carimbo(grupo))
+    return zpl
+
+
 def _largura_zpl(bloco: str) -> int:
     """Largura de impressao (^PWxxxx) do bloco; cai no padrao se nao houver."""
     m = re.search(r"\^PW(\d+)", bloco)
     return int(m.group(1)) if m else LARGURA_ETIQUETA
 
 
-def carimbar_zpl(zpl: str, texto: str) -> str:
-    """Carimba `texto` (ex.: o SKU) na DANFE (nota fiscal), CENTRALIZADO na area
-    livre central.
+def carimbar_zpl(zpl: str, texto: str, *, altura: int = CARIMBO_ALTURA,
+                 linhas: int = 1) -> str:
+    """Carimba `texto` (o SKU ou o nome do produto) na DANFE (nota fiscal),
+    CENTRALIZADO na area livre central.
 
     O "pacote" do ML traz duas paginas: a DANFE (nota fiscal) e a etiqueta de
     envio. Carimbamos SO a DANFE (bloco que contem "DANFE"); a etiqueta de envio
     fica intacta. O texto e centralizado na largura da etiqueta (^FB ... C).
-    Texto vazio, ZPL sem `^XZ` ou sem DANFE -> devolve intacto.
-    """
+    `altura` = tamanho da fonte em dots; `linhas` = maximo de linhas do bloco
+    (o nome, mais longo, usa fonte menor e ate 3 linhas). Texto vazio, ZPL sem
+    `^XZ` ou sem DANFE -> devolve intacto."""
     if not texto or "^XZ" not in zpl:
         return zpl
     seguro = texto.replace("^", " ").replace("~", " ")
@@ -901,8 +942,8 @@ def carimbar_zpl(zpl: str, texto: str) -> str:
         if "DANFE" not in bloco.upper():       # so a nota fiscal leva o carimbo
             return bloco
         pw = _largura_zpl(bloco)
-        campo = (f"^FO0,{CARIMBO_Y}^A0N,{CARIMBO_ALTURA},{CARIMBO_ALTURA}"
-                 f"^FB{pw},1,0,C,0^FD{seguro}^FS")
+        campo = (f"^FO0,{CARIMBO_Y}^A0N,{altura},{altura}"
+                 f"^FB{pw},{linhas},0,C,0^FD{seguro}^FS")
         return bloco.replace("^XZ", f"\n{campo}\n^XZ", 1)
 
     novo, _ = re.subn(r"\^XA.*?\^XZ", _aplica, zpl, flags=re.DOTALL)
@@ -1085,8 +1126,7 @@ def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:
     zpl = baixar_zpl(token, pendentes)
     if "^XA" not in zpl:
         raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
-    if CARIMBAR_SKU:
-        zpl = carimbar_zpl(zpl, _texto_carimbo(grupo))
+    zpl = _carimbar_grupo(zpl, grupo, _modo_ident_efetivo())
     gerar_zip_etiquetas(grupo, zpl)
     marcar_impresso(estado, grupo, pendentes)
     return pendentes
@@ -1105,8 +1145,7 @@ def reimprimir(token: str, grupo: Grupo) -> list[int]:
     zpl = baixar_zpl(token, ids)
     if "^XA" not in zpl:
         raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
-    if CARIMBAR_SKU:
-        zpl = carimbar_zpl(zpl, _texto_carimbo(grupo))
+    zpl = _carimbar_grupo(zpl, grupo, _modo_ident_efetivo())
     gerar_zip_etiquetas(grupo, zpl)
     return ids
 
@@ -1115,15 +1154,17 @@ def preparar_lotes(token: str, grupos: list[Grupo], estado: dict,
                    *, modo: str = "nenhuma") -> tuple[str, list[tuple[Grupo, list[int]]]]:
     """Baixa as etiquetas dos lotes (apenas os envios pendentes de cada um) e monta
     UM ZPL combinado, na ordem dos grupos. Por lote:
-      - modo='divisoria': insere uma etiqueta separadora ANTES das etiquetas;
-      - modo='carimbo':   carimba o SKU em cada DANFE;
-      - modo='nenhuma':   nem divisoria nem carimbo.
+      - modo='divisoria':    insere uma etiqueta separadora ANTES das etiquetas;
+      - modo='carimbo':      carimba o SKU em cada DANFE;
+      - modo='carimbo_nome': carimba o NOME do produto (aba Nomes) em cada DANFE;
+      - modo='nenhuma':      nem divisoria nem carimbo.
 
     NAO marca nada como impresso (quem chama marca depois da confirmacao). Aborta
     com SeparadorError se algum download falhar (nada e gerado). Devolve
     (zpl_combinado, [(grupo, pendentes), ...])."""
     partes: list[str] = []
     pendentes: list[tuple[Grupo, list[int]]] = []
+    nomes = carregar_nomes() if modo == "carimbo_nome" else None   # 1 leitura so
     for g in grupos:
         pend = envios_pendentes(estado, g)
         if not pend:
@@ -1131,8 +1172,7 @@ def preparar_lotes(token: str, grupos: list[Grupo], estado: dict,
         zpl = baixar_zpl(token, pend)
         if "^XA" not in zpl:
             raise SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
-        if modo == "carimbo":
-            zpl = carimbar_zpl(zpl, _texto_carimbo(g))
+        zpl = _carimbar_grupo(zpl, g, modo, nomes)
         if modo == "divisoria":
             partes.append(zpl_divisoria(g))
         partes.append(zpl)

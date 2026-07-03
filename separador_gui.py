@@ -33,6 +33,7 @@ class SeparadorApp:
         self.modo_ident = self.config.get("modo_identificacao")
         if self.modo_ident is None:           # compatibilidade com o config antigo
             self.modo_ident = "carimbo" if self.config.get("carimbar_sku") else "nenhuma"
+        core.MODO_IDENT = self.modo_ident
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
@@ -141,12 +142,13 @@ class SeparadorApp:
             r.pack(side="left", padx=(0, 6))
 
         # Modo de identificacao do produto na impressao (preferencia lembrada).
-        self._ident_labels = {"carimbo": "Carimbo no DANFE",
+        self._ident_labels = {"carimbo": "Carimbo SKU no DANFE",
+                              "carimbo_nome": "Carimbo nome no DANFE",
                               "divisoria": "Etiqueta divisória", "nenhuma": "Nenhuma"}
         self._ident_valor = {v: k for k, v in self._ident_labels.items()}
         self.lbl_ident = ttk.Label(topo, text="Identificação:")
         self.lbl_ident.pack(side="left", padx=(8, 2))
-        self.cb_ident = ttk.Combobox(topo, width=16, state="readonly",
+        self.cb_ident = ttk.Combobox(topo, width=20, state="readonly",
                                      values=list(self._ident_labels.values()))
         self.cb_ident.set(self._ident_labels[self.modo_ident])
         self.cb_ident.bind("<<ComboboxSelected>>", self._trocar_identificacao)
@@ -267,6 +269,7 @@ class SeparadorApp:
     def _trocar_identificacao(self, event=None) -> None:
         """Troca o modo de identificacao (carimbo/divisoria/nenhuma) e lembra."""
         self.modo_ident = self._ident_valor.get(self.cb_ident.get(), "nenhuma")
+        core.MODO_IDENT = self.modo_ident
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self.config["modo_identificacao"] = self.modo_ident
         core.salvar_config(self.config)
