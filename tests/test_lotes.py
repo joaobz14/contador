@@ -59,6 +59,15 @@ def test_preparar_lotes_carimbo_carimba_danfe(core, monkeypatch, tmp_path):
     assert "^FDA01^FS" in zpl                      # carimbou o SKU na DANFE
 
 
+def test_preparar_lotes_carimbo_nome_carimba_o_nome(core, monkeypatch, tmp_path):
+    _mocka_download(core, monkeypatch, tmp_path)
+    monkeypatch.setattr(core, "carregar_nomes", lambda: {"A01": "Liquidificador AR 2L"})
+    g = _grupo(core, "A01", "A01 LIQ", ships=(10,))
+    zpl, _ = core.preparar_lotes("tok", [g], {}, modo="carimbo_nome")
+    assert "^FDLiquidificador AR 2L^FS" in zpl     # carimbou o NOME, nao o SKU
+    assert "^FDA01^FS" not in zpl
+
+
 def test_preparar_lotes_pula_ja_impressos(core, monkeypatch, tmp_path):
     _mocka_download(core, monkeypatch, tmp_path)
     g = _grupo(core, "A01", "A01 LIQ", ships=(10,))

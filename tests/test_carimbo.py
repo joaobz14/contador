@@ -48,3 +48,47 @@ def test_texto_carimbo_grupo_normal(core):
 def test_texto_carimbo_combo_usa_skus(core):
     g = _grupo(core, "COMBO:A01x1+A03x1", componentes=[("A01", 1), ("A03", 1)])
     assert core._texto_carimbo(g) == "A01+A03"
+
+
+# ------------------------------------------------------ carimbo por NOME do produto
+def test_texto_carimbo_nome_usa_o_mapa(core):
+    nomes = {"A03": "Picador Pequeno"}
+    assert core._texto_carimbo_nome(_grupo(core, "A03"), nomes) == "Picador Pequeno"
+
+
+def test_texto_carimbo_nome_cai_no_sku_sem_cadastro(core):
+    # SKU sem nome na aba Nomes -> usa o proprio SKU (nunca fica sem identificacao)
+    assert core._texto_carimbo_nome(_grupo(core, "A03"), {}) == "A03"
+
+
+def test_texto_carimbo_nome_combo_junta_nomes(core):
+    g = _grupo(core, "COMBO", componentes=[("A01", 1), ("A03", 1)])
+    nomes = {"A01": "Liquidificador", "A03": "Picador"}
+    assert core._texto_carimbo_nome(g, nomes) == "Liquidificador + Picador"
+
+
+def test_carimbar_grupo_modo_nome_usa_nome_e_fonte_menor(core):
+    g = _grupo(core, "A03")
+    out = core._carimbar_grupo(ZPL, g, "carimbo_nome", {"A03": "Picador Pequeno"})
+    assert "^FDPicador Pequeno^FS" in out
+    assert f"^A0N,{core.CARIMBO_ALTURA_NOME}," in out    # fonte menor do nome
+    assert "^FB812,3," in out                            # ate 3 linhas
+
+
+def test_carimbar_grupo_modo_sku_inalterado(core):
+    out = core._carimbar_grupo(ZPL, _grupo(core, "A03"), "carimbo")
+    assert "^FDA03^FS" in out
+    assert f"^A0N,{core.CARIMBO_ALTURA}," in out         # fonte cheia do SKU
+    assert "^FB812,1," in out                            # 1 linha
+
+
+def test_carimbar_grupo_modo_nenhuma_nao_altera(core):
+    assert core._carimbar_grupo(ZPL, _grupo(core, "A03"), "nenhuma") == ZPL
+
+
+def test_modo_ident_efetivo_respeita_legado(core, monkeypatch):
+    monkeypatch.setattr(core, "MODO_IDENT", "nenhuma")
+    monkeypatch.setattr(core, "CARIMBAR_SKU", True)
+    assert core._modo_ident_efetivo() == "carimbo"       # CARIMBAR_SKU legado
+    monkeypatch.setattr(core, "MODO_IDENT", "carimbo_nome")
+    assert core._modo_ident_efetivo() == "carimbo_nome"  # modo novo tem prioridade
