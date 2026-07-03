@@ -73,7 +73,7 @@ CARIMBAR_SKU = False   # legado: ligado quando o modo era o carimbo de SKU
 MODO_IDENT = "nenhuma"  # modo de identificacao atual: carimbo | carimbo_nome | divisoria | nenhuma
 CARIMBO_Y = 800        # dots a partir do topo (mais abaixo, no centro da area livre da DANFE)
 CARIMBO_ALTURA = 70    # altura da fonte do SKU em dots (~8 mm)
-CARIMBO_ALTURA_NOME = 45  # fonte menor para o nome (mais longo que o SKU, pode quebrar linha)
+CARIMBO_ALTURA_NOME = 45  # fonte-base do nome longo; nomes curtos usam fonte maior (ver _fonte_nome)
 LARGURA_ETIQUETA = 812  # largura ~10 cm @203 dpi; usada para centralizar texto
 
 
@@ -925,15 +925,32 @@ def _modo_ident_efetivo() -> str:
     return "carimbo" if CARIMBAR_SKU else "nenhuma"
 
 
+def _fonte_nome(texto: str) -> tuple[int, int]:
+    """(altura da fonte, maximo de linhas) do carimbo de NOME conforme o
+    comprimento do texto. Nomes CURTOS ganham fonte maior (ficavam pequenos
+    demais no centro da DANFE); nomes LONGOS mantem a fonte menor e podem quebrar
+    em ate 3 linhas para caber (ex.: 'CUTTER 6L 110' em diante fica como ja
+    estava, 45 dots)."""
+    n = len(texto.strip())
+    if n <= 4:
+        return 75, 1        # ex.: '1B', 'PRP'
+    if n <= 8:
+        return 60, 1
+    if n <= 12:
+        return 50, 2
+    return CARIMBO_ALTURA_NOME, 3   # 13+ chars: como ja estava
+
+
 def _carimbar_grupo(zpl: str, grupo: Grupo, modo: str, nomes: dict | None = None) -> str:
     """Aplica na DANFE o carimbo do modo pedido, devolvendo o ZPL (intacto se o
     modo nao carimba):
       - 'carimbo':      o SKU, 1 linha, fonte cheia;
-      - 'carimbo_nome': o nome amigavel, fonte menor e ate 3 linhas (nomes sao
-                        mais longos que o SKU e podem quebrar linha)."""
+      - 'carimbo_nome': o nome amigavel, com a fonte ajustada ao comprimento
+                        (curto = maior; longo = menor, ate 3 linhas)."""
     if modo == "carimbo_nome":
-        return carimbar_zpl(zpl, _texto_carimbo_nome(grupo, nomes),
-                            altura=CARIMBO_ALTURA_NOME, linhas=3)
+        texto = _texto_carimbo_nome(grupo, nomes)
+        altura, linhas = _fonte_nome(texto)
+        return carimbar_zpl(zpl, texto, altura=altura, linhas=linhas)
     if modo == "carimbo":
         return carimbar_zpl(zpl, _texto_carimbo(grupo))
     return zpl

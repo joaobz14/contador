@@ -71,8 +71,23 @@ def test_carimbar_grupo_modo_nome_usa_nome_e_fonte_menor(core):
     g = _grupo(core, "A03")
     out = core._carimbar_grupo(ZPL, g, "carimbo_nome", {"A03": "Picador Pequeno"})
     assert "^FDPicador Pequeno^FS" in out
-    assert f"^A0N,{core.CARIMBO_ALTURA_NOME}," in out    # fonte menor do nome
+    assert f"^A0N,{core.CARIMBO_ALTURA_NOME}," in out    # nome longo (15) -> fonte-base
     assert "^FB812,3," in out                            # ate 3 linhas
+
+
+def test_fonte_nome_curto_maior_longo_menor(core):
+    assert core._fonte_nome("1B") == (75, 1)             # bem curto -> fonte grande
+    assert core._fonte_nome("Picador") == (60, 1)        # 7 chars
+    assert core._fonte_nome("Cutter 12 L") == (50, 2)    # 11 chars
+    assert core._fonte_nome("CUTTER 6L 110") == (core.CARIMBO_ALTURA_NOME, 3)  # 13 -> como antes
+
+
+def test_carimbar_grupo_nome_curto_usa_fonte_maior(core):
+    # nome curto (fallback ou cadastrado) deve sair com fonte maior que a base
+    out = core._carimbar_grupo(ZPL, _grupo(core, "1B"), "carimbo_nome", {})
+    assert "^FD1B^FS" in out
+    assert "^A0N,75," in out                             # fonte maior para curto
+    assert "^FB812,1," in out                            # 1 linha
 
 
 def test_carimbar_grupo_modo_sku_inalterado(core):
