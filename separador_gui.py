@@ -516,14 +516,14 @@ class SeparadorApp:
                 messagebox.showinfo("Imprimir lotes", "Nada pendente nos lotes selecionados.")
             return
         n = len(impressos)
-        marcar = True
-        if n >= 2:                              # confirma o resultado fisico da impressao
-            marcar = messagebox.askyesno(
-                "Confirmar impressão",
-                f"Enviei {n} lote(s) para a impressora.\n\n"
-                "As etiquetas saíram corretamente?\n\n"
-                "Sim = marca como impressos.\n"
-                "Não = mantém pendentes para reimprimir.")
+        # Sempre confirma o resultado fisico antes de marcar (convencao "lotes
+        # confirmam antes de marcar"), inclusive quando e um unico lote.
+        marcar = messagebox.askyesno(
+            "Confirmar impressão",
+            f"Enviei {n} lote(s) para a impressora.\n\n"
+            "As etiquetas saíram corretamente?\n\n"
+            "Sim = marca como impressos.\n"
+            "Não = mantém pendentes para reimprimir.")
         if marcar:
             for g, pend in impressos:
                 self.prov.marcar_impresso(self.estado, g, pend)

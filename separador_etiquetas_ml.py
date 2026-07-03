@@ -25,6 +25,7 @@ import os
 import random
 import re
 import sys
+import threading
 import time
 import zipfile
 from collections import defaultdict
@@ -38,6 +39,8 @@ import requests
 API = "https://api.mercadolibre.com"
 TIMEOUT = 30
 MAX_PEDIDOS = 3000
+MARGEM_TOKEN = 300               # renova o access_token 5 min antes de expirar
+_LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_token)
 DIAS_JANELA = 30
 TAM_NOME = 45
 SUBSTATUS_IMPRIMIR = "ready_to_print"
@@ -318,11 +321,35 @@ def renovar_token(cred: dict) -> str:
     if resp.status_code != 200:
         raise SeparadorError(f"Falha ao renovar token: {resp.text}")
     dados = resp.json()
+    # Cacheia o access_token e sua validade para reaproveitar entre chamadas (o
+    # refresh_token do ML e de uso unico e ROTACIONA a cada refresh, entao evitar
+    # refresh desnecessario reduz o risco de invalidar o token).
+    cred["access_token"] = dados["access_token"]
+    cred["access_token_exp"] = time.time() + float(dados.get("expires_in", 21600))
     novo = dados.get("refresh_token")
-    if novo and novo != cred["refresh_token"]:
+    if novo and novo != cred.get("refresh_token"):
         cred["refresh_token"] = novo
-        salvar_credenciais(cred)
-    return dados["access_token"]
+    salvar_credenciais(cred)
+    return cred["access_token"]
+
+
+def _token_valido(cred: dict) -> bool:
+    return bool(cred.get("access_token")) and \
+        time.time() < cred.get("access_token_exp", 0) - MARGEM_TOKEN
+
+
+def obter_token(cred: dict) -> str:
+    """Token valido do cache, ou renova. Serializa o refresh com um lock e
+    re-checa dentro dele (double-checked): se varias threads pegarem o token
+    expirado ao mesmo tempo (ex.: dois toques quase juntos no bot), apenas UMA
+    renova — evitando a corrida que poderia rotacionar/invalidar o refresh_token
+    do ML e travar a conta (exigindo refazer o pegar_token.py)."""
+    if _token_valido(cred):
+        return cred["access_token"]
+    with _LOCK_TOKEN:
+        if _token_valido(cred):                      # outra thread ja renovou?
+            return cred["access_token"]
+        return renovar_token(cred)
 
 
 def _espera_retry(resp: requests.Response, tentativa: int) -> float:
@@ -1301,7 +1328,7 @@ def main() -> None:
 
     try:
         cred = carregar_credenciais()
-        token = renovar_token(cred)
+        token = obter_token(cred)
     except SeparadorError as e:
         sys.exit(f"ERRO: {e}")
 
