@@ -7,9 +7,9 @@ fuso de Brasilia, resiliencia de rede).
 
 Antes de usar: rode pegar_token_shopee.py uma vez (gera credenciais_shopee.json).
 
-ATENCAO: alguns detalhes da API (host da regiao Brasil, nomes de campos) devem
-ser confirmados no painel https://open.shopee.com ao registrar o app. Os trechos
-a confirmar estao marcados com "# CONFIRMAR".
+O fluxo completo (listar, organizar envio, gerar/baixar etiqueta) foi VALIDADO
+com a loja real (BR) — hosts, metodos HTTP e nomes de campos conferidos em
+producao. Pegadinhas de dominio documentadas no CLAUDE.md.
 
 Comandos:
   python shopee_api.py            -> grupos prontos para enviar HOJE
@@ -35,8 +35,7 @@ from pathlib import Path
 
 import separador_etiquetas_ml as core
 
-# host global do Open Platform; sellers do Brasil usam a mesma plataforma.
-# CONFIRMAR no painel se a sua conta usa outro host de regiao.
+# Host global do Open Platform — validado com a loja real (BR) em producao.
 HOST = "https://partner.shopeemobile.com"
 TIMEOUT = core.TIMEOUT
 DIAS_JANELA = 15           # Shopee limita a janela de busca a 15 dias
@@ -274,8 +273,8 @@ def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = T
 
 # ---------------------------------------------------------------------------
 # ETIQUETA (FASE 2): create -> result(READY) -> download
-# Fluxo confirmado pela documentacao/IA da Shopee. Nomes de campos marcados
-# com "# CONFIRMAR" devem ser validados no primeiro teste real.
+# Fluxo VALIDADO com a loja real: create exige o tracking_number (AWB), o
+# resultado vira READY em segundos e o download e um ZIP com o ZPL dentro.
 # ---------------------------------------------------------------------------
 TIPO_ETIQUETA = "THERMAL_AIR_WAYBILL"   # etiqueta ja dimensionada p/ impressora termica
 
@@ -346,7 +345,8 @@ def ship_order(cred: dict, token: str, order_sn: str, *,
                pickup: dict | None = None, dropoff: dict | None = None) -> dict:
     """Finaliza o arranjo de envio (pickup OU dropoff) antes de gerar a etiqueta.
     ATENCAO: acao que COMPROMETE o envio. So chamar com os parametros corretos,
-    obtidos de parametros_envio(). # CONFIRMAR campos no primeiro teste real."""
+    obtidos de parametros_envio(). Campos validados com a loja real (drop-off:
+    info_needed geralmente vazio; as vezes branch_id/sender_real_name)."""
     body: dict = {"order_sn": order_sn}
     if pickup is not None:
         body["pickup"] = pickup
@@ -468,7 +468,11 @@ def salvar_etiqueta(conteudo: bytes, rotulo: str):
     base = "".join(c if (c.isalnum() or c in " -_") else "_" for c in str(rotulo))[:50].strip()
     core.PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
     destino = core.PASTA_DOWNLOADS / f"etiqueta shopee - {base}.{ext}"
-    destino.write_bytes(conteudo)
+    # Grava em .tmp e renomeia (mesmo padrao do ML): o monitor da Zebra vigia a
+    # pasta e nao pode enxergar o arquivo pela metade (imprimiria corrompido).
+    tmp = destino.with_name(destino.name + ".tmp")
+    tmp.write_bytes(conteudo)
+    tmp.replace(destino)
     return destino, fmt
 
 
