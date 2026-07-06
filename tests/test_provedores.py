@@ -28,15 +28,36 @@ def test_ml_coletar_delega_ao_nucleo(monkeypatch):
 
     class FakeColeta:
         grupos = ["g1", "g2"]
+        # 2 pedidos na quarta, 1 num sabado e 1 sem data de despacho
+        prontos = [
+            {"_envio": {"expected_date": "2026-06-24"}},
+            {"_envio": {"expected_date": "2026-06-24"}},
+            {"_envio": {"expected_date": "2026-06-27"}},
+            {"_envio": {"expected_date": ""}},
+        ]
 
     def fake_coletar(token, seller, *, dia, somente_hoje, progresso):
         capturado.update(token=token, seller=seller, dia=dia)
         return FakeColeta()
 
     monkeypatch.setattr(core, "coletar_grupos", fake_coletar)
-    grupos = pv.ProvedorML().coletar(dia="2026-06-25", somente_hoje=False)
+    prov = pv.ProvedorML()
+    grupos = prov.coletar(dia="2026-06-25", somente_hoje=False)
     assert grupos == ["g1", "g2"]
     assert capturado == {"token": "TOK", "seller": 9, "dia": "2026-06-25"}
+    # contagem por dia vem da MESMA coleta; "(sem data)" normalizado para ""
+    assert prov.contagem_dias == {"2026-06-24": 2, "2026-06-27": 1, "": 1}
+
+
+def test_shopee_coletar_guarda_contagem(monkeypatch):
+    prov = pv.ProvedorShopee()
+    prov.cred = {"x": 1}
+    monkeypatch.setattr(sh, "coletar_grupos",
+                        lambda cred, *, dia, somente_hoje: (["g"], 1, {"2026-07-04": 3}))
+    monkeypatch.setattr(sh, "carregar_estado", lambda: {})
+    monkeypatch.setattr(sh, "preencher_rastreios", lambda cred, grupos, estado: None)
+    assert prov.coletar(dia="2026-07-04", somente_hoje=False) == ["g"]
+    assert prov.contagem_dias == {"2026-07-04": 3}
 
 
 def test_shopee_imprimir_grupo_delega(monkeypatch):

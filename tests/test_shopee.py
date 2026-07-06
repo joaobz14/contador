@@ -194,6 +194,34 @@ def test_data_envio_converte_epoch_para_brasilia():
     assert sh._data_envio(0) == ""
 
 
+def test_contagem_por_dia_inclui_fim_de_semana_e_sem_data():
+    from datetime import datetime
+    sab = int(datetime.fromisoformat("2026-07-04T12:00:00-03:00").timestamp())  # sabado
+    seg = int(datetime.fromisoformat("2026-07-06T12:00:00-03:00").timestamp())
+    det = [
+        {"order_sn": "A", "ship_by_date": sab},
+        {"order_sn": "B", "ship_by_date": sab},
+        {"order_sn": "C", "ship_by_date": seg},
+        {"order_sn": "D"},                                  # sem ship_by_date
+    ]
+    # datas de fim de semana e "sem data" contam — o seletor da GUI as expoe
+    assert sh.contagem_por_dia(det) == {"2026-07-04": 2, "2026-07-06": 1, "": 1}
+
+
+def test_coletar_grupos_devolve_contagem_da_mesma_busca(monkeypatch):
+    from datetime import datetime
+    seg = int(datetime.fromisoformat("2026-07-06T12:00:00-03:00").timestamp())
+    det = [{"order_sn": "A1", "ship_by_date": seg,
+            "item_list": [{"model_sku": "PRP", "model_quantity_purchased": 1}]}]
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["A1"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+    monkeypatch.setattr(sh.core, "carregar_nomes", lambda: {})
+    grupos, qtd, contagem = sh.coletar_grupos({}, dia="2026-07-06", somente_hoje=False)
+    assert [g.chave for g in grupos] == ["PRP"] and qtd == 1
+    assert contagem == {"2026-07-06": 1}                    # sem rede extra
+
+
 # ----------------------------------------------------- organizar envio (drop-off)
 def test_montar_dropoff_vazio_quando_nada_exigido():
     assert sh._montar_dropoff({"dropoff": []}) == {}

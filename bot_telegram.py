@@ -180,8 +180,8 @@ def _coletar_grupos(context, dia: str | None, somente_hoje: bool) -> list:
     """Coleta os grupos da LOJA ativa do chat (somente leitura).
     ML: via nucleo (usa a conta ativa). Shopee: via shopee_api."""
     if _eh_shopee(context):
-        grupos, _ = shopee.coletar_grupos(shopee.carregar_credenciais(),
-                                          dia=dia, somente_hoje=somente_hoje)
+        grupos, *_ = shopee.coletar_grupos(shopee.carregar_credenciais(),
+                                           dia=dia, somente_hoje=somente_hoje)
         return grupos
     return _coletar(dia, somente_hoje).grupos
 

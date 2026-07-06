@@ -54,9 +54,11 @@ em 2º plano.
   (queda de energia não exige refazer o token); `.bak` é gitignorado.
 - **Fuso:** sempre Brasília (`TZ_BR`, `_hoje_br()`, `_amanha_br()`).
 - **Dia de despacho:** a GUI mostra os próximos **dias úteis** (`proximos_dias_uteis()`
-  + `rotulo_dia()`) e passa a data escolhida como `dia=` (ML e Shopee filtram igual).
-  Atenção: data exata — pedido com despacho no fim de semana não aparece (pendência
-  conhecida).
+  + `rotulo_dia()`) e passa a data escolhida como `dia=` (ML e Shopee filtram igual;
+  `dia=""` filtra os sem data). Após um Atualizar, o provedor preenche
+  `contagem_dias` ({data: n}, da MESMA busca — `resumo_por_dia` no ML,
+  `contagem_por_dia` na Shopee) e o seletor mostra a contagem por dia + a linha
+  "Outras datas" (fim de semana/atrasadas/sem data) — nenhum pedido fica invisível.
 - **Nomes amigáveis:** `nomes_sku.json` (versionado; sincroniza via git) mapeia
   SKU → nome. Editável na GUI pelo botão **✏ Nomes** (`EditorNomes`); use
   `carregar_nomes()`/`salvar_nomes()` (ordena chaves, apara, descarta vazios).

@@ -246,6 +246,17 @@ def grupos_de_detalhes(detalhes: list[dict], nomes: dict, dia: str | None) -> li
     return grupos
 
 
+def contagem_por_dia(detalhes: list[dict]) -> dict[str, int]:
+    """Conta os pedidos prontos por dia de envio (YYYY-MM-DD; "" = sem data).
+    Funcao pura — alimenta o seletor de dias da GUI sem chamada extra de rede,
+    inclusive datas fora de seg-sex (ship_by_date pode cair no fim de semana)."""
+    por_dia: dict[str, int] = {}
+    for ped in detalhes:
+        d = _data_envio(ped.get("ship_by_date"))
+        por_dia[d] = por_dia.get(d, 0) + 1
+    return por_dia
+
+
 def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = True):
     token = obter_token(cred)
     order_sns = listar_order_sns(cred, token)
@@ -258,7 +269,7 @@ def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = T
             g.dia = alvo_dia
     qtd = sum(len(d.get("item_list", [])) for d in detalhes) if alvo_dia is None else \
         sum(1 for d in detalhes if _data_envio(d.get("ship_by_date")) == alvo_dia)
-    return grupos, qtd
+    return grupos, qtd, contagem_por_dia(detalhes)
 
 
 # ---------------------------------------------------------------------------
@@ -739,7 +750,7 @@ def main() -> None:
             dia = args[1]
         elif comando == "todos":
             somente_hoje = False
-        grupos, qtd = coletar_grupos(cred, dia=dia, somente_hoje=somente_hoje)
+        grupos, qtd, _ = coletar_grupos(cred, dia=dia, somente_hoje=somente_hoje)
     except core.SeparadorError as e:
         sys.exit(f"ERRO: {e}")
 
