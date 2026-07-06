@@ -38,6 +38,7 @@ class SeparadorApp:
         self._sel_vars: list = []             # (grupo, BooleanVar) das caixinhas
         self._blocos: list = []               # (master_var, [vars]) por bloco de qtd
         self._sel_antes: set = set()          # selecao preservada entre re-renders
+        self._sel_arq: list = []              # (grupo, BooleanVar) das arquivadas
         self._verificar_migracao()            # migra conta antiga da raiz (1a vez)
         # Marketplace ativo (Mercado Livre / Shopee) e seu provedor.
         self.marketplace = self.config.get("marketplace", "Mercado Livre")
@@ -200,6 +201,12 @@ class SeparadorApp:
         sb.pack(side="right", fill="y")
         self.canvas.bind_all("<MouseWheel>",
                              lambda e: self.canvas.yview_scroll(int(-e.delta / 120), "units"))
+
+        # Atalhos de teclado: F5 atualiza, Ctrl+F foca a busca, Esc limpa a busca.
+        self.root.bind("<F5>", lambda e: self.atualizar())
+        self.root.bind("<Control-f>", lambda e: self.ent_busca.focus_set())
+        self.root.bind("<Escape>",
+                       lambda e: self.busca_var.set("") if self.busca_var.get() else None)
 
     def _rebuild_dias(self, contagem: dict | None = None) -> None:
         """Reconstroi o seletor de dia de despacho.
@@ -384,9 +391,11 @@ class SeparadorApp:
             w.destroy()
         self._sel_vars = []
         self._blocos = []
+        self._sel_arq = []
         self._mostrar_rodape(False)
         self._mostrar_busca(False)
         self._rebuild_dias()               # contagens antigas nao valem p/ loja nova
+        self.root.title("Separador de Etiquetas")
         self.lbl_resumo.config(text="")
         tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
         prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia da semana"
@@ -449,6 +458,7 @@ class SeparadorApp:
             w.destroy()
         self._sel_vars = []          # caixinhas sao recriadas a cada render
         self._blocos = []
+        self._sel_arq = []
 
         dia = self.dia_sel.get()
         dia_txt = core.rotulo_dia(dia) if dia else "sem data"
@@ -470,6 +480,11 @@ class SeparadorApp:
         self.lbl_resumo.config(
             text=f"{prefixo}{len(grupos)} grupos · {total_et} etiquetas · "
                  f"{len(arquivadas)} impressos")
+
+        # Titulo da janela com os pendentes do dia (independe do filtro da busca).
+        pend_total = sum(1 for g in self.grupos
+                         if core.status_grupo(self.estado, g) != "impresso")
+        self.root.title(f"Separador de Etiquetas — {pend_total} pendente(s) · {dia_txt}")
 
         # Rodape do "Imprimir selecionados" aparece so quando ha grupos pendentes.
         self._mostrar_rodape(bool(pendentes))
@@ -513,16 +528,22 @@ class SeparadorApp:
 
         # ----- Seção: já impressas (arquivadas), embaixo e separadas
         if arquivadas:
-            ttk.Label(self.lista,
+            cab_arq = ttk.Frame(self.lista)
+            cab_arq.pack(fill="x", pady=(16, 2))
+            ttk.Label(cab_arq,
                       text=f"✓  Já impressas — arquivadas ({len(arquivadas)})",
                       font=("Segoe UI", 11, "bold"), foreground=CINZA
-                      ).pack(fill="x", pady=(16, 2))
+                      ).pack(side="left")
+            # Recuperacao de impressao (papel atolado/picotado): marca as caixinhas
+            # das arquivadas e reimprime varias de uma vez, sem mexer no estado.
+            ttk.Button(cab_arq, text="↻ Reimprimir marcadas",
+                       command=self.reimprimir_marcadas).pack(side="right")
             for g in arquivadas:
-                self._linha(g)
+                self._linha(g, arquivada=True)
 
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
 
-    def _linha(self, g, selecionavel: bool = False):
+    def _linha(self, g, selecionavel: bool = False, arquivada: bool = False):
         status = core.status_grupo(self.estado, g)
         faltam = len(core.envios_pendentes(self.estado, g))
         fr = ttk.Frame(self.lista, padding=(8, 6), relief="solid", borderwidth=1)
@@ -534,6 +555,10 @@ class SeparadorApp:
             ttk.Checkbutton(fr, variable=var,
                             command=self._atualizar_contagem).pack(side="left", padx=(0, 6))
             self._sel_vars.append((g, var))
+        elif arquivada:                        # caixinha para "Reimprimir marcadas"
+            var = tk.BooleanVar(value=False)
+            ttk.Checkbutton(fr, variable=var).pack(side="left", padx=(0, 6))
+            self._sel_arq.append((g, var))
 
         esq = ttk.Frame(fr)
         esq.pack(side="left", fill="x", expand=True)
@@ -615,6 +640,46 @@ class SeparadorApp:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
         self.root.after(0, self._render)
+
+    def reimprimir_marcadas(self) -> None:
+        """Reimprime de uma vez todas as arquivadas com a caixinha marcada
+        (recuperacao de papel atolado/picotado). O controle de impresso nao muda."""
+        if self.ocupado:
+            return
+        alvo = [g for g, v in self._sel_arq if v.get()]
+        if not alvo:
+            messagebox.showinfo("Reimprimir",
+                                "Marque ao menos uma arquivada na caixinha à esquerda.")
+            return
+        total = sum(g.total_etiquetas for g in alvo)
+        if not messagebox.askyesno(
+                "Reimprimir marcadas",
+                f"Reimprimir {total} etiqueta(s) de {len(alvo)} grupo(s)?\n\n"
+                "O controle de impresso não muda."):
+            return
+        self._ocupar(True, f"Reimprimindo {len(alvo)} grupo(s) ...")
+        threading.Thread(target=self._reimprimir_marcadas_thread,
+                         args=(alvo,), daemon=True).start()
+
+    def _reimprimir_marcadas_thread(self, alvo: list) -> None:
+        # Um grupo que falhar nao derruba os demais: gera o que der e avisa.
+        falhas = []
+        for g in alvo:
+            try:
+                self.prov.reimprimir(g)
+            except Exception as e:               # noqa: BLE001
+                falhas.append((g.nome, str(e)))
+        self.root.after(0, lambda: self._pos_reimpressao(len(alvo), falhas))
+
+    def _pos_reimpressao(self, n: int, falhas: list) -> None:
+        self._ocupar(False, f"{n - len(falhas)} reimpressão(ões) enviada(s).")
+        if falhas:
+            linhas = "\n".join(f"• {nome}: {motivo}" for nome, motivo in falhas[:8])
+            mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outra(s))"
+            messagebox.showwarning(
+                "Algumas reimpressões falharam",
+                f"{len(falhas)} grupo(s) não foram reimpressos:\n\n{linhas}{mais}")
+        self._render()
 
     # ------------------------------------------------------- IMPRIMIR LOTES
     def imprimir_lotes(self) -> None:
