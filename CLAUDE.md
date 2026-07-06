@@ -71,8 +71,10 @@ em 2º plano.
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `config.json`, `bot_config.json`.
-- **Lotes confirmam antes de marcar:** `imprimir_lotes` gera mas NÃO marca; a GUI
-  pergunta "as etiquetas saíram certo?" e só então marca (vale p/ ML e Shopee).
+- **Toda impressão pela GUI confirma antes de marcar:** gera mas NÃO marca; a
+  tela pergunta "as etiquetas saíram certo?" e só então marca (vale p/ ML e
+  Shopee, lote E individual — o individual roteia pelo fluxo do lote). Bot/CLI
+  marcam direto (não têm como ver a impressora).
 
 ## Pegadinhas de domínio (Shopee) — validadas com loja real
 

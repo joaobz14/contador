@@ -40,6 +40,15 @@ def test_detectar_formato_zpl_cru_shopee():
     assert sh.detectar_formato(b"~DGR:DEMO.GRF,1234,12,:Z64:abc") == "ZPL"
 
 
+def test_salvar_etiqueta_atomico_sem_tmp_sobrando(monkeypatch, tmp_path):
+    # Grava em .tmp e renomeia: o monitor da Zebra nunca ve o arquivo pela metade.
+    monkeypatch.setattr(sh.core, "PASTA_DOWNLOADS", tmp_path)
+    destino, fmt = sh.salvar_etiqueta(b"PK\x03\x04conteudo", "SN123")
+    assert fmt == "ZIP" and destino.read_bytes() == b"PK\x03\x04conteudo"
+    assert destino.name == "etiqueta shopee - SN123.zip"
+    assert not list(tmp_path.glob("*.tmp"))            # nao deixa lixo .tmp
+
+
 def test_criar_documento_inclui_tracking_number(monkeypatch):
     capturado = {}
 

@@ -17,7 +17,6 @@ Como usar:
 
 import hashlib
 import hmac
-import json
 import time
 import traceback
 from pathlib import Path
@@ -25,7 +24,7 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-HOST = "https://partner.shopeemobile.com"   # CONFIRMAR host da sua regiao no painel
+HOST = "https://partner.shopeemobile.com"   # host global; validado com a loja real (BR)
 PASTA_SCRIPT = Path(__file__).resolve().parent
 ARQUIVO = PASTA_SCRIPT / "credenciais_shopee.json"
 REDIRECT_PADRAO = "https://joaobz14.github.io/contador/"
@@ -114,7 +113,10 @@ def main() -> None:
         "access_token_exp": time.time() + float(dados.get("expire_in", 14400)),
         "redirect_uri": redirect,
     }
-    ARQUIVO.write_text(json.dumps(credenciais, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Grava pelo nucleo: atomico + fsync + espelho .bak (sobrevive a queda de
+    # energia ja no primeiro salvamento).
+    import separador_etiquetas_ml as core
+    core._gravar_credenciais_com_backup(ARQUIVO, credenciais)
 
     print("\n" + "=" * 60)
     print(" PRONTO! Salvo em 'credenciais_shopee.json'")

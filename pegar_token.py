@@ -9,7 +9,6 @@ Como usar:
   3) siga as instrucoes na tela
 """
 
-import json
 import traceback
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -120,9 +119,10 @@ def main() -> None:
         "seller_id": str(dados["user_id"]),
         "redirect_uri": redirect,
     }
-    arquivo.write_text(
-        json.dumps(credenciais, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    # Grava pelo nucleo: atomico + fsync + espelho .bak — o primeiro salvamento
+    # das credenciais tambem sobrevive a uma queda de energia no momento exato.
+    import separador_etiquetas_ml as core
+    core._gravar_credenciais_com_backup(arquivo, credenciais)
 
     print("\n" + "=" * 60)
     print(f" PRONTO! Tudo salvo em 'contas/{nome_conta}/credenciais.json'")

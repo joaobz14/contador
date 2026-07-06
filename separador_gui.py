@@ -418,7 +418,10 @@ class SeparadorApp:
         self._ocupar(True, "Carregando pedidos...")
         self.prog.pack(fill="x", padx=12, pady=(0, 4))
         self.prog.config(value=0)
-        threading.Thread(target=self._atualizar_thread, daemon=True).start()
+        # Le a variavel Tkinter AQUI (thread principal) e passa o valor pronto:
+        # widgets/StringVar nao devem ser tocados pela thread de fundo.
+        dia = self.dia_sel.get()
+        threading.Thread(target=self._atualizar_thread, args=(dia,), daemon=True).start()
 
     def _progresso(self, feitos: int, total: int) -> None:
         def upd():
@@ -426,9 +429,8 @@ class SeparadorApp:
             self.lbl_status.config(text=f"Verificando envios: {feitos}/{total}")
         self.root.after(0, upd)
 
-    def _atualizar_thread(self) -> None:
+    def _atualizar_thread(self, dia: str) -> None:
         try:
-            dia = self.dia_sel.get()          # dia util escolhido (YYYY-MM-DD)
             grupos = self.prov.coletar(dia=dia, somente_hoje=False,
                                        progresso=self._progresso)
             estado = self.prov.carregar_estado()
@@ -607,20 +609,17 @@ class SeparadorApp:
             "Isso confirma o método de envio na Shopee.")
 
     def imprimir(self, g) -> None:
+        """Impressao individual pelo MESMO fluxo do lote: gera a etiqueta, a tela
+        pergunta "as etiquetas sairam corretamente?" e SO ENTAO marca como
+        impresso. Antes, o caminho individual marcava assim que o ZIP era gerado
+        — se a Zebra atolasse, o grupo ja constava impresso sem etiqueta fisica."""
         if self.ocupado:
             return
         if not self._confirmar_organizar([g]):
             return
         self._ocupar(True, f"Imprimindo: {g.nome} ...")
-        threading.Thread(target=self._imprimir_thread, args=(g,), daemon=True).start()
-
-    def _imprimir_thread(self, g) -> None:
-        try:
-            self.prov.imprimir_grupo(g, self.estado, modo=self.modo_ident)
-        except Exception as e:
-            self.root.after(0, lambda erro=e: self._erro(str(erro)))
-            return
-        self.root.after(0, self._render)
+        threading.Thread(target=self._imprimir_lotes_thread,
+                         args=([g],), daemon=True).start()
 
     def reimprimir(self, g) -> None:
         if self.ocupado:
