@@ -33,3 +33,40 @@ jobs:
 
       - name: Rodar os testes
         run: pytest -q
+
+  gui-smoke:
+    # Abre a TELA de verdade, headless (xvfb), nos dois marketplaces e captura
+    # um screenshot de cada. Pega o que o pytest nao cobre: quebra de import,
+    # erro de montagem/renderizacao do Tkinter na inicializacao. Os PNGs ficam
+    # disponiveis como artefato do run (bom para conferir o layout num PR).
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias (xvfb + imagemagick para o screenshot)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q xvfb imagemagick
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Abrir a tela e capturar (Mercado Livre e Shopee)
+        run: |
+          python -c "import tkinter; print('tkinter OK,', tkinter.TkVersion)"
+          xvfb-run -a python tools/gui_screenshot.py tela_ml.png
+          xvfb-run -a python tools/gui_screenshot.py tela_shopee.png Shopee
+
+      - name: Publicar screenshots (artefato do run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-screenshots
+          path: |
+            tela_ml.png
+            tela_shopee.png

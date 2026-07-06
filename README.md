@@ -200,6 +200,9 @@ bash tools/setup_gui_tests.sh                             # 1x: tkinter+xvfb+ima
 xvfb-run -a python3.12 tools/gui_screenshot.py out.png [Shopee]
 ```
 
+O CI roda esse smoke em **cada PR** (job `gui-smoke`): abre a tela nos dois
+marketplaces e publica os screenshots como artefato do run.
+
 ## 📁 Estrutura
 
 | | Papel |
