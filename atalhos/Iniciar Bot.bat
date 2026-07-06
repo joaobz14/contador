@@ -10,7 +10,7 @@ REM  Precisa do bot_config.json (com o token) e do credenciais.json
 REM  na mesma pasta.
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 echo Iniciando o bot do Telegram...
 echo (Mantenha esta janela aberta. Feche-a para parar o bot.)

@@ -4,7 +4,7 @@ REM  Atualiza o programa para a versao mais nova do GitHub.
 REM  De um duplo-clique aqui (nao precisa abrir o PowerShell).
 REM
 REM  So funciona se a pasta tiver sido criada com "git clone".
-REM  Atualize em apenas UM PC; o OneDrive leva para o outro.
+REM  Rode em CADA PC que usa o programa (cada um tem seu clone).
 REM ============================================================
 
 REM Roda na pasta deste arquivo (a pasta do projeto).

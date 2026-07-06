@@ -17,7 +17,7 @@ REM
 REM  Precisa do bot_config.json (token) e das contas configuradas.
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 REM Modo automatico: o bot nao pausa pedindo Enter; quem reinicia e este .bat.
 set BOT_SEM_PAUSA=1
