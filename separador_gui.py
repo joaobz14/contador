@@ -149,22 +149,18 @@ class SeparadorApp:
         self._atualizar_visibilidade_topo()   # esconde conta/identificacao p/ Shopee
 
         # Seletor de dia de despacho, em linha propria (5 dias uteis nao cabem na
-        # barra de cima). Mostra os proximos dias UTEIS (seg-sex), para poder ver,
-        # por ex., os pedidos de segunda ja na sexta (sab/dom nao tem coleta). O 1o
-        # (hoje/proximo util) ja vem marcado. So muda a escolha; a busca so acontece
-        # ao clicar em Atualizar.
+        # barra de cima). Mostra os proximos dias UTEIS (seg-sex); apos um
+        # Atualizar, cada dia ganha a contagem de pedidos e datas FORA de seg-sex
+        # com pedidos (fim de semana/atrasadas/sem data) aparecem numa linha
+        # "Outras datas" — nenhum pedido fica invisivel. So muda a escolha; a
+        # busca so acontece ao clicar em Atualizar.
         self._dias_uteis = core.proximos_dias_uteis()
         self.dia_sel = tk.StringVar(value=self._dias_uteis[0])
-        hoje_iso = core._hoje_br()
-        linha_dia = ttk.Frame(self.root, padding=(10, 0, 10, 6))
-        linha_dia.pack(fill="x")
-        ttk.Label(linha_dia, text="Dia de despacho:").pack(side="left", padx=(0, 8))
+        self.linha_dia = ttk.Frame(self.root, padding=(10, 0, 10, 2))
+        self.linha_dia.pack(fill="x")
+        self.linha_outras = ttk.Frame(self.root, padding=(10, 0, 10, 6))
         self.radios = []
-        for iso in self._dias_uteis:
-            texto = f"{core.rotulo_dia(iso)}{' (hoje)' if iso == hoje_iso else ''}"
-            r = ttk.Radiobutton(linha_dia, text=texto, value=iso, variable=self.dia_sel)
-            r.pack(side="left", padx=(0, 8))
-            self.radios.append(r)
+        self._rebuild_dias()
 
         self.prog = ttk.Progressbar(self.root, mode="determinate")
         self.lbl_status = ttk.Label(self.root, text="", padding=(12, 0), foreground=CINZA)
@@ -204,6 +200,51 @@ class SeparadorApp:
         sb.pack(side="right", fill="y")
         self.canvas.bind_all("<MouseWheel>",
                              lambda e: self.canvas.yview_scroll(int(-e.delta / 120), "units"))
+
+    def _rebuild_dias(self, contagem: dict | None = None) -> None:
+        """Reconstroi o seletor de dia de despacho.
+
+        Sem `contagem` (antes do 1º Atualizar / troca de loja): so os proximos
+        dias uteis. Com `contagem` ({data: n pedidos}, vinda da mesma busca):
+        cada dia util mostra o total, e datas fora de seg-sex com pedidos
+        (fim de semana, atrasadas ou sem data) entram na linha "Outras datas"."""
+        contagem = contagem or {}
+        self._dias_uteis = core.proximos_dias_uteis()   # recalcula (virada de dia)
+        for w in self.linha_dia.winfo_children():
+            w.destroy()
+        for w in self.linha_outras.winfo_children():
+            w.destroy()
+        self.radios = []
+        hoje_iso = core._hoje_br()
+
+        def _radio(parent, iso: str, rotulo: str) -> None:
+            r = ttk.Radiobutton(parent, text=rotulo, value=iso, variable=self.dia_sel)
+            r.pack(side="left", padx=(0, 8))
+            self.radios.append(r)
+
+        ttk.Label(self.linha_dia, text="Dia de despacho:").pack(side="left", padx=(0, 8))
+        for iso in self._dias_uteis:
+            rotulo = core.rotulo_dia(iso) + (" (hoje)" if iso == hoje_iso else "")
+            if contagem:
+                rotulo += f" · {contagem.get(iso, 0)}"
+            _radio(self.linha_dia, iso, rotulo)
+
+        extras = sorted(d for d in contagem if d and d not in self._dias_uteis)
+        sem_data = contagem.get("", 0)
+        if extras or sem_data:
+            ttk.Label(self.linha_outras, text="Outras datas:").pack(side="left", padx=(0, 8))
+            for iso in extras:
+                _radio(self.linha_outras, iso, f"{core.rotulo_dia(iso)} · {contagem[iso]}")
+            if sem_data:
+                _radio(self.linha_outras, "", f"Sem data · {sem_data}")
+            self.linha_outras.pack(fill="x", after=self.linha_dia)
+        else:
+            self.linha_outras.pack_forget()
+
+        # Selecao que deixou de existir (ex.: data extra que sumiu) volta pro 1º dia.
+        validos = set(self._dias_uteis) | set(extras) | ({""} if sem_data else set())
+        if self.dia_sel.get() not in validos:
+            self.dia_sel.set(self._dias_uteis[0])
 
     def _rebuild_conta_selector(self) -> None:
         """Reconstroi os radios de conta. So aparece no ML com 2+ contas."""
@@ -345,6 +386,7 @@ class SeparadorApp:
         self._blocos = []
         self._mostrar_rodape(False)
         self._mostrar_busca(False)
+        self._rebuild_dias()               # contagens antigas nao valem p/ loja nova
         self.lbl_resumo.config(text="")
         tem_contas = self.prov.suporta_contas and len(self.prov.contas()) >= 2
         prefixo = "Escolha a conta e o dia" if tem_contas else "Escolha o dia da semana"
@@ -408,7 +450,10 @@ class SeparadorApp:
         self._sel_vars = []          # caixinhas sao recriadas a cada render
         self._blocos = []
 
-        dia_txt = core.rotulo_dia(self.dia_sel.get())
+        dia = self.dia_sel.get()
+        dia_txt = core.rotulo_dia(dia) if dia else "sem data"
+        # Seletor de dias ganha a contagem por dia (e datas extras) da coleta.
+        self._rebuild_dias(getattr(self.prov, "contagem_dias", {}))
         # Busca aparece assim que ha grupos carregados (filtra sem rede).
         self._mostrar_busca(bool(self.grupos))
         termo = self.busca_var.get().strip().lower()

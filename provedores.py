@@ -22,6 +22,10 @@ class Provedor:
     suporta_identificacao = False   # carimbo/divisoria (so ML)
     suporta_contas = False          # sub-contas (so ML)
     organiza_envio = False          # precisa organizar antes de imprimir (so Shopee)
+    # Pedidos pendentes por dia de despacho ({YYYY-MM-DD ou "": n}), preenchido a
+    # cada coletar() a partir da MESMA busca (sem rede extra). A GUI usa para
+    # mostrar a contagem no seletor de dias e oferecer datas fora de seg-sex.
+    contagem_dias: dict
 
     # ---- selecao de conta (ML) -------------------------------------------
     def contas(self) -> list[str]:
@@ -68,6 +72,7 @@ class ProvedorML(Provedor):
     def __init__(self) -> None:
         self.cred = None
         self.token = None
+        self.contagem_dias = {}
 
     def contas(self) -> list[str]:
         return core.listar_contas()
@@ -82,10 +87,16 @@ class ProvedorML(Provedor):
 
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
         token = self._renovar()
-        return core.coletar_grupos(
+        coleta = core.coletar_grupos(
             token, self.cred["seller_id"], dia=dia,
             somente_hoje=somente_hoje, progresso=progresso,
-        ).grupos
+        )
+        # Contagem por dia de TODOS os prontos (a busca ja trouxe tudo).
+        self.contagem_dias = {
+            ("" if d == "(sem data)" else d): n
+            for d, n in core.resumo_por_dia(getattr(coleta, "prontos", []))
+        }
+        return coleta.grupos
 
     def carregar_estado(self) -> dict:
         return core.carregar_estado()
@@ -115,6 +126,7 @@ class ProvedorShopee(Provedor):
 
     def __init__(self) -> None:
         self.cred = None
+        self.contagem_dias = {}
         # Setup unico, so usado quando algum pedido exige (ver _montar_dropoff).
         self.branch_id = None
         self.sender_real_name = None
@@ -125,7 +137,9 @@ class ProvedorShopee(Provedor):
         return self.cred
 
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
-        grupos, _ = shopee.coletar_grupos(self._creds(), dia=dia, somente_hoje=somente_hoje)
+        grupos, _qtd, contagem = shopee.coletar_grupos(
+            self._creds(), dia=dia, somente_hoje=somente_hoje)
+        self.contagem_dias = contagem
         # Rastreio (AWB) dos grupos de 1 pedido ja impresso, para conferencia.
         shopee.preencher_rastreios(self._creds(), grupos, shopee.carregar_estado())
         return grupos
