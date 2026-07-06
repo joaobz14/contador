@@ -6,7 +6,7 @@ REM
 REM  Use este quando a tela nao abrir e voce quiser ver o motivo.
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 echo Abrindo o Separador de Etiquetas...
 echo (Esta janela mostra mensagens de erro. Pode fechar depois.)

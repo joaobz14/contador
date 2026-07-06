@@ -12,7 +12,7 @@ REM
 REM  A janela fica aberta ate o fim (mesmo com erro) para ler.
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 echo ============================================================
 echo   ETIQUETA SHOPEE

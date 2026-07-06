@@ -53,7 +53,7 @@ pip install -r requirements.txt
 **Mercado Livre (uma vez por conta):**
 
 ```bash
-python pegar_token.py        # ou duplo-clique em "Pegar Token.bat"
+python pegar_token.py        # ou duplo-clique em "atalhos\Pegar Token.bat"
 ```
 
 O programa pede o **nome da conta** (ex.: `Gastromaq`) e salva em
@@ -62,7 +62,7 @@ O programa pede o **nome da conta** (ex.: `Gastromaq`) e salva em
 **Shopee (uma vez):**
 
 ```bash
-python pegar_token_shopee.py # ou duplo-clique em "Pegar Token Shopee.bat"
+python pegar_token_shopee.py # ou duplo-clique em "atalhos\Pegar Token Shopee.bat"
 ```
 
 Pré-requisito: app **Live** em [open.shopee.com](https://open.shopee.com) com a
@@ -74,7 +74,7 @@ Redirect URL `https://joaobz14.github.io/contador/` (página em `docs/`).
 ## 🖥️ Usando
 
 Duplo-clique em **`Abrir Separador.bat`** (sem janela preta). Se a tela não abrir,
-use **`Abrir Separador (diagnostico).bat`** para ver o erro.
+use **`atalhos\Abrir Separador (diagnostico).bat`** para ver o erro.
 
 1. Escolha a **loja** (e a conta, no ML) e o **dia de despacho** — após um
    🔄 Atualizar, cada dia mostra quantos pedidos tem.
@@ -109,7 +109,7 @@ python bot_telegram.py
   descobrir o seu).
 - **Aviso da manhã**: defina `"aviso_horario": "08:00"` no `bot_config.json` e o
   bot manda o resumo do dia nesse horário (Brasília).
-- **Ligar**: `Iniciar Bot.bat` (simples) ou `Iniciar Bot (auto).bat`
+- **Ligar**: `atalhos\Iniciar Bot.bat` (simples) ou `atalhos\Iniciar Bot (auto).bat`
   (**religa sozinho** se cair — recomendado). Para iniciar com o Windows:
   atalho do `.bat` em `Win+R` → `shell:startup`.
 - Atividade registrada em `bot.log`.
@@ -142,7 +142,7 @@ python shopee_api.py etiqueta <order_sn>    # gera/baixa a etiqueta (Downloads)
 python shopee_api.py parametros <order_sn>  # diagnóstico dos tipos de documento
 ```
 
-Atalho Windows: **`Etiqueta Shopee.bat`** lista os pedidos de hoje, pergunta o
+Atalho Windows: **`atalhos\Etiqueta Shopee.bat`** lista os pedidos de hoje, pergunta o
 `order_sn` e gera a etiqueta.
 
 </details>
@@ -210,6 +210,7 @@ xvfb-run -a python3.12 tools/gui_screenshot.py out.png [Shopee]
 | `separador_gui.py` | A tela (Tkinter). |
 | `bot_telegram.py` / `relatorio.py` | Bot do Telegram e formatação dos textos. |
 | `pegar_token*.py` | OAuth inicial (ML e Shopee). |
-| `*.bat` | Atalhos de duplo-clique do Windows (abrir, atualizar, tokens, bot). |
+| `Abrir Separador.bat` · `Atualizar programa.bat` | Os 2 atalhos do dia a dia (raiz, duplo-clique). |
+| `atalhos/` | Demais atalhos (tokens, bot, diagnóstico, etiqueta Shopee). |
 | `exemplos/` | Modelos dos arquivos de configuração. |
 | `tests/` · `tools/` · `docs/` | Testes (pytest) · ferramentas de dev · página de callback + imagens. |

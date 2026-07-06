@@ -13,7 +13,8 @@ Se nada acontecer ao clicar, use o "Abrir Separador.bat", que e mais garantido.
 import os
 import sys
 
-_PASTA = os.path.dirname(os.path.abspath(__file__))
+# Este arquivo mora em atalhos/; o projeto (e os credenciais) ficam na pasta-mae.
+_PASTA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(_PASTA)
 sys.path.insert(0, _PASTA)
 

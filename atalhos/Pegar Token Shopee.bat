@@ -5,6 +5,6 @@ REM  Duplo-clique e siga as instrucoes. A janela fica aberta ate
 REM  o fim (mesmo com erro) para voce ler a mensagem.
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 python pegar_token_shopee.py
