@@ -64,7 +64,8 @@ em 2º plano.
   `carregar_nomes()`/`salvar_nomes()` (ordena chaves, apara, descarta vazios).
 - **Identificação na impressão** (`MODO_IDENT`): `carimbo` (SKU na DANFE),
   `carimbo_nome` (nome da aba Nomes; fonte adaptativa via `_fonte_nome` — curto
-  maior, longo menor até 3 linhas; sem nome cadastrado cai no SKU), `divisoria`,
+  maior, longo menor até 3 linhas; sem nome cadastrado cai no SKU; pedido com
+  2+ unidades ganha "2x"/"3x" em destaque abaixo do nome), `divisoria`,
   `nenhuma`. `CARIMBAR_SKU` é legado (compat de config antigo).
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
