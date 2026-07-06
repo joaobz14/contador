@@ -25,7 +25,7 @@ Recursos:
 
 Como usar:
   1) pip install -r requirements-bot.txt
-  2) copie bot_config.example.json para bot_config.json e preencha o token
+  2) copie exemplos/bot_config.example.json para bot_config.json e preencha o token
   3) python bot_telegram.py   (precisa do credenciais.json do ML na mesma pasta)
   4) no Telegram mande /id, coloque o numero em "chat_ids", e reinicie o bot.
 
@@ -646,7 +646,7 @@ if __name__ == "__main__":
         # Erro esperado e explicado (ex.: token ausente, credenciais faltando).
         print(f"\nNAO FOI POSSIVEL INICIAR O BOT:\n  {e}")
         if "Token" in str(e):
-            print("\nDica: copie bot_config.example.json para bot_config.json e "
+            print("\nDica: copie exemplos/bot_config.example.json para bot_config.json e "
                   "preencha o token do @BotFather.")
         _pausar()
         raise SystemExit(1)
