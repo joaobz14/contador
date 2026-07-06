@@ -77,6 +77,8 @@ MODO_IDENT = "nenhuma"  # modo de identificacao atual: carimbo | carimbo_nome | 
 CARIMBO_Y = 800        # dots a partir do topo (mais abaixo, no centro da area livre da DANFE)
 CARIMBO_ALTURA = 70    # altura da fonte do SKU em dots (~8 mm)
 CARIMBO_ALTURA_NOME = 45  # fonte-base do nome longo; nomes curtos usam fonte maior (ver _fonte_nome)
+CARIMBO_ALTURA_QTD = 70   # fonte do "2x"/"3x" abaixo do nome (qtd >= 2), bem visivel
+CARIMBO_ESPACO_QTD = 15   # respiro entre o nome e a linha da quantidade (dots)
 LARGURA_ETIQUETA = 812  # largura ~10 cm @203 dpi; usada para centralizar texto
 
 
@@ -973,11 +975,14 @@ def _carimbar_grupo(zpl: str, grupo: Grupo, modo: str, nomes: dict | None = None
     modo nao carimba):
       - 'carimbo':      o SKU, 1 linha, fonte cheia;
       - 'carimbo_nome': o nome amigavel, com a fonte ajustada ao comprimento
-                        (curto = maior; longo = menor, ate 3 linhas)."""
+                        (curto = maior; longo = menor, ate 3 linhas). Pedido com
+                        2+ unidades ganha a quantidade ("2x", "3x") em destaque
+                        numa linha abaixo do nome."""
     if modo == "carimbo_nome":
         texto = _texto_carimbo_nome(grupo, nomes)
         altura, linhas = _fonte_nome(texto)
-        return carimbar_zpl(zpl, texto, altura=altura, linhas=linhas)
+        qtd = f"{grupo.quantidade}x" if grupo.quantidade >= 2 else ""
+        return carimbar_zpl(zpl, texto, altura=altura, linhas=linhas, extra=qtd)
     if modo == "carimbo":
         return carimbar_zpl(zpl, _texto_carimbo(grupo))
     return zpl
@@ -990,7 +995,8 @@ def _largura_zpl(bloco: str) -> int:
 
 
 def carimbar_zpl(zpl: str, texto: str, *, altura: int = CARIMBO_ALTURA,
-                 linhas: int = 1) -> str:
+                 linhas: int = 1, extra: str = "",
+                 altura_extra: int = CARIMBO_ALTURA_QTD) -> str:
     """Carimba `texto` (o SKU ou o nome do produto) na DANFE (nota fiscal),
     CENTRALIZADO na area livre central.
 
@@ -998,11 +1004,14 @@ def carimbar_zpl(zpl: str, texto: str, *, altura: int = CARIMBO_ALTURA,
     envio. Carimbamos SO a DANFE (bloco que contem "DANFE"); a etiqueta de envio
     fica intacta. O texto e centralizado na largura da etiqueta (^FB ... C).
     `altura` = tamanho da fonte em dots; `linhas` = maximo de linhas do bloco
-    (o nome, mais longo, usa fonte menor e ate 3 linhas). Texto vazio, ZPL sem
-    `^XZ` ou sem DANFE -> devolve intacto."""
+    (o nome, mais longo, usa fonte menor e ate 3 linhas). `extra` (opcional)
+    imprime uma linha ABAIXO do texto — usada para a quantidade ("2x", "3x")
+    quando o pedido tem 2+ unidades. Texto vazio, ZPL sem `^XZ` ou sem
+    DANFE -> devolve intacto."""
     if not texto or "^XZ" not in zpl:
         return zpl
     seguro = texto.replace("^", " ").replace("~", " ")
+    extra_seguro = extra.replace("^", " ").replace("~", " ")
 
     def _aplica(m: "re.Match") -> str:
         bloco = m.group(0)
@@ -1011,6 +1020,11 @@ def carimbar_zpl(zpl: str, texto: str, *, altura: int = CARIMBO_ALTURA,
         pw = _largura_zpl(bloco)
         campo = (f"^FO0,{CARIMBO_Y}^A0N,{altura},{altura}"
                  f"^FB{pw},{linhas},0,C,0^FD{seguro}^FS")
+        if extra_seguro:
+            # Linha da quantidade, logo abaixo do espaco reservado ao nome.
+            y2 = CARIMBO_Y + altura * linhas + CARIMBO_ESPACO_QTD
+            campo += (f"\n^FO0,{y2}^A0N,{altura_extra},{altura_extra}"
+                      f"^FB{pw},1,0,C,0^FD{extra_seguro}^FS")
         return bloco.replace("^XZ", f"\n{campo}\n^XZ", 1)
 
     novo, _ = re.subn(r"\^XA.*?\^XZ", _aplica, zpl, flags=re.DOTALL)

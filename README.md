@@ -158,7 +158,7 @@ Atalho Windows: **`atalhos\Etiqueta Shopee.bat`** lista os pedidos de hoje, perg
 | Modo | O que sai na DANFE |
 |---|---|
 | Carimbo SKU | o código do produto, centralizado na área livre |
-| Carimbo nome | o nome da aba **Nomes** (fonte adaptativa: curto maior, longo até 3 linhas; sem nome cadastrado cai no SKU) |
+| Carimbo nome | o nome da aba **Nomes** (fonte adaptativa: curto maior, longo até 3 linhas; sem nome cadastrado cai no SKU). Pedido com 2+ unidades ganha a quantidade em destaque abaixo do nome (`2x`, `3x`…) |
 | Etiqueta divisória | uma página separadora antes de cada lote |
 | Nenhuma | nada |
 

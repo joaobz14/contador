@@ -1,8 +1,8 @@
 """Carimbo do SKU na DANFE (area livre central), sem rede."""
 
 
-def _grupo(core, chave="A03", componentes=None):
-    return core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=[1],
+def _grupo(core, chave="A03", componentes=None, qtd=1):
+    return core.Grupo(chave=chave, nome=chave, quantidade=qtd, shipment_ids=[1],
                       componentes=componentes or [])
 
 
@@ -99,6 +99,42 @@ def test_carimbar_grupo_modo_sku_inalterado(core):
 
 def test_carimbar_grupo_modo_nenhuma_nao_altera(core):
     assert core._carimbar_grupo(ZPL, _grupo(core, "A03"), "nenhuma") == ZPL
+
+
+# ------------------------------------------------- quantidade abaixo do nome
+def test_carimbo_nome_qtd_2_ganha_linha_2x(core):
+    g = _grupo(core, "A01F", qtd=2)
+    out = core._carimbar_grupo(ZPL, g, "carimbo_nome", {"A01F": "2L 220"})
+    assert "^FD2L 220^FS" in out                        # nome
+    assert "^FD2x^FS" in out                            # quantidade em destaque
+    # o "2x" fica ABAIXO do nome: Y = CARIMBO_Y + altura*linhas + espaco
+    altura, linhas = core._fonte_nome("2L 220")
+    y2 = core.CARIMBO_Y + altura * linhas + core.CARIMBO_ESPACO_QTD
+    assert f"^FO0,{y2}^A0N,{core.CARIMBO_ALTURA_QTD}," in out
+    danfe, envio = out.split("^XA etiqueta")
+    assert "2x" not in envio                            # so a DANFE leva
+
+
+def test_carimbo_nome_qtd_1_sem_linha_de_quantidade(core):
+    out = core._carimbar_grupo(ZPL, _grupo(core, "A01F", qtd=1),
+                               "carimbo_nome", {"A01F": "2L 220"})
+    assert "^FD2L 220^FS" in out
+    assert "^FD1x^FS" not in out and "^FD2x^FS" not in out
+
+
+def test_carimbo_nome_qtd_3_em_nome_longo(core):
+    nome = "LIQUIDIFICADOR AR 2L 220"                   # 3 linhas de 45
+    out = core._carimbar_grupo(ZPL, _grupo(core, "A01F", qtd=3),
+                               "carimbo_nome", {"A01F": nome})
+    assert "^FD3x^FS" in out
+    y2 = core.CARIMBO_Y + core.CARIMBO_ALTURA_NOME * 3 + core.CARIMBO_ESPACO_QTD
+    assert f"^FO0,{y2}^" in out                         # abaixo das 3 linhas
+
+
+def test_carimbo_sku_nao_ganha_quantidade(core):
+    # o "Nx" e exclusivo do modo carimbo_nome; o carimbo de SKU segue igual
+    out = core._carimbar_grupo(ZPL, _grupo(core, "A03", qtd=2), "carimbo")
+    assert "^FDA03^FS" in out and "2x" not in out
 
 
 def test_modo_ident_efetivo_respeita_legado(core, monkeypatch):
