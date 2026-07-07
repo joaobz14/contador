@@ -46,6 +46,13 @@ em 2º plano.
   `status_grupo`, `envios_pendentes`).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
+- **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista
+  único). `ProvedorMLAmbas` coleta as contas em sequência e **funde** grupos de
+  mesmo SKU+qtd (`fundir_grupos`; sub-grupos em `.por_conta`); imprime cada
+  conta com o token dela num ZIP único; estado segue **por conta** (o
+  `marcar_impresso` roteia com `definir_conta` antes de cada gravação). A GUI
+  consulta status/pendentes **via provedor** (`prov.status_grupo`, não o core
+  direto). Não é persistido no config (escolha pontual).
 - **Token: sempre `obter_token(cred)`** (ML e Shopee) — cache + lock double-checked.
   Nunca chamar `renovar_token` direto: o refresh_token **rotaciona** e uma corrida
   entre threads pode invalidá-lo (travando a conta).

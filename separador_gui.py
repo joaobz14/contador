@@ -269,6 +269,13 @@ class SeparadorApp:
                                 command=lambda n=nome: self._trocar_conta(n))
             r.pack(side="left", padx=(0, 4))
             self._radios_conta.append(r)
+        # Modo "Ambas": junta as contas num dia de motorista unico (a separacao
+        # fisica vira por produto). Escolha pontual — nao fica lembrada.
+        r = ttk.Radiobutton(self._frame_contas, text="🌐 Ambas",
+                            value=provedores.CONTA_AMBAS, variable=self.conta_var,
+                            command=lambda: self._trocar_conta(provedores.CONTA_AMBAS))
+        r.pack(side="left", padx=(0, 4))
+        self._radios_conta.append(r)
 
     def _atualizar_visibilidade_topo(self) -> None:
         """Mostra/esconde a Identificação conforme o provedor (Shopee não carimba).
@@ -288,6 +295,10 @@ class SeparadorApp:
         self.marketplace = nome
         self.prov = provedores.criar_provedor(nome)
         self._aplicar_conta_no_provedor()
+        # Se estava no modo Ambas, o radio volta a refletir a conta salva
+        # (o provedor novo e o normal da conta).
+        if self.conta_var.get() == provedores.CONTA_AMBAS:
+            self.conta_var.set(self.config.get("conta_ativa", ""))
         self.config["marketplace"] = nome
         core.salvar_config(self.config)
         self._rebuild_conta_selector()
@@ -297,10 +308,19 @@ class SeparadorApp:
 
     def _trocar_conta(self, nome: str) -> None:
         """Troca a conta ativa (ML) e volta para a tela inicial (sem buscar).
-        A busca só acontece quando o usuário escolhe o dia e clica em Atualizar."""
-        self.prov.definir_conta(nome)
-        self.config["conta_ativa"] = nome
-        core.salvar_config(self.config)
+        A busca só acontece quando o usuário escolhe o dia e clica em Atualizar.
+
+        "🌐 Ambas" troca o PROVEDOR (ProvedorMLAmbas: contas fundidas) e não é
+        persistido — na próxima abertura o app volta à última conta normal."""
+        if nome == provedores.CONTA_AMBAS:
+            self.prov = provedores.ProvedorMLAmbas()
+        else:
+            if isinstance(self.prov, provedores.ProvedorMLAmbas):
+                self.prov = provedores.criar_provedor(self.marketplace)
+            self.prov.definir_conta(nome)
+            self.config["conta_ativa"] = nome
+            core.salvar_config(self.config)
+        self.grupos = []
         self._tela_inicial()
 
     def _ocupar(self, ocupado: bool, msg: str = "") -> None:
@@ -473,7 +493,7 @@ class SeparadorApp:
 
         # Separa quem falta imprimir (topo) de quem ja foi impresso (arquivadas),
         # para que um grupo pendente nunca fique "perdido" no meio dos ✓ verdes.
-        estados = [(g, core.status_grupo(self.estado, g)) for g in grupos]
+        estados = [(g, self.prov.status_grupo(self.estado, g)) for g in grupos]
         pendentes = [g for g, s in estados if s != "impresso"]
         arquivadas = [g for g, s in estados if s == "impresso"]
 
@@ -485,7 +505,7 @@ class SeparadorApp:
 
         # Titulo da janela com os pendentes do dia (independe do filtro da busca).
         pend_total = sum(1 for g in self.grupos
-                         if core.status_grupo(self.estado, g) != "impresso")
+                         if self.prov.status_grupo(self.estado, g) != "impresso")
         self.root.title(f"Separador de Etiquetas — {pend_total} pendente(s) · {dia_txt}")
 
         # Rodape do "Imprimir selecionados" aparece so quando ha grupos pendentes.
@@ -546,8 +566,8 @@ class SeparadorApp:
         self._ocupar(False, f"Atualizado às {datetime.now():%H:%M}")
 
     def _linha(self, g, selecionavel: bool = False, arquivada: bool = False):
-        status = core.status_grupo(self.estado, g)
-        faltam = len(core.envios_pendentes(self.estado, g))
+        status = self.prov.status_grupo(self.estado, g)
+        faltam = len(self.prov.envios_pendentes(self.estado, g))
         fr = ttk.Frame(self.lista, padding=(8, 6), relief="solid", borderwidth=1)
         fr.pack(fill="x", pady=2)
 
@@ -600,7 +620,7 @@ class SeparadorApp:
         pula quem já tem AWB. No ML, nunca há o que organizar → segue direto."""
         if not self.prov.organiza_envio:
             return True
-        n = sum(len(core.envios_pendentes(self.estado, g)) for g in grupos)
+        n = sum(len(self.prov.envios_pendentes(self.estado, g)) for g in grupos)
         if n == 0:
             return True
         return messagebox.askyesno(
@@ -738,7 +758,7 @@ class SeparadorApp:
     def imprimir_proximo(self) -> None:
         # Inclui grupos "parcial" (alguns envios novos a imprimir), nao so "pendente".
         pend = next((g for g in self.grupos
-                     if core.status_grupo(self.estado, g) != "impresso"), None)
+                     if self.prov.status_grupo(self.estado, g) != "impresso"), None)
         if not pend:
             messagebox.showinfo("Tudo certo", "Nenhum grupo pendente. 🎉")
             return
