@@ -306,6 +306,15 @@ def _grupo(chave="A01", ids=("SN1", "SN2"), dia=""):
     return g
 
 
+def _forca_individual(monkeypatch):
+    """Leva _organizar_varios direto ao caminho individual (sem AWB previo e sem
+    batch), preservando a semantica dos testes escritos antes do batch_ship_order."""
+    monkeypatch.setattr(sh, "_rastreios_paralelo",
+                        lambda c, t, sns: {str(s): "" for s in sns})
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("sem batch")))
+
+
 def test_marcar_impresso_namespaceia_por_dia(monkeypatch):
     monkeypatch.setattr(sh, "salvar_estado", lambda estado: None)
     estado = {}
@@ -316,6 +325,7 @@ def test_marcar_impresso_namespaceia_por_dia(monkeypatch):
 
 def test_imprimir_grupo_organiza_gera_marca(monkeypatch):
     chamadas = {"organizar": [], "salvou": []}
+    _forca_individual(monkeypatch)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
     monkeypatch.setattr(sh, "organizar_envio",
                         lambda c, t, sn, **k: chamadas["organizar"].append(sn))
@@ -357,6 +367,7 @@ def test_preencher_rastreios_so_grupo_unico_impresso(monkeypatch):
 
 def test_imprimir_lotes_nao_marca_estado(monkeypatch):
     # lotes geram/imprimem mas NAO marcam — a GUI marca apos a confirmacao
+    _forca_individual(monkeypatch)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
     monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: True)
     monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK\x03\x04")
@@ -374,6 +385,7 @@ def test_imprimir_lotes_nao_marca_estado(monkeypatch):
 def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
     # Varios grupos -> UM zip so com todas as etiquetas (Zebra imprime sem gap).
     chamadas = {"gerou": [], "salvou": 0}
+    _forca_individual(monkeypatch)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
     monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
 
@@ -415,6 +427,7 @@ def test_combinar_etiquetas_junta_zpl_num_unico_zip():
 
 def test_imprimir_lotes_tolera_falha_parcial(monkeypatch):
     # SN2 nao organiza -> entra em falhas; SN1 e SN3 imprimem num zip so.
+    _forca_individual(monkeypatch)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
 
     def fake_org(c, t, sn, **k):
@@ -434,3 +447,76 @@ def test_imprimir_lotes_tolera_falha_parcial(monkeypatch):
     assert sorted(capt["ids"]) == ["SN1", "SN3"]           # gerou so os que deram
     assert impressos == [(g1, ["SN1"]), (g3, ["SN3"])]     # g2 ficou de fora
     assert [sn for sn, _ in falhas] == ["SN2"]             # e foi reportado
+
+
+# ------------------------------------------- organizar em lote (batch_ship_order)
+def test_batch_ship_order_monta_o_corpo(monkeypatch):
+    capt = {}
+    monkeypatch.setattr(sh, "_post_shop",
+                        lambda c, t, path, body: capt.update(path=path, body=body) or {})
+    sh.batch_ship_order({}, "TOK", ["S1", "S2"], dropoff={})
+    assert capt["path"].endswith("/batch_ship_order")
+    assert capt["body"] == {"order_list": [{"order_sn": "S1"}, {"order_sn": "S2"}],
+                            "dropoff": {}}
+
+
+def test_organizar_varios_via_batch_sem_individual(monkeypatch):
+    # rodada 1 (idempotencia): ninguem tem AWB; rodada 2 (apos o batch): todos tem
+    seq = iter([{"S1": "", "S2": ""}, {"S1": "BR1", "S2": "BR2"}])
+    monkeypatch.setattr(sh, "_rastreios_paralelo",
+                        lambda c, t, sns: {k: v for k, v in next(seq).items() if k in sns})
+    batches = []
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda c, t, sns, dropoff=None: batches.append(list(sns)) or {})
+    monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sh, "organizar_envio",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("individual nao devia rodar")))
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
+    assert ok == {"S1": "BR1", "S2": "BR2"} and falhas == []
+    assert batches == [["S1", "S2"]]              # UM request para os dois
+
+
+def test_organizar_varios_idempotente_nem_chama_batch(monkeypatch):
+    monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {"S1": "BR1"})
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nada a organizar")))
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1"])
+    assert ok == {"S1": "BR1"} and falhas == []
+
+
+def test_organizar_varios_batch_indisponivel_cai_no_individual(monkeypatch):
+    # endpoint falhou por inteiro -> NAO fica esperando AWB; vai direto pro individual
+    monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("endpoint fora")))
+    esperas = []
+    monkeypatch.setattr(sh.time, "sleep", lambda s: esperas.append(s))
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
+    assert ok == {"S1": "BR-S1", "S2": "BR-S2"} and falhas == []
+    assert esperas == []                          # sem polling inutil
+
+
+def test_organizar_varios_awb_que_nao_sai_cai_no_individual(monkeypatch):
+    # batch "passa", mas o AWB de S2 nunca sai -> SO S2 vai pro individual
+    monkeypatch.setattr(sh, "_rastreios_paralelo",
+                        lambda c, t, sns: {s: ("BR1" if s == "S1" else "") for s in sns})
+    monkeypatch.setattr(sh, "batch_ship_order", lambda c, t, sns, dropoff=None: {})
+    monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
+    chamados = []
+    monkeypatch.setattr(sh, "organizar_envio",
+                        lambda c, t, sn, **k: chamados.append(sn) or f"BRX-{sn}")
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
+    assert ok == {"S1": "BR1", "S2": "BRX-S2"} and falhas == []
+    assert chamados == ["S2"]                     # S1 (idempotente) nem e tocado
+
+
+def test_organizar_varios_dropoff_leva_branch_e_remetente(monkeypatch):
+    capt = {}
+    monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda c, t, sns, dropoff=None: capt.update(dropoff=dropoff) or {})
+    monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: "BR")
+    sh._organizar_varios({}, "TOK", ["S1"], branch_id=77, sender_real_name="Joao")
+    assert capt["dropoff"] == {"branch_id": 77, "sender_real_name": "Joao"}
