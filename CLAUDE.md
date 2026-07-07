@@ -36,6 +36,24 @@ xvfb-run -a python3.12 tools/gui_screenshot.py out.png [Shopee]
 Depois `Read out.png` para conferir o layout. O SessionStart hook já prepara isso
 em 2º plano.
 
+## Grafo de conhecimento (graphify) e docs de apoio
+
+- **`graphify-out/`** tem um grafo do projeto (código AST + docs + arquitetura):
+  `graph.json` (consultável), `GRAPH_REPORT.md` (relatório) e `graph.html`
+  (visualização). Para perguntas de arquitetura/relações, consulte o grafo e o
+  `docs/ARQUITETURA.md` **antes** de reler os arquivos crus. Sem o CLI
+  `graphify` no ambiente, leia o `graph.json` direto.
+- **`docs/ARQUITETURA.md`**: fluxos operacionais, **invariantes críticas**,
+  arquivos locais e áreas de risco — leitura obrigatória antes de mexer em
+  estado/token/impressão. **`docs/PRIORIDADES_TECNICAS.md`**: backlog técnico
+  sugerido (ordem recomendada de evolução).
+- **`AGENTS.md` é espelho deste arquivo** (adaptado para o Codex: título e
+  trailer). Alterou uma convenção aqui? Replique lá.
+- **NÃO rode `graphify hook install`**: o hook reconstrói o grafo só com código
+  (AST) e apagaria a camada de docs/arquitetura — foi desinstalado de propósito.
+  Após mudanças grandes, refaça a extração completa + a passada semântica dos
+  docs manualmente.
+
 ## Convenções
 
 - **Provedor, não `if marketplace`:** a GUI fala com `self.prov` (ML ou Shopee). Toda
