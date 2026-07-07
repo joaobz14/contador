@@ -4,6 +4,68 @@
   "graph": {
     "hyperedges": [
       {
+        "id": "sistemas_externos",
+        "label": "Sistemas externos (fora do reposit\u00f3rio)",
+        "nodes": [
+          "ext_ml_api",
+          "ext_shopee_api",
+          "ext_telegram_api",
+          "ext_zebra",
+          "ext_zebra_app",
+          "ext_downloads"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": "docs/ARQUITETURA.md"
+      },
+      {
+        "id": "ponte_impressao",
+        "label": "Ponte de impress\u00e3o: ZIP \u2192 Downloads \u2192 app Zebra \u2192 impressora",
+        "nodes": [
+          "impressao_zip",
+          "ext_downloads",
+          "ext_zebra_app",
+          "ext_zebra"
+        ],
+        "relation": "participate_in",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": "docs/ARQUITETURA.md"
+      },
+      {
+        "id": "invariantes_criticas",
+        "label": "Invariantes cr\u00edticas de neg\u00f3cio",
+        "nodes": [
+          "inv_confirma_antes_marcar",
+          "inv_reimpressao_nao_altera",
+          "inv_marcar_merge",
+          "inv_token_via_obter",
+          "inv_shopee_awb",
+          "inv_bot_shopee_readonly"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.8,
+        "source_file": "docs/ARQUITETURA.md"
+      },
+      {
+        "id": "arquivos_locais",
+        "label": "Arquivos locais n\u00e3o versionados (por m\u00e1quina/conta)",
+        "nodes": [
+          "file_credenciais",
+          "file_credenciais_shopee",
+          "file_estado_grupos",
+          "file_estado_shopee",
+          "file_config",
+          "file_bot_config"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": "docs/ARQUITETURA.md"
+      },
+      {
         "id": "camada_provedor",
         "label": "Camada de provedor (ML / Shopee / Ambas)",
         "nodes": [
@@ -743,7 +805,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "pegar_token.py",
       "id": "pegar_token"
     },
@@ -753,7 +815,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "perguntar()",
       "id": "pegar_token_perguntar"
     },
@@ -763,7 +825,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "extrair_code()",
       "id": "pegar_token_extrair_code"
     },
@@ -773,7 +835,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "main()",
       "id": "pegar_token_main"
     },
@@ -783,7 +845,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "pegar_token.py programa de uma vez so. pega a autorizacao do mercado livre e sal",
       "id": "pegar_token_rationale_1"
     },
@@ -793,7 +855,7 @@
       "source_file": "pegar_token.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "aceita a url inteira colada ou so o codigo.",
       "id": "pegar_token_rationale_31"
     },
@@ -803,7 +865,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "pegar_token_shopee.py",
       "id": "pegar_token_shopee"
     },
@@ -813,7 +875,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "perguntar()",
       "id": "pegar_token_shopee_perguntar"
     },
@@ -823,7 +885,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "assinar()",
       "id": "pegar_token_shopee_assinar"
     },
@@ -833,7 +895,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "extrair()",
       "id": "pegar_token_shopee_extrair"
     },
@@ -843,7 +905,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "main()",
       "id": "pegar_token_shopee_main"
     },
@@ -853,7 +915,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "pegar_token_shopee.py programa de uma vez so. autoriza sua loja na shopee open p",
       "id": "pegar_token_shopee_rationale_1"
     },
@@ -863,7 +925,7 @@
       "source_file": "pegar_token_shopee.py",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 31,
+      "community": 33,
       "norm_label": "aceita a url inteira de retorno ou so o code. devolve (code, shop_id).",
       "id": "pegar_token_shopee_rationale_45"
     },
@@ -1436,7 +1498,7 @@
       "source_location": "L1",
       "version": "1.0.0",
       "_origin": "ast",
-      "community": 46,
+      "community": 49,
       "norm_label": "separador-etiquetas-ml",
       "id": "pkg_separador_etiquetas_ml"
     },
@@ -1446,7 +1508,7 @@
       "source_file": "relatorio.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "relatorio.py",
       "id": "relatorio"
     },
@@ -1456,7 +1518,7 @@
       "source_file": "relatorio.py",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "texto_grupos()",
       "id": "relatorio_texto_grupos"
     },
@@ -1466,7 +1528,7 @@
       "source_file": "relatorio.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "texto_resumo()",
       "id": "relatorio_texto_resumo"
     },
@@ -1476,7 +1538,7 @@
       "source_file": "relatorio.py",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "texto_bom_dia()",
       "id": "relatorio_texto_bom_dia"
     },
@@ -1486,7 +1548,7 @@
       "source_file": "relatorio.py",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "texto_detalhe()",
       "id": "relatorio_texto_detalhe"
     },
@@ -1496,7 +1558,7 @@
       "source_file": "relatorio.py",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "dividir_mensagem()",
       "id": "relatorio_dividir_mensagem"
     },
@@ -1506,7 +1568,7 @@
       "source_file": "relatorio.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "relatorio.py monta textos legiveis (para o bot do telegram) a partir dos dados d",
       "id": "relatorio_rationale_1"
     },
@@ -1516,7 +1578,7 @@
       "source_file": "relatorio.py",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "lista os grupos (sku + quantidade) agrupados por quantidade do pedido.",
       "id": "relatorio_rationale_15"
     },
@@ -1526,7 +1588,7 @@
       "source_file": "relatorio.py",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "quantos pacotes ha em cada dia de despacho.",
       "id": "relatorio_rationale_34"
     },
@@ -1536,7 +1598,7 @@
       "source_file": "relatorio.py",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "mensagem do aviso automatico da manha: manchete com a contagem de hoje     segui",
       "id": "relatorio_rationale_47"
     },
@@ -1546,7 +1608,7 @@
       "source_file": "relatorio.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "composicao de um sku: quais produtos/variacoes/voltagens o formam e     quantos",
       "id": "relatorio_rationale_55"
     },
@@ -1556,7 +1618,7 @@
       "source_file": "relatorio.py",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "divide um texto em blocos <= limite (o telegram corta em ~4096), quebrando     p",
       "id": "relatorio_rationale_72"
     },
@@ -1566,7 +1628,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "separador_etiquetas_ml.py",
       "id": "separador_etiquetas_ml"
     },
@@ -1576,7 +1638,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "separadorerror",
       "id": "separador_etiquetas_ml_separadorerror"
     },
@@ -1616,7 +1678,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 6,
+      "community": 13,
       "norm_label": "proximos_dias_uteis()",
       "id": "separador_etiquetas_ml_proximos_dias_uteis"
     },
@@ -1636,7 +1698,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L127",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "rotulo_dia()",
       "id": "separador_etiquetas_ml_rotulo_dia"
     },
@@ -1646,7 +1708,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L133",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "_data_despacho()",
       "id": "separador_etiquetas_ml_data_despacho"
     },
@@ -1686,7 +1748,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L180",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "carregar_config()",
       "id": "separador_etiquetas_ml_carregar_config"
     },
@@ -1706,7 +1768,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L189",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "definir_conta()",
       "id": "separador_etiquetas_ml_definir_conta"
     },
@@ -1716,7 +1778,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L201",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "listar_contas()",
       "id": "separador_etiquetas_ml_listar_contas"
     },
@@ -1726,7 +1788,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L211",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "migrar_conta_legado()",
       "id": "separador_etiquetas_ml_migrar_conta_legado"
     },
@@ -1736,7 +1798,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L225",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "conta_ativa()",
       "id": "separador_etiquetas_ml_conta_ativa"
     },
@@ -1746,7 +1808,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L230",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "aplicar_config()",
       "id": "separador_etiquetas_ml_aplicar_config"
     },
@@ -1786,7 +1848,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L294",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "carregar_credenciais()",
       "id": "separador_etiquetas_ml_carregar_credenciais"
     },
@@ -1796,7 +1858,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L307",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "salvar_credenciais()",
       "id": "separador_etiquetas_ml_salvar_credenciais"
     },
@@ -1806,7 +1868,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L311",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "renovar_token()",
       "id": "separador_etiquetas_ml_renovar_token"
     },
@@ -1816,7 +1878,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L338",
       "_origin": "ast",
-      "community": 20,
+      "community": 23,
       "norm_label": "_token_valido()",
       "id": "separador_etiquetas_ml_token_valido"
     },
@@ -1826,7 +1888,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L343",
       "_origin": "ast",
-      "community": 20,
+      "community": 23,
       "norm_label": "obter_token()",
       "id": "separador_etiquetas_ml_obter_token"
     },
@@ -1836,7 +1898,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L357",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "_espera_retry()",
       "id": "separador_etiquetas_ml_espera_retry"
     },
@@ -1846,7 +1908,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "response",
       "id": "response"
     },
@@ -1856,7 +1918,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L370",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "_requisicao_get()",
       "id": "separador_etiquetas_ml_requisicao_get"
     },
@@ -1866,7 +1928,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L396",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "_requisicao_post()",
       "id": "separador_etiquetas_ml_requisicao_post"
     },
@@ -1876,7 +1938,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L418",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "_get()",
       "id": "separador_etiquetas_ml_get"
     },
@@ -1886,7 +1948,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L431",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "itempedido",
       "id": "separador_etiquetas_ml_itempedido"
     },
@@ -1896,7 +1958,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L443",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "grupo",
       "id": "separador_etiquetas_ml_grupo"
     },
@@ -1906,7 +1968,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L459",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".chave_grupo()",
       "id": "separador_etiquetas_ml_grupo_chave_grupo"
     },
@@ -1916,7 +1978,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L463",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".total_etiquetas()",
       "id": "separador_etiquetas_ml_grupo_total_etiquetas"
     },
@@ -1926,7 +1988,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L470",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "carregar_cache()",
       "id": "separador_etiquetas_ml_carregar_cache"
     },
@@ -1936,7 +1998,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L474",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "salvar_cache()",
       "id": "separador_etiquetas_ml_salvar_cache"
     },
@@ -1946,7 +2008,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L478",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "_detalhe_item()",
       "id": "separador_etiquetas_ml_detalhe_item"
     },
@@ -1956,7 +2018,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L494",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "buscar_detalhes()",
       "id": "separador_etiquetas_ml_buscar_detalhes"
     },
@@ -1966,7 +2028,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L509",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "_voltagem()",
       "id": "separador_etiquetas_ml_voltagem"
     },
@@ -1976,7 +2038,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L516",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "identidade()",
       "id": "separador_etiquetas_ml_identidade"
     },
@@ -1986,7 +2048,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L539",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "buscar_pedidos()",
       "id": "separador_etiquetas_ml_buscar_pedidos"
     },
@@ -1996,7 +2058,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L568",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "buscar_pedidos_amplo()",
       "id": "separador_etiquetas_ml_buscar_pedidos_amplo"
     },
@@ -2006,7 +2068,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L587",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "rastrear_sku()",
       "id": "separador_etiquetas_ml_rastrear_sku"
     },
@@ -2016,7 +2078,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L614",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "buscar_envio()",
       "id": "separador_etiquetas_ml_buscar_envio"
     },
@@ -2026,7 +2088,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L621",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "_prazo_do_envio()",
       "id": "separador_etiquetas_ml_prazo_do_envio"
     },
@@ -2066,7 +2128,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L652",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "_avaliar_pedido()",
       "id": "separador_etiquetas_ml_avaliar_pedido"
     },
@@ -2086,7 +2148,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L708",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "extrair_itens()",
       "id": "separador_etiquetas_ml_extrair_itens"
     },
@@ -2096,7 +2158,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L739",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "agrupar()",
       "id": "separador_etiquetas_ml_agrupar"
     },
@@ -2106,7 +2168,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L784",
       "_origin": "ast",
-      "community": 21,
+      "community": 15,
       "norm_label": "carregar_nomes()",
       "id": "separador_etiquetas_ml_carregar_nomes"
     },
@@ -2126,7 +2188,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L798",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "_rotulo_sku()",
       "id": "separador_etiquetas_ml_rotulo_sku"
     },
@@ -2136,7 +2198,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L803",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "aplicar_nomes()",
       "id": "separador_etiquetas_ml_aplicar_nomes"
     },
@@ -2146,7 +2208,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L824",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "coleta",
       "id": "separador_etiquetas_ml_coleta"
     },
@@ -2156,7 +2218,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L832",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "coletar_grupos()",
       "id": "separador_etiquetas_ml_coletar_grupos"
     },
@@ -2166,7 +2228,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L867",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "_sla()",
       "id": "separador_etiquetas_ml_sla"
     },
@@ -2176,7 +2238,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L874",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "debug_envios()",
       "id": "separador_etiquetas_ml_debug_envios"
     },
@@ -2206,7 +2268,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L918",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "_zpl_de_zip()",
       "id": "separador_etiquetas_ml_zpl_de_zip"
     },
@@ -2216,7 +2278,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L927",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_texto_carimbo()",
       "id": "separador_etiquetas_ml_texto_carimbo"
     },
@@ -2226,7 +2288,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L937",
       "_origin": "ast",
-      "community": 21,
+      "community": 15,
       "norm_label": "_texto_carimbo_nome()",
       "id": "separador_etiquetas_ml_texto_carimbo_nome"
     },
@@ -2236,7 +2298,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L949",
       "_origin": "ast",
-      "community": 7,
+      "community": 18,
       "norm_label": "_modo_ident_efetivo()",
       "id": "separador_etiquetas_ml_modo_ident_efetivo"
     },
@@ -2246,7 +2308,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L957",
       "_origin": "ast",
-      "community": 7,
+      "community": 15,
       "norm_label": "_fonte_nome()",
       "id": "separador_etiquetas_ml_fonte_nome"
     },
@@ -2256,7 +2318,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L973",
       "_origin": "ast",
-      "community": 7,
+      "community": 15,
       "norm_label": "_carimbar_grupo()",
       "id": "separador_etiquetas_ml_carimbar_grupo"
     },
@@ -2266,7 +2328,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L991",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "_largura_zpl()",
       "id": "separador_etiquetas_ml_largura_zpl"
     },
@@ -2276,7 +2338,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L997",
       "_origin": "ast",
-      "community": 6,
+      "community": 13,
       "norm_label": "carimbar_zpl()",
       "id": "separador_etiquetas_ml_carimbar_zpl"
     },
@@ -2286,7 +2348,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1034",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "zpl_divisoria()",
       "id": "separador_etiquetas_ml_zpl_divisoria"
     },
@@ -2296,7 +2358,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1050",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "baixar_zpl()",
       "id": "separador_etiquetas_ml_baixar_zpl"
     },
@@ -2306,7 +2368,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1080",
       "_origin": "ast",
-      "community": 41,
+      "community": 14,
       "norm_label": "_gerar_zip()",
       "id": "separador_etiquetas_ml_gerar_zip"
     },
@@ -2316,7 +2378,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1097",
       "_origin": "ast",
-      "community": 7,
+      "community": 14,
       "norm_label": "gerar_zip_etiquetas()",
       "id": "separador_etiquetas_ml_gerar_zip_etiquetas"
     },
@@ -2356,7 +2418,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1136",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_chave_estado()",
       "id": "separador_etiquetas_ml_chave_estado"
     },
@@ -2366,7 +2428,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1142",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_impressos()",
       "id": "separador_etiquetas_ml_impressos"
     },
@@ -2376,7 +2438,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1156",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "status_grupo()",
       "id": "separador_etiquetas_ml_status_grupo"
     },
@@ -2386,7 +2448,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1170",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "envios_pendentes()",
       "id": "separador_etiquetas_ml_envios_pendentes"
     },
@@ -2396,7 +2458,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1176",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "marcar_impresso()",
       "id": "separador_etiquetas_ml_marcar_impresso"
     },
@@ -2406,7 +2468,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1197",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "imprimir_pendentes()",
       "id": "separador_etiquetas_ml_imprimir_pendentes"
     },
@@ -2416,7 +2478,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1216",
       "_origin": "ast",
-      "community": 7,
+      "community": 18,
       "norm_label": "reimprimir()",
       "id": "separador_etiquetas_ml_reimprimir"
     },
@@ -2426,7 +2488,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1234",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "preparar_lotes()",
       "id": "separador_etiquetas_ml_preparar_lotes"
     },
@@ -2436,7 +2498,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1264",
       "_origin": "ast",
-      "community": 41,
+      "community": 15,
       "norm_label": "gerar_zip_lotes()",
       "id": "separador_etiquetas_ml_gerar_zip_lotes"
     },
@@ -2446,7 +2508,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1278",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "listar()",
       "id": "separador_etiquetas_ml_listar"
     },
@@ -2456,7 +2518,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1296",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "imprimir_grupo()",
       "id": "separador_etiquetas_ml_imprimir_grupo"
     },
@@ -2466,7 +2528,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1312",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "achar_grupo()",
       "id": "separador_etiquetas_ml_achar_grupo"
     },
@@ -2476,7 +2538,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1320",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "detalhar()",
       "id": "separador_etiquetas_ml_detalhar"
     },
@@ -2486,7 +2548,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1338",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "main()",
       "id": "separador_etiquetas_ml_main"
     },
@@ -2496,7 +2558,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "separador_etiquetas_ml.py le os pedidos do mercado livre, filtra os que estao em",
       "id": "separador_etiquetas_ml_rationale_1"
     },
@@ -2506,7 +2568,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "erro de negocio do separador (credenciais, token, etc.).      o nucleo lanca est",
       "id": "separador_etiquetas_ml_rationale_89"
     },
@@ -2536,7 +2598,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 6,
+      "community": 13,
       "norm_label": "as proximas `qtd` datas uteis (segunda a sexta) a partir de hoje     (inclusive)",
       "id": "separador_etiquetas_ml_rationale_115"
     },
@@ -2546,7 +2608,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "rotulo curto de uma data iso para o seletor: '2026-07-06' -> 'seg 06/07'.",
       "id": "separador_etiquetas_ml_rationale_128"
     },
@@ -2556,7 +2618,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "converte o expected_date da api para o dia (yyyy-mm-dd) no horario de     brasil",
       "id": "separador_etiquetas_ml_rationale_134"
     },
@@ -2586,7 +2648,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L181",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "preferencias do app (config.json). vazio/ausente -> {}.",
       "id": "separador_etiquetas_ml_rationale_181"
     },
@@ -2596,7 +2658,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L190",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "atualiza as globais de arquivo para apontar para contas/{nome}/.",
       "id": "separador_etiquetas_ml_rationale_190"
     },
@@ -2606,7 +2668,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L202",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "retorna subpastas de pasta_contas que contenham credenciais.json.",
       "id": "separador_etiquetas_ml_rationale_202"
     },
@@ -2616,7 +2678,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L212",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "move arquivos da raiz para contas/{nome}/ se necessario (uma unica vez).",
       "id": "separador_etiquetas_ml_rationale_212"
     },
@@ -2626,7 +2688,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L226",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "retorna o nome da conta ativa do config.json ('' se nao configurada).",
       "id": "separador_etiquetas_ml_rationale_226"
     },
@@ -2636,7 +2698,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L231",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "le o config.json e aplica as preferencias ao modulo (ex.: carimbar_sku).     dev",
       "id": "separador_etiquetas_ml_rationale_231"
     },
@@ -2666,7 +2728,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L344",
       "_origin": "ast",
-      "community": 20,
+      "community": 23,
       "norm_label": "token valido do cache, ou renova. serializa o refresh com um lock e     re-checa",
       "id": "separador_etiquetas_ml_rationale_344"
     },
@@ -2676,7 +2738,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L358",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "tempo de espera antes de re-tentar. respeita o cabecalho retry-after do     ml q",
       "id": "separador_etiquetas_ml_rationale_358"
     },
@@ -2686,7 +2748,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L373",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "get com retry em erros transitorios e em falhas de rede.      re-tenta em respos",
       "id": "separador_etiquetas_ml_rationale_373"
     },
@@ -2696,7 +2758,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L399",
       "_origin": "ast",
-      "community": 20,
+      "community": 31,
       "norm_label": "post com retry em erros transitorios (408/429/5xx) e falhas de rede \u2014 mesma",
       "id": "separador_etiquetas_ml_rationale_399"
     },
@@ -2706,7 +2768,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L479",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "busca 1 item e extrai (titulo, {variacao: gtin}). falha vira entrada vazia.",
       "id": "separador_etiquetas_ml_rationale_479"
     },
@@ -2716,7 +2778,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L569",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "busca pedidos sem filtro de status (para diagnostico).",
       "id": "separador_etiquetas_ml_rationale_569"
     },
@@ -2726,7 +2788,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L588",
       "_origin": "ast",
-      "community": 12,
+      "community": 20,
       "norm_label": "mostra todos os pedidos de um sku e por que cada um entra (ou nao) em 'hoje'.",
       "id": "separador_etiquetas_ml_rationale_588"
     },
@@ -2736,7 +2798,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L622",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "tenta achar o prazo de despacho (handling limit) ja dentro do detalhe     do env",
       "id": "separador_etiquetas_ml_rationale_622"
     },
@@ -2756,7 +2818,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L653",
       "_origin": "ast",
-      "community": 9,
+      "community": 20,
       "norm_label": "avalia o envio do pedido. retorna (pedido, shipment_id, status):     o pedido ve",
       "id": "separador_etiquetas_ml_rationale_653"
     },
@@ -2776,7 +2838,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L740",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "agrupa por envio (1 envio = 1 etiqueta):      - envio com 1 sku (mesmo que varia",
       "id": "separador_etiquetas_ml_rationale_740"
     },
@@ -2786,7 +2848,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L785",
       "_origin": "ast",
-      "community": 21,
+      "community": 15,
       "norm_label": "le o de-para sku -> nome do nomes_sku.json (vazio se nao existir).",
       "id": "separador_etiquetas_ml_rationale_785"
     },
@@ -2806,7 +2868,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L804",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "acrescenta o nome amigavel ao rotulo dos grupos cujo sku esta no mapa.     ex.:",
       "id": "separador_etiquetas_ml_rationale_804"
     },
@@ -2816,7 +2878,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L825",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "resultado do pipeline completo de uma atualizacao.",
       "id": "separador_etiquetas_ml_rationale_825"
     },
@@ -2826,7 +2888,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L836",
       "_origin": "ast",
-      "community": 21,
+      "community": 7,
       "norm_label": "busca pedidos, filtra os prontos para imprimir, seleciona pelo dia,     extrai o",
       "id": "separador_etiquetas_ml_rationale_836"
     },
@@ -2836,7 +2898,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L875",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "lista os envios prontos com a data de despacho, marcando os de hoje.",
       "id": "separador_etiquetas_ml_rationale_875"
     },
@@ -2866,7 +2928,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L919",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "extrai e concatena o zpl de dentro de um zip retornado pela api.",
       "id": "separador_etiquetas_ml_rationale_919"
     },
@@ -2876,7 +2938,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L928",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "codigo curto do produto para carimbar na etiqueta.      grupo normal: o proprio",
       "id": "separador_etiquetas_ml_rationale_928"
     },
@@ -2886,7 +2948,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L938",
       "_origin": "ast",
-      "community": 21,
+      "community": 15,
       "norm_label": "nome amigavel do produto para carimbar (modo 'carimbo_nome'), vindo da     aba n",
       "id": "separador_etiquetas_ml_rationale_938"
     },
@@ -2896,7 +2958,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L950",
       "_origin": "ast",
-      "community": 7,
+      "community": 18,
       "norm_label": "modo de identificacao em vigor para a impressao de um grupo (caminhos que     us",
       "id": "separador_etiquetas_ml_rationale_950"
     },
@@ -2906,7 +2968,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L958",
       "_origin": "ast",
-      "community": 7,
+      "community": 15,
       "norm_label": "(altura da fonte, maximo de linhas) do carimbo de nome conforme o     compriment",
       "id": "separador_etiquetas_ml_rationale_958"
     },
@@ -2916,7 +2978,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L974",
       "_origin": "ast",
-      "community": 7,
+      "community": 15,
       "norm_label": "aplica na danfe o carimbo do modo pedido, devolvendo o zpl (intacto se o     mod",
       "id": "separador_etiquetas_ml_rationale_974"
     },
@@ -2926,7 +2988,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L992",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "largura de impressao (^pwxxxx) do bloco; cai no padrao se nao houver.",
       "id": "separador_etiquetas_ml_rationale_992"
     },
@@ -2936,7 +2998,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1000",
       "_origin": "ast",
-      "community": 6,
+      "community": 13,
       "norm_label": "carimba `texto` (o sku ou o nome do produto) na danfe (nota fiscal),     central",
       "id": "separador_etiquetas_ml_rationale_1000"
     },
@@ -2946,7 +3008,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1035",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "etiqueta separadora (1 pagina zpl) com sku, nome e quantidade do lote,     centr",
       "id": "separador_etiquetas_ml_rationale_1035"
     },
@@ -2956,7 +3018,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1051",
       "_origin": "ast",
-      "community": 13,
+      "community": 18,
       "norm_label": "baixa as etiquetas zpl via /shipment_labels (ate 50 envios por chamada).      se",
       "id": "separador_etiquetas_ml_rationale_1051"
     },
@@ -2966,7 +3028,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1081",
       "_origin": "ast",
-      "community": 41,
+      "community": 14,
       "norm_label": "monta um zip no formato que o impressora_zebra_usb.py reconhece:       - nome do",
       "id": "separador_etiquetas_ml_rationale_1081"
     },
@@ -2986,7 +3048,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1143",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "conjunto de shipment_ids ja impressos para o grupo (no dia).      aceita o forma",
       "id": "separador_etiquetas_ml_rationale_1143"
     },
@@ -2996,7 +3058,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1157",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "pendente | parcial | impresso, comparando os envios atuais do grupo     com os q",
       "id": "separador_etiquetas_ml_rationale_1157"
     },
@@ -3006,7 +3068,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1171",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "envios do grupo que ainda nao foram impressos (preserva a ordem).",
       "id": "separador_etiquetas_ml_rationale_1171"
     },
@@ -3016,7 +3078,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1177",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "marca como impressos os shipment_ids informados (ou todos do grupo),     acumula",
       "id": "separador_etiquetas_ml_rationale_1177"
     },
@@ -3026,7 +3088,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1198",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "baixa e gera o zip apenas dos envios ainda nao impressos do grupo,     marca-os",
       "id": "separador_etiquetas_ml_rationale_1198"
     },
@@ -3036,7 +3098,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1217",
       "_origin": "ast",
-      "community": 7,
+      "community": 18,
       "norm_label": "reimprime todas as etiquetas do grupo, independente do estado.      util quando",
       "id": "separador_etiquetas_ml_rationale_1217"
     },
@@ -3046,7 +3108,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1236",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "baixa as etiquetas dos lotes (apenas os envios pendentes de cada um) e monta",
       "id": "separador_etiquetas_ml_rationale_1236"
     },
@@ -3056,7 +3118,7 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": "L1266",
       "_origin": "ast",
-      "community": 41,
+      "community": 15,
       "norm_label": "gera um zip com todos os lotes selecionados (com divisoria/carimbo conforme",
       "id": "separador_etiquetas_ml_rationale_1266"
     },
@@ -3476,7 +3538,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L768",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": ".abrir_editor_nomes()",
       "id": "separador_gui_separadorapp_abrir_editor_nomes"
     },
@@ -3486,7 +3548,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L775",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "editornomes",
       "id": "separador_gui_editornomes"
     },
@@ -3496,7 +3558,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L778",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": ".__init__()",
       "id": "separador_gui_editornomes_init"
     },
@@ -3506,7 +3568,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L837",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._preencher_lista()",
       "id": "separador_gui_editornomes_preencher_lista"
     },
@@ -3516,7 +3578,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L845",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._selecionar()",
       "id": "separador_gui_editornomes_selecionar"
     },
@@ -3526,7 +3588,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L853",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._salvar_um()",
       "id": "separador_gui_editornomes_salvar_um"
     },
@@ -3536,7 +3598,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L867",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._remover()",
       "id": "separador_gui_editornomes_remover"
     },
@@ -3546,7 +3608,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L883",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._gravar()",
       "id": "separador_gui_editornomes_gravar"
     },
@@ -3556,7 +3618,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L889",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "._fechar()",
       "id": "separador_gui_editornomes_fechar"
     },
@@ -3776,7 +3838,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L769",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "janela para incluir/alterar/remover os nomes amigaveis (sku -> nome)         sem",
       "id": "separador_gui_rationale_769"
     },
@@ -3786,7 +3848,7 @@
       "source_file": "separador_gui.py",
       "source_location": "L776",
       "_origin": "ast",
-      "community": 6,
+      "community": 25,
       "norm_label": "janelinha de edicao do de-para sku -> nome amigavel.",
       "id": "separador_gui_rationale_776"
     },
@@ -3796,7 +3858,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "shopee_api.py",
       "id": "shopee_api"
     },
@@ -3826,7 +3888,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "_assinar()",
       "id": "shopee_api_assinar"
     },
@@ -3836,7 +3898,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "_assinatura_shop()",
       "id": "shopee_api_assinatura_shop"
     },
@@ -3846,7 +3908,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "_assinatura_publica()",
       "id": "shopee_api_assinatura_publica"
     },
@@ -3856,7 +3918,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "_params_assinados()",
       "id": "shopee_api_params_assinados"
     },
@@ -3866,7 +3928,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "_get_shop()",
       "id": "shopee_api_get_shop"
     },
@@ -3876,7 +3938,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "_post_shop()",
       "id": "shopee_api_post_shop"
     },
@@ -3886,7 +3948,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "_download_shop()",
       "id": "shopee_api_download_shop"
     },
@@ -3926,7 +3988,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L182",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "listar_order_sns()",
       "id": "shopee_api_listar_order_sns"
     },
@@ -3936,7 +3998,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L207",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "buscar_detalhes()",
       "id": "shopee_api_buscar_detalhes"
     },
@@ -3946,7 +4008,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L220",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "_data_envio()",
       "id": "shopee_api_data_envio"
     },
@@ -3956,7 +4018,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L227",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "grupos_de_detalhes()",
       "id": "shopee_api_grupos_de_detalhes"
     },
@@ -3966,7 +4028,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L248",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "contagem_por_dia()",
       "id": "shopee_api_contagem_por_dia"
     },
@@ -3976,7 +4038,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L259",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "coletar_grupos()",
       "id": "shopee_api_coletar_grupos"
     },
@@ -3996,7 +4058,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L288",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "parametros_envio()",
       "id": "shopee_api_parametros_envio"
     },
@@ -4006,7 +4068,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L296",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "numero_rastreio()",
       "id": "shopee_api_numero_rastreio"
     },
@@ -4016,7 +4078,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L306",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "_rastreios_paralelo()",
       "id": "shopee_api_rastreios_paralelo"
     },
@@ -4026,7 +4088,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L326",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "batch_ship_order()",
       "id": "shopee_api_batch_ship_order"
     },
@@ -4036,7 +4098,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L339",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "_aguardar_awbs()",
       "id": "shopee_api_aguardar_awbs"
     },
@@ -4046,7 +4108,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L357",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "_organizar_varios()",
       "id": "shopee_api_organizar_varios"
     },
@@ -4056,7 +4118,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L415",
       "_origin": "ast",
-      "community": 18,
+      "community": 10,
       "norm_label": "ship_order()",
       "id": "shopee_api_ship_order"
     },
@@ -4066,7 +4128,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L429",
       "_origin": "ast",
-      "community": 17,
+      "community": 21,
       "norm_label": "envio_ja_arranjado()",
       "id": "shopee_api_envio_ja_arranjado"
     },
@@ -4076,7 +4138,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L437",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "criar_documento()",
       "id": "shopee_api_criar_documento"
     },
@@ -4086,7 +4148,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L452",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "resultado_documento()",
       "id": "shopee_api_resultado_documento"
     },
@@ -4096,7 +4158,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L457",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "baixar_documento()",
       "id": "shopee_api_baixar_documento"
     },
@@ -4106,7 +4168,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L463",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "_status_documento()",
       "id": "shopee_api_status_documento"
     },
@@ -4116,7 +4178,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L470",
       "_origin": "ast",
-      "community": 17,
+      "community": 30,
       "norm_label": "gerar_etiqueta()",
       "id": "shopee_api_gerar_etiqueta"
     },
@@ -4126,7 +4188,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L499",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "_gerar_bloco()",
       "id": "shopee_api_gerar_bloco"
     },
@@ -4136,7 +4198,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L516",
       "_origin": "ast",
-      "community": 17,
+      "community": 21,
       "norm_label": "detectar_formato()",
       "id": "shopee_api_detectar_formato"
     },
@@ -4146,7 +4208,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L533",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "salvar_etiqueta()",
       "id": "shopee_api_salvar_etiqueta"
     },
@@ -4156,7 +4218,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L553",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "_montar_dropoff()",
       "id": "shopee_api_montar_dropoff"
     },
@@ -4166,7 +4228,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L574",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "organizar_envio()",
       "id": "shopee_api_organizar_envio"
     },
@@ -4186,7 +4248,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L631",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "carregar_estado()",
       "id": "shopee_api_carregar_estado"
     },
@@ -4196,7 +4258,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L635",
       "_origin": "ast",
-      "community": 15,
+      "community": 29,
       "norm_label": "salvar_estado()",
       "id": "shopee_api_salvar_estado"
     },
@@ -4206,7 +4268,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L639",
       "_origin": "ast",
-      "community": 15,
+      "community": 29,
       "norm_label": "marcar_impresso()",
       "id": "shopee_api_marcar_impresso"
     },
@@ -4216,7 +4278,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L658",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "_rotulo_lote()",
       "id": "shopee_api_rotulo_lote"
     },
@@ -4226,7 +4288,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L662",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "_zpl_do_zip()",
       "id": "shopee_api_zpl_do_zip"
     },
@@ -4236,7 +4298,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L672",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "_combinar_etiquetas()",
       "id": "shopee_api_combinar_etiquetas"
     },
@@ -4246,7 +4308,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L683",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "imprimir_grupo()",
       "id": "shopee_api_imprimir_grupo"
     },
@@ -4256,7 +4318,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L710",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "_gerar_lote()",
       "id": "shopee_api_gerar_lote"
     },
@@ -4266,7 +4328,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L739",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "imprimir_lotes()",
       "id": "shopee_api_imprimir_lotes"
     },
@@ -4276,7 +4338,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L776",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "reimprimir_grupo()",
       "id": "shopee_api_reimprimir_grupo"
     },
@@ -4296,7 +4358,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "shopee_api.py integracao com a shopee open platform api v2 \u2014 fase 1 (somente lei",
       "id": "shopee_api_rationale_1"
     },
@@ -4306,7 +4368,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "assinatura para apis de loja: partner_id + path + timestamp + token + shop_id.",
       "id": "shopee_api_rationale_78"
     },
@@ -4316,7 +4378,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "assinatura para apis publicas (token/auth): partner_id + path + timestamp.",
       "id": "shopee_api_rationale_84"
     },
@@ -4326,7 +4388,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L101",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "get assinado em uma api de loja, com a resiliencia de rede do core.",
       "id": "shopee_api_rationale_101"
     },
@@ -4336,7 +4398,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L112",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "post assinado em uma api de loja (sign na query, dados no corpo json).     passa",
       "id": "shopee_api_rationale_112"
     },
@@ -4346,7 +4408,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 15,
+      "community": 10,
       "norm_label": "post assinado que devolve um arquivo (etiqueta). se vier json, e erro.     passa",
       "id": "shopee_api_rationale_124"
     },
@@ -4366,7 +4428,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L183",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "lista os order_sn em ready_to_ship na janela de dias_janela dias.",
       "id": "shopee_api_rationale_183"
     },
@@ -4376,7 +4438,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L208",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "detalhes dos pedidos (item_list, ship_by_date) em lotes de 50.",
       "id": "shopee_api_rationale_208"
     },
@@ -4386,7 +4448,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L221",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "ship_by_date (epoch em segundos) -> dia yyyy-mm-dd no horario de brasilia.",
       "id": "shopee_api_rationale_221"
     },
@@ -4396,7 +4458,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "converte os detalhes em itempedido, filtra pelo dia de envio e agrupa     por sk",
       "id": "shopee_api_rationale_228"
     },
@@ -4406,7 +4468,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L249",
       "_origin": "ast",
-      "community": 26,
+      "community": 16,
       "norm_label": "conta os pedidos prontos por dia de envio (yyyy-mm-dd; \"\" = sem data).     funca",
       "id": "shopee_api_rationale_249"
     },
@@ -4426,7 +4488,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L289",
       "_origin": "ast",
-      "community": 18,
+      "community": 16,
       "norm_label": "get_shipping_parameter (leitura, get): diz se o pedido precisa de pickup ou",
       "id": "shopee_api_rationale_289"
     },
@@ -4436,7 +4498,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L297",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "get_tracking_number (get): numero de rastreio/awb do pedido. so existe depois",
       "id": "shopee_api_rationale_297"
     },
@@ -4446,7 +4508,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L307",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "busca o awb de varios pedidos em paralelo. devolve {order_sn: awb} ('' em     fa",
       "id": "shopee_api_rationale_307"
     },
@@ -4456,7 +4518,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L328",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "organiza varios envios num request so (ate lote_ship), como postagem     (drop-o",
       "id": "shopee_api_rationale_328"
     },
@@ -4466,7 +4528,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L341",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "espera os awbs de varios pedidos sairem (a shopee leva alguns segundos     apos",
       "id": "shopee_api_rationale_341"
     },
@@ -4476,7 +4538,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L359",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "organiza varios envios, em camadas (da mais rapida para o fallback):        1) q",
       "id": "shopee_api_rationale_359"
     },
@@ -4486,7 +4548,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L417",
       "_origin": "ast",
-      "community": 18,
+      "community": 10,
       "norm_label": "finaliza o arranjo de envio (pickup ou dropoff) antes de gerar a etiqueta.     a",
       "id": "shopee_api_rationale_417"
     },
@@ -4496,7 +4558,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L430",
       "_origin": "ast",
-      "community": 17,
+      "community": 21,
       "norm_label": "true se o envio ja foi organizado. info_needed traz as chaves dos metodos     (p",
       "id": "shopee_api_rationale_430"
     },
@@ -4506,7 +4568,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L439",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "cria o documento da etiqueta. a shopee exige o tracking_number (awb) de cada",
       "id": "shopee_api_rationale_439"
     },
@@ -4516,7 +4578,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L464",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "extrai {order_sn: status} do retorno do get_shipping_document_result.",
       "id": "shopee_api_rationale_464"
     },
@@ -4526,7 +4588,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L473",
       "_origin": "ast",
-      "community": 17,
+      "community": 30,
       "norm_label": "gera (assincrono) e baixa as etiquetas dos pedidos. so baixa quando todos     os",
       "id": "shopee_api_rationale_473"
     },
@@ -4536,7 +4598,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L501",
       "_origin": "ast",
-      "community": 27,
+      "community": 10,
       "norm_label": "cria/espera(ready)/baixa um bloco de pedidos (<= tamanho_lote). so baixa com",
       "id": "shopee_api_rationale_501"
     },
@@ -4546,7 +4608,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L517",
       "_origin": "ast",
-      "community": 17,
+      "community": 21,
       "norm_label": "identifica o formato do arquivo baixado pelos primeiros bytes.      a etiqueta t",
       "id": "shopee_api_rationale_517"
     },
@@ -4556,7 +4618,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L534",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "grava a etiqueta na pasta downloads e devolve (caminho, formato detectado).",
       "id": "shopee_api_rationale_534"
     },
@@ -4566,7 +4628,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L554",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "monta o corpo `dropoff` do ship_order a partir dos campos exigidos em     info_n",
       "id": "shopee_api_rationale_554"
     },
@@ -4576,7 +4638,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L577",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "organiza o envio como postagem (drop-off) \u2014 equivale a 'vou postar no ponto",
       "id": "shopee_api_rationale_577"
     },
@@ -4596,7 +4658,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L640",
       "_origin": "ast",
-      "community": 15,
+      "community": 29,
       "norm_label": "marca order_sns como impressos (ou todos do grupo). recarrega o estado do     di",
       "id": "shopee_api_rationale_640"
     },
@@ -4606,7 +4668,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L663",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "extrai o zpl (em bytes, sem reencodar \u2014 evita corromper o ~dg/z64) de dentro",
       "id": "shopee_api_rationale_663"
     },
@@ -4616,7 +4678,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L673",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "junta o zpl de varias etiquetas shopee num unico .zip (um txt) \u2014 para a     zebr",
       "id": "shopee_api_rationale_673"
     },
@@ -4626,7 +4688,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L685",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "organiza (se preciso e organizar=true, em paralelo), gera/baixa a etiqueta     d",
       "id": "shopee_api_rationale_685"
     },
@@ -4636,7 +4698,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L711",
       "_origin": "ast",
-      "community": 38,
+      "community": 30,
       "norm_label": "gera as etiquetas dos pedidos `alvo` num so zip, tolerando falha parcial.     te",
       "id": "shopee_api_rationale_711"
     },
@@ -4646,7 +4708,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L741",
       "_origin": "ast",
-      "community": 22,
+      "community": 19,
       "norm_label": "organiza+imprime varios grupos sem marcar o estado (quem chama marca apos a",
       "id": "shopee_api_rationale_741"
     },
@@ -4656,7 +4718,7 @@
       "source_file": "shopee_api.py",
       "source_location": "L777",
       "_origin": "ast",
-      "community": 17,
+      "community": 29,
       "norm_label": "regera a etiqueta de todos os envios do grupo, sem mexer no estado (util     qua",
       "id": "shopee_api_rationale_777"
     },
@@ -4766,7 +4828,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_agrupar.py",
       "id": "tests_test_agrupar"
     },
@@ -4776,7 +4838,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "_item()",
       "id": "tests_test_agrupar_item"
     },
@@ -4786,7 +4848,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_envios_de_um_unico_sku_agrupam_por_sku_e_quantidade()",
       "id": "tests_test_agrupar_test_envios_de_um_unico_sku_agrupam_por_sku_e_quantidade"
     },
@@ -4796,7 +4858,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_mesmo_sku_em_duas_linhas_soma_quantidade()",
       "id": "tests_test_agrupar_test_mesmo_sku_em_duas_linhas_soma_quantidade"
     },
@@ -4806,7 +4868,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_envio_combo_vira_um_grupo_com_uma_etiqueta()",
       "id": "tests_test_agrupar_test_envio_combo_vira_um_grupo_com_uma_etiqueta"
     },
@@ -4816,7 +4878,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_combos_iguais_agrupam_juntos()",
       "id": "tests_test_agrupar_test_combos_iguais_agrupam_juntos"
     },
@@ -4826,7 +4888,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "test_aplicar_nomes_em_combo()",
       "id": "tests_test_agrupar_test_aplicar_nomes_em_combo"
     },
@@ -4836,7 +4898,7 @@
       "source_file": "tests/test_agrupar.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 32,
       "norm_label": "agrupamento por envio: 1 envio = 1 etiqueta (inclui combos multi-sku).",
       "id": "tests_test_agrupar_rationale_1"
     },
@@ -4976,7 +5038,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_avaliar_pedido.py",
       "id": "tests_test_avaliar_pedido"
     },
@@ -4986,7 +5048,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_prazo_do_envio_varios_formatos()",
       "id": "tests_test_avaliar_pedido_test_prazo_do_envio_varios_formatos"
     },
@@ -4996,7 +5058,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_avaliar_pedido_nao_chama_sla_quando_detalhe_tem_prazo()",
       "id": "tests_test_avaliar_pedido_test_avaliar_pedido_nao_chama_sla_quando_detalhe_tem_prazo"
     },
@@ -5006,7 +5068,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_avaliar_pedido_cai_no_sla_quando_detalhe_nao_tem()",
       "id": "tests_test_avaliar_pedido_test_avaliar_pedido_cai_no_sla_quando_detalhe_nao_tem"
     },
@@ -5016,7 +5078,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_avaliar_pedido_nao_ready_devolve_status()",
       "id": "tests_test_avaliar_pedido_test_avaliar_pedido_nao_ready_devolve_status"
     },
@@ -5026,7 +5088,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L61",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "test_avaliar_pedido_sem_shipment()",
       "id": "tests_test_avaliar_pedido_test_avaliar_pedido_sem_shipment"
     },
@@ -5036,7 +5098,7 @@
       "source_file": "tests/test_avaliar_pedido.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "avaliacao do envio: prazo do detalhe evita /sla; retorno (ped, sid, status).",
       "id": "tests_test_avaliar_pedido_rationale_1"
     },
@@ -5046,7 +5108,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_bot_impressao.py",
       "id": "tests_test_bot_impressao"
     },
@@ -5056,7 +5118,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "_grupo()",
       "id": "tests_test_bot_impressao_grupo"
     },
@@ -5066,7 +5128,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_rotulo_grupo_cabe_no_limite()",
       "id": "tests_test_bot_impressao_test_rotulo_grupo_cabe_no_limite"
     },
@@ -5076,7 +5138,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_grupos_um_botao_por_grupo_com_etiquetas()",
       "id": "tests_test_bot_impressao_test_teclado_grupos_um_botao_por_grupo_com_etiquetas"
     },
@@ -5086,7 +5148,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_grupos_separa_por_quantidade()",
       "id": "tests_test_bot_impressao_test_teclado_grupos_separa_por_quantidade"
     },
@@ -5096,7 +5158,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_grupos_ignora_grupos_sem_etiqueta()",
       "id": "tests_test_bot_impressao_test_teclado_grupos_ignora_grupos_sem_etiqueta"
     },
@@ -5106,7 +5168,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_grupos_vazio_retorna_none()",
       "id": "tests_test_bot_impressao_test_teclado_grupos_vazio_retorna_none"
     },
@@ -5116,7 +5178,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_grupo_do_indice_fora_de_faixa()",
       "id": "tests_test_bot_impressao_test_grupo_do_indice_fora_de_faixa"
     },
@@ -5126,7 +5188,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L80",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_grupo_do_indice_sem_lista()",
       "id": "tests_test_bot_impressao_test_grupo_do_indice_sem_lista"
     },
@@ -5136,7 +5198,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "_patch_contas()",
       "id": "tests_test_bot_impressao_patch_contas"
     },
@@ -5146,7 +5208,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L98",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "_criar_conta()",
       "id": "tests_test_bot_impressao_criar_conta"
     },
@@ -5156,7 +5218,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L104",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_garantir_conta_ativa_escolhe_primeira_quando_invalida()",
       "id": "tests_test_bot_impressao_test_garantir_conta_ativa_escolhe_primeira_quando_invalida"
     },
@@ -5166,7 +5228,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_garantir_conta_ativa_respeita_a_salva()",
       "id": "tests_test_bot_impressao_test_garantir_conta_ativa_respeita_a_salva"
     },
@@ -5176,7 +5238,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_garantir_conta_ativa_sem_contas()",
       "id": "tests_test_bot_impressao_test_garantir_conta_ativa_sem_contas"
     },
@@ -5186,7 +5248,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_trocar_conta_aponta_arquivos_e_grava()",
       "id": "tests_test_bot_impressao_test_trocar_conta_aponta_arquivos_e_grava"
     },
@@ -5196,7 +5258,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L136",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_contas_marca_a_ativa()",
       "id": "tests_test_bot_impressao_test_teclado_contas_marca_a_ativa"
     },
@@ -5206,7 +5268,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L144",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_conta_mudou()",
       "id": "tests_test_bot_impressao_test_conta_mudou"
     },
@@ -5216,7 +5278,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L158",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "_ctx",
       "id": "tests_test_bot_impressao_ctx"
     },
@@ -5226,7 +5288,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L159",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": ".__init__()",
       "id": "tests_test_bot_impressao_ctx_init"
     },
@@ -5236,7 +5298,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L163",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_loja_default_e_eh_shopee()",
       "id": "tests_test_bot_impressao_test_loja_default_e_eh_shopee"
     },
@@ -5246,7 +5308,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L169",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_params_listagem()",
       "id": "tests_test_bot_impressao_test_params_listagem"
     },
@@ -5256,7 +5318,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L176",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_tem_botao_de_loja()",
       "id": "tests_test_bot_impressao_test_teclado_tem_botao_de_loja"
     },
@@ -5266,7 +5328,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L182",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_teclado_lojas_marca_a_ativa()",
       "id": "tests_test_bot_impressao_test_teclado_lojas_marca_a_ativa"
     },
@@ -5276,7 +5338,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L189",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_coletar_grupos_shopee_usa_shopee_api()",
       "id": "tests_test_bot_impressao_test_coletar_grupos_shopee_usa_shopee_api"
     },
@@ -5286,7 +5348,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_coletar_grupos_ml_usa_nucleo()",
       "id": "tests_test_bot_impressao_test_coletar_grupos_ml_usa_nucleo"
     },
@@ -5296,7 +5358,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L209",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "test_lista_imprimivel_so_mercado_livre()",
       "id": "tests_test_bot_impressao_test_lista_imprimivel_so_mercado_livre"
     },
@@ -5306,7 +5368,7 @@
       "source_file": "tests/test_bot_impressao.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
+      "community": 6,
       "norm_label": "testes das funcoes de impressao pelo bot do telegram.  so a ui (botoes) e testad",
       "id": "tests_test_bot_impressao_rationale_1"
     },
@@ -5316,7 +5378,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "test_busca_pedidos.py",
       "id": "tests_test_busca_pedidos"
     },
@@ -5326,7 +5388,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "_fake_get_paginado()",
       "id": "tests_test_busca_pedidos_fake_get_paginado"
     },
@@ -5336,7 +5398,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "test_busca_todas_as_paginas()",
       "id": "tests_test_busca_pedidos_test_busca_todas_as_paginas"
     },
@@ -5346,7 +5408,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "test_uma_pagina_so()",
       "id": "tests_test_busca_pedidos_test_uma_pagina_so"
     },
@@ -5356,7 +5418,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "test_respeita_max_pedidos()",
       "id": "tests_test_busca_pedidos_test_respeita_max_pedidos"
     },
@@ -5366,7 +5428,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "busca de pedidos: paginacao paralela cobre todas as paginas.",
       "id": "tests_test_busca_pedidos_rationale_1"
     },
@@ -5376,7 +5438,7 @@
       "source_file": "tests/test_busca_pedidos.py",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "simula orders/search: 50 por pagina, ids sequenciais, paging.total fixo.",
       "id": "tests_test_busca_pedidos_rationale_5"
     },
@@ -5386,7 +5448,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "test_cache_envios.py",
       "id": "tests_test_cache_envios"
     },
@@ -5396,7 +5458,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "_hoje()",
       "id": "tests_test_cache_envios_hoje"
     },
@@ -5406,7 +5468,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "_envio()",
       "id": "tests_test_cache_envios_envio"
     },
@@ -5416,7 +5478,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "test_limpar_envios_cache_remove_antigos()",
       "id": "tests_test_cache_envios_test_limpar_envios_cache_remove_antigos"
     },
@@ -5426,7 +5488,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "test_filtrar_pula_cacheados_e_cacheia_terminais()",
       "id": "tests_test_cache_envios_test_filtrar_pula_cacheados_e_cacheia_terminais"
     },
@@ -5436,7 +5498,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "test_filtrar_nao_cacheia_ready_to_print()",
       "id": "tests_test_cache_envios_test_filtrar_nao_cacheia_ready_to_print"
     },
@@ -5446,7 +5508,7 @@
       "source_file": "tests/test_cache_envios.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "cache de envios finalizados: pula os terminais e nao deixa de ver os prontos.",
       "id": "tests_test_cache_envios_rationale_1"
     },
@@ -5456,7 +5518,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo.py",
       "id": "tests_test_carimbo"
     },
@@ -5466,7 +5528,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "_grupo()",
       "id": "tests_test_carimbo_grupo"
     },
@@ -5476,7 +5538,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_so_na_danfe()",
       "id": "tests_test_carimbo_test_carimbo_so_na_danfe"
     },
@@ -5486,7 +5548,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_nao_toca_a_etiqueta_de_envio()",
       "id": "tests_test_carimbo_test_carimbo_nao_toca_a_etiqueta_de_envio"
     },
@@ -5496,7 +5558,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_sem_danfe_nao_altera()",
       "id": "tests_test_carimbo_test_carimbo_sem_danfe_nao_altera"
     },
@@ -5506,7 +5568,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_texto_vazio_nao_altera()",
       "id": "tests_test_carimbo_test_carimbo_texto_vazio_nao_altera"
     },
@@ -5516,7 +5578,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_zpl_invalido_nao_altera()",
       "id": "tests_test_carimbo_test_carimbo_zpl_invalido_nao_altera"
     },
@@ -5526,7 +5588,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_neutraliza_caracteres_de_controle()",
       "id": "tests_test_carimbo_test_carimbo_neutraliza_caracteres_de_controle"
     },
@@ -5536,7 +5598,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_texto_carimbo_grupo_normal()",
       "id": "tests_test_carimbo_test_texto_carimbo_grupo_normal"
     },
@@ -5546,7 +5608,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_texto_carimbo_combo_usa_skus()",
       "id": "tests_test_carimbo_test_texto_carimbo_combo_usa_skus"
     },
@@ -5556,7 +5618,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_texto_carimbo_nome_usa_o_mapa()",
       "id": "tests_test_carimbo_test_texto_carimbo_nome_usa_o_mapa"
     },
@@ -5566,7 +5628,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_texto_carimbo_nome_cai_no_sku_sem_cadastro()",
       "id": "tests_test_carimbo_test_texto_carimbo_nome_cai_no_sku_sem_cadastro"
     },
@@ -5576,7 +5638,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_texto_carimbo_nome_combo_junta_nomes()",
       "id": "tests_test_carimbo_test_texto_carimbo_nome_combo_junta_nomes"
     },
@@ -5586,7 +5648,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbar_grupo_modo_nome_usa_nome_e_fonte_menor()",
       "id": "tests_test_carimbo_test_carimbar_grupo_modo_nome_usa_nome_e_fonte_menor"
     },
@@ -5596,7 +5658,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_fonte_nome_curto_maior_longo_menor()",
       "id": "tests_test_carimbo_test_fonte_nome_curto_maior_longo_menor"
     },
@@ -5606,7 +5668,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L85",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbar_grupo_nome_curto_usa_fonte_maior()",
       "id": "tests_test_carimbo_test_carimbar_grupo_nome_curto_usa_fonte_maior"
     },
@@ -5616,7 +5678,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbar_grupo_modo_sku_inalterado()",
       "id": "tests_test_carimbo_test_carimbar_grupo_modo_sku_inalterado"
     },
@@ -5626,7 +5688,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbar_grupo_modo_nenhuma_nao_altera()",
       "id": "tests_test_carimbo_test_carimbar_grupo_modo_nenhuma_nao_altera"
     },
@@ -5636,7 +5698,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L105",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_nome_qtd_2_ganha_linha_2x()",
       "id": "tests_test_carimbo_test_carimbo_nome_qtd_2_ganha_linha_2x"
     },
@@ -5646,7 +5708,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_nome_qtd_1_sem_linha_de_quantidade()",
       "id": "tests_test_carimbo_test_carimbo_nome_qtd_1_sem_linha_de_quantidade"
     },
@@ -5656,7 +5718,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L125",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_nome_qtd_3_em_nome_longo()",
       "id": "tests_test_carimbo_test_carimbo_nome_qtd_3_em_nome_longo"
     },
@@ -5666,7 +5728,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_carimbo_sku_nao_ganha_quantidade()",
       "id": "tests_test_carimbo_test_carimbo_sku_nao_ganha_quantidade"
     },
@@ -5676,7 +5738,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L140",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "test_modo_ident_efetivo_respeita_legado()",
       "id": "tests_test_carimbo_test_modo_ident_efetivo_respeita_legado"
     },
@@ -5686,7 +5748,7 @@
       "source_file": "tests/test_carimbo.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 9,
       "norm_label": "carimbo do sku na danfe (area livre central), sem rede.",
       "id": "tests_test_carimbo_rationale_1"
     },
@@ -5696,7 +5758,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "test_config.py",
       "id": "tests_test_config"
     },
@@ -5706,7 +5768,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "test_salvar_e_carregar_config()",
       "id": "tests_test_config_test_salvar_e_carregar_config"
     },
@@ -5716,7 +5778,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "test_carregar_config_ausente_vazio()",
       "id": "tests_test_config_test_carregar_config_ausente_vazio"
     },
@@ -5726,7 +5788,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "test_aplicar_config_liga_carimbo()",
       "id": "tests_test_config_test_aplicar_config_liga_carimbo"
     },
@@ -5736,7 +5798,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "test_aplicar_config_sem_chave_nao_mexe()",
       "id": "tests_test_config_test_aplicar_config_sem_chave_nao_mexe"
     },
@@ -5746,7 +5808,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 39,
+      "community": 40,
       "norm_label": "preferencias do app (config.json) e aplicacao no modulo.",
       "id": "tests_test_config_rationale_1"
     },
@@ -5756,7 +5818,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_contas.py",
       "id": "tests_test_contas"
     },
@@ -5766,7 +5828,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "_patch_pastas()",
       "id": "tests_test_contas_patch_pastas"
     },
@@ -5776,7 +5838,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_definir_conta_cria_pasta_e_atualiza_arquivos()",
       "id": "tests_test_contas_test_definir_conta_cria_pasta_e_atualiza_arquivos"
     },
@@ -5786,7 +5848,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_listar_contas_sem_pasta_retorna_vazio()",
       "id": "tests_test_contas_test_listar_contas_sem_pasta_retorna_vazio"
     },
@@ -5796,7 +5858,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_listar_contas_com_duas_contas()",
       "id": "tests_test_contas_test_listar_contas_com_duas_contas"
     },
@@ -5806,7 +5868,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_listar_contas_ignora_pastas_sem_credenciais()",
       "id": "tests_test_contas_test_listar_contas_ignora_pastas_sem_credenciais"
     },
@@ -5816,7 +5878,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_migrar_conta_legado_move_arquivos()",
       "id": "tests_test_contas_test_migrar_conta_legado_move_arquivos"
     },
@@ -5826,7 +5888,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L63",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_migrar_conta_legado_idempotente()",
       "id": "tests_test_contas_test_migrar_conta_legado_idempotente"
     },
@@ -5836,7 +5898,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_migrar_sem_arquivos_na_raiz_nao_quebra()",
       "id": "tests_test_contas_test_migrar_sem_arquivos_na_raiz_nao_quebra"
     },
@@ -5846,7 +5908,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "test_aplicar_config_define_conta()",
       "id": "tests_test_contas_test_aplicar_config_define_conta"
     },
@@ -5856,7 +5918,7 @@
       "source_file": "tests/test_contas.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 23,
+      "community": 26,
       "norm_label": "suporte a multiplas contas: subpastas, migracao e selecao.",
       "id": "tests_test_contas_rationale_1"
     },
@@ -5866,7 +5928,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_datas.py",
       "id": "tests_test_datas"
     },
@@ -5876,7 +5938,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_hoje_br_usa_offset_menos_3()",
       "id": "tests_test_datas_test_hoje_br_usa_offset_menos_3"
     },
@@ -5886,7 +5948,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_data_despacho_converte_para_brasilia()",
       "id": "tests_test_datas_test_data_despacho_converte_para_brasilia"
     },
@@ -5896,7 +5958,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_proximos_dias_uteis_numa_sexta_pula_o_fim_de_semana()",
       "id": "tests_test_datas_test_proximos_dias_uteis_numa_sexta_pula_o_fim_de_semana"
     },
@@ -5906,7 +5968,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_proximos_dias_uteis_comeca_no_proximo_util_no_sabado()",
       "id": "tests_test_datas_test_proximos_dias_uteis_comeca_no_proximo_util_no_sabado"
     },
@@ -5916,7 +5978,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_proximos_dias_uteis_dia_comum()",
       "id": "tests_test_datas_test_proximos_dias_uteis_dia_comum"
     },
@@ -5926,7 +5988,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "test_rotulo_dia_formata_curto()",
       "id": "tests_test_datas_test_rotulo_dia_formata_curto"
     },
@@ -5936,7 +5998,7 @@
       "source_file": "tests/test_datas.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 12,
       "norm_label": "datas no horario de brasilia (filtro de despacho).",
       "id": "tests_test_datas_rationale_1"
     },
@@ -6126,7 +6188,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_identidade.py",
       "id": "tests_test_identidade"
     },
@@ -6136,7 +6198,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_voltagem()",
       "id": "tests_test_identidade_test_voltagem"
     },
@@ -6146,7 +6208,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_identidade_por_sku_tem_prioridade()",
       "id": "tests_test_identidade_test_identidade_por_sku_tem_prioridade"
     },
@@ -6156,7 +6218,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_identidade_usa_seller_custom_field()",
       "id": "tests_test_identidade_test_identidade_usa_seller_custom_field"
     },
@@ -6166,7 +6228,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_identidade_por_gtin_com_voltagem()",
       "id": "tests_test_identidade_test_identidade_por_gtin_com_voltagem"
     },
@@ -6176,7 +6238,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "test_identidade_fallback_item_variacao()",
       "id": "tests_test_identidade_test_identidade_fallback_item_variacao"
     },
@@ -6186,7 +6248,7 @@
       "source_file": "tests/test_identidade.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "identidade do produto: sku > gtin+voltagem > item_id:variacao.",
       "id": "tests_test_identidade_rationale_1"
     },
@@ -6196,7 +6258,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_lotes.py",
       "id": "tests_test_lotes"
     },
@@ -6206,7 +6268,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "_grupo()",
       "id": "tests_test_lotes_grupo"
     },
@@ -6216,7 +6278,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_carimbo_centralizado_usa_field_block()",
       "id": "tests_test_lotes_test_carimbo_centralizado_usa_field_block"
     },
@@ -6226,7 +6288,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_carimbo_usa_largura_do_pw()",
       "id": "tests_test_lotes_test_carimbo_usa_largura_do_pw"
     },
@@ -6236,7 +6298,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_largura_zpl_padrao_quando_sem_pw()",
       "id": "tests_test_lotes_test_largura_zpl_padrao_quando_sem_pw"
     },
@@ -6246,7 +6308,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_zpl_divisoria_tem_sku_nome_e_quantidade()",
       "id": "tests_test_lotes_test_zpl_divisoria_tem_sku_nome_e_quantidade"
     },
@@ -6256,7 +6318,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_zpl_divisoria_combo_usa_skus()",
       "id": "tests_test_lotes_test_zpl_divisoria_combo_usa_skus"
     },
@@ -6266,7 +6328,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "_mocka_download()",
       "id": "tests_test_lotes_mocka_download"
     },
@@ -6276,7 +6338,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_preparar_lotes_divisoria_insere_separador()",
       "id": "tests_test_lotes_test_preparar_lotes_divisoria_insere_separador"
     },
@@ -6286,7 +6348,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_preparar_lotes_carimbo_carimba_danfe()",
       "id": "tests_test_lotes_test_preparar_lotes_carimbo_carimba_danfe"
     },
@@ -6296,7 +6358,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_preparar_lotes_carimbo_nome_carimba_o_nome()",
       "id": "tests_test_lotes_test_preparar_lotes_carimbo_nome_carimba_o_nome"
     },
@@ -6306,7 +6368,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_preparar_lotes_pula_ja_impressos()",
       "id": "tests_test_lotes_test_preparar_lotes_pula_ja_impressos"
     },
@@ -6316,7 +6378,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_gerar_zip_lotes_nao_marca_estado()",
       "id": "tests_test_lotes_test_gerar_zip_lotes_nao_marca_estado"
     },
@@ -6326,7 +6388,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "test_gerar_zip_lotes_aborta_em_zpl_invalido()",
       "id": "tests_test_lotes_test_gerar_zip_lotes_aborta_em_zpl_invalido"
     },
@@ -6336,7 +6398,7 @@
       "source_file": "tests/test_lotes.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 16,
+      "community": 17,
       "norm_label": "impressao em lote + divisoria + carimbo centralizado (sem rede).",
       "id": "tests_test_lotes_rationale_1"
     },
@@ -6436,7 +6498,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_pipeline.py",
       "id": "tests_test_pipeline"
     },
@@ -6446,7 +6508,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "_prepara()",
       "id": "tests_test_pipeline_prepara"
     },
@@ -6456,7 +6518,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "_prontos()",
       "id": "tests_test_pipeline_prontos"
     },
@@ -6466,7 +6528,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_somente_hoje()",
       "id": "tests_test_pipeline_test_coletar_grupos_somente_hoje"
     },
@@ -6476,7 +6538,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_todos()",
       "id": "tests_test_pipeline_test_coletar_grupos_todos"
     },
@@ -6486,7 +6548,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_repassa_progresso()",
       "id": "tests_test_pipeline_test_coletar_grupos_repassa_progresso"
     },
@@ -6496,7 +6558,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_por_dia_especifico()",
       "id": "tests_test_pipeline_test_coletar_grupos_por_dia_especifico"
     },
@@ -6506,7 +6568,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_amanha_br_e_um_dia_depois_de_hoje()",
       "id": "tests_test_pipeline_test_amanha_br_e_um_dia_depois_de_hoje"
     },
@@ -6516,7 +6578,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_carimba_dia_de_despacho()",
       "id": "tests_test_pipeline_test_coletar_grupos_carimba_dia_de_despacho"
     },
@@ -6526,7 +6588,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "test_coletar_grupos_hoje_nao_carimba_dia()",
       "id": "tests_test_pipeline_test_coletar_grupos_hoje_nao_carimba_dia"
     },
@@ -6536,7 +6598,7 @@
       "source_file": "tests/test_pipeline.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 24,
+      "community": 27,
       "norm_label": "pipeline coletar_grupos: filtro do dia e repasse de progresso.",
       "id": "tests_test_pipeline_rationale_1"
     },
@@ -6906,7 +6968,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "test_resumo.py",
       "id": "tests_test_resumo"
     },
@@ -6916,7 +6978,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "_pronto()",
       "id": "tests_test_resumo_pronto"
     },
@@ -6926,7 +6988,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "test_resumo_conta_e_ordena_por_dia()",
       "id": "tests_test_resumo_test_resumo_conta_e_ordena_por_dia"
     },
@@ -6936,7 +6998,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "test_resumo_vazio()",
       "id": "tests_test_resumo_test_resumo_vazio"
     },
@@ -6946,7 +7008,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "test_resumo_sem_data()",
       "id": "tests_test_resumo_test_resumo_sem_data"
     },
@@ -6956,7 +7018,7 @@
       "source_file": "tests/test_resumo.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 40,
+      "community": 41,
       "norm_label": "resumo por dia de despacho (contagem de pacotes por dia).",
       "id": "tests_test_resumo_rationale_1"
     },
@@ -7647,9 +7709,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_md",
-      "community": 6,
-      "norm_label": "claude.md (guia do projeto)"
+      "community": 13,
+      "norm_label": "claude.md (guia do projeto)",
+      "id": "claude_md"
     },
     {
       "label": "README (vis\u00e3o geral)",
@@ -7660,9 +7722,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme",
-      "community": 6,
-      "norm_label": "readme (visao geral)"
+      "community": 13,
+      "norm_label": "readme (visao geral)",
+      "id": "readme"
     },
     {
       "label": "CHANGELOG",
@@ -7673,9 +7735,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "docs_changelog",
-      "community": 13,
-      "norm_label": "changelog"
+      "community": 18,
+      "norm_label": "changelog",
+      "id": "docs_changelog"
     },
     {
       "label": "P\u00e1gina do reposit\u00f3rio (GitHub Pages)",
@@ -7686,9 +7748,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "docs_index",
-      "community": 6,
-      "norm_label": "pagina do repositorio (github pages)"
+      "community": 13,
+      "norm_label": "pagina do repositorio (github pages)",
+      "id": "docs_index"
     },
     {
       "label": "CI: workflow de testes (GitHub Actions)",
@@ -7699,9 +7761,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "github_workflows_testes",
       "community": 0,
-      "norm_label": "ci: workflow de testes (github actions)"
+      "norm_label": "ci: workflow de testes (github actions)",
+      "id": "github_workflows_testes"
     },
     {
       "label": "requirements.txt",
@@ -7712,9 +7774,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "requirements",
-      "community": 36,
-      "norm_label": "requirements.txt"
+      "community": 38,
+      "norm_label": "requirements.txt",
+      "id": "requirements"
     },
     {
       "label": "requirements-bot.txt",
@@ -7725,9 +7787,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "requirements_bot",
-      "community": 36,
-      "norm_label": "requirements-bot.txt"
+      "community": 38,
+      "norm_label": "requirements-bot.txt",
+      "id": "requirements_bot"
     },
     {
       "label": "requirements-dev.txt",
@@ -7738,9 +7800,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "requirements_dev",
-      "community": 36,
-      "norm_label": "requirements-dev.txt"
+      "community": 38,
+      "norm_label": "requirements-dev.txt",
+      "id": "requirements_dev"
     },
     {
       "label": "Tela principal (screenshot da GUI)",
@@ -7751,9 +7813,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "docs_img_tela",
-      "community": 6,
-      "norm_label": "tela principal (screenshot da gui)"
+      "community": 13,
+      "norm_label": "tela principal (screenshot da gui)",
+      "id": "docs_img_tela"
     },
     {
       "label": "Provedor, n\u00e3o 'if marketplace'",
@@ -7764,9 +7826,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "provider_abstraction",
-      "community": 6,
-      "norm_label": "provedor, nao 'if marketplace'"
+      "community": 13,
+      "norm_label": "provedor, nao 'if marketplace'",
+      "id": "provider_abstraction"
     },
     {
       "label": "Modo 'Ambas' (funde grupos SKU+qtd entre contas ML)",
@@ -7777,9 +7839,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "modo_ambas",
       "community": 2,
-      "norm_label": "modo 'ambas' (funde grupos sku+qtd entre contas ml)"
+      "norm_label": "modo 'ambas' (funde grupos sku+qtd entre contas ml)",
+      "id": "modo_ambas"
     },
     {
       "label": "Estado 'j\u00e1 impresso' por marketplace + dia de despacho",
@@ -7790,9 +7852,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "estado_por_mkt_dia",
-      "community": 6,
-      "norm_label": "estado 'ja impresso' por marketplace + dia de despacho"
+      "community": 8,
+      "norm_label": "estado 'ja impresso' por marketplace + dia de despacho",
+      "id": "estado_por_mkt_dia"
     },
     {
       "label": "Token sempre via obter_token (cache + lock); nunca renovar_token direto",
@@ -7803,9 +7865,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "token_obter_lock",
       "community": 28,
-      "norm_label": "token sempre via obter_token (cache + lock); nunca renovar_token direto"
+      "norm_label": "token sempre via obter_token (cache + lock); nunca renovar_token direto",
+      "id": "token_obter_lock"
     },
     {
       "label": "Escrita JSON at\u00f4mica e dur\u00e1vel (.tmp+fsync+replace, .bak)",
@@ -7816,9 +7878,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "json_atomico",
-      "community": 6,
-      "norm_label": "escrita json atomica e duravel (.tmp+fsync+replace, .bak)"
+      "community": 13,
+      "norm_label": "escrita json atomica e duravel (.tmp+fsync+replace, .bak)",
+      "id": "json_atomico"
     },
     {
       "label": "Fuso de Bras\u00edlia sempre",
@@ -7829,9 +7891,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "fuso_brasilia",
-      "community": 6,
-      "norm_label": "fuso de brasilia sempre"
+      "community": 13,
+      "norm_label": "fuso de brasilia sempre",
+      "id": "fuso_brasilia"
     },
     {
       "label": "Dia de despacho: pr\u00f3ximos dias \u00fateis + contagem por dia",
@@ -7842,9 +7904,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dias_uteis",
-      "community": 6,
-      "norm_label": "dia de despacho: proximos dias uteis + contagem por dia"
+      "community": 13,
+      "norm_label": "dia de despacho: proximos dias uteis + contagem por dia",
+      "id": "dias_uteis"
     },
     {
       "label": "Nomes amig\u00e1veis (SKU\u2192nome), edit\u00e1vel na GUI",
@@ -7855,9 +7917,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "nomes_amigaveis",
-      "community": 6,
-      "norm_label": "nomes amigaveis (sku\u2192nome), editavel na gui"
+      "community": 15,
+      "norm_label": "nomes amigaveis (sku\u2192nome), editavel na gui",
+      "id": "nomes_amigaveis"
     },
     {
       "label": "MODO_IDENT: carimbo / carimbo_nome / divisoria / nenhuma",
@@ -7868,9 +7930,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "modo_ident",
-      "community": 6,
-      "norm_label": "modo_ident: carimbo / carimbo_nome / divisoria / nenhuma"
+      "community": 13,
+      "norm_label": "modo_ident: carimbo / carimbo_nome / divisoria / nenhuma",
+      "id": "modo_ident"
     },
     {
       "label": "Impress\u00e3o: ZPL \u2192 .zip na Downloads (Zebra reconhece por prefixo)",
@@ -7881,9 +7943,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "impressao_zip",
-      "community": 6,
-      "norm_label": "impressao: zpl \u2192 .zip na downloads (zebra reconhece por prefixo)"
+      "community": 13,
+      "norm_label": "impressao: zpl \u2192 .zip na downloads (zebra reconhece por prefixo)",
+      "id": "impressao_zip"
     },
     {
       "label": "GUI confirma 'saiu certo?' antes de marcar impresso",
@@ -7894,9 +7956,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "confirma_antes_marcar",
-      "community": 6,
-      "norm_label": "gui confirma 'saiu certo?' antes de marcar impresso"
+      "community": 0,
+      "norm_label": "gui confirma 'saiu certo?' antes de marcar impresso",
+      "id": "confirma_antes_marcar"
     },
     {
       "label": "Pegadinhas Shopee (GET, tracking_number obrigat\u00f3rio, organizar antes)",
@@ -7907,9 +7969,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "shopee_gotchas",
-      "community": 17,
-      "norm_label": "pegadinhas shopee (get, tracking_number obrigatorio, organizar antes)"
+      "community": 21,
+      "norm_label": "pegadinhas shopee (get, tracking_number obrigatorio, organizar antes)",
+      "id": "shopee_gotchas"
     },
     {
       "label": "Organizar envio em lote por camadas (idempot\u00eancia\u2192batch\u2192AWB\u2192fallback)",
@@ -7920,9 +7982,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "organizar_camadas",
-      "community": 22,
-      "norm_label": "organizar envio em lote por camadas (idempotencia\u2192batch\u2192awb\u2192fallback)"
+      "community": 21,
+      "norm_label": "organizar envio em lote por camadas (idempotencia\u2192batch\u2192awb\u2192fallback)",
+      "id": "organizar_camadas"
     },
     {
       "label": "Retry com backoff (downloads e rede)",
@@ -7933,9 +7995,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "retry_backoff",
-      "community": 13,
-      "norm_label": "retry com backoff (downloads e rede)"
+      "community": 18,
+      "norm_label": "retry com backoff (downloads e rede)",
+      "id": "retry_backoff"
     },
     {
       "label": "marcar_impresso: last-writer-merge (tela+bot n\u00e3o se apagam)",
@@ -7946,9 +8008,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "last_writer_merge",
-      "community": 13,
-      "norm_label": "marcar_impresso: last-writer-merge (tela+bot nao se apagam)"
+      "community": 18,
+      "norm_label": "marcar_impresso: last-writer-merge (tela+bot nao se apagam)",
+      "id": "last_writer_merge"
     },
     {
       "label": "CI: pytest em Python 3.11 e 3.12",
@@ -7959,9 +8021,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ci_pytest",
       "community": 0,
-      "norm_label": "ci: pytest em python 3.11 e 3.12"
+      "norm_label": "ci: pytest em python 3.11 e 3.12",
+      "id": "ci_pytest"
     },
     {
       "label": "CI: smoke da GUI headless (xvfb) nos 2 marketplaces",
@@ -7972,9 +8034,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ci_gui_smoke",
       "community": 0,
-      "norm_label": "ci: smoke da gui headless (xvfb) nos 2 marketplaces"
+      "norm_label": "ci: smoke da gui headless (xvfb) nos 2 marketplaces",
+      "id": "ci_gui_smoke"
     },
     {
       "label": "Depend\u00eancia: requests (HTTP)",
@@ -7985,9 +8047,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dep_requests",
-      "community": 36,
-      "norm_label": "dependencia: requests (http)"
+      "community": 38,
+      "norm_label": "dependencia: requests (http)",
+      "id": "dep_requests"
     },
     {
       "label": "Depend\u00eancia: python-telegram-bot[job-queue]",
@@ -7998,9 +8060,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dep_ptb",
-      "community": 36,
-      "norm_label": "dependencia: python-telegram-bot[job-queue]"
+      "community": 38,
+      "norm_label": "dependencia: python-telegram-bot[job-queue]",
+      "id": "dep_ptb"
     },
     {
       "label": "Depend\u00eancia: pytest",
@@ -8011,9 +8073,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dep_pytest",
-      "community": 36,
-      "norm_label": "dependencia: pytest"
+      "community": 38,
+      "norm_label": "dependencia: pytest",
+      "id": "dep_pytest"
     },
     {
       "label": "UI: seletor de Loja (Mercado Livre / Shopee)",
@@ -8024,9 +8086,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ui_seletor_loja",
-      "community": 6,
-      "norm_label": "ui: seletor de loja (mercado livre / shopee)"
+      "community": 13,
+      "norm_label": "ui: seletor de loja (mercado livre / shopee)",
+      "id": "ui_seletor_loja"
     },
     {
       "label": "UI: se\u00e7\u00f5es 'Para imprimir' e 'J\u00e1 impressas \u2014 arquivadas'",
@@ -8037,9 +8099,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ui_para_imprimir_arquivadas",
-      "community": 6,
-      "norm_label": "ui: secoes 'para imprimir' e 'ja impressas \u2014 arquivadas'"
+      "community": 13,
+      "norm_label": "ui: secoes 'para imprimir' e 'ja impressas \u2014 arquivadas'",
+      "id": "ui_para_imprimir_arquivadas"
     },
     {
       "label": "UI: dropdown 'Identifica\u00e7\u00e3o' (Carimbo nome no DANFE)",
@@ -8050,9 +8112,425 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ui_identificacao_dropdown",
+      "community": 13,
+      "norm_label": "ui: dropdown 'identificacao' (carimbo nome no danfe)",
+      "id": "ui_identificacao_dropdown"
+    },
+    {
+      "label": "ARQUITETURA (notas operacionais)",
+      "file_type": "document",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "docs_arquitetura_doc",
+      "community": 23,
+      "norm_label": "arquitetura (notas operacionais)"
+    },
+    {
+      "label": "Mercado Livre API (sistema externo)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_ml_api",
+      "community": 23,
+      "norm_label": "mercado livre api (sistema externo)"
+    },
+    {
+      "label": "Shopee Open Platform API (sistema externo)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_shopee_api",
+      "community": 19,
+      "norm_label": "shopee open platform api (sistema externo)"
+    },
+    {
+      "label": "Telegram Bot API (sistema externo)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_telegram_api",
+      "community": 23,
+      "norm_label": "telegram bot api (sistema externo)"
+    },
+    {
+      "label": "Impressora t\u00e9rmica Zebra (hardware externo)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_zebra",
+      "community": 13,
+      "norm_label": "impressora termica zebra (hardware externo)"
+    },
+    {
+      "label": "App impressora_zebra_usb.py (externo, monitora Downloads)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_zebra_app",
+      "community": 13,
+      "norm_label": "app impressora_zebra_usb.py (externo, monitora downloads)"
+    },
+    {
+      "label": "Pasta Downloads (ponte de impress\u00e3o, por m\u00e1quina)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_downloads",
+      "community": 13,
+      "norm_label": "pasta downloads (ponte de impressao, por maquina)"
+    },
+    {
+      "label": "GitHub Actions (CI externo)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ext_github_actions",
+      "community": 0,
+      "norm_label": "github actions (ci externo)"
+    },
+    {
+      "label": "INVARIANTE: GUI s\u00f3 marca impresso ap\u00f3s confirma\u00e7\u00e3o f\u00edsica",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_confirma_antes_marcar",
+      "community": 0,
+      "norm_label": "invariante: gui so marca impresso apos confirmacao fisica"
+    },
+    {
+      "label": "INVARIANTE: reimpress\u00e3o nunca altera o estado de impresso",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_reimpressao_nao_altera",
+      "community": 18,
+      "norm_label": "invariante: reimpressao nunca altera o estado de impresso"
+    },
+    {
+      "label": "INVARIANTE: estado de impresso \u00e9 por marketplace + conta + dia de despacho",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_estado_mkt_conta_dia",
+      "community": 8,
+      "norm_label": "invariante: estado de impresso e por marketplace + conta + dia de despacho"
+    },
+    {
+      "label": "INVARIANTE: envio novo em grupo j\u00e1 impresso reabre o grupo como parcial",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_envio_novo_reabre",
+      "community": 8,
+      "norm_label": "invariante: envio novo em grupo ja impresso reabre o grupo como parcial"
+    },
+    {
+      "label": "INVARIANTE: marcar_impresso recarrega do disco e mescla (n\u00e3o perde marca\u00e7\u00e3o concorrente)",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_marcar_merge",
+      "community": 23,
+      "norm_label": "invariante: marcar_impresso recarrega do disco e mescla (nao perde marcacao concorrente)"
+    },
+    {
+      "label": "INVARIANTE: token sempre via obter_token (lock); nunca renovar_token direto (refresh rotaciona)",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_token_via_obter",
+      "community": 28,
+      "norm_label": "invariante: token sempre via obter_token (lock); nunca renovar_token direto (refresh rotaciona)"
+    },
+    {
+      "label": "INVARIANTE: etiqueta Shopee s\u00f3 existe ap\u00f3s organizar envio + obter AWB (tracking_number)",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_shopee_awb",
+      "community": 19,
+      "norm_label": "invariante: etiqueta shopee so existe apos organizar envio + obter awb (tracking_number)"
+    },
+    {
+      "label": "INVARIANTE: bot n\u00e3o imprime Shopee (s\u00f3 consulta); e n\u00e3o imprime grupo antigo se conta/loja mudou",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_bot_shopee_readonly",
       "community": 6,
-      "norm_label": "ui: dropdown 'identificacao' (carimbo nome no danfe)"
+      "norm_label": "invariante: bot nao imprime shopee (so consulta); e nao imprime grupo antigo se conta/loja mudou"
+    },
+    {
+      "label": "INVARIANTE: modo Ambas usa o token da conta certa e grava no estado da conta certa",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_ambas_token_estado",
+      "community": 2,
+      "norm_label": "invariante: modo ambas usa o token da conta certa e grava no estado da conta certa"
+    },
+    {
+      "label": "INVARIANTE: credenciais/estado/cache/config s\u00e3o locais e nunca versionados",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inv_segredos_locais",
+      "community": 23,
+      "norm_label": "invariante: credenciais/estado/cache/config sao locais e nunca versionados"
+    },
+    {
+      "label": "credenciais.json (ML \u00b7 segredo \u00b7 por-conta \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_credenciais",
+      "community": 23,
+      "norm_label": "credenciais.json (ml \u00b7 segredo \u00b7 por-conta \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "credenciais_shopee.json (Shopee \u00b7 segredo \u00b7 por-loja \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_credenciais_shopee",
+      "community": 28,
+      "norm_label": "credenciais_shopee.json (shopee \u00b7 segredo \u00b7 por-loja \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "estado_grupos.json (ML \u00b7 estado impresso \u00b7 por-conta+dia \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_estado_grupos",
+      "community": 23,
+      "norm_label": "estado_grupos.json (ml \u00b7 estado impresso \u00b7 por-conta+dia \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "estado_shopee.json (Shopee \u00b7 estado impresso \u00b7 por-dia \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_estado_shopee",
+      "community": 30,
+      "norm_label": "estado_shopee.json (shopee \u00b7 estado impresso \u00b7 por-dia \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "config.json (prefer\u00eancias do app \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_config",
+      "community": 24,
+      "norm_label": "config.json (preferencias do app \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "bot_config.json (token do bot \u00b7 segredo \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_bot_config",
+      "community": 1,
+      "norm_label": "bot_config.json (token do bot \u00b7 segredo \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "itens_cache.json (cache de detalhes \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_itens_cache",
+      "community": 48,
+      "norm_label": "itens_cache.json (cache de detalhes \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "envios_cache.json (cache de envios finalizados \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_envios_cache",
+      "community": 12,
+      "norm_label": "envios_cache.json (cache de envios finalizados \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "bot.log (atividade do bot \u00b7 local por m\u00e1quina \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_bot_log",
+      "community": 47,
+      "norm_label": "bot.log (atividade do bot \u00b7 local por maquina \u00b7 nao versionar)"
+    },
+    {
+      "label": "backups .bak (auto-recupera\u00e7\u00e3o de credenciais \u00b7 local \u00b7 N\u00c3O versionar)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_bak",
+      "community": 46,
+      "norm_label": "backups .bak (auto-recuperacao de credenciais \u00b7 local \u00b7 nao versionar)"
+    },
+    {
+      "label": "nomes_sku.json (SKU\u2192nome \u00b7 VERSIONADO e sincronizado por Git)",
+      "file_type": "concept",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "file_nomes_sku",
+      "community": 15,
+      "norm_label": "nomes_sku.json (sku\u2192nome \u00b7 versionado e sincronizado por git)"
+    },
+    {
+      "label": "\u00c1REA DE RISCO: gera\u00e7\u00e3o de lote \u00d7 marca\u00e7\u00e3o de estado",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "area_risco_impressao_estado",
+      "community": 15,
+      "norm_label": "area de risco: geracao de lote \u00d7 marcacao de estado"
+    },
+    {
+      "label": "\u00c1REA DE RISCO: obten\u00e7\u00e3o/renova\u00e7\u00e3o de token",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "area_risco_token",
+      "community": 23,
+      "norm_label": "area de risco: obtencao/renovacao de token"
+    },
+    {
+      "label": "\u00c1REA DE RISCO: organiza\u00e7\u00e3o de envio e AWB na Shopee",
+      "file_type": "rationale",
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "area_risco_shopee_awb",
+      "community": 19,
+      "norm_label": "area de risco: organizacao de envio e awb na shopee"
     }
   ],
   "links": [
@@ -9744,6 +10222,16 @@
       "target": "bot_telegram_cb_botao"
     },
     {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_bot_shopee_readonly",
+      "target": "bot_telegram_cb_botao"
+    },
+    {
       "relation": "indirect_call",
       "context": "argument",
       "confidence": "INFERRED",
@@ -9784,6 +10272,26 @@
       "source_location": null,
       "weight": 1.0,
       "source": "dep_ptb",
+      "target": "bot_telegram_main"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_telegram_api",
+      "target": "bot_telegram_main"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_bot_config",
       "target": "bot_telegram_main"
     },
     {
@@ -10679,6 +11187,16 @@
       "target": "provedores_provedormlambas_imprimir_lotes"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_ambas_token_estado",
+      "target": "provedores_fundir_grupos"
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -10708,6 +11226,16 @@
       "confidence_score": 1.0,
       "source": "provedores_rationale_176",
       "target": "provedores_fundir_grupos"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_ambas_token_estado",
+      "target": "provedores_provedormlambas"
     },
     {
       "relation": "rationale_for",
@@ -12801,6 +13329,16 @@
       "target": "separador_etiquetas_ml_conta_ativa"
     },
     {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_config",
+      "target": "separador_etiquetas_ml_aplicar_config"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -12939,6 +13477,46 @@
       "confidence_score": 1.0,
       "source": "separador_etiquetas_ml_obter_token",
       "target": "separador_etiquetas_ml_token_valido"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_token",
+      "target": "separador_etiquetas_ml_obter_token"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_ml_api",
+      "target": "separador_etiquetas_ml_obter_token"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_credenciais",
+      "target": "separador_etiquetas_ml_obter_token"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_token_via_obter",
+      "target": "separador_etiquetas_ml_obter_token"
     },
     {
       "relation": "calls",
@@ -13538,6 +14116,16 @@
       "target": "separador_etiquetas_ml_identidade"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_ml_api",
+      "target": "separador_etiquetas_ml_buscar_pedidos"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -13731,6 +14319,16 @@
       "target": "separador_etiquetas_ml_avaliar_pedido"
     },
     {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_envios_cache",
+      "target": "separador_etiquetas_ml_filtrar_para_imprimir"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -13793,6 +14391,16 @@
       "confidence_score": 1.0,
       "source": "separador_etiquetas_ml_rationale_740",
       "target": "separador_etiquetas_ml_agrupar"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_nomes_sku",
+      "target": "separador_etiquetas_ml_carregar_nomes"
     },
     {
       "relation": "rationale_for",
@@ -14494,6 +15102,26 @@
       "target": "separador_etiquetas_ml_status_grupo"
     },
     {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_estado_grupos",
+      "target": "separador_etiquetas_ml_status_grupo"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_estado_mkt_conta_dia",
+      "target": "separador_etiquetas_ml_status_grupo"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -14524,6 +15152,16 @@
       "confidence_score": 1.0,
       "source": "separador_etiquetas_ml_rationale_1157",
       "target": "separador_etiquetas_ml_status_grupo"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_envio_novo_reabre",
+      "target": "separador_etiquetas_ml_envios_pendentes"
     },
     {
       "relation": "calls",
@@ -14582,6 +15220,16 @@
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_impressao_estado",
+      "target": "separador_etiquetas_ml_marcar_impresso"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
       "source_file": "CLAUDE.md",
       "source_location": null,
       "weight": 1.0,
@@ -14596,6 +15244,36 @@
       "source_location": null,
       "weight": 1.0,
       "source": "estado_por_mkt_dia",
+      "target": "separador_etiquetas_ml_marcar_impresso"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_estado_grupos",
+      "target": "separador_etiquetas_ml_marcar_impresso"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_confirma_antes_marcar",
+      "target": "separador_etiquetas_ml_marcar_impresso"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_marcar_merge",
       "target": "separador_etiquetas_ml_marcar_impresso"
     },
     {
@@ -14630,6 +15308,16 @@
       "target": "separador_etiquetas_ml_marcar_impresso"
     },
     {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_envio_novo_reabre",
+      "target": "separador_etiquetas_ml_imprimir_pendentes"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -14649,6 +15337,16 @@
       "confidence_score": 1.0,
       "source": "separador_etiquetas_ml_rationale_1198",
       "target": "separador_etiquetas_ml_imprimir_pendentes"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_reimpressao_nao_altera",
+      "target": "separador_etiquetas_ml_reimprimir"
     },
     {
       "relation": "calls",
@@ -14672,6 +15370,16 @@
       "target": "separador_etiquetas_ml_reimprimir"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_impressao_estado",
+      "target": "separador_etiquetas_ml_preparar_lotes"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -14691,6 +15399,16 @@
       "confidence_score": 1.0,
       "source": "separador_etiquetas_ml_rationale_1236",
       "target": "separador_etiquetas_ml_preparar_lotes"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_impressao_estado",
+      "target": "separador_etiquetas_ml_gerar_zip_lotes"
     },
     {
       "relation": "rationale_for",
@@ -15951,6 +16669,16 @@
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_confirma_antes_marcar",
+      "target": "separador_gui_separadorapp_confirmar_organizar"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
       "source_file": "separador_gui.py",
       "source_location": "L618",
       "weight": 1.0,
@@ -17025,6 +17753,26 @@
       "target": "shopee_api_download_shop"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_token",
+      "target": "shopee_api_renovar_token"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_token_via_obter",
+      "target": "shopee_api_renovar_token"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -17064,6 +17812,36 @@
       "source_location": null,
       "weight": 1.0,
       "source": "dep_requests",
+      "target": "shopee_api_obter_token"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_shopee_api",
+      "target": "shopee_api_obter_token"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_credenciais_shopee",
+      "target": "shopee_api_obter_token"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_token_via_obter",
       "target": "shopee_api_obter_token"
     },
     {
@@ -17429,6 +18207,26 @@
       "target": "shopee_api_rastreios_paralelo"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_shopee_awb",
+      "target": "shopee_api_batch_ship_order"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_shopee_api",
+      "target": "shopee_api_batch_ship_order"
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -17479,6 +18277,26 @@
       "confidence_score": 1.0,
       "source": "shopee_api_rationale_341",
       "target": "shopee_api_aguardar_awbs"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "area_risco_shopee_awb",
+      "target": "shopee_api_organizar_varios"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_shopee_awb",
+      "target": "shopee_api_organizar_varios"
     },
     {
       "relation": "rationale_for",
@@ -17626,6 +18444,36 @@
       "confidence_score": 1.0,
       "source": "shopee_api_rationale_464",
       "target": "shopee_api_status_documento"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_shopee_api",
+      "target": "shopee_api_gerar_etiqueta"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "file_estado_shopee",
+      "target": "shopee_api_gerar_etiqueta"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_shopee_awb",
+      "target": "shopee_api_gerar_etiqueta"
     },
     {
       "relation": "calls",
@@ -18651,6 +19499,16 @@
       "target": "tests_test_agrupar_item"
     },
     {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_ambas",
+      "target": "inv_ambas_token_estado"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_ambas.py",
@@ -18928,6 +19786,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_avaliar_pedido_rationale_1",
       "target": "tests_test_avaliar_pedido"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_bot_impressao",
+      "target": "inv_bot_shopee_readonly"
     },
     {
       "relation": "contains",
@@ -20288,6 +21156,26 @@
       "target": "tests_test_datas"
     },
     {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_estado",
+      "target": "inv_envio_novo_reabre"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_estado",
+      "target": "inv_marcar_merge"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_estado.py",
@@ -20538,6 +21426,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_identidade_rationale_1",
       "target": "tests_test_identidade"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_lotes",
+      "target": "inv_confirma_antes_marcar"
     },
     {
       "relation": "contains",
@@ -21183,6 +22081,16 @@
       "target": "tests_test_provedores"
     },
     {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_rede",
+      "target": "area_risco_token"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_rede.py",
@@ -21675,6 +22583,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_robustez_rationale_1",
       "target": "tests_test_robustez"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "tests_test_shopee",
+      "target": "inv_shopee_awb"
     },
     {
       "relation": "contains",
@@ -22576,9 +23494,221 @@
       "weight": 1.0,
       "source": "ui_identificacao_dropdown",
       "target": "modo_ident"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "impressao_zip",
+      "target": "ext_downloads"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_github_actions",
+      "target": "ci_pytest"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_github_actions",
+      "target": "ci_gui_smoke"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "area_risco_impressao_estado"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "ext_ml_api"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "ext_shopee_api"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "ext_telegram_api"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "file_credenciais"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "file_estado_grupos"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "inv_confirma_antes_marcar"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_arquitetura_doc",
+      "target": "inv_marcar_merge"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_zebra_app",
+      "target": "ext_zebra"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ext_downloads",
+      "target": "ext_zebra_app"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_segredos_locais",
+      "target": "file_credenciais"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARQUITETURA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "inv_segredos_locais",
+      "target": "file_estado_grupos"
     }
   ],
   "hyperedges": [
+    {
+      "id": "sistemas_externos",
+      "label": "Sistemas externos (fora do reposit\u00f3rio)",
+      "nodes": [
+        "ext_ml_api",
+        "ext_shopee_api",
+        "ext_telegram_api",
+        "ext_zebra",
+        "ext_zebra_app",
+        "ext_downloads"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md"
+    },
+    {
+      "id": "ponte_impressao",
+      "label": "Ponte de impress\u00e3o: ZIP \u2192 Downloads \u2192 app Zebra \u2192 impressora",
+      "nodes": [
+        "impressao_zip",
+        "ext_downloads",
+        "ext_zebra_app",
+        "ext_zebra"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md"
+    },
+    {
+      "id": "invariantes_criticas",
+      "label": "Invariantes cr\u00edticas de neg\u00f3cio",
+      "nodes": [
+        "inv_confirma_antes_marcar",
+        "inv_reimpressao_nao_altera",
+        "inv_marcar_merge",
+        "inv_token_via_obter",
+        "inv_shopee_awb",
+        "inv_bot_shopee_readonly"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "docs/ARQUITETURA.md"
+    },
+    {
+      "id": "arquivos_locais",
+      "label": "Arquivos locais n\u00e3o versionados (por m\u00e1quina/conta)",
+      "nodes": [
+        "file_credenciais",
+        "file_credenciais_shopee",
+        "file_estado_grupos",
+        "file_estado_shopee",
+        "file_config",
+        "file_bot_config"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/ARQUITETURA.md"
+    },
     {
       "id": "camada_provedor",
       "label": "Camada de provedor (ML / Shopee / Ambas)",
@@ -22623,5 +23753,5 @@
       "source_file": "CLAUDE.md"
     }
   ],
-  "built_at_commit": "f2f671eb6982a9bc30c559a25745512b748bb726"
+  "built_at_commit": "e9070922326a66562e4eef97d3e46ad71b0c4d54"
 }
