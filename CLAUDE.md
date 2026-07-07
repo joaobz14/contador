@@ -92,6 +92,11 @@ em 2º plano.
   como **Postagem (drop-off)** via `ship_order` — sempre essa opção, nunca buyer-pickup.
   `info_needed.dropoff` lista os campos exigidos (geralmente vazio; às vezes
   `branch_id`/`sender_real_name`).
+- **Organizar em lote:** `_organizar_varios` é em camadas — AWB existente
+  (idempotência) → `batch_ship_order` (até 50 num request) → confirmação **pelo
+  AWB** (não confiar no formato da resposta do batch) → fallback individual
+  (`organizar_envio`) pra quem ficar sem AWB. Se o batch falhar por inteiro,
+  não espera polling: vai direto ao individual.
 - A etiqueta térmica vem como **ZIP com ZPL (`~DGR/Z64`) dentro** — a Zebra imprime
   direto; não reembrulhar.
 

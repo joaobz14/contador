@@ -320,24 +320,95 @@ def _rastreios_paralelo(cred: dict, token: str, order_sns: list) -> dict:
     return out
 
 
+LOTE_SHIP = 50   # batch_ship_order aceita ate 50 pedidos por chamada
+
+
+def batch_ship_order(cred: dict, token: str, order_sns: list, *,
+                     dropoff: dict | None = None) -> dict:
+    """Organiza VARIOS envios num request so (ate LOTE_SHIP), como Postagem
+    (drop-off). Mesmo efeito do ship_order pedido a pedido, com 1 chamada em
+    vez de N. A resposta pode listar falhas por pedido, mas NAO dependemos do
+    formato dela: a prova confiavel de que organizou e o AWB sair
+    (ver _organizar_varios)."""
+    body: dict = {"order_list": [{"order_sn": str(sn)} for sn in order_sns]}
+    if dropoff is not None:
+        body["dropoff"] = dropoff
+    return _post_shop(cred, token, "/api/v2/logistics/batch_ship_order", body)
+
+
+def _aguardar_awbs(cred: dict, token: str, order_sns: list, *,
+                   tentativas: int = 40, espera: float = 1.0) -> dict:
+    """Espera os AWBs de varios pedidos sairem (a Shopee leva alguns segundos
+    apos o ship). Polling paralelo; para assim que todos sairem. Devolve
+    {order_sn: awb} apenas dos que sairam no prazo."""
+    pendentes = [str(sn) for sn in order_sns]
+    ok: dict = {}
+    for _ in range(tentativas):
+        if not pendentes:
+            break
+        time.sleep(espera)
+        for sn, awb in _rastreios_paralelo(cred, token, pendentes).items():
+            if awb:
+                ok[sn] = awb
+        pendentes = [sn for sn in pendentes if sn not in ok]
+    return ok
+
+
 def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                       branch_id=None, sender_real_name=None) -> tuple[dict, list]:
-    """Organiza varios envios EM PARALELO (cada um espera o seu AWB). Devolve
-    (ok, falhas): ok={order_sn: awb} dos que organizaram; falhas=[(sn, motivo)].
-    NAO levanta — quem chama decide (grupo unico aborta; lote tolera)."""
+    """Organiza varios envios, em camadas (da mais rapida para o fallback):
+
+      1) quem JA tem AWB esta organizado (idempotente) — nada a fazer;
+      2) os demais vao TODOS num batch_ship_order (1 request p/ ate 50) e os
+         AWBs sao aguardados — o rastreio existir e a unica confirmacao em que
+         confiamos (nao dependemos do formato da resposta do batch);
+      3) quem ficar sem AWB cai no caminho individual (organizar_envio), que
+         resolve casos especiais (info_needed com campos exigidos) e reporta
+         em `falhas` quando nem assim sai.
+
+    Devolve (ok={order_sn: awb}, falhas=[(sn, motivo)]). NAO levanta — quem
+    chama decide (grupo unico aborta; lote tolera)."""
+    order_sns = [str(sn) for sn in order_sns]
     ok: dict = {}
     falhas: list = []
+    if not order_sns:
+        return ok, falhas
 
+    # 1) ja organizados (idempotencia): AWB existente = nada a fazer
+    ok.update({sn: awb
+               for sn, awb in _rastreios_paralelo(cred, token, order_sns).items() if awb})
+    restantes = [sn for sn in order_sns if sn not in ok]
+
+    # 2) batch (1 request); os AWBs confirmam. Se NENHUM batch passou, nem
+    # espera — vai direto pro individual (evita 40s de polling inutil).
+    if restantes:
+        dropoff: dict = {}
+        if branch_id not in (None, ""):
+            dropoff["branch_id"] = branch_id
+        if sender_real_name not in (None, ""):
+            dropoff["sender_real_name"] = sender_real_name
+        algum_batch = False
+        for i in range(0, len(restantes), LOTE_SHIP):
+            try:
+                batch_ship_order(cred, token, restantes[i:i + LOTE_SHIP], dropoff=dropoff)
+                algum_batch = True
+            except Exception:                        # fallback individual cobre
+                pass
+        if algum_batch:
+            ok.update(_aguardar_awbs(cred, token, restantes))
+            restantes = [sn for sn in restantes if sn not in ok]
+
+    # 3) fallback individual (paralelo) — o caminho que sempre funcionou
     def _um(sn):
         try:
-            ok[sn] = organizar_envio(cred, token, str(sn),
+            ok[sn] = organizar_envio(cred, token, sn,
                                      branch_id=branch_id, sender_real_name=sender_real_name)
         except Exception as e:                       # inclui erro de rede (HTTPError)
             falhas.append((sn, str(e)))
 
-    if order_sns:
+    if restantes:
         with ThreadPoolExecutor(max_workers=8) as executor:
-            list(executor.map(_um, order_sns))
+            list(executor.map(_um, restantes))
     return ok, falhas
 
 
