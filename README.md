@@ -25,7 +25,9 @@ pedidos prontos ──► grupos (produto × qtd) ──► ZPL ──► .zip e
 - **Duas lojas, uma tela** — seletor Mercado Livre / Shopee; a arquitetura de
   provedores (`provedores.py`) faz a tela ser a mesma para os dois.
 - **Multi-conta no ML** (ex.: Gastromaq / Cozilatti), cada uma com estado e
-  credenciais isolados em `contas/{nome}/`.
+  credenciais isolados em `contas/{nome}/` — e o modo **🌐 Ambas**, que junta
+  as contas num dia de motorista único (uma pilha por produto, ZIP único,
+  controle de impresso continua por conta).
 - **Dia de despacho com contagem** — os próximos dias úteis com o total de
   pedidos em cada um; datas fora de seg–sex (fim de semana, atrasadas, sem data)
   aparecem em "Outras datas". Nenhum pedido fica invisível.

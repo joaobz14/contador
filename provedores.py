@@ -166,6 +166,167 @@ class ProvedorShopee(Provedor):
         return shopee.reimprimir_grupo(self._creds(), grupo)
 
 
+# ---------------------------------------------------------------------------
+# MODO "AMBAS" (Mercado Livre com todas as contas juntas)
+# ---------------------------------------------------------------------------
+CONTA_AMBAS = "__ambas__"   # valor-sentinela do radio "🌐 Ambas" no seletor da GUI
+
+
+def fundir_grupos(grupos_por_conta: dict[str, list]) -> list:
+    """Funde grupos de varias contas por (SKU/chave + quantidade): um grupo unico
+    com todas as etiquetas, que lembra em `.por_conta` o sub-grupo de cada conta —
+    para imprimir com o token certo e marcar no estado certo. Nome/combo vem do
+    primeiro sub-grupo (o nomes_sku.json e compartilhado, entao sao iguais)."""
+    fundidos: dict[tuple, core.Grupo] = {}
+    for conta, grupos in grupos_por_conta.items():
+        for g in grupos:
+            chave = (g.chave, g.quantidade)
+            f = fundidos.get(chave)
+            if f is None:
+                f = core.Grupo(chave=g.chave, nome=g.nome, quantidade=g.quantidade,
+                               shipment_ids=[], dia=g.dia,
+                               componentes=list(g.componentes))
+                f.por_conta = {}
+                fundidos[chave] = f
+            f.shipment_ids.extend(g.shipment_ids)
+            f.por_conta[conta] = g
+    return sorted(fundidos.values(), key=lambda f: (f.quantidade, f.nome))
+
+
+class ProvedorMLAmbas(Provedor):
+    """Mercado Livre com TODAS as contas juntas — para o dia em que o mesmo
+    motorista coleta as duas. Um Atualizar coleta as contas em sequencia e funde
+    os grupos de mesmo SKU + quantidade (a separacao fisica vira POR PRODUTO,
+    uma pilha so). A impressao baixa as etiquetas de cada conta com o token dela
+    e junta tudo num ZIP unico; o estado de "ja impresso" continua POR CONTA
+    (gravado no estado_grupos.json de cada uma)."""
+
+    nome = "Mercado Livre (ambas)"
+    suporta_identificacao = True
+    suporta_contas = True
+    organiza_envio = False
+
+    def __init__(self) -> None:
+        self._tokens_cred: dict[str, dict] = {}   # {conta: cred} (cache de token)
+        self.contagem_dias = {}
+
+    def contas(self) -> list[str]:
+        return core.listar_contas()
+
+    def definir_conta(self, nome: str) -> None:
+        pass    # a GUI troca de PROVEDOR ao sair do modo Ambas, nao de conta
+
+    def _token(self, conta: str) -> str:
+        # definir_conta ANTES de tudo: se o obter_token precisar renovar, o
+        # refresh_token rotacionado e salvo no credenciais.json DESTA conta.
+        core.definir_conta(conta)
+        cred = self._tokens_cred.get(conta)
+        if cred is None:
+            cred = self._tokens_cred[conta] = core.carregar_credenciais()
+        return core.obter_token(cred)
+
+    def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
+        por_conta: dict[str, list] = {}
+        contagem: dict[str, int] = {}
+        for conta in self.contas():
+            token = self._token(conta)
+            coleta = core.coletar_grupos(
+                token, self._tokens_cred[conta]["seller_id"], dia=dia,
+                somente_hoje=somente_hoje, progresso=progresso)
+            por_conta[conta] = coleta.grupos
+            for d, n in core.resumo_por_dia(getattr(coleta, "prontos", [])):
+                d = "" if d == "(sem data)" else d
+                contagem[d] = contagem.get(d, 0) + n
+        self.contagem_dias = contagem
+        return fundir_grupos(por_conta)
+
+    # ---- estado composto: {conta: estado_da_conta} -------------------------
+    def carregar_estado(self) -> dict:
+        estados = {}
+        for conta in self.contas():
+            core.definir_conta(conta)
+            estados[conta] = core.carregar_estado()
+        return estados
+
+    def envios_pendentes(self, estado: dict, grupo) -> list:
+        pend = []
+        for conta, sub in getattr(grupo, "por_conta", {}).items():
+            pend.extend(core.envios_pendentes(estado.get(conta, {}), sub))
+        return pend
+
+    def status_grupo(self, estado: dict, grupo) -> str:
+        pend = len(self.envios_pendentes(estado, grupo))
+        if pend == 0:
+            return "impresso"
+        if pend == grupo.total_etiquetas:
+            return "pendente"
+        return "parcial"
+
+    def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
+        """Marca cada pedaco NO ESTADO DA PROPRIA CONTA (arquivo por conta)."""
+        alvo = set(ids)
+        for conta, sub in grupo.por_conta.items():
+            proprios = [i for i in sub.shipment_ids if i in alvo]
+            if not proprios:
+                continue
+            core.definir_conta(conta)   # aponta o estado_grupos.json da conta
+            core.marcar_impresso(estado.setdefault(conta, {}), sub, proprios)
+
+    # ---- impressao ----------------------------------------------------------
+    def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
+        """UM ZIP com os pendentes de todos os grupos fundidos (etiquetas de
+        cada conta baixadas com o token dela). Nada e marcado aqui — a GUI
+        confirma e chama marcar_impresso. Como no ML normal, uma falha de
+        download aborta tudo (nada e gerado nem marcado)."""
+        nomes = core.carregar_nomes() if modo == "carimbo_nome" else None
+        partes: list[str] = []
+        pendentes: list[tuple] = []
+        for g in grupos:
+            zpl_g: list[str] = []
+            pend_g: list = []
+            for conta, sub in g.por_conta.items():
+                pend_c = core.envios_pendentes(estado.get(conta, {}), sub)
+                if not pend_c:
+                    continue
+                zpl = core.baixar_zpl(self._token(conta), pend_c)
+                if "^XA" not in zpl:
+                    raise core.SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+                zpl_g.append(core._carimbar_grupo(zpl, g, modo, nomes))
+                pend_g.extend(pend_c)
+            if not pend_g:
+                continue
+            if modo == "divisoria":
+                partes.append(core.zpl_divisoria(g))
+            partes.extend(zpl_g)
+            pendentes.append((g, pend_g))
+        if pendentes:
+            core._gerar_zip(f"AMBAS x{len(pendentes)}", "\n".join(partes))
+        return pendentes, []
+
+    def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
+        impressos, _ = self.imprimir_lotes([grupo], estado, modo=modo)
+        pend = impressos[0][1] if impressos else []
+        if pend:
+            self.marcar_impresso(estado, grupo, pend)
+        return pend
+
+    def reimprimir(self, grupo) -> list:
+        modo = core._modo_ident_efetivo()
+        partes: list[str] = []
+        ids: list = []
+        for conta, sub in grupo.por_conta.items():
+            if not sub.shipment_ids:
+                continue
+            zpl = core.baixar_zpl(self._token(conta), sub.shipment_ids)
+            if "^XA" not in zpl:
+                raise core.SeparadorError("A API nao retornou ZPL valido (sem ^XA).")
+            partes.append(core._carimbar_grupo(zpl, grupo, modo))
+            ids.extend(sub.shipment_ids)
+        if ids:
+            core.gerar_zip_etiquetas(grupo, "\n".join(partes))
+        return ids
+
+
 def criar_provedor(nome: str) -> Provedor:
     """Fabrica pelo rotulo do marketplace ('shopee' -> Shopee, senao ML)."""
     return ProvedorShopee() if (nome or "").strip().lower() == "shopee" else ProvedorML()
