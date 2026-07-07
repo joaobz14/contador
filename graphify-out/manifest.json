@@ -238,5 +238,25 @@
     "mtime": 1783344693.4146938,
     "ast_hash": "4e9f16d90e8736515b2f80a5716f4fd9",
     "semantic_hash": "4e9f16d90e8736515b2f80a5716f4fd9"
+  },
+  ".codex/hooks.json": {
+    "mtime": 1783448480.9389114,
+    "ast_hash": "b03712f5894b5178f721612942dc6977",
+    "semantic_hash": "b03712f5894b5178f721612942dc6977"
+  },
+  ".codex/hooks/session-start.sh": {
+    "mtime": 1782407128.9904878,
+    "ast_hash": "b07baf7d8dbda296455ebeebdb886d84",
+    "semantic_hash": "b07baf7d8dbda296455ebeebdb886d84"
+  },
+  "AGENTS.md": {
+    "mtime": 1783448480.934912,
+    "ast_hash": "7baedc45fc9419d74d59f8ee95fd2c4c",
+    "semantic_hash": "7baedc45fc9419d74d59f8ee95fd2c4c"
+  },
+  "docs/PRIORIDADES_TECNICAS.md": {
+    "mtime": 1783449895.4593735,
+    "ast_hash": "0e3f13c77ecb81a3b0cc0e2cf645822a",
+    "semantic_hash": "0e3f13c77ecb81a3b0cc0e2cf645822a"
   }
 }
