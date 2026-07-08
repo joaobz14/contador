@@ -18,6 +18,7 @@ itens_cache.json
 envios_cache.json
 config.json
 bot.log
+shopee_tempos.log
 *.tmp
 *.bak
 
