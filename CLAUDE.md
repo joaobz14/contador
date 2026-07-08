@@ -21,7 +21,8 @@ repo) monitora e imprime.
 
 | Arquivo | Papel |
 |---|---|
-| `separador_etiquetas_ml.py` | Núcleo: API do ML, agrupamento, estado, ZPL, carimbo, CLI. |
+| `separador_etiquetas_ml.py` | Núcleo: API do ML, agrupamento, ZPL, carimbo, CLI. |
+| `estado.py` | Camada comum do estado "já impresso" (ML+Shopee) + IO JSON atômico. |
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
@@ -71,8 +72,11 @@ em 2º plano.
   capacidade nova de impressão/coleta entra como método do provedor.
 - **Estado de "já impresso"** é por marketplace e por **dia de despacho**: ML em
   `contas/{conta}/estado_grupos.json`, Shopee em `estado_shopee.json`. Chave:
-  `{dia}|{chave}|q{qtd}`. Use os helpers do núcleo (`_chave_estado`, `_impressos`,
-  `status_grupo`, `envios_pendentes`).
+  `{dia}|{chave}|q{qtd}`. A lógica é única em **`estado.py`** (`chave_estado`,
+  `impressos`, `status_grupo`, `envios_pendentes`, `limpar_antigo`, `carregar`,
+  `marcar_impresso`); núcleo e `shopee_api` só expõem wrappers finos que passam o
+  seu `ARQUIVO_ESTADO`. Continue usando os helpers do núcleo (`status_grupo`,
+  `envios_pendentes`, `marcar_impresso`) — não reimplemente o merge.
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista

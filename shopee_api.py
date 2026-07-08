@@ -33,6 +33,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
+import estado as _estado
 import separador_etiquetas_ml as core
 
 # Host global do Open Platform — validado com a loja real (BR) em producao.
@@ -647,28 +648,23 @@ def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
 ARQUIVO_ESTADO = core.PASTA_SCRIPT / "estado_shopee.json"
 
 
+# Estado de "ja impresso" da Shopee: mesma camada comum do ML (estado.py), so
+# muda o arquivo. A Shopee poda em memoria mas NAO regrava o disco (persistir_poda
+# =False), preservando o comportamento anterior.
 def carregar_estado() -> dict:
-    return core._limpar_estado_antigo(core._ler_json(ARQUIVO_ESTADO))
+    return _estado.carregar(ARQUIVO_ESTADO, core.DIAS_ESTADO, persistir_poda=False)
 
 
 def salvar_estado(estado: dict) -> None:
-    core._gravar_json(ARQUIVO_ESTADO, estado)
+    _estado.salvar(ARQUIVO_ESTADO, estado)
 
 
 def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = None) -> None:
     """Marca order_sns como impressos (ou todos do grupo). RECARREGA o estado do
     disco e mescla (uniao) antes de gravar, para nao apagar marcacoes de outro
     processo feitas nesse meio-tempo (mesma convencao do nucleo)."""
-    ids = grupo.shipment_ids if order_sns is None else order_sns
-    chave = core._chave_estado(grupo)
-    disco = core._ler_json(ARQUIVO_ESTADO)
-    impressos = core._impressos(estado, grupo)
-    impressos.update(core._impressos(disco, grupo))
-    impressos.update(ids)
-    ordenados = sorted(impressos)
-    disco[chave] = ordenados
-    salvar_estado(disco)
-    estado[chave] = ordenados
+    _estado.marcar_impresso(
+        lambda: _estado.ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns)
 
 
 # ---------------------------------------------------------------------------

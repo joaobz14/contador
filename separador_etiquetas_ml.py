@@ -20,8 +20,6 @@ Comandos:
 from __future__ import annotations
 
 import io
-import json
-import os
 import random
 import re
 import sys
@@ -35,6 +33,8 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
+
+import estado as _estado
 
 API = "https://api.mercadolibre.com"
 TIMEOUT = 30
@@ -148,33 +148,10 @@ def _data_despacho(expected_raw: str) -> str:
 # ---------------------------------------------------------------------------
 # IO DE ARQUIVOS JSON (gravacao atomica + leitura tolerante a falhas)
 # ---------------------------------------------------------------------------
-def _ler_json(caminho: Path) -> dict:
-    """Le um JSON. Se nao existir ou estiver corrompido/ilegivel, retorna {}
-    em vez de quebrar (importante com a sincronizacao do OneDrive, que pode
-    deixar um arquivo lido pela metade)."""
-    if not caminho.exists():
-        return {}
-    try:
-        return json.loads(caminho.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
-        return {}
-
-
-def _gravar_json(caminho: Path, dados) -> None:
-    """Grava JSON de forma atomica e DURAVEL: escreve em .tmp, forca o disco a
-    persistir (flush+fsync) e so entao renomeia. O fsync evita o classico
-    'arquivo de 1 KB cheio de bytes nulos' quando cai a energia logo apos gravar
-    (a renomeacao ja constava mas os dados ainda nao tinham ido pro disco)."""
-    tmp = caminho.with_name(caminho.name + ".tmp")
-    texto = json.dumps(dados, ensure_ascii=False, indent=2)
-    with open(tmp, "w", encoding="utf-8") as f:
-        f.write(texto)
-        f.flush()
-        try:
-            os.fsync(f.fileno())
-        except OSError:
-            pass                      # alguns sistemas de arquivo nao suportam
-    tmp.replace(caminho)
+# A implementacao vive na camada de estado/persistencia (estado.py); aqui ficam
+# so os nomes historicos que o resto do modulo (config, cache, credenciais) usa.
+_ler_json = _estado.ler_json
+_gravar_json = _estado.gravar_json
 
 
 def carregar_config() -> dict:
@@ -1101,97 +1078,31 @@ def gerar_zip_etiquetas(grupo: Grupo, zpl_texto: str) -> Path:
 # ---------------------------------------------------------------------------
 # ESTADO
 # ---------------------------------------------------------------------------
-def _limpar_estado_antigo(estado: dict, dias: int = DIAS_ESTADO) -> dict:
-    """Mantem so as entradas dos ultimos `dias` dias.
-
-    As chaves tem o formato 'YYYY-MM-DD|...'. Entradas mais antigas que a
-    janela (e chaves sem data valida, como formatos legados) sao descartadas,
-    evitando que o estado_grupos.json cresca indefinidamente.
-    """
-    limite = (datetime.now(TZ_BR).date() - timedelta(days=dias)).isoformat()
-    limpo: dict = {}
-    for chave, valor in estado.items():
-        data = chave.split("|", 1)[0]
-        try:
-            datetime.strptime(data, "%Y-%m-%d")
-        except ValueError:
-            continue  # chave sem data valida (legado): descarta
-        if data >= limite:
-            limpo[chave] = valor
-    return limpo
+# A logica de estado vive na camada comum (estado.py); aqui ficam os nomes
+# historicos que o resto do modulo e a GUI usam. As funcoes puras sao apenas
+# re-exportadas; as que tocam arquivo passam o ARQUIVO_ESTADO desta conta (que
+# definir_conta reaponta) — lido em tempo de chamada, entao a troca de conta e o
+# monkeypatch dos testes continuam funcionando.
+_limpar_estado_antigo = _estado.limpar_antigo
+_chave_estado = _estado.chave_estado
+_impressos = _estado.impressos
+status_grupo = _estado.status_grupo
+envios_pendentes = _estado.envios_pendentes
 
 
 def carregar_estado() -> dict:
-    estado = _ler_json(ARQUIVO_ESTADO)
-    limpo = _limpar_estado_antigo(estado)
-    if len(limpo) != len(estado):   # poda entradas antigas e persiste
-        salvar_estado(limpo)
-    return limpo
+    return _estado.carregar(ARQUIVO_ESTADO, DIAS_ESTADO, persistir_poda=True)
 
 
 def salvar_estado(estado: dict) -> None:
-    _gravar_json(ARQUIVO_ESTADO, estado)
-
-
-def _chave_estado(grupo: Grupo) -> str:
-    # Usa o dia de despacho do grupo (quando definido) para namespacar o
-    # estado por dia; senao, cai no dia de hoje.
-    return f"{grupo.dia or _hoje_br()}|{grupo.chave_grupo}"
-
-
-def _impressos(estado: dict, grupo: Grupo) -> set[int]:
-    """Conjunto de shipment_ids ja impressos para o grupo (no dia).
-
-    Aceita o formato novo (lista de ids) e o antigo (string "impresso"),
-    para nao quebrar arquivos de estado ja existentes.
-    """
-    valor = estado.get(_chave_estado(grupo))
-    if valor == "impresso":               # formato antigo: tudo impresso
-        return set(grupo.shipment_ids)
-    if isinstance(valor, list):
-        return set(valor)
-    return set()
-
-
-def status_grupo(estado: dict, grupo: Grupo) -> str:
-    """pendente | parcial | impresso, comparando os envios ATUAIS do grupo
-    com os que ja foram impressos. Um envio novo reabre o grupo."""
-    atuais = set(grupo.shipment_ids)
-    if not atuais:
-        return "pendente"
-    impressos = _impressos(estado, grupo)
-    if atuais <= impressos:
-        return "impresso"
-    if atuais & impressos:
-        return "parcial"
-    return "pendente"
-
-
-def envios_pendentes(estado: dict, grupo: Grupo) -> list[int]:
-    """Envios do grupo que ainda nao foram impressos (preserva a ordem)."""
-    impressos = _impressos(estado, grupo)
-    return [s for s in grupo.shipment_ids if s not in impressos]
+    _estado.salvar(ARQUIVO_ESTADO, estado)
 
 
 def marcar_impresso(estado: dict, grupo: Grupo, shipment_ids: list[int] | None = None) -> None:
-    """Marca como impressos os shipment_ids informados (ou todos do grupo),
-    acumulando com os ja registrados no dia.
-
-    Antes de gravar, RECARREGA o estado do disco e mescla (uniao). Assim, se a
-    tela e o bot estiverem rodando ao mesmo tempo na mesma conta, a marcacao de
-    um nao apaga a do outro feita nesse meio-tempo (last-writer-merge em vez de
-    last-writer-wins). O dict em memoria do chamador tambem e atualizado para o
-    render seguinte refletir o que foi gravado."""
-    ids = grupo.shipment_ids if shipment_ids is None else shipment_ids
-    chave = _chave_estado(grupo)
-    disco = _ler_json(ARQUIVO_ESTADO)
-    impressos = _impressos(estado, grupo)       # o que ja sabiamos em memoria
-    impressos.update(_impressos(disco, grupo))  # + o que outro processo gravou
-    impressos.update(ids)                       # + os recem-impressos
-    ordenados = sorted(impressos)
-    disco[chave] = ordenados                    # grava por cima do disco atual
-    salvar_estado(disco)
-    estado[chave] = ordenados                   # reflete na memoria do chamador
+    # Grava pela funcao de modulo salvar_estado (resolvida em tempo de chamada:
+    # honra o ARQUIVO_ESTADO da conta ativa e o monkeypatch dos testes).
+    _estado.marcar_impresso(
+        lambda: _ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, shipment_ids)
 
 
 def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:
