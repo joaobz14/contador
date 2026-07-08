@@ -65,6 +65,13 @@ em 2º plano.
   (AST) e apagaria a camada de docs/arquitetura — foi desinstalado de propósito.
   Após mudanças grandes, refaça a extração completa + a passada semântica dos
   docs manualmente.
+- **SEMPRE atualize o grafo com o que aprender:** ao terminar uma tarefa,
+  acrescente ao `graphify-out/graph.json` os módulos/funções novos e, como nós de
+  `rationale`/`concept`, as **descobertas, barreiras e soluções** encontradas
+  (ligue-as com `rationale_for`/`calls`/`imports`/`conceptually_related_to`).
+  Registre também um resumo em "Atualizações manuais (pós-build)" no
+  `GRAPH_REPORT.md`. Edite o JSON direto (sem o CLI); valide que não sobraram
+  arestas órfãs. Isso preserva a camada de docs até o próximo rebuild completo.
 
 ## Convenções
 
