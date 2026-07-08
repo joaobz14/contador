@@ -731,17 +731,15 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
 
 def _gerar_lote(cred: dict, token: str, alvo: list, awbs: dict) -> tuple:
     """Gera as etiquetas dos pedidos `alvo` num so ZIP, tolerando falha parcial.
-    Tenta tudo de uma vez (rapido); se a Shopee recusar algum, cai para geracao
-    individual em paralelo, combinando os que derem. Devolve (conteudo|None,
+
+    Gera UM DOCUMENTO POR PEDIDO, EM PARALELO (8 de cada vez): medimos que a
+    geracao do documento na Shopee escala ~por pedido (~5s cada) quando pedida
+    num lote unico — entao paralelizar encurta o tempo total se a Shopee
+    processar em paralelo. Combina os que derem num ZIP unico; cada pedido que
+    falhar entra em `falhas` sem derrubar os outros. Devolve (conteudo|None,
     sns_ok, falhas)."""
     if not alvo:
         return None, [], []
-    try:
-        conteudo = gerar_etiqueta(cred, alvo, rastreios={sn: awbs[sn] for sn in alvo}, token=token)
-        return conteudo, list(alvo), []
-    except Exception:
-        pass  # alguma etiqueta falhou no lote -> tenta uma a uma (isola a falha)
-
     resultados: dict = {}
     falhas: list = []
 
@@ -754,7 +752,11 @@ def _gerar_lote(cred: dict, token: str, alvo: list, awbs: dict) -> tuple:
     with ThreadPoolExecutor(max_workers=8) as executor:
         list(executor.map(_um, alvo))
     sns_ok = [sn for sn in alvo if sn in resultados]
-    conteudo = _combinar_etiquetas([resultados[sn] for sn in sns_ok]) if sns_ok else None
+    if not sns_ok:
+        return None, [], falhas
+    # 1 pedido nao precisa combinar (o proprio ZIP ja serve).
+    conteudo = (resultados[sns_ok[0]] if len(sns_ok) == 1
+                else _combinar_etiquetas([resultados[sn] for sn in sns_ok]))
     return conteudo, sns_ok, falhas
 
 
