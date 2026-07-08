@@ -1,5 +1,16 @@
 # Guia do projeto (para o Codex)
 
+> **Comece por aqui (chat novo):**
+> 1. Leia este guia inteiro — convenções + pegadinhas de domínio.
+> 2. Para **arquitetura/relações** ("quem chama X?", "o que quebra se eu mexer em
+>    Y?"), **consulte o grafo `graphify-out/`** (skill graphify: `query`/`path`/
+>    `explain`; sem o CLI, leia `graph.json`) e `docs/ARQUITETURA.md` — **antes**
+>    de reler arquivos crus.
+> 3. **Antes de mexer em estado / token / impressão**, `docs/ARQUITETURA.md` é
+>    leitura obrigatória (12 invariantes críticas + áreas de risco).
+> 4. **NÃO** rode `graphify hook install` (apagaria a camada de docs do grafo).
+> 5. Backlog técnico sugerido em `docs/PRIORIDADES_TECNICAS.md`.
+
 Ferramenta em Python para **separar e imprimir etiquetas de envio** de marketplaces
 (Mercado Livre e Shopee) numa impressora térmica Zebra. Lê os pedidos prontos,
 agrupa por **produto + quantidade**, gera **ZPL** e entrega um `.zip` na pasta
