@@ -520,3 +520,33 @@ def test_organizar_varios_dropoff_leva_branch_e_remetente(monkeypatch):
     monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: "BR")
     sh._organizar_varios({}, "TOK", ["S1"], branch_id=77, sender_real_name="Joao")
     assert capt["dropoff"] == {"branch_id": 77, "sender_real_name": "Joao"}
+
+
+# --------------------------------------------------- cronometragem (diagnostico)
+def test_log_tempos_registra_as_fases(monkeypatch, tmp_path):
+    arq = tmp_path / "tempos.log"
+    monkeypatch.setattr(sh, "ARQUIVO_TEMPOS", arq)
+    sh._log_tempos(25, 8.2, 4.1, contexto="lote")
+    linha = arq.read_text(encoding="utf-8")
+    assert "25 pedido(s)" in linha
+    assert "organizar   8.2s" in linha and "gerar+baixar   4.1s" in linha
+    assert "total  12.3s" in linha
+
+
+def test_log_tempos_nunca_levanta(monkeypatch):
+    # diagnostico nao pode atrapalhar a impressao: falha de IO e engolida
+    monkeypatch.setattr(sh, "ARQUIVO_TEMPOS", sh.core.Path("/caminho/inexistente/x.log"))
+    sh._log_tempos(1, 1.0, 1.0)          # nao deve levantar
+
+
+def test_imprimir_lotes_cronometra(monkeypatch, tmp_path):
+    _forca_individual(monkeypatch)
+    arq = tmp_path / "tempos.log"
+    monkeypatch.setattr(sh, "ARQUIVO_TEMPOS", arq)
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    g = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    sh.imprimir_lotes({}, [g], {})
+    assert "1 pedido(s)" in arq.read_text(encoding="utf-8")   # registrou o tempo

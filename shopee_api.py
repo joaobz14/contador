@@ -45,6 +45,25 @@ _LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_
 
 ARQUIVO_CRED = core.PASTA_SCRIPT / "credenciais_shopee.json"
 
+# Cronometragem da impressao (diagnostico): registra quanto cada fase leva, para
+# saber ONDE o tempo vai (organizar x gerar x baixar) antes de otimizar. Arquivo
+# local, gitignorado; nunca guarda dados sensiveis (so contagens e segundos).
+ARQUIVO_TEMPOS = core.PASTA_SCRIPT / "shopee_tempos.log"
+
+
+def _log_tempos(n: int, organizar: float, gerar: float, *, contexto: str = "lote") -> None:
+    """Anexa uma linha com os tempos de cada fase da impressao Shopee. Nunca
+    levanta (diagnostico nao pode atrapalhar a impressao)."""
+    try:
+        total = organizar + gerar
+        linha = (f"{datetime.now():%Y-%m-%d %H:%M:%S} | {contexto} | {n} pedido(s) | "
+                 f"organizar {organizar:5.1f}s | gerar+baixar {gerar:5.1f}s | "
+                 f"total {total:5.1f}s\n")
+        with open(ARQUIVO_TEMPOS, "a", encoding="utf-8") as f:
+            f.write(linha)
+    except OSError:
+        pass
+
 
 # ---------------------------------------------------------------------------
 # CREDENCIAIS
@@ -690,6 +709,7 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
     if not pendentes:
         return []
     token = obter_token(cred)
+    _t0 = time.time()
     if organizar:
         awbs, falhas = _organizar_varios(cred, token, pendentes,
                                          branch_id=branch_id, sender_real_name=sender_real_name)
@@ -697,9 +717,11 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
             raise core.SeparadorError(falhas[0][1])
     else:
         awbs = _rastreios_paralelo(cred, token, pendentes)
+    _t1 = time.time()
     conteudo = gerar_etiqueta(cred, pendentes, token=token,
                               rastreios={sn: awbs.get(sn, "") for sn in pendentes})
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
+    _log_tempos(len(pendentes), _t1 - _t0, time.time() - _t1, contexto="grupo")
     if len(grupo.shipment_ids) == 1:
         grupo.rastreio = awbs.get(pendentes[0], "")
     if marcar:
@@ -750,6 +772,7 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
         return [], []
     token = obter_token(cred)
     todos = [sn for _, pend in pend_por_grupo for sn in pend]
+    _t0 = time.time()
     if organizar:
         awbs, falhas = _organizar_varios(cred, token, todos,
                                          branch_id=branch_id, sender_real_name=sender_real_name)
@@ -757,11 +780,13 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
         awbs = _rastreios_paralelo(cred, token, todos)
         falhas = [(sn, "sem numero de rastreio (AWB) — organize o envio")
                   for sn in todos if not awbs.get(sn)]
+    _t1 = time.time()
     alvo = [sn for sn in todos if awbs.get(sn)]
     conteudo, sns_ok, falhas_gen = _gerar_lote(cred, token, alvo, awbs)
     falhas += falhas_gen
     if conteudo:
         salvar_etiqueta(conteudo, f"lote {sns_ok[0]} x{len(sns_ok)}")
+    _log_tempos(len(todos), _t1 - _t0, time.time() - _t1)
     ok = set(sns_ok)
     impressos = []
     for g, pend in pend_por_grupo:
