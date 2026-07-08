@@ -115,6 +115,12 @@ em 2º plano.
   AWB** (não confiar no formato da resposta do batch) → fallback individual
   (`organizar_envio`) pra quem ficar sem AWB. Se o batch falhar por inteiro,
   não espera polling: vai direto ao individual.
+- **Desempenho (medido, ver `docs/ARQUITETURA.md`):** organizar é **~14s fixos**
+  (latência da Shopee emitir o AWB — piso intransponível, NÃO é o número de
+  chamadas, então **batch não acelera**). O ganho está em **gerar os documentos
+  em paralelo por pedido** (`_gerar_lote`; a Shopee processa requests
+  concorrentes em paralelo) — mediu ~70% menos na fase de gerar. Cronometragem
+  por fase em `shopee_tempos.log` (`_log_tempos`, gitignorado).
 - A etiqueta térmica vem como **ZIP com ZPL (`~DGR/Z64`) dentro** — a Zebra imprime
   direto; não reembrulhar.
 

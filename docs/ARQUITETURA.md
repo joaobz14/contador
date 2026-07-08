@@ -125,6 +125,26 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 - **Pasta Downloads / app Zebra**: mudar o prefixo do nome do ZIP quebra a detecção pelo
   app externo — o papel não sai.
 
+## Desempenho da impressão Shopee (medido em produção)
+
+Cronometragem real por fase (`shopee_tempos.log`, via `_log_tempos`) mostrou onde o
+tempo realmente vai — e desfez duas hipóteses erradas:
+
+| Fase | Custo medido | Natureza |
+|---|---|---|
+| **Organizar** (`ship_order` → AWB) | **~14s FIXO** (1 pedido ou 4, dá o mesmo) | Latência do servidor da Shopee para emitir o AWB. **Não escala com a quantidade e não dá para apressar** — o documento exige o AWB, então não há como adiantar nem encavalar. É o **piso** da plataforma. |
+| **Gerar+baixar** (`create` → READY → download) | **~5s por pedido**, mas **paralelizável** | Num pedido único de documento para vários, a Shopee gera **em série**; em **requests concorrentes**, ela processa **em paralelo**. |
+
+**Decisão (medida, não teórica):** `_gerar_lote` gera **um documento por pedido, em
+paralelo** (8 por vez) e combina num ZIP único. Resultado real: 4 pedidos caíram de
+**~20s → ~6s** na fase de gerar (~70%); projeção de 25 pedidos: **~2 min → ~40s** no total.
+
+**O que NÃO acelera:** `batch_ship_order` (organizar N num request) foi testado com a
+loja real e **não muda o tempo** — organizar é latência fixa do AWB, não número de
+chamadas. Mantido (sem downside), mas **não é o ganho**. Regra prática para a Shopee:
+o AWB é um piso intransponível; o ganho está em **paralelizar por pedido** as chamadas
+que a plataforma processa concorrentemente (a geração do documento).
+
 ## Perguntas que o grafo enriquecido deve responder
 
 - O que acontece entre clicar "Imprimir selecionados" e marcar um grupo como impresso?
