@@ -383,7 +383,7 @@ def test_imprimir_lotes_nao_marca_estado(monkeypatch):
 
 
 def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
-    # Varios grupos -> UM zip so com todas as etiquetas (Zebra imprime sem gap).
+    # Um documento POR PEDIDO (em paralelo), combinados num UNICO zip (Zebra sem gap).
     chamadas = {"gerou": [], "salvou": 0}
     _forca_individual(monkeypatch)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
@@ -391,16 +391,17 @@ def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
 
     def fake_gerar(c, ids, **k):
         chamadas["gerou"].append(list(ids))
-        return b"PK\x03\x04"
+        return b"PK-" + str(ids[0]).encode()
 
     monkeypatch.setattr(sh, "gerar_etiqueta", fake_gerar)
+    monkeypatch.setattr(sh, "_combinar_etiquetas", lambda zips: b"COMBINADO")
     monkeypatch.setattr(sh, "salvar_etiqueta",
                         lambda conteudo, rotulo: chamadas.update(salvou=chamadas["salvou"] + 1) or ("p", "ZIP"))
     g1 = _grupo("A", ids=["SN1"], dia="2026-06-25")
     g2 = _grupo("B", ids=["SN2", "SN3"], dia="2026-06-25")
     impressos, falhas = sh.imprimir_lotes({}, [g1, g2], {})
-    assert chamadas["salvou"] == 1                          # UM zip so
-    assert sorted(chamadas["gerou"][0]) == ["SN1", "SN2", "SN3"]   # todas juntas
+    assert chamadas["salvou"] == 1                          # UM zip so (combinado)
+    assert sorted(c[0] for c in chamadas["gerou"]) == ["SN1", "SN2", "SN3"]  # 1 doc por pedido
     assert impressos == [(g1, ["SN1"]), (g2, ["SN2", "SN3"])]
     assert falhas == []
     assert g1.rastreio == "BR-SN1"                          # grupo de 1 pedido leva rastreio
@@ -435,16 +436,17 @@ def test_imprimir_lotes_tolera_falha_parcial(monkeypatch):
             raise sh.core.SeparadorError("rastreio (AWB) nao saiu")
         return f"BR-{sn}"
 
-    capt = {}
+    gerou = []
     monkeypatch.setattr(sh, "organizar_envio", fake_org)
     monkeypatch.setattr(sh, "gerar_etiqueta",
-                        lambda c, ids, **k: capt.update(ids=list(ids)) or b"PK\x03\x04")
+                        lambda c, ids, **k: gerou.append(ids[0]) or (b"PK-" + ids[0].encode()))
+    monkeypatch.setattr(sh, "_combinar_etiquetas", lambda zips: b"COMBINADO")
     monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
     g1 = _grupo("A", ids=["SN1"], dia="2026-06-25")
     g2 = _grupo("B", ids=["SN2"], dia="2026-06-25")
     g3 = _grupo("C", ids=["SN3"], dia="2026-06-25")
     impressos, falhas = sh.imprimir_lotes({}, [g1, g2, g3], {})
-    assert sorted(capt["ids"]) == ["SN1", "SN3"]           # gerou so os que deram
+    assert sorted(gerou) == ["SN1", "SN3"]                 # gerou so os que deram (1 por pedido)
     assert impressos == [(g1, ["SN1"]), (g3, ["SN3"])]     # g2 ficou de fora
     assert [sn for sn, _ in falhas] == ["SN2"]             # e foi reportado
 
@@ -550,3 +552,27 @@ def test_imprimir_lotes_cronometra(monkeypatch, tmp_path):
     g = _grupo("A", ids=["SN1"], dia="2026-06-25")
     sh.imprimir_lotes({}, [g], {})
     assert "1 pedido(s)" in arq.read_text(encoding="utf-8")   # registrou o tempo
+
+
+def test_gerar_lote_paraleliza_por_pedido_e_isola_falha(monkeypatch):
+    # gera 1 doc por pedido; um que falha nao derruba os outros; combina o resto.
+    def fake_gerar(c, ids, **k):
+        if ids[0] == "B":
+            raise sh.core.SeparadorError("documento falhou")
+        return b"PK-" + ids[0].encode()
+    monkeypatch.setattr(sh, "gerar_etiqueta", fake_gerar)
+    monkeypatch.setattr(sh, "_combinar_etiquetas",
+                        lambda zips: b"COMBINADO(" + b"+".join(zips) + b")")
+    conteudo, sns_ok, falhas = sh._gerar_lote({}, "TOK", ["A", "B", "C"],
+                                              {"A": "x", "B": "y", "C": "z"})
+    assert sns_ok == ["A", "C"]                        # B fora, ordem preservada
+    assert [sn for sn, _ in falhas] == ["B"]
+    assert conteudo == b"COMBINADO(PK-A+PK-C)"         # combinou os que deram
+
+
+def test_gerar_lote_um_pedido_nao_combina(monkeypatch):
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PKsozinho")
+    monkeypatch.setattr(sh, "_combinar_etiquetas",
+                        lambda zips: (_ for _ in ()).throw(AssertionError("nao combinar 1 so")))
+    conteudo, sns_ok, falhas = sh._gerar_lote({}, "TOK", ["A"], {"A": "x"})
+    assert conteudo == b"PKsozinho" and sns_ok == ["A"] and falhas == []
