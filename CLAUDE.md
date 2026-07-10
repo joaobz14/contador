@@ -112,8 +112,16 @@ em 2º plano.
   `contagem_por_dia` na Shopee) e o seletor mostra a contagem por dia + a linha
   "Outras datas" (fim de semana/atrasadas/sem data) — nenhum pedido fica invisível.
 - **Nomes amigáveis:** `nomes_sku.json` (versionado; sincroniza via git) mapeia
-  SKU → nome. Editável na GUI pelo botão **✏ Nomes** (`EditorNomes`); use
-  `carregar_nomes()`/`salvar_nomes()` (ordena chaves, apara, descarta vazios).
+  SKU → nome. Editável na GUI pelo botão **✏ Nomes** (`EditorNomes`, com setas
+  ↑/↓); use `carregar_nomes()`/`salvar_nomes()` (apara, descarta vazios). A **ordem
+  das chaves é significativa e PRESERVADA** (não alfabética) — é a ordem de
+  separação (ver ordenação abaixo).
+- **Ordem dos grupos (tela + impressão):** `ordenar_grupos` (usado por `agrupar` e
+  `fundir_grupos`) ordena por **quantidade primeiro** (mantém os blocos "qtd 1",
+  "qtd 2"…) e, **só no bloco de qtd 1**, segue a **ordem da aba Nomes**; SKU não
+  cadastrado vai pro fim em ordem **natural** (`A2` antes de `A10`). Blocos de 2+
+  seguem por nome (inalterado). A GUI não reordena — usa a ordem que `agrupar`
+  devolve; o `EditorNomes` reordena `app.grupos` ao fechar pra refletir na hora.
 - **Identificação na impressão** (`MODO_IDENT`): `carimbo` (SKU na DANFE),
   `carimbo_nome` (nome da aba Nomes; fonte adaptativa via `_fonte_nome` — curto
   maior, longo menor até 3 linhas; sem nome cadastrado cai no SKU; pedido com

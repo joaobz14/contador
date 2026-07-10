@@ -46,6 +46,13 @@
   rotação (nó: `token_refresh_sem_retry`). Ligados a `obter_token`/`renovar_token`
   de ML e Shopee.
 
+- **2026-07-10 — Ordem de separação pessoal (por SKU no bloco "qtd 1").**
+  `ordenar_grupos` (usado por `agrupar` e `fundir_grupos`) mantém os blocos por
+  quantidade e, só no bloco de qtd 1, segue a **ordem da aba Nomes** (setas ↑/↓ no
+  `EditorNomes`; `nomes_sku.json` passou a ser order-significant — `salvar_nomes`
+  preserva a ordem). SKU não cadastrado vai pro fim em ordem natural. Vale tela +
+  impressão, ML + Shopee. Nós: `ordenar_grupos`, `ordem_separacao_pessoal`.
+
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
 

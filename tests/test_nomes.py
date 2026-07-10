@@ -38,13 +38,13 @@ def test_carregar_nomes_json_invalido_retorna_vazio(core, tmp_path, monkeypatch)
     assert core.carregar_nomes() == {}
 
 
-def test_salvar_nomes_grava_ordenado_e_relê(core, tmp_path, monkeypatch):
+def test_salvar_nomes_preserva_a_ordem_e_relê(core, tmp_path, monkeypatch):
     arq = tmp_path / "nomes.json"
     monkeypatch.setattr(core, "ARQUIVO_NOMES", arq)
+    # A ordem dada E preservada — e a ordem de separacao do bloco 'qtd 1'.
     core.salvar_nomes({"B02": "Beta", "A01": "Alfa"})
-    # chaves ordenadas no arquivo (diff do git limpo) e o roundtrip bate
-    assert list(json.loads(arq.read_text(encoding="utf-8"))) == ["A01", "B02"]
-    assert core.carregar_nomes() == {"A01": "Alfa", "B02": "Beta"}
+    assert list(json.loads(arq.read_text(encoding="utf-8"))) == ["B02", "A01"]
+    assert list(core.carregar_nomes()) == ["B02", "A01"]
 
 
 def test_salvar_nomes_descarta_vazios_e_apara(core, tmp_path, monkeypatch):

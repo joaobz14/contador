@@ -190,7 +190,7 @@ def fundir_grupos(grupos_por_conta: dict[str, list]) -> list:
                 fundidos[chave] = f
             f.shipment_ids.extend(g.shipment_ids)
             f.por_conta[conta] = g
-    return sorted(fundidos.values(), key=lambda f: (f.quantidade, f.nome))
+    return core.ordenar_grupos(list(fundidos.values()))
 
 
 class ProvedorMLAmbas(Provedor):

@@ -871,19 +871,52 @@ class EditorNomes:
         # Botoes
         acoes = ttk.Frame(win, padding=(10, 4, 10, 10))
         acoes.pack(fill="x")
+        ttk.Button(acoes, text="↑", width=3,
+                   command=lambda: self._mover(-1)).pack(side="left")
+        ttk.Button(acoes, text="↓", width=3,
+                   command=lambda: self._mover(1)).pack(side="left", padx=(4, 12))
         ttk.Button(acoes, text="🗑 Remover", command=self._remover).pack(side="left")
         ttk.Button(acoes, text="Fechar", command=self._fechar).pack(side="right")
         ttk.Button(acoes, text="💾 Salvar", command=self._salvar_um).pack(side="right", padx=6)
 
+        # Dica: a ordem da lista = ordem de separacao/impressao do bloco "qtd 1".
+        ttk.Label(win, foreground=CINZA, padding=(10, 0, 10, 8),
+                  text="A ordem desta lista define a ordem de impressão do bloco "
+                       "“Quantidade por pedido = 1”. Use ↑ ↓ para ajustar.").pack(fill="x")
+
         self._preencher_lista()
 
     def _preencher_lista(self) -> None:
+        # Exibe na ORDEM SALVA (nao alfabetica): essa ordem e a ordem de separacao
+        # do bloco "qtd 1", ajustada pelas setas ↑/↓.
         termo = self.busca_var.get().strip().lower()
         self.tree.delete(*self.tree.get_children())
-        for sku, nome in sorted(self.nomes.items()):
+        for sku, nome in self.nomes.items():
             if termo and termo not in sku.lower() and termo not in nome.lower():
                 continue
             self.tree.insert("", "end", iid=sku, values=(sku, nome))
+
+    def _mover(self, delta: int) -> None:
+        """Sobe/desce o SKU selecionado na ordem (define a ordem do bloco 'qtd 1').
+        Opera na lista COMPLETA — se houver busca ativa, limpe-a para ver o efeito."""
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showinfo("Ordenar", "Selecione um SKU da lista para mover.",
+                                parent=self.win)
+            return
+        sku = sel[0]
+        chaves = list(self.nomes.keys())
+        i = chaves.index(sku)
+        j = i + delta
+        if j < 0 or j >= len(chaves):
+            return                                 # ja esta no topo/fundo
+        chaves[i], chaves[j] = chaves[j], chaves[i]
+        self.nomes = {k: self.nomes[k] for k in chaves}   # reconstroi na nova ordem
+        self.alterado = True
+        self._gravar()
+        self._preencher_lista()
+        self.tree.selection_set(sku)
+        self.tree.see(sku)
 
     def _selecionar(self, _event=None) -> None:
         sel = self.tree.selection()
@@ -930,9 +963,11 @@ class EditorNomes:
             messagebox.showerror("Nomes", f"Não consegui salvar:\n{e}", parent=self.win)
 
     def _fechar(self) -> None:
-        # Reaplica os nomes na lista ja carregada, sem precisar reatualizar.
+        # Reaplica os nomes E reordena a lista ja carregada (a nova ordem do bloco
+        # "qtd 1" aparece na hora, sem precisar reatualizar).
         if self.alterado and self.app.grupos:
             core.aplicar_nomes(self.app.grupos, self.nomes)
+            self.app.grupos = core.ordenar_grupos(self.app.grupos)
             try:
                 self.app._render()
             except Exception:                        # noqa: BLE001
