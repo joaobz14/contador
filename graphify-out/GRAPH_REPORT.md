@@ -1,5 +1,23 @@
 # Graph Report - .  (2026-07-08)
 
+## Atualizações manuais (pós-build)
+
+> Enriquecimentos da camada de docs feitos à mão (o CLI `graphify` não roda neste
+> ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
+> fonte consultável; os números do relatório abaixo refletem o build automático.
+
+- **2026-07-08 — Camada comum de estado (`estado.py`):** extraída a lógica de
+  "já impresso" (antes duplicada entre núcleo e `shopee_api`). Nós novos:
+  `estado` (arquivo) + funções (`marcar_impresso`, `carregar`, `status_grupo`,
+  `chave_estado`, `impressos`, `envios_pendentes`, `limpar_antigo`, `salvar`,
+  `ler_json`, `gravar_json`). Descobertas registradas como nós:
+  - `estado_camada_comum` — módulo-folha, path-parametrizado, dono único do merge.
+  - `estado_seam_salvar_injetado` — **barreira→solução**: delegar `marcar_impresso`
+    direto contornava o seam `salvar_estado` que os testes interceptam, escrevendo
+    o `estado_shopee.json` real e contaminando re-execuções; resolvido injetando
+    `ler`/`salvar` (a gravação segue pela função de módulo de cada marketplace).
+  - `estado_prio_concluida` — a prioridade #1 (`prio_camada_estado`) foi concluída.
+
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
 

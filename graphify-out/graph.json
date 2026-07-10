@@ -8784,6 +8784,190 @@
       "id": "prio_nucleo_ml_god",
       "community": 8,
       "norm_label": "prioridade: separar responsabilidades de separador_etiquetas_ml.py (god file)"
+    },
+    {
+      "label": "estado.py",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "metadata": {
+        "language": "python",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "estado",
+      "community": 8,
+      "norm_label": "estado.py"
+    },
+    {
+      "label": "ler_json()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L44",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_ler_json",
+      "community": 8,
+      "norm_label": "ler_json()"
+    },
+    {
+      "label": "gravar_json()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L56",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_gravar_json",
+      "community": 8,
+      "norm_label": "gravar_json()"
+    },
+    {
+      "label": "chave_estado()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L76",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_chave_estado",
+      "community": 8,
+      "norm_label": "chave_estado()"
+    },
+    {
+      "label": "impressos()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L82",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_impressos",
+      "community": 8,
+      "norm_label": "impressos()"
+    },
+    {
+      "label": "status_grupo()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L96",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_status_grupo",
+      "community": 8,
+      "norm_label": "status_grupo()"
+    },
+    {
+      "label": "envios_pendentes()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L110",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_envios_pendentes",
+      "community": 8,
+      "norm_label": "envios_pendentes()"
+    },
+    {
+      "label": "limpar_antigo()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L116",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_limpar_antigo",
+      "community": 8,
+      "norm_label": "limpar_antigo()"
+    },
+    {
+      "label": "carregar()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L139",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_carregar",
+      "community": 8,
+      "norm_label": "carregar()"
+    },
+    {
+      "label": "salvar()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L150",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_salvar",
+      "community": 8,
+      "norm_label": "salvar()"
+    },
+    {
+      "label": "marcar_impresso()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L154",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_marcar_impresso",
+      "community": 8,
+      "norm_label": "marcar_impresso()"
+    },
+    {
+      "label": "estado.py: camada comum do estado 'ja impresso' (ML+Shopee), path-parametrizada \u2014 elimina a duplicacao do merge last-writer que antes era copiado no shopee_api. Modulo-folha (nao importa o nucleo).",
+      "file_type": "rationale",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "estado_camada_comum",
+      "community": 8,
+      "norm_label": "estado.py: camada comum do estado 'ja impresso' (ml+shopee), path-parametrizada \u2014 elimina a duplicacao do merge last-writer que antes era copiado no shopee_api. modulo-folha (nao importa o nucleo)."
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: delegar marcar_impresso direto ao estado.py contornava o seam salvar_estado que os testes interceptam (monkeypatch) -> escrevia o estado_shopee.json real e CONTAMINAVA re-execucoes. Solucao: injetar ler/salvar; a gravacao continua passando pela funcao de modulo de cada marketplace (patchavel, sem tocar arquivo real).",
+      "file_type": "rationale",
+      "source_file": "estado.py",
+      "source_location": "L154",
+      "_origin": "ast",
+      "id": "estado_seam_salvar_injetado",
+      "community": 8,
+      "norm_label": "barreira->solucao: delegar marcar_impresso direto ao estado.py contornava o seam salvar_estado que os testes interceptam (monkeypatch) -> escrevia o estado_shopee.json real e contaminava re-execucoes. solucao: injetar ler/salvar; a gravacao continua passando pela funcao de modulo de cada marketplace (patchavel, sem tocar arquivo real)."
+    },
+    {
+      "label": "PRIORIDADE CONCLUIDA: a camada comum de estado (era a #1 recomendada em PRIORIDADES_TECNICAS) foi extraida para estado.py. Suite 220 passed, 1 skipped; sem alteracao de comportamento; nenhum teste existente mudou.",
+      "file_type": "concept",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "estado_prio_concluida",
+      "community": 8,
+      "norm_label": "prioridade concluida: a camada comum de estado (era a #1 recomendada em prioridades_tecnicas) foi extraida para estado.py. suite 220 passed, 1 skipped; sem alteracao de comportamento; nenhum teste existente mudou."
     }
   ],
   "links": [
@@ -24380,6 +24564,343 @@
       "weight": 1.0,
       "source": "cron_tempos",
       "target": "file_shopee_tempos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_ler_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_gravar_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_chave_estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_impressos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_status_grupo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_envios_pendentes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_limpar_antigo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_carregar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_salvar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml",
+      "target": "estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shopee_api",
+      "target": "estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_marcar_impresso",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shopee_api_marcar_impresso",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_carregar_estado",
+      "target": "estado_carregar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shopee_api_carregar_estado",
+      "target": "estado_carregar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_salvar_estado",
+      "target": "estado_salvar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "shopee_api_salvar_estado",
+      "target": "estado_salvar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_chave_estado",
+      "target": "estado_chave_estado",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_impressos",
+      "target": "estado_impressos",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_status_grupo",
+      "target": "estado_status_grupo",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_envios_pendentes",
+      "target": "estado_envios_pendentes",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_limpar_estado_antigo",
+      "target": "estado_limpar_antigo",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_ler_json",
+      "target": "estado_ler_json",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_gravar_json",
+      "target": "estado_gravar_json",
+      "confidence_score": 1.0,
+      "context": "re-export"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado_camada_comum",
+      "target": "estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado_seam_salvar_injetado",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "estado_prio_concluida",
+      "target": "estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "prio_camada_estado",
+      "target": "estado",
+      "confidence_score": 0.85
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "last_writer_merge",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "inv_marcar_merge",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "inv_envio_novo_reabre",
+      "target": "estado_status_grupo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "inv_estado_mkt_conta_dia",
+      "target": "estado_chave_estado",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [
