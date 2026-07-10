@@ -90,3 +90,20 @@ def test_gerar_zip_lotes_aborta_em_zpl_invalido(core, monkeypatch, tmp_path):
     monkeypatch.setattr(core, "baixar_zpl", lambda token, ids: "sem zpl valido")
     with pytest.raises(core.SeparadorError):
         core.gerar_zip_lotes("tok", [_grupo(core, ships=(1,))], {}, modo="nenhuma")
+
+
+# ----------------------------------- nome do .zip que o app da Zebra reconhece
+def test_gerar_zip_nome_tem_prefixo_da_zebra_e_contem_o_zpl(core, tmp_path, monkeypatch):
+    """O .zip DEVE comecar com 'etiqueta de envio - ' (prefixo que o app da Zebra
+    vigia na Downloads) e conter o ZPL num .txt que tambem traz esse texto. Mudar
+    isso quebra a impressao silenciosamente (sem esse teste, nada avisaria)."""
+    import zipfile
+    monkeypatch.setattr(core, "PASTA_DOWNLOADS", tmp_path)
+    destino = core._gerar_zip("Produto X - q2", "^XA teste ^XZ")
+    assert destino.name.startswith("etiqueta de envio - ")
+    assert destino.suffix == ".zip"
+    assert not list(tmp_path.glob("*.tmp"))          # gravacao atomica: sem .tmp sobrando
+    with zipfile.ZipFile(destino) as zf:
+        nomes = zf.namelist()
+        assert nomes and "etiqueta de envio" in nomes[0].lower()   # o app tambem olha o interno
+        assert "^XA teste ^XZ" in zf.read(nomes[0]).decode("utf-8")
