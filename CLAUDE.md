@@ -96,7 +96,11 @@ em 2º plano.
   direto). Não é persistido no config (escolha pontual).
 - **Token: sempre `obter_token(cred)`** (ML e Shopee) — cache + lock double-checked.
   Nunca chamar `renovar_token` direto: o refresh_token **rotaciona** e uma corrida
-  entre threads pode invalidá-lo (travando a conta).
+  pode invalidá-lo (travando a conta). Como o lock só cobre **threads**, dentro
+  dele `obter_token` **relê o disco** (`_ler_json(ARQUIVO_CRED)`) e adota o token
+  salvo — protege também **processos** distintos na mesma conta (GUI + bot).
+  `renovar_token` **não re-tenta** (`tentativas=1`): re-tentar o refresh grant após
+  o servidor já ter rotacionado gastaria um token de uso único.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e
   leitura tolerante. Credenciais têm espelho **`.bak`** com auto-recuperação
   (queda de energia não exige refazer o token); `.bak` é gitignorado.

@@ -9064,6 +9064,26 @@
       "id": "shopee_erro_sem_token",
       "community": 7,
       "norm_label": "seguranca: erro http shopee sem token"
+    },
+    {
+      "label": "SEGURANCA/AUDITORIA: corrida de refresh ENTRE PROCESSOS (GUI+bot na mesma conta) \u2014 o threading.Lock so cobre threads. obter_token passou a reler o disco (_ler_json(ARQUIVO_CRED)) dentro do lock e adotar o token salvo por outro processo, em vez de renovar e gastar o refresh_token de uso unico.",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L320",
+      "_origin": "ast",
+      "id": "token_corrida_multiprocesso",
+      "community": 18,
+      "norm_label": "token: corrida de refresh entre processos"
+    },
+    {
+      "label": "SEGURANCA/AUDITORIA: renovar_token NAO re-tenta (tentativas=1). Re-tentar o refresh grant apos o servidor ja ter rotacionado o refresh_token (uso unico) mandaria um token invalido e poderia travar a conta/loja.",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L288",
+      "_origin": "ast",
+      "id": "token_refresh_sem_retry",
+      "community": 18,
+      "norm_label": "token: refresh sem retry"
     }
   ],
   "links": [
@@ -25197,6 +25217,46 @@
       "source": "shopee_erro_sem_token",
       "target": "registro_redige_segredos",
       "confidence_score": 0.85
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L320",
+      "weight": 1.0,
+      "source": "token_corrida_multiprocesso",
+      "target": "separador_etiquetas_ml_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L320",
+      "weight": 1.0,
+      "source": "token_corrida_multiprocesso",
+      "target": "shopee_api_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L320",
+      "weight": 1.0,
+      "source": "token_refresh_sem_retry",
+      "target": "separador_etiquetas_ml_renovar_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L320",
+      "weight": 1.0,
+      "source": "token_refresh_sem_retry",
+      "target": "shopee_api_renovar_token",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [

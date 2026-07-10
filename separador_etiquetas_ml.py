@@ -286,8 +286,11 @@ def salvar_credenciais(cred: dict) -> None:
 
 
 def renovar_token(cred: dict) -> str:
-    # Refresh com retry (408/429/5xx e rede): um soluco transitorio nao derruba
-    # a atualizacao inteira logo na 1a chamada.
+    # SEM retry (tentativas=1): o refresh_token do ML e de USO UNICO e rotaciona.
+    # Se o servidor ja o consumiu (rotacionou) mas a resposta se perdeu num soluco
+    # de rede, um retry mandaria o refresh_token JA consumido -> falha e pode
+    # travar a conta. Melhor falhar limpo: o proximo Atualizar tenta de novo (o
+    # refresh_token nao foi gasto se a 1a tentativa nem chegou ao servidor).
     resp = _requisicao_post(
         f"{API}/oauth/token",
         data={
@@ -296,6 +299,7 @@ def renovar_token(cred: dict) -> str:
             "client_secret": cred["client_secret"],
             "refresh_token": cred["refresh_token"],
         },
+        tentativas=1,
     )
     if resp.status_code != 200:
         raise SeparadorError(f"Falha ao renovar token: {resp.text}")
@@ -328,6 +332,16 @@ def obter_token(cred: dict) -> str:
     with _LOCK_TOKEN:
         if _token_valido(cred):                      # outra thread ja renovou?
             return cred["access_token"]
+        # Outro PROCESSO (ex.: bot e GUI na MESMA conta) pode ter renovado desde
+        # que carregamos o cred — o lock so serializa threads, nao processos.
+        # Rele o disco e adota o token salvo: se ja houver um valido, NAO
+        # renovamos (evita gastar o refresh_token de uso unico e a corrida que
+        # travaria a conta); se nao, renovamos com o refresh_token MAIS RECENTE.
+        disco = _ler_json(ARQUIVO_CRED)
+        if disco.get("access_token"):
+            cred.update(disco)
+            if _token_valido(cred):
+                return cred["access_token"]
         return renovar_token(cred)
 
 
