@@ -347,6 +347,7 @@ screenshots como artefato de cada execução.
 |---|---|
 | `separador_etiquetas_ml.py` | Núcleo: API do Mercado Livre, agrupamento, ZPL, carimbo e CLI |
 | `estado.py` | Camada comum do estado "já impresso" (ML + Shopee) e IO de JSON atômico |
+| `registro.py` | Log operacional (`separador.log`) com redação de segredos |
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta e estado |
 | `provedores.py` | Abstração de marketplace usada pela interface (ML, Shopee e modo Ambas) |
 | `separador_gui.py` | Interface gráfica (Tkinter) |

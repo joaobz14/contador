@@ -23,6 +23,7 @@ repo) monitora e imprime.
 |---|---|
 | `separador_etiquetas_ml.py` | Núcleo: API do ML, agrupamento, ZPL, carimbo, CLI. |
 | `estado.py` | Camada comum do estado "já impresso" (ML+Shopee) + IO JSON atômico. |
+| `registro.py` | Log operacional (`separador.log`) + redação de segredos (`sem_segredos`). |
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
@@ -117,7 +118,14 @@ em 2º plano.
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
-  `config.json`, `bot_config.json`.
+  `config.json`, `bot_config.json`, logs (`bot.log`, `shopee_tempos.log`,
+  `separador.log`).
+- **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
+  loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
+  sem debugger. Duas regras: (1) log **nunca** atrapalha a operação (defensivo,
+  `try/except`, `delay=True`); (2) **nunca** logue segredos — passe todo texto de
+  exceção por `registro.sem_segredos()` antes (um `HTTPError` da Shopee carrega a
+  URL com `access_token`/`sign`). O ponto único de erro da GUI (`_erro`) já redige.
 - **Toda impressão pela GUI confirma antes de marcar:** gera mas NÃO marca; a
   tela pergunta "as etiquetas saíram certo?" e só então marca (vale p/ ML e
   Shopee, lote E individual — o individual roteia pelo fluxo do lote). Bot/CLI

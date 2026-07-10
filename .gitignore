@@ -19,6 +19,7 @@ envios_cache.json
 config.json
 bot.log
 shopee_tempos.log
+separador.log
 *.tmp
 *.bak
 
