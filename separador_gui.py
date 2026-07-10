@@ -17,6 +17,7 @@ from tkinter import messagebox, simpledialog, ttk
 
 import provedores
 import separador_etiquetas_ml as core
+from registro import log, sem_segredos
 
 VERDE = "#0f6e56"
 CINZA = "#6b7280"
@@ -48,6 +49,16 @@ class SeparadorApp:
         self._tela_inicial()           # abre parado: usuario escolhe o filtro
         # Salva o tamanho/posicao da janela ao fechar, para reabrir igual.
         self.root.protocol("WM_DELETE_WINDOW", self._ao_fechar)
+        log.info("Separador iniciado (%s)", self._ctx_log())
+
+    def _ctx_log(self) -> str:
+        """Contexto para o log operacional (loja e, no ML, a conta ativa). Le so
+        dados simples (dict/provedor) — seguro de chamar de threads de fundo. O
+        nome do provedor ja distingue ML / Shopee / 'Mercado Livre (ambas)'."""
+        conta = self.config.get("conta_ativa", "")
+        if self.prov.suporta_contas and conta and "ambas" not in self.prov.nome.lower():
+            return f"loja={self.prov.nome} conta={conta}"
+        return f"loja={self.prov.nome}"
 
     def _ao_fechar(self) -> None:
         try:
@@ -459,9 +470,15 @@ class SeparadorApp:
             return
         self.grupos = grupos
         self.estado = estado
+        etiquetas = sum(g.total_etiquetas for g in grupos)
+        log.info("Atualizar: %s dia=%s -> %d grupo(s), %d etiqueta(s)",
+                 self._ctx_log(), dia or "(sem data)", len(grupos), etiquetas)
         self.root.after(0, self._render)
 
     def _erro(self, msg: str) -> None:
+        # Ponto unico de erro da GUI: loga TODA falha ja com segredos redigidos
+        # (a mensagem pode ser um HTTPError com a URL assinada da Shopee).
+        log.error("Erro: %s", sem_segredos(msg))
         self.prog.pack_forget()
         self._ocupar(False, "")
         messagebox.showerror("Erro", msg)
@@ -700,6 +717,8 @@ class SeparadorApp:
 
     def _pos_reimpressao(self, n: int, falhas: list) -> None:
         self._ocupar(False, f"{n - len(falhas)} reimpressão(ões) enviada(s).")
+        log.info("Reimpressao: %d enviada(s), %d falha(s) (nao altera estado)",
+                 n - len(falhas), len(falhas))
         if falhas:
             linhas = "\n".join(f"• {nome}: {motivo}" for nome, motivo in falhas[:8])
             mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outra(s))"
@@ -731,6 +750,8 @@ class SeparadorApp:
         """PASSO 1 do contrato: gera as etiquetas (ZIP na Downloads) e devolve os
         pendentes de cada grupo. NAO marca estado aqui — imprimir_lotes do provedor
         so gera. Ao terminar, entrega a _confirmar_e_marcar (passos 2 e 3)."""
+        log.info("Gerar etiquetas: %s, %d grupo(s), ident=%s",
+                 self._ctx_log(), len(grupos), self.modo_ident)
         try:
             impressos, falhas = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
@@ -746,6 +767,8 @@ class SeparadorApp:
         self._ocupar(False, "")
         falhas = falhas or []
         if falhas:                              # alguns pedidos nao geraram (parcial)
+            log.warning("Lote parcial: %d pedido(s) nao sairam (%s)", len(falhas),
+                        ", ".join(str(sn) for sn, _ in falhas[:10]))
             linhas = "\n".join(f"• {sn}: {motivo}" for sn, motivo in falhas[:8])
             mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outro(s))"
             messagebox.showwarning(
@@ -757,6 +780,7 @@ class SeparadorApp:
                 messagebox.showinfo("Imprimir lotes", "Nada pendente nos lotes selecionados.")
             return
         n = len(impressos)
+        etiquetas = sum(len(pend) for _, pend in impressos)
         # Sempre confirma o resultado fisico antes de marcar (convencao "lotes
         # confirmam antes de marcar"), inclusive quando e um unico lote.
         marcar = messagebox.askyesno(
@@ -768,6 +792,10 @@ class SeparadorApp:
         if marcar:
             for g, pend in impressos:
                 self.prov.marcar_impresso(self.estado, g, pend)
+            log.info("Confirmado: %d grupo(s), %d etiqueta(s) marcados como impressos (%s)",
+                     n, etiquetas, self._ctx_log())
+        else:
+            log.info("Nao confirmado: %d lote(s) mantidos pendentes para reimprimir", n)
         self._render()
 
     def imprimir_proximo(self) -> None:

@@ -8978,6 +8978,68 @@
       "id": "gui_contrato_explicito",
       "community": 0,
       "norm_label": "contrato de impressao explicito na gui"
+    },
+    {
+      "label": "registro.py",
+      "file_type": "code",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "registro",
+      "community": 10,
+      "norm_label": "registro.py",
+      "metadata": {
+        "language": "python",
+        "kind": "file"
+      }
+    },
+    {
+      "label": "sem_segredos()",
+      "file_type": "code",
+      "source_file": "registro.py",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "registro_sem_segredos",
+      "community": 10,
+      "norm_label": "sem_segredos()",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      }
+    },
+    {
+      "label": "log (logger 'separador' -> separador.log)",
+      "file_type": "code",
+      "source_file": "registro.py",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "registro_log",
+      "community": 10,
+      "norm_label": "log (logger 'separador' -> separador.log)",
+      "metadata": {
+        "language": "python",
+        "kind": "global"
+      }
+    },
+    {
+      "label": "Log operacional (separador.log): loja/conta/dia, contagens, confirmacao sim/nao e falhas \u2014 diagnostico do dia a dia. Defensivo: delay=True + try/except, NUNCA quebra a abertura da tela (filosofia de _log_tempos).",
+      "file_type": "rationale",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "log_operacional",
+      "community": 10,
+      "norm_label": "log operacional (separador.log): loja/conta/dia, contagens, confirmacao sim/nao e falhas \u2014 diagnostico do dia a dia. defensivo: delay=true + try/except, nunca quebra a abertura da tela (filosofia de _log_tempos)."
+    },
+    {
+      "label": "DESCOBERTA/SEGURANCA: a Shopee assina URLs com access_token/sign na query; um raise_for_status (4xx/5xx) propaga a URL inteira ate o _erro da GUI. sem_segredos() redige access_token/sign/code/refresh_token ANTES de logar, para o token nunca cair no separador.log.",
+      "file_type": "rationale",
+      "source_file": "registro.py",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "registro_redige_segredos",
+      "community": 10,
+      "norm_label": "descoberta/seguranca: a shopee assina urls com access_token/sign na query; um raise_for_status (4xx/5xx) propaga a url inteira ate o _erro da gui. sem_segredos() redige access_token/sign/code/refresh_token antes de logar, para o token nunca cair no separador.log."
     }
   ],
   "links": [
@@ -24960,6 +25022,96 @@
       "weight": 1.0,
       "source": "confirma_antes_marcar",
       "target": "separador_gui_separadorapp_pos_lotes",
+      "confidence_score": 0.85
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "registro",
+      "target": "registro_sem_segredos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "registro",
+      "target": "registro_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_gui",
+      "target": "registro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_erro",
+      "target": "registro_sem_segredos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_erro",
+      "target": "registro_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_pos_lotes",
+      "target": "registro_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "log_operacional",
+      "target": "registro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "registro_redige_segredos",
+      "target": "registro_sem_segredos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "source_file": "registro.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "registro_redige_segredos",
+      "target": "separador_gui_separadorapp_erro",
       "confidence_score": 0.85
     }
   ],

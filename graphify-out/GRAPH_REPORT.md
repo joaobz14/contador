@@ -23,6 +23,12 @@
   confirma e só então marca, único ponto que chama `marcar_impresso`). Nó novo
   `gui_contrato_explicito` ligado a `inv_confirma_antes_marcar` e à prioridade
   `prio_contrato_impressao` (concluída). Sem mudança de comportamento.
+- **2026-07-10 — Log operacional (`registro.py`):** módulo-folha com o logger
+  `separador.log` + `sem_segredos()`. Nós: `registro` (arquivo), `sem_segredos`,
+  `log`, `log_operacional` e `registro_redige_segredos`. Descoberta de segurança
+  registrada: a Shopee assina URLs com `access_token`/`sign` na query e um
+  `raise_for_status` propaga a URL até o `_erro` da GUI — `sem_segredos()` redige
+  os segredos **antes** de logar, para o token nunca cair no `separador.log`.
 
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
