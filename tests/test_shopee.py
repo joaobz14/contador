@@ -576,3 +576,44 @@ def test_gerar_lote_um_pedido_nao_combina(monkeypatch):
                         lambda zips: (_ for _ in ()).throw(AssertionError("nao combinar 1 so")))
     conteudo, sns_ok, falhas = sh._gerar_lote({}, "TOK", ["A"], {"A": "x"})
     assert conteudo == b"PKsozinho" and sns_ok == ["A"] and falhas == []
+
+
+# ------------------------------------------ erro HTTP nao vaza o token (seguranca)
+class _RespErro:
+    """Resposta HTTP >= 400 com corpo JSON de erro (simula a Shopee)."""
+    def __init__(self, status=403, corpo=None):
+        self.status_code = status
+        self._corpo = corpo if corpo is not None else {"error": "error_auth",
+                                                        "message": "Invalid access_token."}
+        self.headers = {"Content-Type": "application/json"}
+
+    def json(self):
+        return self._corpo
+
+    def raise_for_status(self):
+        raise AssertionError("nao deve chamar raise_for_status (vaza a URL com o token)")
+
+
+def test_get_shop_erro_http_nao_vaza_access_token(monkeypatch):
+    cred = {"partner_id": 1, "partner_key": "k", "shop_id": 2}
+    # o core devolve uma resposta 403 (o token/sign estariam na URL, nao aqui)
+    monkeypatch.setattr(sh.core, "_requisicao_get", lambda *a, **k: _RespErro())
+    try:
+        sh._get_shop(cred, "TOKEN_SUPER_SECRETO", "/api/v2/order/get", {"order_sn": "A1"})
+        assert False, "deveria ter levantado"
+    except sh.core.SeparadorError as e:
+        msg = str(e)
+        assert "TOKEN_SUPER_SECRETO" not in msg      # o token NUNCA aparece
+        assert "access_token" not in msg or "access_token=" not in msg
+        assert "HTTP 403" in msg                      # mas o diagnostico util fica
+        assert "/api/v2/order/get" in msg
+
+
+def test_post_shop_erro_http_vira_separadorerror_limpo(monkeypatch):
+    monkeypatch.setattr(sh.core, "_requisicao_post", lambda *a, **k: _RespErro(status=500, corpo={}))
+    try:
+        sh._post_shop({"partner_id": 1, "partner_key": "k", "shop_id": 2},
+                      "TOKEN_X", "/api/v2/logistics/ship_order", {"order_sn": "A1"})
+        assert False
+    except sh.core.SeparadorError as e:
+        assert "TOKEN_X" not in str(e) and "HTTP 500" in str(e)

@@ -9040,6 +9040,30 @@
       "id": "registro_redige_segredos",
       "community": 10,
       "norm_label": "descoberta/seguranca: a shopee assina urls com access_token/sign na query; um raise_for_status (4xx/5xx) propaga a url inteira ate o _erro da gui. sem_segredos() redige access_token/sign/code/refresh_token antes de logar, para o token nunca cair no separador.log."
+    },
+    {
+      "label": "_levantar_se_erro()",
+      "file_type": "code",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "shopee_api_levantar_se_erro",
+      "community": 7,
+      "norm_label": "_levantar_se_erro()"
+    },
+    {
+      "label": "SEGURANCA (auditoria): erro HTTP da Shopee NAO usa raise_for_status (cuja msg tem a URL com access_token/sign); _levantar_se_erro converte >=400 num SeparadorError limpo (path+status+erro do corpo). Protege log/tela/chat do bot de vazar o token de uma vez.",
+      "file_type": "rationale",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "_origin": "ast",
+      "id": "shopee_erro_sem_token",
+      "community": 7,
+      "norm_label": "seguranca: erro http shopee sem token"
     }
   ],
   "links": [
@@ -25112,6 +25136,66 @@
       "weight": 1.0,
       "source": "registro_redige_segredos",
       "target": "separador_gui_separadorapp_erro",
+      "confidence_score": 0.85
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_api",
+      "target": "shopee_api_levantar_se_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_api_get_shop",
+      "target": "shopee_api_levantar_se_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_api_post_shop",
+      "target": "shopee_api_levantar_se_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_api_download_shop",
+      "target": "shopee_api_levantar_se_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_erro_sem_token",
+      "target": "shopee_api_levantar_se_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "source_file": "shopee_api.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "shopee_erro_sem_token",
+      "target": "registro_redige_segredos",
       "confidence_score": 0.85
     }
   ],
