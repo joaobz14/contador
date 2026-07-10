@@ -614,6 +614,14 @@ class SeparadorApp:
         return var          # BooleanVar da caixinha (ou None se nao selecionavel)
 
     # -------------------------------------------------------------- IMPRIMIR
+    # CONTRATO DE IMPRESSAO (invariante 1 — NAO reordenar):
+    #   1. GERA as etiquetas (ZIP na Downloads) SEM marcar estado
+    #      -> self.prov.imprimir_lotes(...), que devolve os pendentes e nao marca;
+    #   2. CONFIRMA fisicamente com o operador ("as etiquetas sairam certo?")
+    #      -> _confirmar_e_marcar pergunta antes de qualquer marcacao;
+    #   3. So entao MARCA como impresso -> self.prov.marcar_impresso(...).
+    # Marcar antes da confirmacao faria um grupo sumir da lista sem etiqueta
+    # fisica (Zebra pode atolar). Individual e lote passam pelo MESMO caminho.
     def _confirmar_organizar(self, grupos: list) -> bool:
         """Na Shopee, organizar o envio compromete a Postagem — pede confirmação
         antes (conta os pedidos pendentes, sem rede). O organizar é idempotente:
@@ -638,7 +646,7 @@ class SeparadorApp:
         if not self._confirmar_organizar([g]):
             return
         self._ocupar(True, f"Imprimindo: {g.nome} ...")
-        threading.Thread(target=self._imprimir_lotes_thread,
+        threading.Thread(target=self._gerar_sem_marcar_thread,
                          args=([g],), daemon=True).start()
 
     def reimprimir(self, g) -> None:
@@ -716,18 +724,25 @@ class SeparadorApp:
         else:
             extra = ""
         self._ocupar(True, f"Imprimindo {len(selecionados)} lote(s){extra} ...")
-        threading.Thread(target=self._imprimir_lotes_thread,
+        threading.Thread(target=self._gerar_sem_marcar_thread,
                          args=(selecionados,), daemon=True).start()
 
-    def _imprimir_lotes_thread(self, grupos) -> None:
+    def _gerar_sem_marcar_thread(self, grupos) -> None:
+        """PASSO 1 do contrato: gera as etiquetas (ZIP na Downloads) e devolve os
+        pendentes de cada grupo. NAO marca estado aqui — imprimir_lotes do provedor
+        so gera. Ao terminar, entrega a _confirmar_e_marcar (passos 2 e 3)."""
         try:
             impressos, falhas = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
-        self.root.after(0, lambda: self._pos_lotes(impressos, falhas))
+        self.root.after(0, lambda: self._confirmar_e_marcar(impressos, falhas))
 
-    def _pos_lotes(self, impressos: list, falhas: list | None = None) -> None:
+    def _confirmar_e_marcar(self, impressos: list, falhas: list | None = None) -> None:
+        """PASSOS 2 e 3 do contrato: pergunta ao operador se as etiquetas sairam
+        certo (passo 2) e SO ENTAO marca como impresso (passo 3). Este e o UNICO
+        ponto da GUI que chama marcar_impresso — nao marque em outro lugar, senao
+        um grupo pode constar impresso sem etiqueta fisica (invariante 1)."""
         self._ocupar(False, "")
         falhas = falhas or []
         if falhas:                              # alguns pedidos nao geraram (parcial)

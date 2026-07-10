@@ -17,6 +17,12 @@
     o `estado_shopee.json` real e contaminando re-execuções; resolvido injetando
     `ler`/`salvar` (a gravação segue pela função de módulo de cada marketplace).
   - `estado_prio_concluida` — a prioridade #1 (`prio_camada_estado`) foi concluída.
+- **2026-07-10 — Contrato de impressão da GUI explícito:** renomeados os métodos
+  do fluxo em `separador_gui.py` — `_imprimir_lotes_thread` → `_gerar_sem_marcar_thread`
+  (passo 1: gera sem marcar) e `_pos_lotes` → `_confirmar_e_marcar` (passos 2-3:
+  confirma e só então marca, único ponto que chama `marcar_impresso`). Nó novo
+  `gui_contrato_explicito` ligado a `inv_confirma_antes_marcar` e à prioridade
+  `prio_contrato_impressao` (concluída). Sem mudança de comportamento.
 
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.

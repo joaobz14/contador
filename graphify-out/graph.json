@@ -3560,24 +3560,24 @@
       "norm_label": ".imprimir_lotes()"
     },
     {
-      "label": "._imprimir_lotes_thread()",
-      "file_type": "code",
-      "source_file": "separador_gui.py",
-      "source_location": "L722",
-      "_origin": "ast",
-      "id": "separador_gui_separadorapp_imprimir_lotes_thread",
-      "community": 0,
-      "norm_label": "._imprimir_lotes_thread()"
-    },
-    {
-      "label": "._pos_lotes()",
+      "label": "._gerar_sem_marcar_thread()",
       "file_type": "code",
       "source_file": "separador_gui.py",
       "source_location": "L730",
       "_origin": "ast",
+      "id": "separador_gui_separadorapp_imprimir_lotes_thread",
+      "community": 0,
+      "norm_label": "._gerar_sem_marcar_thread()"
+    },
+    {
+      "label": "._confirmar_e_marcar()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L738",
+      "_origin": "ast",
       "id": "separador_gui_separadorapp_pos_lotes",
       "community": 0,
-      "norm_label": "._pos_lotes()"
+      "norm_label": "._confirmar_e_marcar()"
     },
     {
       "label": ".imprimir_proximo()",
@@ -8968,6 +8968,16 @@
       "id": "estado_prio_concluida",
       "community": 8,
       "norm_label": "prioridade concluida: a camada comum de estado (era a #1 recomendada em prioridades_tecnicas) foi extraida para estado.py. suite 220 passed, 1 skipped; sem alteracao de comportamento; nenhum teste existente mudou."
+    },
+    {
+      "label": "Contrato de impressao explicito na GUI: _gerar_sem_marcar_thread (passo 1: gera sem marcar) -> _confirmar_e_marcar (passos 2-3: pergunta 'saiu certo?' e so entao marca \u2014 UNICO ponto que chama marcar_impresso). Individual e lote pelo mesmo caminho.",
+      "file_type": "rationale",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "_origin": "ast",
+      "id": "gui_contrato_explicito",
+      "community": 0,
+      "norm_label": "contrato de impressao explicito na gui"
     }
   ],
   "links": [
@@ -24901,6 +24911,56 @@
       "source": "inv_estado_mkt_conta_dia",
       "target": "estado_chave_estado",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "gui_contrato_explicito",
+      "target": "separador_gui_separadorapp_pos_lotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "gui_contrato_explicito",
+      "target": "separador_gui_separadorapp_imprimir_lotes_thread",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "inv_confirma_antes_marcar",
+      "target": "separador_gui_separadorapp_pos_lotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "prio_contrato_impressao",
+      "target": "gui_contrato_explicito",
+      "confidence_score": 0.85
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "source_file": "separador_gui.py",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "confirma_antes_marcar",
+      "target": "separador_gui_separadorapp_pos_lotes",
+      "confidence_score": 0.85
     }
   ],
   "hyperedges": [
