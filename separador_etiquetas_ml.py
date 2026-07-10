@@ -766,7 +766,39 @@ def agrupar(itens: list[ItemPedido]) -> list[Grupo]:
             grupos[(chave, qtd)] = g
         if sid not in g.shipment_ids:
             g.shipment_ids.append(sid)
-    return sorted(grupos.values(), key=lambda g: (g.quantidade, g.nome.lower()))
+    return ordenar_grupos(list(grupos.values()))
+
+
+def _natural(texto: str) -> tuple:
+    """Chave de ordenacao natural: 'A2' antes de 'A10' (numeros comparam por
+    valor). Cada pedaco vira (flag, valor) para numero e texto nunca se
+    compararem entre si (evita TypeError com SKUs que misturam)."""
+    return tuple((0, int(t)) if t.isdigit() else (1, t.lower())
+                 for t in re.findall(r"\d+|\D+", str(texto)))
+
+
+def _ordem_nomes() -> dict:
+    """Posicao de cada SKU na aba Nomes (a ordem em que voce os deixou). Define a
+    ordem do bloco 'Quantidade por pedido = 1'."""
+    return {sku: i for i, sku in enumerate(carregar_nomes())}
+
+
+def _chave_ordem(g: Grupo, rank: dict) -> tuple:
+    """Ordena por QUANTIDADE primeiro (mantem os blocos 'qtd 1', 'qtd 2'...). No
+    bloco de QTD 1, segue a ordem da aba Nomes; SKU nao cadastrado vai pro fim, em
+    ordem natural. Nos blocos de 2+, ordena por nome (comportamento antigo)."""
+    if g.quantidade == 1:
+        pos = rank.get(g.chave)
+        sub = (0, pos, ()) if pos is not None else (1, 0, _natural(g.chave))
+        return (1, sub, g.nome.lower())
+    return (g.quantidade, (0, 0, ()), g.nome.lower())
+
+
+def ordenar_grupos(grupos: list[Grupo]) -> list[Grupo]:
+    """Ordena os grupos para a TELA e a IMPRESSAO (mesma ordem nos dois): mantem
+    os blocos por quantidade e aplica a sua ordem da aba Nomes so no bloco 'qtd 1'."""
+    rank = _ordem_nomes()
+    return sorted(grupos, key=lambda g: _chave_ordem(g, rank))
 
 
 # ---------------------------------------------------------------------------
@@ -778,12 +810,13 @@ def carregar_nomes() -> dict:
 
 
 def salvar_nomes(nomes: dict) -> None:
-    """Grava o de-para SKU -> nome de forma atomica (.tmp -> rename), com as
-    chaves ordenadas para o diff do git ficar limpo. Descarta SKUs/nomes
-    vazios."""
+    """Grava o de-para SKU -> nome de forma atomica (.tmp -> rename), PRESERVANDO
+    a ordem das chaves. Essa ordem E a ordem de separacao do bloco 'Quantidade por
+    pedido = 1' (ver ordenar_grupos): a aba Nomes e onde voce a define. Descarta
+    SKUs/nomes vazios."""
     limpo = {str(sku).strip(): str(nome).strip()
              for sku, nome in nomes.items() if str(sku).strip() and str(nome).strip()}
-    _gravar_json(ARQUIVO_NOMES, dict(sorted(limpo.items())))
+    _gravar_json(ARQUIVO_NOMES, limpo)
 
 
 def _rotulo_sku(sku: str, nomes: dict) -> str:

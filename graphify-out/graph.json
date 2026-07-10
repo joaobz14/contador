@@ -9084,6 +9084,30 @@
       "id": "token_refresh_sem_retry",
       "community": 18,
       "norm_label": "token: refresh sem retry"
+    },
+    {
+      "label": "ordenar_grupos()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "separador_etiquetas_ml_ordenar_grupos",
+      "community": 8,
+      "norm_label": "ordenar_grupos()"
+    },
+    {
+      "label": "FEATURE: ordem de separacao pessoal. ordenar_grupos mantem os blocos por quantidade (o bloco 'qtd 1/2/3' lembra que o pedido e um pacote de N unidades) e, SO no bloco de qtd 1, segue a ordem da aba Nomes (setas \u2191/\u2193 no EditorNomes; nomes_sku.json vira ORDER-significant). SKU nao cadastrado vai pro fim, natural. Vale tela+impressao, ML+Shopee (ambos passam por agrupar).",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "_origin": "ast",
+      "id": "ordem_separacao_pessoal",
+      "community": 8,
+      "norm_label": "feature: ordem de separacao pessoal"
     }
   ],
   "links": [
@@ -25256,6 +25280,46 @@
       "weight": 1.0,
       "source": "token_refresh_sem_retry",
       "target": "shopee_api_renovar_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_agrupar",
+      "target": "separador_etiquetas_ml_ordenar_grupos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "weight": 1.0,
+      "source": "provedores_fundir_grupos",
+      "target": "separador_etiquetas_ml_ordenar_grupos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "weight": 1.0,
+      "source": "ordem_separacao_pessoal",
+      "target": "separador_etiquetas_ml_ordenar_grupos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L771",
+      "weight": 1.0,
+      "source": "ordem_separacao_pessoal",
+      "target": "separador_etiquetas_ml_salvar_nomes",
       "confidence_score": 1.0
     }
   ],
