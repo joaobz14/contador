@@ -358,52 +358,46 @@ def _espera_retry(resp: requests.Response, tentativa: int) -> float:
     return (2 ** tentativa) + random.uniform(0, 0.5)
 
 
-def _requisicao_get(
-    url: str, headers: dict, params: dict | None = None, tentativas: int = 3
-) -> requests.Response:
-    """GET com retry em erros transitorios e em falhas de rede.
+# Status HTTP transitorios que valem re-tentar; o resto quem chama decide.
+_STATUS_RETRY = (408, 429, 500, 502, 503, 504)
 
-    Re-tenta em respostas 408/429/500/502/503/504 (em 429 respeita o Retry-After
-    do ML e aplica jitter) e tambem em quedas/timeout de conexao, para um soluco
-    de rede nao derrubar a atualizacao inteira. Retorna a Response da ultima
-    tentativa; quem chama decide o que fazer com o status.
-    """
+
+def _com_retry(fazer_request, tentativas: int) -> requests.Response:
+    """Executa fazer_request() com retry em erros transitorios (408/429/5xx) e em
+    quedas/timeout de conexao, para um soluco de rede nao derrubar a operacao. Em
+    429 respeita o Retry-After (com jitter). Devolve a Response da ultima
+    tentativa; quem chama decide o que fazer com o status."""
     resp = None
     for tentativa in range(tentativas):
         ultima = tentativa == tentativas - 1
         try:
-            resp = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+            resp = fazer_request()
         except (requests.ConnectionError, requests.Timeout):
             if ultima:
                 raise
             time.sleep((2 ** (tentativa + 1)) + random.uniform(0, 0.5))
             continue
-        if resp.status_code not in (408, 429, 500, 502, 503, 504) or ultima:
+        if resp.status_code not in _STATUS_RETRY or ultima:
             return resp
         time.sleep(_espera_retry(resp, tentativa + 1))
     return resp
+
+
+def _requisicao_get(url: str, headers: dict, params: dict | None = None,
+                    tentativas: int = 3) -> requests.Response:
+    """GET com retry (ver _com_retry)."""
+    return _com_retry(
+        lambda: requests.get(url, headers=headers, params=params, timeout=TIMEOUT),
+        tentativas)
 
 
 def _requisicao_post(url: str, *, params: dict | None = None, json: dict | None = None,
                      data: dict | None = None, timeout: int = TIMEOUT,
                      tentativas: int = 3) -> requests.Response:
-    """POST com retry em erros transitorios (408/429/5xx) e falhas de rede — mesma
-    politica do _requisicao_get. Usado pelo refresh de token e pela Shopee (cujos
-    POSTs, sem isto, nao re-tentavam num soluco de rede/429)."""
-    resp = None
-    for tentativa in range(tentativas):
-        ultima = tentativa == tentativas - 1
-        try:
-            resp = requests.post(url, params=params, json=json, data=data, timeout=timeout)
-        except (requests.ConnectionError, requests.Timeout):
-            if ultima:
-                raise
-            time.sleep((2 ** (tentativa + 1)) + random.uniform(0, 0.5))
-            continue
-        if resp.status_code not in (408, 429, 500, 502, 503, 504) or ultima:
-            return resp
-        time.sleep(_espera_retry(resp, tentativa + 1))
-    return resp
+    """POST com retry (ver _com_retry). Usado pelo refresh de token e pela Shopee."""
+    return _com_retry(
+        lambda: requests.post(url, params=params, json=json, data=data, timeout=timeout),
+        tentativas)
 
 
 def _get(url: str, token: str, params: dict | None = None, extra: dict | None = None) -> dict:
