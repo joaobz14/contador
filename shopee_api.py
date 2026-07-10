@@ -31,7 +31,6 @@ import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from pathlib import Path
 
 import estado as _estado
 import separador_etiquetas_ml as core
