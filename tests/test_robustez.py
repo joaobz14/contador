@@ -93,7 +93,7 @@ def test_renovar_token_cacheia_access_token_e_rotaciona(core, monkeypatch):
     assert cred["refresh_token"] == "R1"               # rotacionou
 
 
-def test_obter_token_reusa_cache_e_so_renova_quando_expira(core, monkeypatch):
+def test_obter_token_reusa_cache_e_so_renova_quando_expira(core, tmp_path, monkeypatch):
     chamou = {"n": 0}
 
     def fake_renovar(cred):
@@ -103,10 +103,42 @@ def test_obter_token_reusa_cache_e_so_renova_quando_expira(core, monkeypatch):
         return "NOVO"
 
     monkeypatch.setattr(core, "renovar_token", fake_renovar)
+    # ARQUIVO_CRED sem token no disco: obter_token nao acha nada e cai no renovar.
+    monkeypatch.setattr(core, "ARQUIVO_CRED", tmp_path / "sem_cred.json")
     valido = {"access_token": "OK", "access_token_exp": time.time() + 9999}
     assert core.obter_token(valido) == "OK" and chamou["n"] == 0   # cache: nao renova
     expirado = {"access_token": "VELHO", "access_token_exp": 0}
     assert core.obter_token(expirado) == "NOVO" and chamou["n"] == 1  # renova 1x
+
+
+def test_obter_token_adota_token_do_disco_de_outro_processo(core, tmp_path, monkeypatch):
+    """GUI+bot na MESMA conta: se outro processo ja renovou e salvou no disco,
+    obter_token adota esse token em vez de renovar (evita gastar o refresh_token
+    de uso unico e a corrida que travaria a conta)."""
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    core._gravar_json(arq, {"access_token": "DO_DISCO", "access_token_exp": time.time() + 9999,
+                            "refresh_token": "R_NOVO", "seller_id": 7})
+    monkeypatch.setattr(core, "renovar_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao deve renovar")))
+    cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "R_VELHO"}
+    assert core.obter_token(cred) == "DO_DISCO"
+    assert cred["refresh_token"] == "R_NOVO"          # adotou o refresh mais recente do disco
+
+
+def test_renovar_token_nao_retenta_o_refresh_grant(core, monkeypatch):
+    """O refresh grant NAO pode ser re-tentado: um retry apos o servidor ja ter
+    rotacionado o refresh_token (uso unico) gastaria um token invalido."""
+    capt = {}
+
+    def fake_post(url, **k):
+        capt["tentativas"] = k.get("tentativas")
+        return FakeResp(200, json_data={"access_token": "AT", "expires_in": 100})
+
+    monkeypatch.setattr(core, "_requisicao_post", fake_post)
+    monkeypatch.setattr(core, "salvar_credenciais", lambda c: None)
+    core.renovar_token({"client_id": "c", "client_secret": "s", "refresh_token": "R"})
+    assert capt["tentativas"] == 1
 
 
 # --------------------------------------------------- retry em falha de rede

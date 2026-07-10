@@ -37,6 +37,15 @@
   token não vai mais para `bot.log` nem para o chat do Telegram. Nós:
   `shopee_api_levantar_se_erro`, `shopee_erro_sem_token`.
 
+- **2026-07-10 — Auditoria/segurança: robustez do refresh de token.** (1)
+  Corrida de refresh **entre processos** (GUI + bot na mesma conta): o
+  `threading.Lock` só cobre threads, então `obter_token` passou a **reler o disco**
+  dentro do lock e adotar o token salvo por outro processo (nós:
+  `token_corrida_multiprocesso`). (2) `renovar_token` **não re-tenta**
+  (`tentativas=1`) — evita gastar o refresh_token de uso único num retry após
+  rotação (nó: `token_refresh_sem_retry`). Ligados a `obter_token`/`renovar_token`
+  de ML e Shopee.
+
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
 

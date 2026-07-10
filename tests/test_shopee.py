@@ -617,3 +617,19 @@ def test_post_shop_erro_http_vira_separadorerror_limpo(monkeypatch):
         assert False
     except sh.core.SeparadorError as e:
         assert "TOKEN_X" not in str(e) and "HTTP 500" in str(e)
+
+
+# ------------------------------------------ token: adota o do disco (GUI+bot mesma loja)
+def test_obter_token_shopee_adota_token_do_disco(monkeypatch, tmp_path):
+    """Se outro processo (bot vs app) ja renovou o token da loja e salvou,
+    obter_token adota o do disco em vez de renovar (evita corrida no refresh)."""
+    import time as _t
+    arq = tmp_path / "credenciais_shopee.json"
+    monkeypatch.setattr(sh, "ARQUIVO_CRED", arq)
+    sh.core._gravar_json(arq, {"access_token": "DISCO", "access_token_exp": _t.time() + 9999,
+                               "refresh_token": "RN", "partner_id": 1, "shop_id": 2})
+    monkeypatch.setattr(sh, "renovar_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao deve renovar")))
+    cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "RV"}
+    assert sh.obter_token(cred) == "DISCO"
+    assert cred["refresh_token"] == "RN"

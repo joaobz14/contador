@@ -178,12 +178,15 @@ def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
 def renovar_token(cred: dict) -> str:
     path = "/api/v2/auth/access_token/get"
     ts = int(time.time())
+    # SEM retry (tentativas=1): o refresh_token pode rotacionar; um retry apos o
+    # servidor ja te-lo consumido mandaria um token invalido e travaria a loja.
     resp = core._requisicao_post(
         f"{HOST}{path}",
         params={"partner_id": cred["partner_id"], "timestamp": ts,
                 "sign": _assinatura_publica(cred, path, ts)},
         json={"refresh_token": cred["refresh_token"],
               "partner_id": int(cred["partner_id"]), "shop_id": int(cred["shop_id"])},
+        tentativas=1,
     )
     dados = resp.json()
     if resp.status_code != 200 or dados.get("error"):
@@ -212,6 +215,14 @@ def obter_token(cred: dict) -> str:
     with _LOCK_TOKEN:
         if _token_valido(cred):                      # outra thread ja renovou?
             return cred["access_token"]
+        # Outro PROCESSO (bot e GUI consultando a mesma loja) pode ter renovado —
+        # o lock so cobre threads. Rele o disco e adota o token salvo antes de
+        # gastar o refresh_token (mesma protecao do nucleo).
+        disco = core._ler_json(ARQUIVO_CRED)
+        if disco.get("access_token"):
+            cred.update(disco)
+            if _token_valido(cred):
+                return cred["access_token"]
         return renovar_token(cred)
 
 
