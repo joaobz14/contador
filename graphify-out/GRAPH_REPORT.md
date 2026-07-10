@@ -29,6 +29,13 @@
   registrada: a Shopee assina URLs com `access_token`/`sign` na query e um
   `raise_for_status` propaga a URL até o `_erro` da GUI — `sem_segredos()` redige
   os segredos **antes** de logar, para o token nunca cair no `separador.log`.
+- **2026-07-10 — Auditoria/segurança: erro HTTP da Shopee não vaza o token:**
+  `_get_shop`/`_post_shop`/`_download_shop` deixaram de usar `raise_for_status()`
+  (cuja mensagem inclui a URL assinada com `access_token`/`sign`) e passam por
+  `_levantar_se_erro`, que lança um `SeparadorError` limpo (path + status + erro do
+  corpo). Como vira `SeparadorError`, o bot passa a tratá-lo pelo ramo limpo — o
+  token não vai mais para `bot.log` nem para o chat do Telegram. Nós:
+  `shopee_api_levantar_se_erro`, `shopee_erro_sem_token`.
 
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.

@@ -153,6 +153,11 @@ em 2º plano.
   por fase em `shopee_tempos.log` (`_log_tempos`, gitignorado).
 - A etiqueta térmica vem como **ZIP com ZPL (`~DGR/Z64`) dentro** — a Zebra imprime
   direto; não reembrulhar.
+- **Erro HTTP da Shopee não pode vazar o token:** a URL assinada leva
+  `access_token`/`sign` na query, então `_get_shop`/`_post_shop`/`_download_shop`
+  **não** usam `raise_for_status()` (a mensagem dele inclui a URL) — passam por
+  `_levantar_se_erro`, que lança `SeparadorError` limpo (path + status + erro do
+  corpo). Mantenha assim: sem isso o token cai no log/tela e no chat do bot.
 
 ## Fluxo de trabalho (git)
 

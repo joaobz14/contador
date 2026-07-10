@@ -117,11 +117,30 @@ def _params_assinados(cred: dict, token: str, path: str) -> dict:
     }
 
 
+def _levantar_se_erro(resp, path: str) -> None:
+    """Levanta um SeparadorError LIMPO se a resposta for >= 400.
+
+    NAO usar resp.raise_for_status(): a mensagem do HTTPError inclui a URL
+    inteira — e a URL da Shopee carrega access_token e sign na query. Esse texto
+    subiria ate o log, a tela e (no bot) o chat do Telegram, vazando o token.
+    Aqui so expomos o path (sem segredo), o status e o erro/mensagem do CORPO da
+    resposta (descritores da Shopee, sem a URL)."""
+    if resp.status_code < 400:
+        return
+    detalhe = ""
+    try:
+        d = resp.json()
+        detalhe = f" - {d.get('error')} {d.get('message')}".rstrip()
+    except Exception:                            # corpo nao-JSON: so o status
+        pass
+    raise core.SeparadorError(f"Shopee {path}: HTTP {resp.status_code}{detalhe}")
+
+
 def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
     """GET assinado em uma API de loja, com a resiliencia de rede do core."""
     query = {**_params_assinados(cred, token, path), **params}
     resp = core._requisicao_get(f"{HOST}{path}", headers={}, params=query)
-    resp.raise_for_status()
+    _levantar_se_erro(resp, path)
     dados = resp.json()
     if dados.get("error"):
         raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
@@ -133,7 +152,7 @@ def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
     Passa pelo retry do nucleo (408/429/5xx e rede)."""
     resp = core._requisicao_post(f"{HOST}{path}",
                                  params=_params_assinados(cred, token, path), json=body)
-    resp.raise_for_status()
+    _levantar_se_erro(resp, path)
     dados = resp.json()
     if dados.get("error"):
         raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
@@ -145,7 +164,7 @@ def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
     Passa pelo retry do nucleo (408/429/5xx e rede)."""
     resp = core._requisicao_post(f"{HOST}{path}",
                                  params=_params_assinados(cred, token, path), json=body)
-    resp.raise_for_status()
+    _levantar_se_erro(resp, path)
     if "application/json" in resp.headers.get("Content-Type", ""):
         dados = resp.json()
         raise core.SeparadorError(
