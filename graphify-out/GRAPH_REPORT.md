@@ -53,6 +53,16 @@
   preserva a ordem). SKU não cadastrado vai pro fim em ordem natural. Vale tela +
   impressão, ML + Shopee. Nós: `ordenar_grupos`, `ordem_separacao_pessoal`.
 
+- **2026-07-10 — Melhorias de qualidade (sem features novas).** (1) DRY do retry
+  HTTP: `_requisicao_get`/`_requisicao_post` compartilham `_com_retry` +
+  `_STATUS_RETRY` (nó `retry_dry`). (2) Removido import morto (`pathlib.Path` no
+  `shopee_api`). (3) **Lacuna de teste fechada**: o nome do `.zip` do ML
+  ("etiqueta de envio - ") que o app da Zebra detecta era sempre mockado — agora
+  há teste fixando o prefixo + o ZPL interno (nó `zebra_prefixo_testado`).
+  Auditoria não achou código morto (0 funções sem uso). Deliberadamente NÃO
+  refatorei o caminho crítico de token (recém-mexido) nem os wrappers async do
+  bot (sem cobertura de teste) — risco > ganho.
+
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
 

@@ -9108,6 +9108,40 @@
       "id": "ordem_separacao_pessoal",
       "community": 8,
       "norm_label": "feature: ordem de separacao pessoal"
+    },
+    {
+      "label": "_com_retry()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L364",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "separador_etiquetas_ml__com_retry",
+      "community": 23,
+      "norm_label": "_com_retry()"
+    },
+    {
+      "label": "QUALIDADE/AUDITORIA: DRY do retry \u2014 _requisicao_get e _requisicao_post compartilham _com_retry + _STATUS_RETRY (loop de retry/backoff num lugar so).",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L364",
+      "_origin": "ast",
+      "id": "retry_dry",
+      "community": 23,
+      "norm_label": "qualidade: dry do retry http"
+    },
+    {
+      "label": "QUALIDADE/LACUNA FECHADA: o nome do .zip do ML ('etiqueta de envio - ') que o app da Zebra detecta na Downloads era SEMPRE mockado nos testes \u2014 nunca verificado. Agora ha teste fixando prefixo + ZPL interno (mudar quebra a impressao em silencio). A Shopee ja tinha o equivalente.",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L1057",
+      "_origin": "ast",
+      "id": "zebra_prefixo_testado",
+      "community": 8,
+      "norm_label": "qualidade: prefixo zebra testado"
     }
   ],
   "links": [
@@ -25320,6 +25354,36 @@
       "weight": 1.0,
       "source": "ordem_separacao_pessoal",
       "target": "separador_etiquetas_ml_salvar_nomes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml",
+      "target": "separador_etiquetas_ml__com_retry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "retry_dry",
+      "target": "separador_etiquetas_ml__com_retry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "zebra_prefixo_testado",
+      "target": "separador_etiquetas_ml_gerar_zip",
       "confidence_score": 1.0
     }
   ],
