@@ -9142,6 +9142,16 @@
       "id": "zebra_prefixo_testado",
       "community": 8,
       "norm_label": "qualidade: prefixo zebra testado"
+    },
+    {
+      "label": "SEGURANCA/ENCODING (integracao app Zebra): o carimbo do NOME na DANFE (ML) vinha em UTF-8 SEM ^CI28 -> acentos (FOG\u00c3O, CANH\u00c3O) saiam embolados. Fix: ^CI28 SO no campo do nome + ^CI0 de reset logo apos o ^FS (cirurgico: nao afeta a nota fiscal acima nem vaza para a etiqueta de envio abaixo, pois ^CI persiste). Nome fica em UTF-8 (o app da Zebra le com decode utf-8). Divisoria ja tinha ^CI28.",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L1038",
+      "_origin": "ast",
+      "id": "carimbo_encoding_ci28",
+      "community": 9,
+      "norm_label": "seguranca: encoding do carimbo ci28"
     }
   ],
   "links": [
@@ -25384,6 +25394,16 @@
       "weight": 1.0,
       "source": "zebra_prefixo_testado",
       "target": "separador_etiquetas_ml_gerar_zip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L1038",
+      "weight": 1.0,
+      "source": "carimbo_encoding_ci28",
+      "target": "separador_etiquetas_ml_carimbar_zpl",
       "confidence_score": 1.0
     }
   ],

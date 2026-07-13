@@ -1036,8 +1036,14 @@ def carimbar_zpl(zpl: str, texto: str, *, altura: int = CARIMBO_ALTURA,
         if "DANFE" not in bloco.upper():       # so a nota fiscal leva o carimbo
             return bloco
         pw = _largura_zpl(bloco)
+        # ^CI28 (UTF-8) SO no campo do nome, ^CI0 reseta logo apos: o nome carimbado
+        # vem em UTF-8 (nomes acentuados: FOGÃO, CANHÃO...) e sem isto a Zebra o
+        # interpreta byte a byte ("FOGÃO" sai embolado). O ^CI age daqui pra frente,
+        # entao a nota fiscal ACIMA (conteudo do ML) fica intocada; o reset ^CI0
+        # impede o encoding de VAZAR para a etiqueta de envio abaixo (o ^CI persiste
+        # entre etiquetas). Mantenha o nome em UTF-8 — o app da Zebra le com utf-8.
         campo = (f"^FO0,{CARIMBO_Y}^A0N,{altura},{altura}"
-                 f"^FB{pw},{linhas},0,C,0^FD{seguro}^FS")
+                 f"^FB{pw},{linhas},0,C,0^CI28^FD{seguro}^FS^CI0")
         if extra_seguro:
             # Linha da quantidade, logo abaixo do espaco reservado ao nome.
             y2 = CARIMBO_Y + altura * linhas + CARIMBO_ESPACO_QTD

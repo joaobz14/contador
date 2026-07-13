@@ -126,7 +126,12 @@ em 2º plano.
   `carimbo_nome` (nome da aba Nomes; fonte adaptativa via `_fonte_nome` — curto
   maior, longo menor até 3 linhas; sem nome cadastrado cai no SKU; pedido com
   2+ unidades ganha "2x"/"3x" em destaque abaixo do nome), `divisoria`,
-  `nenhuma`. `CARIMBAR_SKU` é legado (compat de config antigo).
+  `nenhuma`. `CARIMBAR_SKU` é legado (compat de config antigo). **Encoding:** o
+  nome vai em UTF-8 e o campo do carimbo é envolto por `^CI28`…`^CI0` (`^CI28` só
+  antes do `^FD`, reset logo após o `^FS`) — sem isso os acentos saem embolados na
+  Zebra; o `^CI0` evita vazar o encoding para a etiqueta de envio (o `^CI`
+  persiste). A `divisoria` já emite `^CI28`. **Não** converta o nome para CP850 (o
+  app da Zebra lê o ZPL como UTF-8).
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
