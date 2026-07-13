@@ -143,3 +143,22 @@ def test_modo_ident_efetivo_respeita_legado(core, monkeypatch):
     assert core._modo_ident_efetivo() == "carimbo"       # CARIMBAR_SKU legado
     monkeypatch.setattr(core, "MODO_IDENT", "carimbo_nome")
     assert core._modo_ident_efetivo() == "carimbo_nome"  # modo novo tem prioridade
+
+
+# --------------------------------------- encoding do carimbo (acentos, ^CI28/^CI0)
+def test_carimbo_nome_acentuado_envolto_por_ci28_e_reset(core):
+    out = core._carimbar_grupo(ZPL, _grupo(core, "F2BBPIF"), "carimbo_nome",
+                               {"F2BBPIF": "FOGÃO 2B 2QD FAST"})
+    # ^CI28 (liga UTF-8) so no campo do nome, ^CI0 reseta logo apos o ^FS
+    assert "^CI28^FDFOGÃO 2B 2QD FAST^FS^CI0" in out
+    # o acento continua em UTF-8 (nao converteu p/ CP850 nem escapou)
+    assert "FOGÃO" in out
+    # so a DANFE leva o ^CI; a etiqueta de envio abaixo fica intocada
+    danfe, envio = out.split("^XA etiqueta")
+    assert "^CI28" in danfe and "^CI28" not in envio and "^CI0" not in envio
+
+
+def test_carimbo_sku_tambem_leva_ci28_reset(core):
+    # o SKU e ASCII, mas o wrapper e o mesmo (inofensivo e consistente)
+    out = core._carimbar_grupo(ZPL, _grupo(core, "A03"), "carimbo")
+    assert "^CI28^FDA03^FS^CI0" in out

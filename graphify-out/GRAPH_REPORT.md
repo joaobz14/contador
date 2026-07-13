@@ -63,6 +63,14 @@
   refatorei o caminho crítico de token (recém-mexido) nem os wrappers async do
   bot (sem cobertura de teste) — risco > ganho.
 
+- **2026-07-10 — Encoding do carimbo (acentos na DANFE, integração com o app da
+  Zebra).** `carimbar_zpl` estampava o nome em UTF-8 **sem `^CI28`** → nomes
+  acentuados (FOGÃO, CANHÃO…) saíam embolados na impressora. Fix cirúrgico:
+  `^CI28` só antes do `^FD{nome}` e `^CI0` de reset logo após o `^FS` — não afeta a
+  nota fiscal acima (conteúdo do ML) nem vaza para a etiqueta de envio abaixo (o
+  `^CI` persiste entre etiquetas). Validado com o chat do app da Zebra (que lê o
+  ZPL com decode UTF-8, então o nome deve seguir em UTF-8). Nó: `carimbo_encoding_ci28`.
+
 ## Corpus Check
 - Corpus is ~39,735 words - fits in a single context window. You may not need a graph.
 
