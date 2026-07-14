@@ -77,6 +77,12 @@ Histórico das principais mudanças do projeto.
 - **Grafo de conhecimento (`graphify-out/`):** camada de docs enriquecida a cada
   mudança (decisões e "porquês" como nós `rationale`) + auditoria de sincronia
   nó a nó com o código.
+- **Checklist "manter o repertório em dia"** no `CLAUDE.md`/`AGENTS.md`: define o
+  que atualizar ao fechar cada mudança (CHANGELOG, convenções, ARQUITETURA,
+  grafo, prioridades) — para os docs não defasarem em relação ao código.
+- **Regras de git para a IA** (`CLAUDE.md`/`AGENTS.md`): verificar o estado do
+  `main`/PR antes de empurrar follow-up, não empilhar commits numa branch que
+  pode ser mergeada (viram órfãos), e recuperar do `main` o que ficar de fora.
 
 ### Qualidade
 - **CI (GitHub Actions):** roda o `pytest` em cada Pull Request e push no `main`
