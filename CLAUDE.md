@@ -59,7 +59,9 @@ em 2º plano.
 - **`docs/ARQUITETURA.md`**: fluxos operacionais, **invariantes críticas**,
   arquivos locais e áreas de risco — leitura obrigatória antes de mexer em
   estado/token/impressão. **`docs/PRIORIDADES_TECNICAS.md`**: backlog técnico
-  sugerido (ordem recomendada de evolução).
+  sugerido (ordem recomendada de evolução). **`docs/AMAZON_SP_API.md`**:
+  levantamento (pesquisa, nada implementado) de como a Amazon SP-API encaixaria
+  no app no futuro — o risco decisivo é de negócio/BR (só FBM/MFN gera etiqueta).
 - **`AGENTS.md` é espelho deste arquivo** (adaptado para o Codex: título e
   trailer). Alterou uma convenção aqui? Replique lá.
 - **NÃO rode `graphify hook install`**: o hook reconstrói o grafo só com código

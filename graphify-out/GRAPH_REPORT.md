@@ -6,6 +6,15 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-14 — Levantamento Amazon SP-API (pesquisa, nada implementado):** doc
+  `docs/AMAZON_SP_API.md` sobre como a API da Amazon encaixaria no app no futuro.
+  Nós novos: `docs_amazon_sp_api` (document) + conceitos
+  `amazon_fbm_vs_fba` (**só FBM/MFN gera etiqueta; FBA/DBA não** — risco de
+  negócio/BR, o teste decisivo antes de codar), `amazon_zpl_termico` (Amazon
+  devolve **ZPL203 térmico** em Base64/GZIP — mesmo fluxo ZPL→zip→Downloads da
+  Shopee) e `amazon_lwa_auth` (OAuth2 LWA com `refresh_token`, reauth 365d — reusa
+  o padrão `obter_token`). Ligados por `rationale_for`/`conceptually_related_to` a
+  `provedores`, `provedores_provedorshopee` e `obter_token`.
 - **2026-07-08 — Camada comum de estado (`estado.py`):** extraída a lógica de
   "já impresso" (antes duplicada entre núcleo e `shopee_api`). Nós novos:
   `estado` (arquivo) + funções (`marcar_impresso`, `carregar`, `status_grupo`,
