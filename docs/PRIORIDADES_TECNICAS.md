@@ -124,6 +124,32 @@ Por isso, ele merece tratamento de area critica:
 - evitar persistir o modo "Ambas" por acidente
 - considerar mover essa classe para um modulo proprio se ela continuar crescendo
 
+### 6.1. Otimizacao futura: coletar as contas em paralelo (baixa prioridade)
+
+Hoje o `ProvedorMLAmbas.coletar` roda as contas EM SERIE (um `for conta`), entao o
+"Atualizar" leva `tempo(conta1) + tempo(conta2)`. Dentro de cada conta a coleta ja
+e bem paralela (paginas 8x, envios 12x, detalhes 8x), entao o unico ganho relevante
+seria rodar as DUAS contas em paralelo -> cairia para `~max(conta1, conta2)`,
+aproximadamente a metade (com 2 contas).
+
+**Por que NAO fazer agora:** ganho pequeno e pontual (o modo Ambas so e usado nos
+dias de motorista unico; poucos segundos). E o custo mexe justo na parte sensivel:
+o nucleo guarda os caminhos de cache por conta em GLOBAIS (`ARQUIVO_CACHE`,
+`ARQUIVO_ENVIOS_CACHE`), trocadas por `definir_conta()`. Paralelizar ingenuamente
+faz as threads disputarem essas globais -> uma conta grava o cache da outra
+(corrupcao silenciosa de cache/estado). Risco alto para ganho baixo.
+
+**Como fazer com seguranca, SE valer a pena um dia:** passar os caminhos de cache
+como PARAMETRO (default = global atual, retrocompatível) por `coletar_grupos`,
+`filtrar_para_imprimir`, `extrair_itens`/`buscar_detalhes` e os 4 helpers de cache;
+no Ambas, pegar os tokens em serie (instantaneo, em cache) e disparar as duas
+coletas em paralelo com o caminho de cache de cada conta explicito (nenhuma global
+tocada na parte paralela). Tratar tambem a barra de progresso (agregar as duas) e o
+aumento de requisicoes concorrentes (o `_com_retry` ja faz backoff em 429).
+
+**Quando reconsiderar:** se o Ambas virar uso diario, ou ao adicionar mais contas
+(com 3-4 contas o serial comeca a incomodar de verdade).
+
 ## 7. Padronizar encoding e ambiente Windows
 
 O projeto e usado em Windows e alguns textos com acento podem aparecer quebrados
