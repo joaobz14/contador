@@ -56,6 +56,12 @@ em 2º plano.
   (visualização). Para perguntas de arquitetura/relações, consulte o grafo e o
   `docs/ARQUITETURA.md` **antes** de reler os arquivos crus. Sem o CLI
   `graphify` no ambiente, leia o `graph.json` direto.
+  - **O que confiar:** o **inventário de nós** (módulos/funções) e a **camada de
+    "porquês"** (`rationale`/`concept`) são mantidos à mão e estão **em dia**. Já
+    a **camada AST** (arestas de `calls`/`imports`), as **métricas** do relatório
+    (centralidade, "perguntas sugeridas") e o **`graph.html`** são um **snapshot
+    do último build completo** — só um rebuild com o CLI os re-deriva (ver a nota
+    no topo do `GRAPH_REPORT.md`).
 - **`docs/ARQUITETURA.md`**: fluxos operacionais, **invariantes críticas**,
   arquivos locais e áreas de risco — leitura obrigatória antes de mexer em
   estado/token/impressão. **`docs/PRIORIDADES_TECNICAS.md`**: backlog técnico
