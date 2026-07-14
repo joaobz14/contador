@@ -9152,6 +9152,58 @@
       "id": "carimbo_encoding_ci28",
       "community": 9,
       "norm_label": "seguranca: encoding do carimbo ci28"
+    },
+    {
+      "label": "docs/AMAZON_SP_API.md (levantamento Amazon SP-API)",
+      "file_type": "document",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "docs_amazon_sp_api",
+      "community": 15,
+      "norm_label": "docs/amazon_sp_api.md (levantamento amazon sp-api)"
+    },
+    {
+      "label": "Amazon: s\u00f3 FBM/MFN gera etiqueta (FBA/DBA n\u00e3o)",
+      "file_type": "concept",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "amazon_fbm_vs_fba",
+      "community": 15,
+      "norm_label": "amazon: so fbm/mfn gera etiqueta (fba/dba nao)"
+    },
+    {
+      "label": "Amazon devolve etiqueta ZPL203 t\u00e9rmica (Base64/GZIP)",
+      "file_type": "concept",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "amazon_zpl_termico",
+      "community": 15,
+      "norm_label": "amazon devolve etiqueta zpl203 termica (base64/gzip)"
+    },
+    {
+      "label": "Amazon auth LWA (OAuth2, refresh_token, reauth 365d)",
+      "file_type": "concept",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "amazon_lwa_auth",
+      "community": 15,
+      "norm_label": "amazon auth lwa (oauth2, refresh_token, reauth 365d)"
     }
   ],
   "links": [
@@ -25404,6 +25456,79 @@
       "weight": 1.0,
       "source": "carimbo_encoding_ci28",
       "target": "separador_etiquetas_ml_carimbar_zpl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_fbm_vs_fba",
+      "target": "docs_amazon_sp_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_zpl_termico",
+      "target": "docs_amazon_sp_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_lwa_auth",
+      "target": "docs_amazon_sp_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_amazon_sp_api",
+      "target": "provedores",
+      "confidence_score": 1.0,
+      "context": "futuro ProvedorAmazon"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_zpl_termico",
+      "target": "provedores_provedorshopee",
+      "confidence_score": 1.0,
+      "context": "mesmo fluxo ZPL->zip->Downloads"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_lwa_auth",
+      "target": "separador_etiquetas_ml_obter_token",
+      "confidence_score": 1.0,
+      "context": "reusa padrao obter_token"
+    },
+    {
+      "relation": "references",
+      "confidence": "MANUAL",
+      "source_file": "docs/AMAZON_SP_API.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "amazon_fbm_vs_fba",
+      "target": "docs_arquitetura_doc",
       "confidence_score": 1.0
     }
   ],
