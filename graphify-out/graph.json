@@ -9204,6 +9204,90 @@
       "id": "amazon_lwa_auth",
       "community": 15,
       "norm_label": "amazon auth lwa (oauth2, refresh_token, reauth 365d)"
+    },
+    {
+      "label": "_natural()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L766",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "separador_etiquetas_ml_natural",
+      "community": 8,
+      "norm_label": "_natural()"
+    },
+    {
+      "label": "_ordem_nomes()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L774",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "separador_etiquetas_ml_ordem_nomes",
+      "community": 8,
+      "norm_label": "_ordem_nomes()"
+    },
+    {
+      "label": "_chave_ordem()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L780",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "separador_etiquetas_ml_chave_ordem",
+      "community": 8,
+      "norm_label": "_chave_ordem()"
+    },
+    {
+      "label": "_hoje_br()",
+      "file_type": "code",
+      "source_file": "estado.py",
+      "source_location": "L37",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "estado_hoje_br",
+      "community": 8,
+      "norm_label": "_hoje_br()"
+    },
+    {
+      "label": "._ctx_log()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L54",
+      "metadata": {
+        "language": "python",
+        "kind": "method"
+      },
+      "_origin": "ast",
+      "id": "separador_gui_separadorapp_ctx_log",
+      "community": 0,
+      "norm_label": "._ctx_log()"
+    },
+    {
+      "label": "._mover()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L899",
+      "metadata": {
+        "language": "python",
+        "kind": "method"
+      },
+      "_origin": "ast",
+      "id": "separador_gui_editornomes_mover",
+      "community": 0,
+      "norm_label": "._mover()"
     }
   ],
   "links": [
@@ -25529,6 +25613,76 @@
       "weight": 1.0,
       "source": "amazon_fbm_vs_fba",
       "target": "docs_arquitetura_doc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L794",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_ordenar_grupos",
+      "target": "separador_etiquetas_ml_ordem_nomes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L795",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_ordenar_grupos",
+      "target": "separador_etiquetas_ml_chave_ordem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L786",
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_chave_ordem",
+      "target": "separador_etiquetas_ml_natural",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "estado_chave_estado",
+      "target": "estado_hoje_br",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_gui.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp",
+      "target": "separador_gui_separadorapp_ctx_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "separador_gui.py",
+      "source_location": "L899",
+      "weight": 1.0,
+      "source": "separador_gui_editornomes",
+      "target": "separador_gui_editornomes_mover",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "estado.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "estado",
+      "target": "estado_hoje_br",
       "confidence_score": 1.0
     }
   ],
