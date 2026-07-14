@@ -184,9 +184,39 @@ em 2º plano.
   `_levantar_se_erro`, que lança `SeparadorError` limpo (path + status + erro do
   corpo). Mantenha assim: sem isso o token cai no log/tela e no chat do bot.
 
+## Antes de fechar uma mudança (mantenha o repertório em dia)
+
+O repertório (docs + grafo) é o que um chat novo lê para entender o projeto — se
+ele defasa, a próxima sessão parte de informação errada. Por isso, ao terminar
+uma mudança, atualize **o que se aplicar** (faz parte do "pronto", não é opcional):
+
+- **`docs/CHANGELOG.md`** — uma entrada em `[Não lançado]` para toda mudança que
+  o dono perceberia (feature, correção, segurança, doc relevante).
+- **`AGENTS.md` + espelho `CLAUDE.md`** — se criou/removeu convenção, módulo ou
+  pegadinha de domínio, ou mexeu no **mapa do código**.
+- **`docs/ARQUITETURA.md`** — se tocou numa invariante crítica, fluxo ou área de
+  risco (confira o **contador de invariantes** no `AGENTS.md`).
+- **`graphify-out/graph.json` + `GRAPH_REPORT.md`** — nós dos módulos/funções
+  novos e os "porquês" como `rationale`/`concept` (ver "SEMPRE atualize o grafo"
+  acima); valide **0 arestas órfãs**.
+- **`docs/PRIORIDADES_TECNICAS.md`** — se concluiu um item ou registrou uma
+  decisão de "não fazer agora".
+
+Regra de ouro: **mudou algo neste guia, replique no espelho `CLAUDE.md`.** Cada
+item é barato; a soma evita as brechas (ex.: o CHANGELOG ficar dezenas de commits
+atrás do código).
+
 ## Fluxo de trabalho (git)
 
 - Desenvolver na branch designada; **um PR por feature**. Não mergear PR sem o dono pedir.
+- **Verifique o estado antes de empurrar follow-up:** `git fetch origin main` e
+  cheque se a branch/PR já foi mergeada. **Não empilhe commits** numa branch que o
+  dono pode mergear a qualquer momento — o commit extra vira **órfão** (o dono
+  merge antes de o push chegar). Prefira **terminar a mudança e fazer um commit
+  só** por PR, em vez de abrir o PR e ir acrescentando.
+- **Depois que o dono mergear, confira o `main`** (`git merge-base --is-ancestor`)
+  e, se algum commit ficou de fora, recupere-o numa **branch nova a partir do
+  `main` atual** (cherry-pick) e abra outro PR — não reabra a branch já mergeada.
 - Trailer de commit (já automático): `Co-Authored-By` + `Codex-Session`.
 - O dono usa a pasta fora do OneDrive (`C:\contador`) com `git config gc.auto 0`
   (o OneDrive travava o `.git`).
