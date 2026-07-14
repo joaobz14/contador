@@ -4,6 +4,46 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Separação e identificação
+- **Ordem de separação pessoal por SKU:** a tela e a impressão seguem a ordem
+  da aba **Nomes** no bloco "Quantidade por pedido = 1" (`ordenar_grupos`), com
+  setas ↑/↓ no editor de Nomes para reordenar. Os blocos de 2+ unidades
+  continuam agrupados como antes; SKU sem nome cadastrado vai para o fim em
+  ordem natural (`A2` antes de `A10`).
+- **Carimbo do nome com acentos:** o campo do nome na DANFE do ML passa a ser
+  envolto por `^CI28`…`^CI0` (UTF-8) — nomes como "FOGÃO" saem corretos na
+  Zebra (antes os acentos embolavam). Cirúrgico: não afeta a nota fiscal acima
+  nem vaza encoding para a etiqueta de envio.
+- **Nomes por SKU:** ordem inicial dos SKUs mais usados no topo do
+  `nomes_sku.json` + novos produtos cadastrados. A ordem das chaves passou a
+  ser **preservada** (é a ordem de separação, não alfabética).
+
+### Arquitetura interna
+- **Camada comum de estado (`estado.py`):** a lógica de "já impresso" (antes
+  duplicada entre núcleo e Shopee) virou um módulo-folha, com IO JSON atômico.
+  O núcleo e o `shopee_api` passam a usar wrappers finos que injetam o próprio
+  `salvar_estado` — sem reimplementar o merge.
+- **Contrato de impressão da GUI explícito:** métodos renomeados
+  (`_gerar_sem_marcar_thread`, `_confirmar_e_marcar`) deixam claro o fluxo
+  **gera → confirma fisicamente → marca**, que é a invariante nº 1.
+- **DRY do retry HTTP:** `_com_retry` unifica a lógica de re-tentativa de
+  GET/POST no núcleo; remoção de imports mortos.
+
+### Segurança
+- **Erro da Shopee não vaza mais o token:** os erros HTTP da Shopee passam por
+  `_levantar_se_erro` (em vez de `raise_for_status`), que carregava a URL
+  assinada com `access_token`/`sign` para o log, a tela e o chat do bot.
+- **Refresh de token robusto:** `obter_token` relê o disco dentro do lock,
+  protegendo contra corrida de refresh **entre processos** (GUI + bot na mesma
+  conta); `renovar_token` não re-tenta (o `refresh_token` rotaciona e é de uso
+  único — re-tentar travaria a conta).
+
+### Diagnóstico
+- **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
+  loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
+  sem debugger. Nunca atrapalha a operação (defensivo) e **nunca loga segredos**
+  (redação por `sem_segredos`).
+
 ### Bot do Telegram
 - **Reinício automático:** lançador `Iniciar Bot (auto).bat` que religa o bot
   sozinho se ele cair (erro/queda de rede), em vez de ficar fora do ar. No modo
@@ -25,10 +65,26 @@ Histórico das principais mudanças do projeto.
   a tela e o bot na mesma conta ao mesmo tempo não apagam mais a marcação um
   do outro (last-writer-merge em vez de last-writer-wins).
 
+### Documentação
+- **"Comece por aqui" no topo do `CLAUDE.md`/`AGENTS.md`:** sequência de
+  arranque para um chat novo (ler o guia → consultar o grafo → `ARQUITETURA`
+  antes de mexer em estado/token/impressão). README reestruturado.
+- **`docs/AMAZON_SP_API.md`:** levantamento (pesquisa, nada implementado) de
+  como a Amazon SP-API encaixaria no app no futuro — o risco decisivo é de
+  negócio/BR (só FBM/MFN gera etiqueta).
+- **`docs/PRIORIDADES_TECNICAS.md`:** nota da otimização futura do modo Ambas
+  (coletar as contas em paralelo — por que não agora, como fazer com segurança).
+- **Grafo de conhecimento (`graphify-out/`):** camada de docs enriquecida a cada
+  mudança (decisões e "porquês" como nós `rationale`) + auditoria de sincronia
+  nó a nó com o código.
+
 ### Qualidade
 - **CI (GitHub Actions):** roda o `pytest` em cada Pull Request e push no `main`
   (Python 3.11 e 3.12), mostrando um check verde/vermelho automático. Badge no
   topo do README.
+- Novos testes: camada comum de estado, log operacional, ordenação por Nomes,
+  carimbo com acentos, corrida de token e a blindagem do nome do `.zip` que a
+  Zebra reconhece.
 
 ## [1.0.0]
 
