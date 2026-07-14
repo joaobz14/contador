@@ -6,6 +6,13 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-14 — Rastreio (AWB) de todos os grupos Shopee na tela:** como a
+  etiqueta Shopee não tem o nome do produto (e não há faixa livre estável para
+  carimbar — validado com 10 etiquetas: o miolo varia com a rota), a tela lista o
+  código de cada etiqueta impressa do grupo (`Grupo.rastreios`). Nó
+  `shopee_rastreio_todos_grupos` (rationale) ligado a `preencher_rastreios`,
+  `imprimir_lotes`, `separador_gui` e ao conceito `carimbo_encoding_ci28`.
+
 - **2026-07-14 — Auditoria de sincronia código × grafo:** conferido nó a nó
   (funções/métodos/classes) o `graph.json` contra o código atual. A camada AST
   está congelada no commit `5233aef` (build de PR #93); de lá até hoje 31 commits

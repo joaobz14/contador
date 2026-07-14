@@ -592,11 +592,11 @@ class SeparadorApp:
         if selecionavel:                       # caixinha para "Imprimir selecionados"
             var = tk.BooleanVar(value=(g.chave, g.quantidade) in self._sel_antes)
             ttk.Checkbutton(fr, variable=var,
-                            command=self._atualizar_contagem).pack(side="left", padx=(0, 6))
+                            command=self._atualizar_contagem).pack(side="left", anchor="n", padx=(0, 6))
             self._sel_vars.append((g, var))
         elif arquivada:                        # caixinha para "Reimprimir marcadas"
             var = tk.BooleanVar(value=False)
-            ttk.Checkbutton(fr, variable=var).pack(side="left", padx=(0, 6))
+            ttk.Checkbutton(fr, variable=var).pack(side="left", anchor="n", padx=(0, 6))
             self._sel_arq.append((g, var))
 
         esq = ttk.Frame(fr)
@@ -609,24 +609,30 @@ class SeparadorApp:
             sub = f"{g.total_etiquetas} etiqueta(s)"
         ttk.Label(esq, text=sub, foreground=CINZA, font=("Segoe UI", 8)).pack(anchor="w")
 
+        # Codigos de rastreio (AWB) das etiquetas ja impressas (Shopee). A etiqueta
+        # Shopee nao tem o nome do produto, entao listamos os codigos alinhados a
+        # esquerda (mesma coluna, logo abaixo do nome) para bater o olho com a
+        # etiqueta fisica; a area cresce em altura no alto volume. `rastreios` e a
+        # lista (todas as etiquetas); `rastreio` (singular) e o campo legado.
+        codigos = getattr(g, "rastreios", None) or (
+            [g.rastreio] if getattr(g, "rastreio", "") else [])
+        for cod in codigos:
+            ttk.Label(esq, text=f"🏷 {cod}", foreground=VERDE,
+                      font=("Consolas", 9, "bold")).pack(anchor="w")
+
         # Reimprimir: refaz as etiquetas do grupo sem mexer no controle de impresso.
+        # Botoes/labels da direita ancorados ao topo (anchor="n") para ficarem na
+        # 1a linha quando o grupo lista varios codigos e cresce em altura.
         ttk.Button(fr, text="↻ Reimprimir",
-                   command=lambda gg=g: self.reimprimir(gg)).pack(side="right", padx=(6, 0))
+                   command=lambda gg=g: self.reimprimir(gg)).pack(side="right", anchor="n", padx=(6, 0))
 
         if status == "impresso":
             ttk.Label(fr, text="✓ Impresso", foreground=VERDE,
-                      font=("Segoe UI", 9, "bold")).pack(side="right")
+                      font=("Segoe UI", 9, "bold")).pack(side="right", anchor="n")
         else:
             texto = "Imprimir faltantes" if status == "parcial" else "Imprimir"
             ttk.Button(fr, text=texto,
-                       command=lambda gg=g: self.imprimir(gg)).pack(side="right")
-
-        # Rastreio (AWB) — so em grupos Shopee de 1 pedido ja impresso. Empacotado
-        # por ultimo entre os "right", aparece a esquerda dos botoes (no meio da
-        # linha), para conferir com a etiqueta e o site.
-        if getattr(g, "rastreio", ""):
-            ttk.Label(fr, text=f"🏷 {g.rastreio}", foreground=VERDE,
-                      font=("Consolas", 10, "bold")).pack(side="right", padx=12)
+                       command=lambda gg=g: self.imprimir(gg)).pack(side="right", anchor="n")
 
         return var          # BooleanVar da caixinha (ou None se nao selecionavel)
 

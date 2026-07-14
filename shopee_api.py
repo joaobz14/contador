@@ -652,23 +652,36 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
 
 
 def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
-    """Para grupos de UM unico pedido JA IMPRESSO, busca o AWB (get_tracking_number)
-    em paralelo e seta g.rastreio — para conferencia na tela. Grupos com varios
-    pedidos sao ignorados de proposito (o usuario nao precisa, e poupa chamadas)."""
-    alvo = [g for g in grupos
-            if len(g.shipment_ids) == 1 and core.status_grupo(estado, g) == "impresso"]
-    if not alvo:
+    """Para cada grupo, busca o AWB (get_tracking_number) de CADA etiqueta JA
+    IMPRESSA e preenche g.rastreios — a etiqueta Shopee nao tem o nome do produto,
+    entao a tela lista os codigos para conferir qual etiqueta e qual produto.
+    Busca em paralelo. Envios PENDENTES sao ignorados: o AWB so existe apos
+    organizar o envio, entao nao ha o que mostrar neles."""
+    tarefas = []                                # (grupo, indice, order_sn)
+    for g in grupos:
+        pend = set(core.envios_pendentes(estado, g))
+        ids = [i for i in g.shipment_ids if i not in pend]   # ja impressos
+        if not ids:
+            continue
+        g.rastreios = [""] * len(ids)           # posicao por etiqueta (thread-safe)
+        for idx, sn in enumerate(ids):
+            tarefas.append((g, idx, sn))
+    if not tarefas:
         return
     token = obter_token(cred)
 
-    def _um(g):
+    def _um(tarefa):
+        g, idx, sn = tarefa
         try:
-            g.rastreio = numero_rastreio(cred, token, str(g.shipment_ids[0]))
+            g.rastreios[idx] = numero_rastreio(cred, token, str(sn))
         except Exception:                       # best-effort: rastreio e so conferencia
             pass
 
     with ThreadPoolExecutor(max_workers=8) as executor:
-        list(executor.map(_um, alvo))
+        list(executor.map(_um, tarefas))
+    for g in grupos:                            # descarta falhas, preserva a ordem
+        if g.rastreios:
+            g.rastreios = [c for c in g.rastreios if c]
 
 
 # ---------------------------------------------------------------------------
@@ -747,8 +760,8 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
                               rastreios={sn: awbs.get(sn, "") for sn in pendentes})
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
     _log_tempos(len(pendentes), _t1 - _t0, time.time() - _t1, contexto="grupo")
-    if len(grupo.shipment_ids) == 1:
-        grupo.rastreio = awbs.get(pendentes[0], "")
+    # Guarda os AWBs recem-impressos para a tela conferir (sem re-buscar).
+    grupo.rastreios = [awbs[sn] for sn in pendentes if awbs.get(sn)]
     if marcar:
         marcar_impresso(estado, grupo, pendentes)
     return pendentes
@@ -819,8 +832,7 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
     for g, pend in pend_por_grupo:
         ids_ok = [sn for sn in pend if sn in ok]
         if ids_ok:
-            if len(g.shipment_ids) == 1:
-                g.rastreio = awbs.get(ids_ok[0], "")
+            g.rastreios = [awbs[sn] for sn in ids_ok if awbs.get(sn)]
             impressos.append((g, ids_ok))
     return impressos, falhas
 
