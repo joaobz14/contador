@@ -6,6 +6,28 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-14 — Auditoria de sincronia código × grafo:** conferido nó a nó
+  (funções/métodos/classes) o `graph.json` contra o código atual. A camada AST
+  está congelada no commit `5233aef` (build de PR #93); de lá até hoje 31 commits
+  mexeram no núcleo (estado.py/registro.py novos, etc.). Achados e correções:
+  - **6 funções novas sem nó → adicionadas** (com arestas `calls`/`method`/
+    `contains` reais): core `_natural`, `_ordem_nomes`, `_chave_ordem` (ordenação
+    por Nomes); `estado._hoje_br`; GUI `SeparadorApp._ctx_log`,
+    `EditorNomes._mover`. Resultado: **0 função do código sem nó**.
+  - **7 "nós órfãos" aparentes eram falso-positivo:** `status_grupo`,
+    `envios_pendentes`, `_ler_json`, `_gravar_json`, `_chave_estado`, `_impressos`,
+    `_limpar_estado_antigo` continuam existindo no núcleo como **aliases/re-exports**
+    de `estado.py` (linhas 153-154 e 1133-1137) — nós válidos, não stale.
+  - Estado final: **884 nós, 1577 arestas, 0 arestas órfãs** (validado).
+  - **Limites (precisam do CLI `graphify` p/ 100%):** (1) o `graph.html` é uma
+    **visualização baked antiga** (embute os dados; não lê o `graph.json`) — está
+    defasado e só um rebuild o regenera; (2) mudanças de **corpo** de funções nesses
+    31 commits (ex.: `obter_token` relê disco, `renovar_token` `tentativas=1`,
+    carimbo `^CI28`) podem ter deixado alguma aresta `calls`/`imports` levemente
+    desatualizada mesmo com o nó certo — só um rebuild completo re-deriva todas.
+    O inventário de **nós** está fiel; a topologia de **arestas** do AST antigo não
+    foi 100% re-derivada.
+
 - **2026-07-14 — Levantamento Amazon SP-API (pesquisa, nada implementado):** doc
   `docs/AMAZON_SP_API.md` sobre como a API da Amazon encaixaria no app no futuro.
   Nós novos: `docs_amazon_sp_api` (document) + conceitos
