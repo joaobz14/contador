@@ -140,6 +140,14 @@ em 2º plano.
   Zebra; o `^CI0` evita vazar o encoding para a etiqueta de envio (o `^CI`
   persiste). A `divisoria` já emite `^CI28`. **Não** converta o nome para CP850 (o
   app da Zebra lê o ZPL como UTF-8).
+- **Identificação na Shopee (sem carimbo):** a etiqueta Shopee é uma imagem pronta
+  **sem o nome do produto** (e não há faixa livre estável para carimbar — validado
+  com 10 etiquetas: o miolo varia com a rota). Então a **tela** substitui o carimbo
+  listando o **código de rastreio (AWB) de cada etiqueta já impressa** do grupo
+  (`Grupo.rastreios`), à esquerda, embaixo do nome — o operador cruza o código da
+  etiqueta física com o produto. Preenchido no `preencher_rastreios` (todos os
+  envios impressos, em paralelo) e na hora da impressão (dos `awbs`, sem re-buscar).
+  Pendentes não têm AWB (só existe após organizar), então não mostram código.
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,

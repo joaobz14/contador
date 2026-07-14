@@ -436,9 +436,13 @@ class Grupo:
     # Para envios "combo" (varios SKUs no mesmo pacote): lista de (sku, qtd).
     # Vazio em grupos normais de um unico SKU.
     componentes: list = field(default_factory=list)
-    # Codigo de rastreio (AWB) — preenchido so para grupos Shopee de 1 pedido ja
-    # impresso, para conferencia (app x etiqueta x site). Vazio nos demais.
+    # Codigo de rastreio (AWB) — legado (compat). Preferir `rastreios` (lista).
     rastreio: str = ""
+    # Codigos de rastreio (AWB) de TODAS as etiquetas ja impressas do grupo
+    # (Shopee). A etiqueta Shopee nao tem o nome do produto, entao a tela lista
+    # esses codigos para conferir qual etiqueta e qual produto. Vazio nos envios
+    # pendentes (o AWB so existe apos organizar/imprimir) e nos grupos ML.
+    rastreios: list[str] = field(default_factory=list)
 
     @property
     def chave_grupo(self) -> str:

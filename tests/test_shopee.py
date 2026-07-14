@@ -349,20 +349,23 @@ def test_imprimir_grupo_pula_ja_impressos(monkeypatch):
     assert sh.imprimir_grupo({}, g, estado) == []
 
 
-def test_preencher_rastreios_so_grupo_unico_impresso(monkeypatch):
+def test_preencher_rastreios_lista_todos_os_impressos(monkeypatch):
     def g(chave, ids):
         x = sh.core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=list(ids))
         x.dia = "2026-06-25"
         return x
-    g1, g2, g3 = g("A", ["SN1"]), g("B", ["SN2", "SN3"]), g("C", ["SN4"])
+    g1, g2, g3, g4 = (g("A", ["SN1"]), g("B", ["SN2", "SN3"]),
+                      g("C", ["SN4"]), g("D", ["SN5", "SN6"]))
     estado = {"2026-06-25|A|q1": ["SN1"],            # unico + impresso
-              "2026-06-25|B|q1": ["SN2", "SN3"]}     # varios + impresso
+              "2026-06-25|B|q1": ["SN2", "SN3"],     # varios + todos impressos
+              "2026-06-25|D|q1": ["SN5"]}            # parcial (so SN5 impresso)
     monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
     monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: f"BR-{sn}")
-    sh.preencher_rastreios({}, [g1, g2, g3], estado)
-    assert g1.rastreio == "BR-SN1"     # 1 pedido impresso -> mostra
-    assert g2.rastreio == ""           # varios pedidos -> ignora (poupa chamada)
-    assert g3.rastreio == ""           # pendente (sem AWB) -> ignora
+    sh.preencher_rastreios({}, [g1, g2, g3, g4], estado)
+    assert g1.rastreios == ["BR-SN1"]                # 1 impresso
+    assert g2.rastreios == ["BR-SN2", "BR-SN3"]      # varios impressos -> lista todos
+    assert g3.rastreios == []                        # pendente (sem AWB) -> nada
+    assert g4.rastreios == ["BR-SN5"]                # parcial -> so o ja impresso
 
 
 def test_imprimir_lotes_nao_marca_estado(monkeypatch):
@@ -404,7 +407,10 @@ def test_imprimir_lotes_gera_um_unico_zip(monkeypatch):
     assert sorted(c[0] for c in chamadas["gerou"]) == ["SN1", "SN2", "SN3"]  # 1 doc por pedido
     assert impressos == [(g1, ["SN1"]), (g2, ["SN2", "SN3"])]
     assert falhas == []
-    assert g1.rastreio == "BR-SN1"                          # grupo de 1 pedido leva rastreio
+    # Todos os grupos levam os AWBs recem-impressos (para a tela conferir),
+    # inclusive os de varios pedidos.
+    assert g1.rastreios == ["BR-SN1"]
+    assert g2.rastreios == ["BR-SN2", "BR-SN3"]
 
 
 def test_combinar_etiquetas_junta_zpl_num_unico_zip():

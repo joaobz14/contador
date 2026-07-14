@@ -9288,6 +9288,19 @@
       "id": "separador_gui_editornomes_mover",
       "community": 0,
       "norm_label": "._mover()"
+    },
+    {
+      "label": "FEATURE: rastreio (AWB) de todos os grupos Shopee na tela",
+      "file_type": "rationale",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "shopee_rastreio_todos_grupos",
+      "community": 1,
+      "norm_label": "feature: rastreio (awb) de todos os grupos shopee na tela"
     }
   ],
   "links": [
@@ -25683,6 +25696,46 @@
       "weight": 1.0,
       "source": "estado",
       "target": "estado_hoje_br",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_rastreio_todos_grupos",
+      "target": "shopee_api_preencher_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_rastreio_todos_grupos",
+      "target": "shopee_api_imprimir_lotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_rastreio_todos_grupos",
+      "target": "separador_gui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_rastreio_todos_grupos",
+      "target": "carimbo_encoding_ci28",
       "confidence_score": 1.0
     }
   ],

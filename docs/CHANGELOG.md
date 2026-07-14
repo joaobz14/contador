@@ -17,6 +17,12 @@ Histórico das principais mudanças do projeto.
 - **Nomes por SKU:** ordem inicial dos SKUs mais usados no topo do
   `nomes_sku.json` + novos produtos cadastrados. A ordem das chaves passou a
   ser **preservada** (é a ordem de separação, não alfabética).
+- **Códigos de rastreio de todos os grupos Shopee (não só os de 1 etiqueta):**
+  como a etiqueta Shopee não tem o nome do produto, a tela lista o **código
+  (AWB) de cada etiqueta já impressa** do grupo, alinhado à esquerda embaixo do
+  nome — para conferir qual etiqueta é qual produto ao separar o lote. Em grupos
+  de alto volume a área cresce em altura (não espreme). Pendentes não mostram
+  código (o AWB só existe depois de organizar/imprimir o envio).
 
 ### Arquitetura interna
 - **Camada comum de estado (`estado.py`):** a lógica de "já impresso" (antes
