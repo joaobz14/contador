@@ -105,6 +105,13 @@ Histórico das principais mudanças do projeto.
   ler→mesclar→salvar roda sob `estado.trava` (arquivo `.lock` ao lado, com
   `msvcrt`/`fcntl` e degradação suave), e o `.tmp` da gravação atômica inclui o
   PID (dois processos não disputam o mesmo temporário).
+- **Falha ao salvar o estado após a confirmação não passa mais em silêncio**
+  (achado P2 da revisão técnica): se a gravação falhar depois do "sim" (disco,
+  permissão, arquivo preso pelo OneDrive/antivírus), a GUI agora oferece
+  **Repetir** na hora, continua marcando os demais grupos do lote (uma falha
+  não derruba o resto) e, se persistir, avisa com clareza que as etiquetas
+  **saíram mas não foram marcadas** — para o operador **não reimprimir**. Erros
+  exibidos/logados passam por `sem_segredos`.
 
 ### Documentação
 - **README completo e atualizado:** cobre o estado atual do app (ordem de
