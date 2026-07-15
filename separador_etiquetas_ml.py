@@ -57,6 +57,11 @@ ARQUIVO_ESTADO = PASTA_SCRIPT / "estado_grupos.json"
 ARQUIVO_CACHE = PASTA_SCRIPT / "itens_cache.json"
 # De-para opcional SKU -> nome amigavel, exibido junto do SKU na tela/CLI.
 ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
+# De-para opcional "codigo do anuncio (sem SKU) -> SKU": anuncios antigos sem
+# seller_sku caem no codigo do anuncio (ex.: MLB3982067005:0) como chave; este
+# mapa os adota num SKU do sistema (agrupa/ordena/carimba/nomeia igual). Chave
+# = a chave gerada por identidade() (GTIN:... ou {item_id}:{var_id}).
+ARQUIVO_SKUS_ANUNCIO = PASTA_SCRIPT / "skus_por_anuncio.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
@@ -502,7 +507,7 @@ def _voltagem(item: dict) -> str:
     return ""
 
 
-def identidade(item: dict, cache: dict) -> tuple[str, str]:
+def identidade(item: dict, cache: dict, skus_anuncio: dict | None = None) -> tuple[str, str]:
     sku = item.get("seller_sku") or item.get("seller_custom_field")
     if sku:
         sku = str(sku).strip()
@@ -518,8 +523,17 @@ def identidade(item: dict, cache: dict) -> tuple[str, str]:
 
     if gtin:
         sufixo = f"|{volt}" if volt else ""
-        return f"GTIN:{gtin}{sufixo}", nome
-    return f"{item_id}:{var_id}", nome
+        chave = f"GTIN:{gtin}{sufixo}"
+    else:
+        chave = f"{item_id}:{var_id}"
+    # Anuncio antigo sem SKU, adotado manualmente num SKU do sistema: passa a ser
+    # tratado como aquele SKU (agrupa/ordena/carimba/nomeia igual). A chave do
+    # mapa e exatamente esta `chave` (o codigo que aparece na tela e na DANFE).
+    if skus_anuncio:
+        adotado = skus_anuncio.get(chave)
+        if adotado:
+            return adotado, adotado
+    return chave, nome
 
 
 # ---------------------------------------------------------------------------
@@ -694,7 +708,10 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None) -> li
     return prontos
 
 
-def extrair_itens(token: str, pedidos: list[dict]) -> list[ItemPedido]:
+def extrair_itens(token: str, pedidos: list[dict],
+                  skus_anuncio: dict | None = None) -> list[ItemPedido]:
+    if skus_anuncio is None:
+        skus_anuncio = carregar_skus_anuncio()
     precisa: set[str] = set()
     for ped in pedidos:
         for oi in ped.get("order_items", []):
@@ -709,7 +726,7 @@ def extrair_itens(token: str, pedidos: list[dict]) -> list[ItemPedido]:
         sid = (ped.get("_envio") or {}).get("shipment_id") or (ped.get("shipping") or {}).get("id")
         for oi in ped.get("order_items", []):
             item = oi.get("item", {})
-            chave, nome = identidade(item, cache)
+            chave, nome = identidade(item, cache, skus_anuncio)
             itens.append(
                 ItemPedido(
                     order_id=ped.get("id"),
@@ -820,6 +837,20 @@ def salvar_nomes(nomes: dict) -> None:
 def _rotulo_sku(sku: str, nomes: dict) -> str:
     amigavel = nomes.get(sku)
     return f"{sku} — {amigavel}" if amigavel else sku
+
+
+def carregar_skus_anuncio() -> dict:
+    """Le o de-para 'codigo do anuncio -> SKU' (vazio se nao existir). Usado por
+    identidade() para adotar anuncios antigos sem seller_sku num SKU do sistema."""
+    return _ler_json(ARQUIVO_SKUS_ANUNCIO)
+
+
+def salvar_skus_anuncio(mapa: dict) -> None:
+    """Grava o de-para 'codigo do anuncio -> SKU' de forma atomica. Descarta
+    entradas vazias e apara os espacos."""
+    limpo = {str(cod).strip(): str(sku).strip()
+             for cod, sku in mapa.items() if str(cod).strip() and str(sku).strip()}
+    _gravar_json(ARQUIVO_SKUS_ANUNCIO, limpo)
 
 
 def aplicar_nomes(grupos: list[Grupo], nomes: dict) -> None:
