@@ -9367,6 +9367,33 @@
       "id": "estado_trava_processos",
       "community": 8,
       "norm_label": "barreira->solucao: merge do estado perdia marcacao em leituras simultaneas; trava entre processos"
+    },
+    {
+      "label": "_somar_rastreios()",
+      "file_type": "code",
+      "source_file": "shopee_api.py",
+      "source_location": "L706",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "ast",
+      "id": "shopee_api_somar_rastreios",
+      "community": 1,
+      "norm_label": "_somar_rastreios()"
+    },
+    {
+      "label": "CORRECAO: impressao parcial unia (nao substitui) os AWBs exibidos",
+      "file_type": "rationale",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "awb_uniao_parcial",
+      "community": 1,
+      "norm_label": "correcao: impressao parcial une (nao substitui) os awbs exibidos"
     }
   ],
   "links": [
@@ -25932,6 +25959,56 @@
       "weight": 1.0,
       "source": "estado_trava_processos",
       "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api",
+      "target": "shopee_api_somar_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_imprimir_grupo",
+      "target": "shopee_api_somar_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_imprimir_lotes",
+      "target": "shopee_api_somar_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "awb_uniao_parcial",
+      "target": "shopee_api_somar_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "awb_uniao_parcial",
+      "target": "shopee_rastreio_todos_grupos",
       "confidence_score": 1.0
     }
   ],

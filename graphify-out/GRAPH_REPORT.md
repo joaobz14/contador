@@ -6,6 +6,11 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-15 — AWB na impressão parcial une, não substitui (revisão P2):**
+  imprimir os faltantes de um grupo parcial apagava da tela os códigos antigos
+  (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
+  (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
+
 - **2026-07-15 — Trava entre processos no estado (revisão P1):** o merge do
   `marcar_impresso` só cobria o caso sequencial; leituras simultâneas (tela+bot)
   perdiam marcação (reproduzido: 6 marcações concorrentes → 1). Nós novos:

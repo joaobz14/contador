@@ -740,6 +740,16 @@ def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
 
 
+def _somar_rastreios(grupo, novos: list) -> None:
+    """UNE os AWBs recem-impressos aos ja exibidos, sem duplicar e preservando a
+    ordem. Num grupo PARCIAL, g.rastreios ja tem os codigos das etiquetas antigas
+    (preenchidos na coleta); substituir a lista apagaria da tela a referencia que
+    o operador usa para casar etiqueta fisica x produto (a etiqueta Shopee nao
+    tem o nome) ate a proxima coleta."""
+    atuais = list(getattr(grupo, "rastreios", []) or [])
+    grupo.rastreios = atuais + [a for a in novos if a and a not in atuais]
+
+
 def _zpl_do_zip(conteudo: bytes) -> bytes:
     """Extrai o ZPL (em BYTES, sem reencodar — evita corromper o ~DG/Z64) de dentro
     de um .zip de etiqueta Shopee, ou devolve o proprio conteudo se ja for ZPL cru."""
@@ -784,8 +794,8 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
                               rastreios={sn: awbs.get(sn, "") for sn in pendentes})
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
     _log_tempos(len(pendentes), _t1 - _t0, time.time() - _t1, contexto="grupo")
-    # Guarda os AWBs recem-impressos para a tela conferir (sem re-buscar).
-    grupo.rastreios = [awbs[sn] for sn in pendentes if awbs.get(sn)]
+    # UNE os AWBs recem-impressos aos ja exibidos (parcial nao perde os antigos).
+    _somar_rastreios(grupo, [awbs.get(sn, "") for sn in pendentes])
     if marcar:
         marcar_impresso(estado, grupo, pendentes)
     return pendentes
@@ -856,7 +866,8 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
     for g, pend in pend_por_grupo:
         ids_ok = [sn for sn in pend if sn in ok]
         if ids_ok:
-            g.rastreios = [awbs[sn] for sn in ids_ok if awbs.get(sn)]
+            # UNE aos ja exibidos (parcial nao perde os antigos).
+            _somar_rastreios(g, [awbs.get(sn, "") for sn in ids_ok])
             impressos.append((g, ids_ok))
     return impressos, falhas
 
