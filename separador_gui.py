@@ -868,10 +868,33 @@ class SeparadorApp:
             "Sim = marca como impressos.\n"
             "Não = mantém pendentes para reimprimir.")
         if marcar:
-            for g, pend in impressos:
-                self.prov.marcar_impresso(self.estado, g, pend)
-            log.info("Confirmado: %d grupo(s), %d etiqueta(s) marcados como impressos (%s)",
-                     n, etiquetas, self._ctx_log())
+            # A etiqueta fisica JA SAIU: uma falha de gravacao (permissao, disco,
+            # arquivo preso pelo OneDrive/antivirus) nao pode estourar o callback
+            # do Tk e sumir em silencio — o grupo ficaria "pendente" e o operador
+            # reimprimiria em duplicidade sem saber por que.
+            falhas_gravar = _marcar_lote_tolerante(
+                lambda g, pend: self.prov.marcar_impresso(self.estado, g, pend),
+                impressos,
+                perguntar_retry=lambda nome, erro: messagebox.askretrycancel(
+                    "Falha ao salvar o estado",
+                    f"As etiquetas de “{nome}” SAÍRAM, mas não consegui gravar a "
+                    f"marcação de impresso:\n\n{erro}\n\n"
+                    "Repetir tenta gravar de novo (feche o que estiver usando o "
+                    "arquivo, ex.: OneDrive/antivírus)."))
+            log.info("Confirmado: %d grupo(s), %d etiqueta(s); %d marcados, %d falha(s) de gravacao (%s)",
+                     n, etiquetas, n - len(falhas_gravar), len(falhas_gravar), self._ctx_log())
+            if falhas_gravar:
+                log.error("Estado NAO gravado para %d grupo(s): %s", len(falhas_gravar),
+                          "; ".join(f"{nome}: {erro}" for nome, erro in falhas_gravar))
+                linhas = "\n".join(f"• {nome}: {erro}" for nome, erro in falhas_gravar[:8])
+                mais = "" if len(falhas_gravar) <= 8 else f"\n(+{len(falhas_gravar) - 8} outro(s))"
+                messagebox.showerror(
+                    "Impressas, mas NÃO marcadas",
+                    f"{len(falhas_gravar)} grupo(s) foram IMPRESSOS mas o estado não foi "
+                    f"salvo:\n\n{linhas}{mais}\n\n"
+                    "⚠ NÃO reimprima esses grupos — as etiquetas já saíram.\n"
+                    "Eles continuarão aparecendo como pendentes na lista; resolva o "
+                    "acesso ao arquivo e confirme de novo na próxima impressão.")
         else:
             log.info("Nao confirmado: %d lote(s) mantidos pendentes para reimprimir", n)
         self._render()
@@ -1188,6 +1211,33 @@ class EditorSkusAnuncio:
         self.win.destroy()
         if alterou:
             self.app.atualizar()
+
+
+def _marcar_lote_tolerante(marcar, impressos: list, perguntar_retry) -> list:
+    """Marca cada grupo do lote TOLERANDO falha de persistencia (a etiqueta
+    fisica ja saiu — invariante 1 ja foi honrada; agora o dever e nao perder a
+    marcacao em silencio).
+
+    Para cada grupo: tenta `marcar(grupo, pend)`; numa exceção, pergunta via
+    `perguntar_retry(nome, erro)` se tenta de novo (True = repete — resolve
+    falha transitoria de arquivo preso; False = desiste do grupo). Grupos que
+    falharem entram no retorno [(nome, erro_redigido)] — os demais seguem sendo
+    marcados (uma falha nao derruba o resto do lote). Os erros ja saem passados
+    por sem_segredos. Funcao pura de Tk (callables injetados) para ser testavel
+    sem display."""
+    falhas: list = []
+    for g, pend in impressos:
+        while True:
+            try:
+                marcar(g, pend)
+                break
+            except Exception as e:                     # noqa: BLE001
+                erro = sem_segredos(e)
+                if perguntar_retry(g.nome, erro):
+                    continue                            # tenta gravar de novo
+                falhas.append((g.nome, erro))
+                break
+    return falhas
 
 
 def main() -> None:

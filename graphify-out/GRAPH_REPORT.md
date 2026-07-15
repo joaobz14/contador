@@ -6,6 +6,13 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-15 — Persistência pós-confirmação tolerante (revisão P2):** falha ao
+  gravar o estado depois do "sim" não estoura mais o callback do Tk nem passa em
+  silêncio — `_marcar_lote_tolerante` (puro, testável sem display) oferece
+  Repetir, isola a falha por grupo e o aviso deixa claro "impressas, mas NÃO
+  marcadas — não reimprima". Nós `separador_gui_marcar_lote_tolerante` +
+  `gui_persistencia_pos_confirmacao`.
+
 - **2026-07-15 — Resumo do bot respeita a loja ativa (revisão P2):**
   `_exec_resumo(context)` consulta a loja do chat (Shopee via `contagem_por_dia`
   da mesma busca; ML pelo caminho original), título identifica a loja e a
