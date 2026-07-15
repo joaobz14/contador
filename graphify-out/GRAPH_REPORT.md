@@ -6,6 +6,13 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-14 — Adotar anúncio ML sem SKU num SKU do sistema:** de-para
+  `skus_por_anuncio.json` (código do anúncio → SKU) aplicado em `identidade`
+  (reescreve a chave); editável na GUI (botão inline 🏷 Atribuir SKU +
+  `EditorSkusAnuncio`). Nó `anuncio_sem_sku_adota` (rationale) ligado a
+  `identidade`, `extrair_itens`, `separador_gui` e ao conceito
+  `ordem_separacao_pessoal`.
+
 - **2026-07-14 — Rastreio (AWB) de todos os grupos Shopee na tela:** como a
   etiqueta Shopee não tem o nome do produto (e não há faixa livre estável para
   carimbar — validado com 10 etiquetas: o miolo varia com a rota), a tela lista o

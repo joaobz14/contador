@@ -23,6 +23,14 @@ Histórico das principais mudanças do projeto.
   nome — para conferir qual etiqueta é qual produto ao separar o lote. Em grupos
   de alto volume a área cresce em altura (não espreme). Pendentes não mostram
   código (o AWB só existe depois de organizar/imprimir o envio).
+- **Adotar anúncios ML sem SKU num SKU do sistema:** anúncios antigos sem
+  `seller_sku` apareciam pelo título e carimbavam o código do anúncio (MLB…).
+  Agora um de-para **`skus_por_anuncio.json`** (versionado) mapeia o código do
+  anúncio → SKU, e o anúncio passa a **agrupar/ordenar/carimbar/nomear igual** a
+  esse SKU. Editável na GUI de dois jeitos: botão **🏷 Atribuir SKU** no próprio
+  grupo sem SKU (à esquerda, embaixo do nome) e uma **janela gerenciadora**
+  (**🏷 SKUs** na barra) para adotar os anúncios da tela e editar/remover os
+  mapeamentos salvos.
 
 ### Arquitetura interna
 - **Camada comum de estado (`estado.py`):** a lógica de "já impresso" (antes

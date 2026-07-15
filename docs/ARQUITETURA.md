@@ -84,6 +84,7 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |
 | **`nomes_sku.json`** | `carregar_nomes` (SKU→nome) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
+| **`skus_por_anuncio.json`** | `carregar_skus_anuncio` (código do anúncio ML sem SKU → SKU) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
 
 ## Testes como documentação viva (que regra cada um protege)
 

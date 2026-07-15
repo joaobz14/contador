@@ -124,6 +124,15 @@ em 2º plano.
   ↑/↓); use `carregar_nomes()`/`salvar_nomes()` (apara, descarta vazios). A **ordem
   das chaves é significativa e PRESERVADA** (não alfabética) — é a ordem de
   separação (ver ordenação abaixo).
+- **Anúncio ML sem SKU → SKU:** anúncios antigos sem `seller_sku` caem no código
+  do anúncio (`{item_id}:{var_id}` ou `GTIN:…`) como chave e usam o título como
+  nome. O de-para **`skus_por_anuncio.json`** (versionado) os **adota** num SKU do
+  sistema: `identidade(item, cache, skus_anuncio)` reescreve a chave para o SKU
+  (aí agrupa/ordena/carimba/nomeia igual); `extrair_itens` carrega o mapa e repassa.
+  Editável na GUI de dois jeitos: botão **🏷 Atribuir SKU** no grupo sem SKU
+  (`_sem_sku` = `':'` na chave, só ML, sem combo) e a janela **🏷 SKUs**
+  (`EditorSkusAnuncio`). Use `carregar_skus_anuncio()`/`salvar_skus_anuncio()`.
+  Ambas **re-coletam** ao aplicar (a adoção muda o agrupamento).
 - **Ordem dos grupos (tela + impressão):** `ordenar_grupos` (usado por `agrupar` e
   `fundir_grupos`) ordena por **quantidade primeiro** (mantém os blocos "qtd 1",
   "qtd 2"…) e, **só no bloco de qtd 1**, segue a **ordem da aba Nomes**; SKU não

@@ -128,6 +128,9 @@ class SeparadorApp:
         # Editor de nomes amigaveis (SKU -> nome), a direita da linha da loja.
         ttk.Button(topo_mkt, text="✏ Nomes",
                    command=self.abrir_editor_nomes).pack(side="right")
+        # Gerenciador do de-para "anuncio sem SKU -> SKU" (ML).
+        ttk.Button(topo_mkt, text="🏷 SKUs",
+                   command=self.abrir_editor_skus).pack(side="right", padx=(0, 6))
 
         topo = ttk.Frame(self.root, padding=10)
         topo.pack(fill="x")
@@ -609,6 +612,13 @@ class SeparadorApp:
             sub = f"{g.total_etiquetas} etiqueta(s)"
         ttk.Label(esq, text=sub, foreground=CINZA, font=("Segoe UI", 8)).pack(anchor="w")
 
+        # Anuncio ML sem SKU: botao (a esquerda, embaixo do nome — sempre visivel
+        # mesmo com titulo longo) para adota-lo num SKU do sistema. Some assim que
+        # o anuncio e adotado (na proxima coleta a chave ja e o SKU).
+        if self._sem_sku(g):
+            ttk.Button(esq, text="🏷 Atribuir SKU",
+                       command=lambda gg=g: self._atribuir_sku(gg)).pack(anchor="w", pady=(2, 0))
+
         # Codigos de rastreio (AWB) das etiquetas ja impressas (Shopee). A etiqueta
         # Shopee nao tem o nome do produto, entao listamos os codigos alinhados a
         # esquerda (mesma coluna, logo abaixo do nome) para bater o olho com a
@@ -635,6 +645,39 @@ class SeparadorApp:
                        command=lambda gg=g: self.imprimir(gg)).pack(side="right", anchor="n")
 
         return var          # BooleanVar da caixinha (ou None se nao selecionavel)
+
+    def _sem_sku(self, g) -> bool:
+        """Grupo de anúncio ML sem seller_sku — a chave é o código do anúncio
+        (tem ':', ex.: MLB…:0 ou GTIN:…) e ainda não foi adotado num SKU. Só ML
+        (a Shopee agrupa de outro jeito); combos ficam de fora."""
+        return (getattr(self.prov, "suporta_identificacao", False)
+                and ":" in g.chave and not g.componentes)
+
+    def _atribuir_sku(self, g) -> None:
+        """Pergunta o SKU do sistema para adotar o anúncio (grupo sem SKU) e
+        salva no de-para 'anúncio → SKU'. Ao Atualizar, o grupo passa a ser aquele
+        SKU (agrupa/ordena/carimba/nomeia igual)."""
+        sku = simpledialog.askstring(
+            "Atribuir SKU",
+            f"Anúncio sem SKU:\n{g.nome}\n\nCódigo: {g.chave}\n\n"
+            "Digite o SKU do sistema (ex.: F1AP):",
+            parent=self.root)
+        if not sku or not sku.strip():
+            return
+        sku = sku.strip()
+        try:
+            mapa = core.carregar_skus_anuncio()
+            mapa[g.chave] = sku
+            core.salvar_skus_anuncio(mapa)
+        except Exception as e:                       # noqa: BLE001
+            self._erro(f"Não consegui salvar o SKU do anúncio.\n{e}")
+            return
+        log.info("anuncio->sku: %s = %s (%s)", g.chave, sku, self._ctx_log())
+        messagebox.showinfo(
+            "Atribuir SKU",
+            f"Anúncio adotado como SKU “{sku}”.\nAtualizando para agrupar…",
+            parent=self.root)
+        self.atualizar()
 
     # -------------------------------------------------------------- IMPRIMIR
     # CONTRATO DE IMPRESSAO (invariante 1 — NAO reordenar):
@@ -820,6 +863,11 @@ class SeparadorApp:
         na lista atual ao fechar, sem precisar reatualizar."""
         EditorNomes(self)
 
+    def abrir_editor_skus(self) -> None:
+        """Janela para gerenciar o de-para 'anúncio sem SKU → SKU': adotar os
+        anúncios sem SKU da tela atual e editar/remover os mapeamentos salvos."""
+        EditorSkusAnuncio(self)
+
 
 class EditorNomes:
     """Janelinha de edicao do de-para SKU -> nome amigavel."""
@@ -979,6 +1027,138 @@ class EditorNomes:
             except Exception:                        # noqa: BLE001
                 pass
         self.win.destroy()
+
+
+class EditorSkusAnuncio:
+    """Gerenciador do de-para 'código do anúncio → SKU' (anúncios ML sem SKU).
+    Adota anúncios sem SKU num SKU do sistema para agruparem/ordenarem/carimbarem
+    igual aos demais."""
+
+    def __init__(self, app: "SeparadorApp") -> None:
+        self.app = app
+        self.mapa = dict(core.carregar_skus_anuncio())    # copia de trabalho
+        self.alterado = False
+
+        win = tk.Toplevel(app.root)
+        self.win = win
+        win.title("Anúncios sem SKU → SKU")
+        win.geometry("620x560")
+        win.transient(app.root)
+        win.protocol("WM_DELETE_WINDOW", self._fechar)
+
+        # Anúncios sem SKU carregados na tela — escolher preenche o código (sem
+        # precisar digitar o MLB…). Vazio se a tela não tiver anúncios sem SKU.
+        sem_sku = [g for g in app.grupos if app._sem_sku(g)]
+        self._por_rotulo = {f"{g.nome}  —  {g.chave}": g.chave for g in sem_sku}
+        topo = ttk.Frame(win, padding=(10, 10, 10, 4))
+        topo.pack(fill="x")
+        ttk.Label(topo, text="Anúncio sem SKU (desta tela):").pack(anchor="w")
+        self.combo = ttk.Combobox(topo, values=list(self._por_rotulo), state="readonly")
+        self.combo.pack(fill="x", pady=(2, 0))
+        self.combo.bind("<<ComboboxSelected>>", self._escolher_anuncio)
+        if not sem_sku:
+            ttk.Label(topo, foreground=CINZA, text="(nenhum na tela atual — "
+                      "digite o código manualmente ou atualize a lista)").pack(anchor="w")
+
+        edit = ttk.Frame(win, padding=(10, 6))
+        edit.pack(fill="x")
+        ttk.Label(edit, text="Código:").grid(row=0, column=0, sticky="w", padx=(0, 6), pady=2)
+        self.cod_var = tk.StringVar()
+        ttk.Entry(edit, textvariable=self.cod_var).grid(row=0, column=1, sticky="we", pady=2)
+        ttk.Label(edit, text="SKU:").grid(row=1, column=0, sticky="w", padx=(0, 6), pady=2)
+        self.sku_var = tk.StringVar()
+        ent_sku = ttk.Entry(edit, textvariable=self.sku_var, width=20)
+        ent_sku.grid(row=1, column=1, sticky="w", pady=2)
+        ent_sku.bind("<Return>", lambda _e: self._salvar_um())
+        edit.columnconfigure(1, weight=1)
+
+        meio = ttk.Frame(win, padding=(10, 0))
+        meio.pack(fill="both", expand=True)
+        cols = ("cod", "sku")
+        self.tree = ttk.Treeview(meio, columns=cols, show="headings", selectmode="browse")
+        self.tree.heading("cod", text="Código do anúncio")
+        self.tree.heading("sku", text="SKU")
+        self.tree.column("cod", width=380, anchor="w")
+        self.tree.column("sku", width=140, anchor="w")
+        sb = ttk.Scrollbar(meio, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=sb.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+        self.tree.bind("<<TreeviewSelect>>", self._selecionar)
+
+        acoes = ttk.Frame(win, padding=(10, 6, 10, 10))
+        acoes.pack(fill="x")
+        ttk.Button(acoes, text="🗑 Remover", command=self._remover).pack(side="left")
+        ttk.Button(acoes, text="Fechar", command=self._fechar).pack(side="right")
+        ttk.Button(acoes, text="💾 Salvar", command=self._salvar_um).pack(side="right", padx=6)
+
+        ttk.Label(win, foreground=CINZA, padding=(10, 0, 10, 8),
+                  text="Escolha um anúncio da tela (ou digite o código), informe o "
+                       "SKU e Salve. Ao fechar, a lista é atualizada para agrupar.").pack(fill="x")
+
+        self._preencher_lista()
+
+    def _escolher_anuncio(self, _e=None) -> None:
+        cod = self._por_rotulo.get(self.combo.get(), "")
+        self.cod_var.set(cod)
+        self.sku_var.set(self.mapa.get(cod, ""))
+
+    def _preencher_lista(self) -> None:
+        self.tree.delete(*self.tree.get_children())
+        for cod, sku in self.mapa.items():
+            self.tree.insert("", "end", iid=cod, values=(cod, sku))
+
+    def _selecionar(self, _e=None) -> None:
+        sel = self.tree.selection()
+        if not sel:
+            return
+        cod = sel[0]
+        self.cod_var.set(cod)
+        self.sku_var.set(self.mapa.get(cod, ""))
+
+    def _salvar_um(self) -> None:
+        cod = self.cod_var.get().strip()
+        sku = self.sku_var.get().strip()
+        if not cod or not sku:
+            messagebox.showinfo("SKUs", "Preencha o código e o SKU.", parent=self.win)
+            return
+        self.mapa[cod] = sku
+        self.alterado = True
+        self._gravar()
+        self._preencher_lista()
+        if self.tree.exists(cod):
+            self.tree.selection_set(cod)
+            self.tree.see(cod)
+
+    def _remover(self) -> None:
+        cod = self.cod_var.get().strip()
+        if cod not in self.mapa:
+            messagebox.showinfo("SKUs", "Selecione um mapeamento da lista para remover.",
+                                parent=self.win)
+            return
+        if not messagebox.askyesno("Remover", f"Remover o SKU do anúncio '{cod}'?",
+                                   parent=self.win):
+            return
+        del self.mapa[cod]
+        self.alterado = True
+        self._gravar()
+        self.cod_var.set("")
+        self.sku_var.set("")
+        self._preencher_lista()
+
+    def _gravar(self) -> None:
+        try:
+            core.salvar_skus_anuncio(self.mapa)
+        except Exception as e:                            # noqa: BLE001
+            messagebox.showerror("SKUs", f"Não consegui salvar:\n{e}", parent=self.win)
+
+    def _fechar(self) -> None:
+        # Adotar/mudar SKU muda o agrupamento (via identidade): re-coleta para
+        # aplicar. Só atualiza se algo mudou e já havia dados carregados.
+        alterou = self.alterado and bool(self.app.grupos)
+        self.win.destroy()
+        if alterou:
+            self.app.atualizar()
 
 
 def main() -> None:

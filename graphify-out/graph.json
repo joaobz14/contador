@@ -9301,6 +9301,19 @@
       "id": "shopee_rastreio_todos_grupos",
       "community": 1,
       "norm_label": "feature: rastreio (awb) de todos os grupos shopee na tela"
+    },
+    {
+      "label": "FEATURE: adotar anuncio ML sem SKU num SKU do sistema",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "anuncio_sem_sku_adota",
+      "community": 8,
+      "norm_label": "feature: adotar anuncio ml sem sku num sku do sistema"
     }
   ],
   "links": [
@@ -25736,6 +25749,46 @@
       "weight": 1.0,
       "source": "shopee_rastreio_todos_grupos",
       "target": "carimbo_encoding_ci28",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_sem_sku_adota",
+      "target": "separador_etiquetas_ml_identidade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_sem_sku_adota",
+      "target": "separador_etiquetas_ml_extrair_itens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_sem_sku_adota",
+      "target": "separador_gui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_sem_sku_adota",
+      "target": "ordem_separacao_pessoal",
       "confidence_score": 1.0
     }
   ],
