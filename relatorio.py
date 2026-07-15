@@ -31,15 +31,30 @@ def texto_grupos(grupos: list, titulo: str) -> str:
 
 
 def texto_resumo(prontos: list, hoje: str, amanha: str) -> str:
-    """Quantos pacotes ha em cada dia de despacho."""
+    """Quantos pacotes ha em cada dia de despacho (Mercado Livre)."""
     linhas_dia = core.resumo_por_dia(prontos)
+    return _formatar_resumo(linhas_dia, len(prontos), hoje, amanha,
+                            loja="Mercado Livre")
+
+
+def texto_resumo_contagem(contagem: dict, hoje: str, amanha: str, *, loja: str) -> str:
+    """Mesmo resumo, a partir de uma contagem {dia: n} ja pronta (Shopee:
+    contagem_por_dia vem da MESMA busca, sem rede extra). Dia "" = sem data."""
+    linhas_dia = sorted(((d or "(sem data)"), n) for d, n in contagem.items())
+    return _formatar_resumo(linhas_dia, sum(contagem.values()), hoje, amanha,
+                            loja=loja)
+
+
+def _formatar_resumo(linhas_dia, total: int, hoje: str, amanha: str, *, loja: str) -> str:
+    """Layout unico do resumo por dia, com a LOJA no titulo (o resumo respeita a
+    loja ativa do chat — sem o rotulo, um resumo Shopee pareceria do ML)."""
     if not linhas_dia:
-        return "Nenhum envio pronto para imprimir."
-    saida = [f"Resumo por dia de despacho (hoje = {hoje})\n"]
+        return f"Nenhum envio pronto para imprimir ({loja})."
+    saida = [f"Resumo por dia de despacho — {loja} (hoje = {hoje})\n"]
     for data, qtd in linhas_dia:
         marca = "  <= HOJE" if data == hoje else ("  <= amanha" if data == amanha else "")
         saida.append(f"  {data}   {qtd:>3} pacote(s){marca}")
-    saida.append(f"\nTotal: {len(prontos)} pacote(s) em {len(linhas_dia)} dia(s).")
+    saida.append(f"\nTotal: {total} pacote(s) em {len(linhas_dia)} dia(s).")
     return "\n".join(saida)
 
 

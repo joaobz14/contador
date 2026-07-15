@@ -74,6 +74,11 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Resumo respeita a loja ativa** (achado P2 da revisão técnica): com a Shopee
+  selecionada, o `/resumo` (e o botão 📊 Resumo) trazia dados do **Mercado
+  Livre**. Agora consulta a loja do chat (Shopee usa a `contagem_por_dia` da
+  mesma busca, sem rede extra), o título do resumo **identifica a loja** e a
+  mensagem "Consultando…" também usa a loja ativa.
 - **Reinício automático:** lançador `Iniciar Bot (auto).bat` que religa o bot
   sozinho se ele cair (erro/queda de rede), em vez de ficar fora do ar. No modo
   automático o bot não pausa pedindo Enter (`BOT_SEM_PAUSA`); o motivo da queda
