@@ -92,7 +92,11 @@ em 2º plano.
   `impressos`, `status_grupo`, `envios_pendentes`, `limpar_antigo`, `carregar`,
   `marcar_impresso`); núcleo e `shopee_api` só expõem wrappers finos que passam o
   seu `ARQUIVO_ESTADO`. Continue usando os helpers do núcleo (`status_grupo`,
-  `envios_pendentes`, `marcar_impresso`) — não reimplemente o merge.
+  `envios_pendentes`, `marcar_impresso`) — não reimplemente o merge. O ciclo
+  ler→mesclar→salvar do `marcar_impresso` roda sob **trava entre processos**
+  (`estado.trava`, `.lock` ao lado do arquivo, gitignorado) quando o wrapper passa
+  `arquivo=` — sem ela, duas leituras simultâneas (tela + bot) perdem marcação.
+  A trava degrada suavemente; o `.tmp` do `gravar_json` inclui o PID.
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista

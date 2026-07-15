@@ -726,9 +726,11 @@ def salvar_estado(estado: dict) -> None:
 def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = None) -> None:
     """Marca order_sns como impressos (ou todos do grupo). RECARREGA o estado do
     disco e mescla (uniao) antes de gravar, para nao apagar marcacoes de outro
-    processo feitas nesse meio-tempo (mesma convencao do nucleo)."""
+    processo feitas nesse meio-tempo (mesma convencao do nucleo). arquivo= liga
+    a trava entre processos no ciclo ler->mesclar->salvar."""
     _estado.marcar_impresso(
-        lambda: _estado.ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns)
+        lambda: _estado.ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns,
+        arquivo=ARQUIVO_ESTADO)
 
 
 # ---------------------------------------------------------------------------
