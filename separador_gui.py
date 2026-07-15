@@ -654,9 +654,9 @@ class SeparadorApp:
                 and ":" in g.chave and not g.componentes)
 
     def _atribuir_sku(self, g) -> None:
-        """Pergunta o SKU do sistema para adotar o anúncio (grupo sem SKU) e
-        salva no de-para 'anúncio → SKU'. Ao Atualizar, o grupo passa a ser aquele
-        SKU (agrupa/ordena/carimba/nomeia igual)."""
+        """Pergunta o SKU do sistema para adotar o anúncio (grupo sem SKU), salva
+        no de-para 'anúncio → SKU' e aplica NA HORA, em memória (sem re-buscar na
+        API): a lista re-agrupa igual ao que um Atualizar faria, instantâneo."""
         sku = simpledialog.askstring(
             "Atribuir SKU",
             f"Anúncio sem SKU:\n{g.nome}\n\nCódigo: {g.chave}\n\n"
@@ -673,11 +673,36 @@ class SeparadorApp:
             self._erro(f"Não consegui salvar o SKU do anúncio.\n{e}")
             return
         log.info("anuncio->sku: %s = %s (%s)", g.chave, sku, self._ctx_log())
-        messagebox.showinfo(
-            "Atribuir SKU",
-            f"Anúncio adotado como SKU “{sku}”.\nAtualizando para agrupar…",
-            parent=self.root)
-        self.atualizar()
+        self._aplicar_mapa_anuncios_local()
+
+    def _aplicar_mapa_anuncios_local(self) -> None:
+        """Aplica o de-para 'anúncio → SKU' aos grupos JÁ carregados, em memória —
+        sem re-buscar na API. Reescreve a chave dos anúncios adotados e funde os
+        grupos que passam a ter o mesmo (SKU + quantidade); reaplica nomes e ordem.
+        Resultado idêntico ao de um Atualizar, mas instantâneo (um Atualizar manual
+        continua sendo o jeito de puxar vendas novas). Idempotente: grupos já
+        adotados têm chave = SKU (fora do mapa), então não mudam de novo."""
+        mapa = core.carregar_skus_anuncio()
+        if not self.grupos:
+            return
+        fundidos: dict = {}
+        ordem: list = []
+        for g in self.grupos:
+            if g.chave in mapa:
+                g.chave = mapa[g.chave]
+            chave_qtd = (g.chave, g.quantidade)
+            base = fundidos.get(chave_qtd)
+            if base is None:
+                fundidos[chave_qtd] = g
+                ordem.append(chave_qtd)
+            else:                                    # mesmo SKU + qtd -> funde
+                base.shipment_ids.extend(g.shipment_ids)
+                if getattr(g, "rastreios", None):
+                    base.rastreios = list(getattr(base, "rastreios", [])) + list(g.rastreios)
+        self.grupos = [fundidos[k] for k in ordem]
+        core.aplicar_nomes(self.grupos, core.carregar_nomes())
+        self.grupos = core.ordenar_grupos(self.grupos)
+        self._render()
 
     # -------------------------------------------------------------- IMPRIMIR
     # CONTRATO DE IMPRESSAO (invariante 1 — NAO reordenar):

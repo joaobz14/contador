@@ -132,7 +132,10 @@ em 2º plano.
   Editável na GUI de dois jeitos: botão **🏷 Atribuir SKU** no grupo sem SKU
   (`_sem_sku` = `':'` na chave, só ML, sem combo) e a janela **🏷 SKUs**
   (`EditorSkusAnuncio`). Use `carregar_skus_anuncio()`/`salvar_skus_anuncio()`.
-  Ambas **re-coletam** ao aplicar (a adoção muda o agrupamento).
+  O **botão inline aplica na hora, em memória** (`_aplicar_mapa_anuncios_local`
+  reescreve a chave e **funde** por SKU+qtd — sem re-buscar na API); a **janela
+  gerenciadora re-coleta** ao fechar (permite remover/editar, que precisa refazer
+  a identidade do zero).
 - **Ordem dos grupos (tela + impressão):** `ordenar_grupos` (usado por `agrupar` e
   `fundir_grupos`) ordena por **quantidade primeiro** (mantém os blocos "qtd 1",
   "qtd 2"…) e, **só no bloco de qtd 1**, segue a **ordem da aba Nomes**; SKU não
