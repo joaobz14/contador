@@ -699,3 +699,41 @@ def test_falha_de_transporte_no_traceback_nao_tem_url(monkeypatch):
         assert "SEGREDO123" not in texto and "ASSINATURA456" not in texto
     else:
         raise AssertionError("nao levantou")
+# AWB NA IMPRESSAO PARCIAL: une aos ja exibidos (nao substitui) — revisao P2
+# ---------------------------------------------------------------------------
+def test_somar_rastreios_une_sem_duplicar_preservando_ordem():
+    g = _grupo("A", ids=["SN1", "SN2", "SN3"], dia="2026-07-15")
+    g.rastreios = ["BR-A"]
+    sh._somar_rastreios(g, ["BR-B", "", "BR-A", "BR-C"])   # vazio e duplicado fora
+    assert g.rastreios == ["BR-A", "BR-B", "BR-C"]
+
+
+def test_imprimir_lotes_parcial_preserva_awbs_antigos(monkeypatch):
+    """Grupo parcial: SN1 ja impresso (AWB antigo na tela) + SN2 pendente.
+    Imprimir o pendente NAO pode apagar o codigo antigo da lista."""
+    _forca_individual(monkeypatch)
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    g = _grupo("A", ids=["SN1", "SN2"], dia="2026-07-15")
+    g.rastreios = ["BR-SN1"]                       # da coleta (SN1 ja impresso)
+    estado = {"2026-07-15|A|q1": ["SN1"]}          # parcial: falta SN2
+    impressos, falhas = sh.imprimir_lotes({}, [g], estado)
+    assert impressos == [(g, ["SN2"])] and falhas == []
+    assert g.rastreios == ["BR-SN1", "BR-SN2"]     # antigo + novo (uniao)
+
+
+def test_imprimir_grupo_parcial_preserva_awbs_antigos(monkeypatch):
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "_organizar_varios",
+                        lambda c, t, sns, **k: ({sn: f"BR-{sn}" for sn in sns}, []))
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    monkeypatch.setattr(sh, "marcar_impresso", lambda e, g, ids: None)
+    g = _grupo("B", ids=["SN1", "SN2"], dia="2026-07-15")
+    g.rastreios = ["BR-SN1"]
+    estado = {"2026-07-15|B|q1": ["SN1"]}
+    out = sh.imprimir_grupo({}, g, estado)
+    assert out == ["SN2"]
+    assert g.rastreios == ["BR-SN1", "BR-SN2"]

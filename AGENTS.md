@@ -162,7 +162,9 @@ em 2º plano.
   listando o **código de rastreio (AWB) de cada etiqueta já impressa** do grupo
   (`Grupo.rastreios`), à esquerda, embaixo do nome — o operador cruza o código da
   etiqueta física com o produto. Preenchido no `preencher_rastreios` (todos os
-  envios impressos, em paralelo) e na hora da impressão (dos `awbs`, sem re-buscar).
+  envios impressos, em paralelo) e na hora da impressão (dos `awbs`, sem re-buscar,
+  via `_somar_rastreios` — **UNE** aos já exibidos; substituir apagaria os códigos
+  antigos de um grupo parcial até a próxima coleta).
   Pendentes não têm AWB (só existe após organizar), então não mostram código.
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
   (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
