@@ -158,8 +158,17 @@ def _data_valida(texto: str) -> bool:
         return False
 
 
-def _exec_resumo():
-    return relatorio.texto_resumo(_prontos(), core._hoje_br(), core._amanha_br())
+def _exec_resumo(context):
+    """Resumo por dia DA LOJA ATIVA do chat (era sempre ML — achado P2 da
+    revisão: com Shopee selecionada, o botão Resumo trazia dados do ML).
+    Shopee: a contagem por dia vem da MESMA busca (contagem_por_dia), sem rede
+    extra; ML: caminho original (_prontos)."""
+    hoje, amanha = core._hoje_br(), core._amanha_br()
+    if _eh_shopee(context):
+        _grupos, _qtd, contagem = shopee.coletar_grupos(
+            shopee.carregar_credenciais(), somente_hoje=False)
+        return relatorio.texto_resumo_contagem(contagem, hoje, amanha, loja=LOJA_SHOPEE)
+    return relatorio.texto_resumo(_prontos(), hoje, amanha)
 
 
 # ---------------------------------------------------------------- loja (marketplace)
@@ -263,7 +272,7 @@ async def _responder(update, context, nome: str, executor) -> None:
             await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
         return
     log.info("Acao /%s de chat %s", nome, chat_id)
-    await context.bot.send_message(chat_id, "Consultando o Mercado Livre, um instante...")
+    await context.bot.send_message(chat_id, f"Consultando a {_loja(context)}, um instante...")
     try:
         texto = await asyncio.to_thread(executor)
     except core.SeparadorError as e:
@@ -469,7 +478,7 @@ async def cmd_todos(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _responder(update, context, "resumo", _exec_resumo)
+    await _responder(update, context, "resumo", lambda: _exec_resumo(context))
 
 
 async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -553,7 +562,7 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Loja ativa agora: {nova}{extra}.\nUse /hoje para listar os pedidos.")
         return
     if data == "resumo":
-        await _responder(update, context, "resumo", _exec_resumo)
+        await _responder(update, context, "resumo", lambda: _exec_resumo(context))
         return
     if _params_listagem(data):
         await _listar_acao(update, context, data)

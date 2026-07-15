@@ -212,3 +212,44 @@ def test_lista_imprimivel_so_mercado_livre():
     assert bot._lista_imprimivel(_Ctx(loja_grupos="Mercado Livre")) is True
     assert bot._lista_imprimivel(_Ctx(loja_grupos="Shopee")) is False
     assert bot._lista_imprimivel(_Ctx()) is False        # sem registro -> nao imprime
+
+
+# ------------------------------------------------------------- resumo por loja
+def test_resumo_ml_usa_so_o_coletor_ml(monkeypatch):
+    """Loja ML: o resumo vem de _prontos(); a Shopee NAO e consultada."""
+    monkeypatch.setattr(bot, "_prontos",
+                        lambda: [{"_envio": {"expected_date": "2026-07-15"}}])
+    monkeypatch.setattr(bot.core, "_hoje_br", lambda: "2026-07-15")
+    monkeypatch.setattr(bot.core, "_amanha_br", lambda: "2026-07-16")
+    monkeypatch.setattr(bot.shopee, "coletar_grupos",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao chamar Shopee")))
+    txt = bot._exec_resumo(_Ctx())                      # padrao = ML
+    assert "Mercado Livre" in txt and "1 pacote(s)" in txt
+
+
+def test_resumo_shopee_usa_so_o_coletor_shopee(monkeypatch):
+    """Loja Shopee: o resumo vem da contagem_por_dia da Shopee; o ML NAO e
+    consultado (era o achado P2: vinha sempre do ML)."""
+    monkeypatch.setattr(bot, "_prontos",
+                        lambda: (_ for _ in ()).throw(AssertionError("nao chamar ML")))
+    monkeypatch.setattr(bot.core, "_hoje_br", lambda: "2026-07-15")
+    monkeypatch.setattr(bot.core, "_amanha_br", lambda: "2026-07-16")
+    monkeypatch.setattr(bot.shopee, "carregar_credenciais", lambda: {"x": 1})
+    monkeypatch.setattr(bot.shopee, "coletar_grupos",
+                        lambda cred, **k: ([], 0, {"2026-07-15": 3, "2026-07-16": 2, "": 1}))
+    txt = bot._exec_resumo(_Ctx(loja="Shopee"))
+    assert "Shopee" in txt
+    assert "2026-07-15     3 pacote(s)  <= HOJE" in txt
+    assert "2026-07-16     2 pacote(s)  <= amanha" in txt
+    assert "(sem data)" in txt
+    assert "Total: 6 pacote(s)" in txt
+
+
+def test_resumo_identifica_a_loja_no_titulo(monkeypatch):
+    monkeypatch.setattr(bot, "_prontos", lambda: [])
+    monkeypatch.setattr(bot.core, "_hoje_br", lambda: "2026-07-15")
+    monkeypatch.setattr(bot.core, "_amanha_br", lambda: "2026-07-16")
+    assert "Mercado Livre" in bot._exec_resumo(_Ctx())
+    monkeypatch.setattr(bot.shopee, "carregar_credenciais", lambda: {"x": 1})
+    monkeypatch.setattr(bot.shopee, "coletar_grupos", lambda cred, **k: ([], 0, {}))
+    assert "Shopee" in bot._exec_resumo(_Ctx(loja="Shopee"))

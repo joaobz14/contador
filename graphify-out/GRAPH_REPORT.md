@@ -6,6 +6,11 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-15 — Resumo do bot respeita a loja ativa (revisão P2):**
+  `_exec_resumo(context)` consulta a loja do chat (Shopee via `contagem_por_dia`
+  da mesma busca; ML pelo caminho original), título identifica a loja e a
+  mensagem "Consultando…" usa a loja ativa. Nó `bot_resumo_por_loja`.
+
 - **2026-07-15 — AWB na impressão parcial une, não substitui (revisão P2):**
   imprimir os faltantes de um grupo parcial apagava da tela os códigos antigos
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
