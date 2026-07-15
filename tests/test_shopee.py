@@ -639,3 +639,63 @@ def test_obter_token_shopee_adota_token_do_disco(monkeypatch, tmp_path):
     cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "RV"}
     assert sh.obter_token(cred) == "DISCO"
     assert cred["refresh_token"] == "RN"
+
+
+# ---------------------------------------------------------------------------
+# FALHA DE TRANSPORTE NAO PODE VAZAR O TOKEN (complementa o erro HTTP seguro)
+# ---------------------------------------------------------------------------
+import pytest  # noqa: E402
+
+URL_ASSINADA = ("Max retries exceeded with url: /api/v2/x?partner_id=1"
+                "&access_token=SEGREDO123&shop_id=2&sign=ASSINATURA456")
+
+
+def _levanta_conexao(*a, **k):
+    import requests
+    raise requests.ConnectionError(URL_ASSINADA)
+
+
+@pytest.mark.parametrize("chamar", [
+    lambda: sh._get_shop({"partner_id": "1", "partner_key": "k", "shop_id": "2"},
+                         "TOK", "/api/v2/x", {}),
+    lambda: sh._post_shop({"partner_id": "1", "partner_key": "k", "shop_id": "2"},
+                          "TOK", "/api/v2/x", {}),
+    lambda: sh._download_shop({"partner_id": "1", "partner_key": "k", "shop_id": "2"},
+                              "TOK", "/api/v2/x", {}),
+])
+def test_falha_de_transporte_vira_erro_limpo(monkeypatch, chamar):
+    monkeypatch.setattr(sh.core, "_requisicao_get", _levanta_conexao)
+    monkeypatch.setattr(sh.core, "_requisicao_post", _levanta_conexao)
+    with pytest.raises(sh.core.SeparadorError) as exc:
+        chamar()
+    msg = str(exc.value)
+    assert "SEGREDO123" not in msg and "ASSINATURA456" not in msg
+    assert "/api/v2/x" in msg and "rede" in msg
+    # O encadeamento e cortado (from None): um traceback logado (ex.:
+    # log.exception do bot) nao arrasta a excecao original com a URL.
+    assert exc.value.__suppress_context__ is True
+
+
+def test_renovar_token_falha_de_transporte_limpa(monkeypatch):
+    monkeypatch.setattr(sh.core, "_requisicao_post", _levanta_conexao)
+    cred = {"partner_id": "1", "partner_key": "k", "shop_id": "2",
+            "refresh_token": "R", "access_token": "", "access_token_exp": 0}
+    with pytest.raises(sh.core.SeparadorError) as exc:
+        sh.renovar_token(cred)
+    msg = str(exc.value)
+    assert "SEGREDO123" not in msg and "ASSINATURA456" not in msg
+
+
+def test_falha_de_transporte_no_traceback_nao_tem_url(monkeypatch):
+    """O texto completo do traceback (o que um log.exception gravaria) nao pode
+    conter a URL assinada — e o que protege o bot.log."""
+    import traceback
+    monkeypatch.setattr(sh.core, "_requisicao_get", _levanta_conexao)
+    try:
+        sh._get_shop({"partner_id": "1", "partner_key": "k", "shop_id": "2"},
+                     "TOK", "/api/v2/x", {})
+    except sh.core.SeparadorError as e:
+        texto = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+        assert "SEGREDO123" not in texto and "ASSINATURA456" not in texto
+    else:
+        raise AssertionError("nao levantou")

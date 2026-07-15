@@ -479,9 +479,11 @@ class SeparadorApp:
         self.root.after(0, self._render)
 
     def _erro(self, msg: str) -> None:
-        # Ponto unico de erro da GUI: loga TODA falha ja com segredos redigidos
-        # (a mensagem pode ser um HTTPError com a URL assinada da Shopee).
-        log.error("Erro: %s", sem_segredos(msg))
+        # Ponto unico de erro da GUI: TODA falha passa por sem_segredos — no log
+        # E na tela (a mensagem pode carregar a URL assinada da Shopee, com
+        # access_token/sign; uma captura de tela nao pode vazar o token).
+        msg = sem_segredos(msg)
+        log.error("Erro: %s", msg)
         self.prog.pack_forget()
         self._ocupar(False, "")
         messagebox.showerror("Erro", msg)
@@ -794,7 +796,8 @@ class SeparadorApp:
         log.info("Reimpressao: %d enviada(s), %d falha(s) (nao altera estado)",
                  n - len(falhas), len(falhas))
         if falhas:
-            linhas = "\n".join(f"• {nome}: {motivo}" for nome, motivo in falhas[:8])
+            # sem_segredos: um motivo pode carregar a URL assinada da Shopee.
+            linhas = "\n".join(f"• {nome}: {sem_segredos(motivo)}" for nome, motivo in falhas[:8])
             mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outra(s))"
             messagebox.showwarning(
                 "Algumas reimpressões falharam",
@@ -843,7 +846,8 @@ class SeparadorApp:
         if falhas:                              # alguns pedidos nao geraram (parcial)
             log.warning("Lote parcial: %d pedido(s) nao sairam (%s)", len(falhas),
                         ", ".join(str(sn) for sn, _ in falhas[:10]))
-            linhas = "\n".join(f"• {sn}: {motivo}" for sn, motivo in falhas[:8])
+            # sem_segredos: um motivo pode carregar a URL assinada da Shopee.
+            linhas = "\n".join(f"• {sn}: {sem_segredos(motivo)}" for sn, motivo in falhas[:8])
             mais = "" if len(falhas) <= 8 else f"\n(+{len(falhas) - 8} outro(s))"
             messagebox.showwarning(
                 "Alguns pedidos não saíram",

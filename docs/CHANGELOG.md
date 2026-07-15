@@ -49,6 +49,14 @@ Histórico das principais mudanças do projeto.
 - **Erro da Shopee não vaza mais o token:** os erros HTTP da Shopee passam por
   `_levantar_se_erro` (em vez de `raise_for_status`), que carregava a URL
   assinada com `access_token`/`sign` para o log, a tela e o chat do bot.
+- **Falha de transporte da Shopee também não vaza o token** (achado P1 da
+  revisão técnica): queda de conexão/timeout gerava exceção crua do requests com
+  a URL assinada inteira ("Max retries exceeded with url: …access_token=…"),
+  que chegava à tela, ao `bot.log` (traceback) e ao chat do Telegram. Agora
+  `_rede_limpa` converte em erro limpo (com `from None`, cortando o traceback
+  encadeado) em `_get_shop`/`_post_shop`/`_download_shop`/`renovar_token`; e,
+  como defesa em profundidade, a GUI e o bot redigem com `sem_segredos` tudo o
+  que mostram/enviam.
 - **Refresh de token robusto:** `obter_token` relê o disco dentro do lock,
   protegendo contra corrida de refresh **entre processos** (GUI + bot na mesma
   conta); `renovar_token` não re-tenta (o `refresh_token` rotaciona e é de uso

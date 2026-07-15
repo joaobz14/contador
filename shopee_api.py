@@ -32,6 +32,8 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+import requests
+
 import estado as _estado
 import separador_etiquetas_ml as core
 
@@ -116,6 +118,25 @@ def _params_assinados(cred: dict, token: str, path: str) -> dict:
     }
 
 
+def _rede_limpa(fazer, path: str):
+    """Executa a chamada HTTP convertendo falhas de TRANSPORTE (queda de conexao,
+    timeout esgotado, proxy) em SeparadorError LIMPO.
+
+    A excecao crua do requests carrega a URL preparada inteira ("Max retries
+    exceeded with url: ...") — e a URL da Shopee leva access_token e sign na
+    query. Sem esta conversao, o texto subiria ate a tela, o log e o chat do
+    bot, vazando o token. O `from None` tambem corta o encadeamento: um
+    traceback logado (ex.: log.exception do bot) nao arrasta a exceccao
+    original com a URL assinada. Complementa o _levantar_se_erro, que cobre os
+    erros HTTP COM resposta."""
+    try:
+        return fazer()
+    except requests.RequestException as e:
+        raise core.SeparadorError(
+            f"Shopee {path}: falha de rede ({type(e).__name__}). "
+            "Verifique a conexao e tente de novo.") from None
+
+
 def _levantar_se_erro(resp, path: str) -> None:
     """Levanta um SeparadorError LIMPO se a resposta for >= 400.
 
@@ -138,7 +159,8 @@ def _levantar_se_erro(resp, path: str) -> None:
 def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
     """GET assinado em uma API de loja, com a resiliencia de rede do core."""
     query = {**_params_assinados(cred, token, path), **params}
-    resp = core._requisicao_get(f"{HOST}{path}", headers={}, params=query)
+    resp = _rede_limpa(lambda: core._requisicao_get(
+        f"{HOST}{path}", headers={}, params=query), path)
     _levantar_se_erro(resp, path)
     dados = resp.json()
     if dados.get("error"):
@@ -149,8 +171,8 @@ def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
 def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
     """POST assinado em uma API de loja (sign na query, dados no corpo JSON).
     Passa pelo retry do nucleo (408/429/5xx e rede)."""
-    resp = core._requisicao_post(f"{HOST}{path}",
-                                 params=_params_assinados(cred, token, path), json=body)
+    resp = _rede_limpa(lambda: core._requisicao_post(
+        f"{HOST}{path}", params=_params_assinados(cred, token, path), json=body), path)
     _levantar_se_erro(resp, path)
     dados = resp.json()
     if dados.get("error"):
@@ -161,8 +183,8 @@ def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
 def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
     """POST assinado que devolve um ARQUIVO (etiqueta). Se vier JSON, e erro.
     Passa pelo retry do nucleo (408/429/5xx e rede)."""
-    resp = core._requisicao_post(f"{HOST}{path}",
-                                 params=_params_assinados(cred, token, path), json=body)
+    resp = _rede_limpa(lambda: core._requisicao_post(
+        f"{HOST}{path}", params=_params_assinados(cred, token, path), json=body), path)
     _levantar_se_erro(resp, path)
     if "application/json" in resp.headers.get("Content-Type", ""):
         dados = resp.json()
@@ -179,14 +201,14 @@ def renovar_token(cred: dict) -> str:
     ts = int(time.time())
     # SEM retry (tentativas=1): o refresh_token pode rotacionar; um retry apos o
     # servidor ja te-lo consumido mandaria um token invalido e travaria a loja.
-    resp = core._requisicao_post(
+    resp = _rede_limpa(lambda: core._requisicao_post(
         f"{HOST}{path}",
         params={"partner_id": cred["partner_id"], "timestamp": ts,
                 "sign": _assinatura_publica(cred, path, ts)},
         json={"refresh_token": cred["refresh_token"],
               "partner_id": int(cred["partner_id"]), "shop_id": int(cred["shop_id"])},
         tentativas=1,
-    )
+    ), path)
     dados = resp.json()
     if resp.status_code != 200 or dados.get("error"):
         raise core.SeparadorError(f"Falha ao renovar token Shopee: {dados or resp.text}")
