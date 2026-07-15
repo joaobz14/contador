@@ -82,9 +82,13 @@ Histórico das principais mudanças do projeto.
   do outro (last-writer-merge em vez de last-writer-wins).
 
 ### Documentação
+- **README completo e atualizado:** cobre o estado atual do app (ordem de
+  separação pela aba Nomes, adoção de anúncios sem SKU, rastreio Shopee em todos
+  os grupos, log operacional) com **imagens novas** da tela (ML, Shopee, editor
+  de Nomes e gerenciador de SKUs) e um índice navegável.
 - **"Comece por aqui" no topo do `CLAUDE.md`/`AGENTS.md`:** sequência de
   arranque para um chat novo (ler o guia → consultar o grafo → `ARQUITETURA`
-  antes de mexer em estado/token/impressão). README reestruturado.
+  antes de mexer em estado/token/impressão).
 - **`docs/AMAZON_SP_API.md`:** levantamento (pesquisa, nada implementado) de
   como a Amazon SP-API encaixaria no app no futuro — o risco decisivo é de
   negócio/BR (só FBM/MFN gera etiqueta).
