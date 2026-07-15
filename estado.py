@@ -24,6 +24,7 @@ regra de sempre-Brasilia do nucleo.
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 from datetime import datetime, timedelta, timezone
@@ -57,8 +58,12 @@ def gravar_json(caminho: Path, dados) -> None:
     """Grava JSON de forma atomica e DURAVEL: escreve em .tmp, forca o disco a
     persistir (flush+fsync) e so entao renomeia. O fsync evita o classico
     'arquivo de 1 KB cheio de bytes nulos' quando cai a energia logo apos gravar
-    (a renomeacao ja constava mas os dados ainda nao tinham ido pro disco)."""
-    tmp = caminho.with_name(caminho.name + ".tmp")
+    (a renomeacao ja constava mas os dados ainda nao tinham ido pro disco).
+
+    O nome do .tmp inclui o PID: dois processos (tela + bot) gravando o mesmo
+    arquivo nao disputam o mesmo temporario (um sobrescreveria/renomearia o tmp
+    do outro no meio da escrita). Continua terminando em .tmp (gitignore)."""
+    tmp = caminho.with_name(f"{caminho.name}.{os.getpid()}.tmp")
     texto = json.dumps(dados, ensure_ascii=False, indent=2)
     with open(tmp, "w", encoding="utf-8") as f:
         f.write(texto)
@@ -68,6 +73,57 @@ def gravar_json(caminho: Path, dados) -> None:
         except OSError:
             pass                      # alguns sistemas de arquivo nao suportam
     tmp.replace(caminho)
+
+
+# ---------------------------------------------------------------------------
+# TRAVA ENTRE PROCESSOS (para o ciclo ler -> mesclar -> salvar do estado)
+# ---------------------------------------------------------------------------
+@contextlib.contextmanager
+def trava(caminho: Path):
+    """Exclusao mutua ENTRE PROCESSOS para o arquivo `caminho` (via um .lock ao
+    lado). O merge do marcar_impresso protege o caso sequencial, mas se a tela e
+    o bot LEREM ao mesmo tempo (antes de qualquer um gravar), a ultima gravacao
+    venceria e uma marcacao se perderia — esta trava serializa o ciclo inteiro.
+
+    Windows usa msvcrt.locking (bloqueia ate ~10s, depois OSError); POSIX usa
+    fcntl.flock (bloqueia). DEGRADACAO SUAVE: se a trava nao puder ser obtida
+    (sistema de arquivos sem suporte, permissao, timeout), segue SEM ela — o
+    comportamento volta a ser o merge de hoje, que ja cobre o caso sequencial;
+    melhor isso que impedir a marcacao de uma etiqueta ja impressa. O .lock e
+    local e gitignorado; fica no disco (esvaziado) apos o uso, sem problema."""
+    lock_path = caminho.with_name(caminho.name + ".lock")
+    try:
+        f = open(lock_path, "a+")
+    except OSError:
+        yield                                   # sem .lock possivel: segue sem trava
+        return
+    travado = False
+    try:
+        try:
+            if os.name == "nt":
+                import msvcrt
+                f.seek(0)
+                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            travado = True
+        except OSError:
+            pass                                # degrada: opera sem trava
+        yield
+    finally:
+        if travado:
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    f.seek(0)
+                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
+        f.close()
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +207,8 @@ def salvar(arquivo: Path, estado: dict) -> None:
     gravar_json(arquivo, estado)
 
 
-def marcar_impresso(ler, salvar_fn, estado: dict, grupo, ids=None) -> None:
+def marcar_impresso(ler, salvar_fn, estado: dict, grupo, ids=None, *,
+                    arquivo: Path | None = None) -> None:
     """Marca como impressos os ids informados (ou todos do grupo), acumulando
     com os ja registrados no dia.
 
@@ -161,17 +218,31 @@ def marcar_impresso(ler, salvar_fn, estado: dict, grupo, ids=None) -> None:
     last-writer-wins). O dict em memoria do chamador tambem e atualizado para o
     render seguinte refletir o que foi gravado.
 
+    `arquivo` (quando informado) liga a TRAVA ENTRE PROCESSOS em volta do ciclo
+    inteiro ler -> mesclar -> salvar (ver trava()): sem ela, duas leituras
+    simultaneas calculam merges diferentes da mesma versao antiga e a ultima
+    gravacao vence (o merge sozinho so cobre o caso sequencial). O nucleo e o
+    shopee_api passam o seu ARQUIVO_ESTADO.
+
     `ler`/`salvar_fn` sao injetados pelo chamador (o nucleo e o shopee_api passam a
     leitura crua e o seu proprio salvar_estado). Isso mantem a gravacao passando
     pela funcao de modulo de cada marketplace — que os testes interceptam — em vez
     de escrever direto no arquivo."""
     ids = grupo.shipment_ids if ids is None else ids
     chave = chave_estado(grupo)
-    disco = ler()
-    imp = impressos(estado, grupo)          # o que ja sabiamos em memoria
-    imp.update(impressos(disco, grupo))     # + o que outro processo gravou
-    imp.update(ids)                         # + os recem-impressos
-    ordenados = sorted(imp)
-    disco[chave] = ordenados                # grava por cima do disco atual
-    salvar_fn(disco)
-    estado[chave] = ordenados               # reflete na memoria do chamador
+
+    def _ciclo() -> None:
+        disco = ler()
+        imp = impressos(estado, grupo)          # o que ja sabiamos em memoria
+        imp.update(impressos(disco, grupo))     # + o que outro processo gravou
+        imp.update(ids)                         # + os recem-impressos
+        ordenados = sorted(imp)
+        disco[chave] = ordenados                # grava por cima do disco atual
+        salvar_fn(disco)
+        estado[chave] = ordenados               # reflete na memoria do chamador
+
+    if arquivo is not None:
+        with trava(Path(arquivo)):
+            _ciclo()
+    else:
+        _ciclo()

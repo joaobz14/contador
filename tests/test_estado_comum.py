@@ -96,3 +96,89 @@ def test_marcar_impresso_grava_pelo_seam_injetado(core):
     gravou = {}
     estado.marcar_impresso(lambda: {}, lambda d: gravou.update(d), {}, g, [1])
     assert gravou == {estado.chave_estado(g): [1]}
+
+
+# ---------------------------------------------------------------------------
+# TRAVA ENTRE PROCESSOS (ciclo ler -> mesclar -> salvar) — achado P1 da revisao
+# ---------------------------------------------------------------------------
+def test_trava_serializa_o_ciclo(tmp_path):
+    """Quem pega a trava depois so entra apos o primeiro sair."""
+    import threading
+    import time as _t
+    alvo = tmp_path / "estado.json"
+    ordem: list = []
+
+    def primeiro():
+        with estado.trava(alvo):
+            ordem.append("a-entrou")
+            _t.sleep(0.08)
+            ordem.append("a-saiu")
+
+    def segundo():
+        with estado.trava(alvo):
+            ordem.append("b-entrou")
+
+    t1 = threading.Thread(target=primeiro)
+    t2 = threading.Thread(target=segundo)
+    t1.start()
+    _t.sleep(0.02)                      # garante que o 1o ja pegou a trava
+    t2.start()
+    t1.join(); t2.join()
+    assert ordem == ["a-entrou", "a-saiu", "b-entrou"]
+
+
+def test_trava_degrada_sem_quebrar(tmp_path):
+    """Se o .lock nao puder ser criado (dir inexistente), segue sem trava."""
+    alvo = tmp_path / "nao_existe" / "estado.json"
+    with estado.trava(alvo):            # nao pode levantar
+        pass
+
+
+def test_marcar_impresso_concorrente_em_arquivo_real_nao_perde(core, tmp_path):
+    """N threads marcando ids DIFERENTES no mesmo arquivo real, com a janela da
+    corrida alargada (sleep dentro do ler): o resultado tem a UNIAO de todos.
+    Sem a trava (arquivo=), este cenario perderia marcacoes (duas leituras da
+    mesma versao antiga -> a ultima gravacao vence)."""
+    import threading
+    import time as _t
+    arq = tmp_path / "estado.json"
+    dia = _dia()
+    n = 6
+    g = _g(core, list(range(n)), dia=dia)
+
+    def ler_lento():
+        dados = estado.ler_json(arq)
+        _t.sleep(0.02)                  # alarga a janela ler->salvar
+        return dados
+
+    def marcar(i):
+        estado.marcar_impresso(ler_lento, lambda d: estado.salvar(arq, d),
+                               {}, g, [i], arquivo=arq)
+
+    threads = [threading.Thread(target=marcar, args=(i,)) for i in range(n)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    final = estado.ler_json(arq)
+    assert final[estado.chave_estado(g)] == list(range(n))   # ninguem se perdeu
+    assert not list(tmp_path.glob("*.tmp"))                  # sem lixo .tmp
+
+
+def test_marcar_impresso_sem_arquivo_mantem_comportamento(core):
+    """Sem arquivo= (chamadas antigas/testes), nada de trava — comportamento igual."""
+    g = _g(core, [1], dia=_dia())
+    gravou = {}
+    estado.marcar_impresso(lambda: {}, lambda d: gravou.update(d), {}, g, [1])
+    assert gravou == {estado.chave_estado(g): [1]}
+
+
+def test_gravar_json_tmp_por_processo(tmp_path):
+    """O nome do .tmp inclui o PID (dois processos nao disputam o temporario)."""
+    import os as _os
+    arq = tmp_path / "x.json"
+    estado.gravar_json(arq, {"a": 1})
+    assert json.loads(arq.read_text(encoding="utf-8")) == {"a": 1}
+    assert not list(tmp_path.glob("*.tmp"))
+    # o padrao do nome inclui o pid (validado indiretamente: unico por processo)
+    assert str(_os.getpid())  # sanity

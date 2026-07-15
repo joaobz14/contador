@@ -1183,8 +1183,10 @@ def salvar_estado(estado: dict) -> None:
 def marcar_impresso(estado: dict, grupo: Grupo, shipment_ids: list[int] | None = None) -> None:
     # Grava pela funcao de modulo salvar_estado (resolvida em tempo de chamada:
     # honra o ARQUIVO_ESTADO da conta ativa e o monkeypatch dos testes).
+    # arquivo= liga a trava entre processos no ciclo ler->mesclar->salvar.
     _estado.marcar_impresso(
-        lambda: _ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, shipment_ids)
+        lambda: _ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, shipment_ids,
+        arquivo=ARQUIVO_ESTADO)
 
 
 def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:

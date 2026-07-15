@@ -58,7 +58,10 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 3. Estado de impresso é **por marketplace + conta + dia de despacho**.
 4. Envio novo em grupo já impresso **reabre o grupo como parcial**.
 5. `marcar_impresso` **recarrega do disco e mescla** antes de gravar (last-writer-merge)
-   — GUI e bot na mesma conta não apagam a marcação um do outro.
+   e o ciclo inteiro **ler → mesclar → salvar** roda sob **trava entre processos**
+   (`estado.trava`, um `.lock` ao lado do arquivo) — GUI e bot na mesma conta não
+   apagam a marcação um do outro nem em leituras simultâneas. A trava degrada
+   suavemente (sem suporte do sistema de arquivos, opera como antes).
 6. Tokens (ML e Shopee) obtidos **sempre via `obter_token`**, nunca `renovar_token`
    direto — o refresh token **rotaciona** e uma corrida pode invalidá-lo.
 7. Refresh de token **serializado por lock** (double-checked).
@@ -111,8 +114,10 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 
 ## Áreas de risco (o que quebra se mexer sem cuidado)
 
-- **`marcar_impresso`**: perder o merge com o disco → GUI e bot apagam a marcação um do
-  outro (inv. 5). Marcar antes da confirmação → imprime errado e some da lista (inv. 1).
+- **`marcar_impresso`**: perder o merge com o disco OU remover a trava (`arquivo=` →
+  `estado.trava`) → GUI e bot apagam a marcação um do outro (inv. 5; sem a trava,
+  duas leituras simultâneas perdem a última gravação — reproduzido em teste).
+  Marcar antes da confirmação → imprime errado e some da lista (inv. 1).
 - **`obter_token` / `renovar_token`**: chamar `renovar_token` direto ou sem lock →
   corrida entre threads rotaciona o refresh token e **trava a conta** (inv. 6, 7).
 - **`_organizar_varios` / `batch_ship_order` (Shopee AWB)**: gerar etiqueta sem AWB →

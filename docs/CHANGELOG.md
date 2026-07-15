@@ -88,6 +88,13 @@ Histórico das principais mudanças do projeto.
 - `marcar_impresso` recarrega o estado do disco e **mescla** antes de gravar:
   a tela e o bot na mesma conta ao mesmo tempo não apagam mais a marcação um
   do outro (last-writer-merge em vez de last-writer-wins).
+- **Trava entre processos no estado** (achado P1 da revisão técnica): o merge
+  sozinho só cobria o caso sequencial — se a tela e o bot **lessem ao mesmo
+  tempo**, a última gravação vencia e uma marcação se perdia (reproduzido em
+  teste: sem a trava, 6 marcações concorrentes viravam 1). Agora o ciclo
+  ler→mesclar→salvar roda sob `estado.trava` (arquivo `.lock` ao lado, com
+  `msvcrt`/`fcntl` e degradação suave), e o `.tmp` da gravação atômica inclui o
+  PID (dois processos não disputam o mesmo temporário).
 
 ### Documentação
 - **README completo e atualizado:** cobre o estado atual do app (ordem de

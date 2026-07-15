@@ -6,6 +6,13 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-15 — Trava entre processos no estado (revisão P1):** o merge do
+  `marcar_impresso` só cobria o caso sequencial; leituras simultâneas (tela+bot)
+  perdiam marcação (reproduzido: 6 marcações concorrentes → 1). Nós novos:
+  `estado_trava` (função `trava()`, `.lock` + msvcrt/fcntl, degradação suave) e
+  `estado_trava_processos` (barreira→solução). O `.tmp` do `gravar_json` inclui o
+  PID (dois processos não disputam o temporário).
+
 - **2026-07-15 — Falha de transporte da Shopee não vaza token (revisão P1):**
   `_rede_limpa` converte exceções cruas do requests (que carregam a URL assinada)
   em `SeparadorError` limpo com `from None` (traceback encadeado cortado);
