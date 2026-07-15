@@ -66,6 +66,7 @@ except ImportError as _erro_import:
 
 import relatorio
 import separador_etiquetas_ml as core
+from registro import sem_segredos
 import shopee_api as shopee
 
 ARQUIVO_CONFIG = core.PASTA_SCRIPT / "bot_config.json"
@@ -270,7 +271,8 @@ async def _responder(update, context, nome: str, executor) -> None:
         return
     except Exception as e:  # noqa: BLE001 - mostrar qualquer falha ao usuario
         log.exception("Falha na acao /%s", nome)
-        await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
+        await context.bot.send_message(
+            chat_id, f"Falha inesperada: {sem_segredos(e)}")  # nunca vazar URL assinada no chat
         return
     for bloco in relatorio.dividir_mensagem(texto):
         await context.bot.send_message(chat_id, bloco)
@@ -301,7 +303,8 @@ async def _listar_grupos(update, context, nome: str, dia: str | None,
         return
     except Exception as e:  # noqa: BLE001 - mostrar qualquer falha ao usuario
         log.exception("Falha na acao /%s", nome)
-        await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
+        await context.bot.send_message(
+            chat_id, f"Falha inesperada: {sem_segredos(e)}")  # nunca vazar URL assinada no chat
         return
     context.chat_data["grupos"] = grupos
     # Guarda de qual conta E de qual loja sao esses grupos: se a conta/loja mudar
@@ -383,7 +386,8 @@ async def _executar_impressao(update, context, idx: int) -> None:
         return
     except Exception as e:  # noqa: BLE001
         log.exception("Falha ao imprimir '%s'", grupo.nome)
-        await context.bot.send_message(chat_id, f"Falha inesperada: {e}")
+        await context.bot.send_message(
+            chat_id, f"Falha inesperada: {sem_segredos(e)}")  # nunca vazar URL assinada no chat
         return
     if impressos:
         await context.bot.send_message(

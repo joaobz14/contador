@@ -6,6 +6,13 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-15 — Falha de transporte da Shopee não vaza token (revisão P1):**
+  `_rede_limpa` converte exceções cruas do requests (que carregam a URL assinada)
+  em `SeparadorError` limpo com `from None` (traceback encadeado cortado);
+  defesa em profundidade com `sem_segredos` nos limites (GUI e bot). Nó
+  `shopee_transporte_sem_token`, ligado a `shopee_erro_sem_token` (o fix
+  anterior, que cobria só o erro HTTP com resposta).
+
 - **2026-07-14 — Adoção de anúncio aplicada em memória:** o botão inline 🏷
   Atribuir SKU passou a aplicar na hora (`_aplicar_mapa_anuncios_local`: reescreve
   a chave e funde por SKU+qtd), sem re-buscar na API — não precisa clicar em

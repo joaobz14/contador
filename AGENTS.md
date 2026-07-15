@@ -198,11 +198,15 @@ em 2º plano.
   por fase em `shopee_tempos.log` (`_log_tempos`, gitignorado).
 - A etiqueta térmica vem como **ZIP com ZPL (`~DGR/Z64`) dentro** — a Zebra imprime
   direto; não reembrulhar.
-- **Erro HTTP da Shopee não pode vazar o token:** a URL assinada leva
-  `access_token`/`sign` na query, então `_get_shop`/`_post_shop`/`_download_shop`
-  **não** usam `raise_for_status()` (a mensagem dele inclui a URL) — passam por
-  `_levantar_se_erro`, que lança `SeparadorError` limpo (path + status + erro do
-  corpo). Mantenha assim: sem isso o token cai no log/tela e no chat do bot.
+- **Erro da Shopee não pode vazar o token (HTTP E transporte):** a URL assinada
+  leva `access_token`/`sign` na query. Erros HTTP com resposta passam por
+  `_levantar_se_erro` (nunca `raise_for_status()`, cuja mensagem inclui a URL);
+  falhas de **transporte** (queda de conexão/timeout — a exceção crua do requests
+  carrega "Max retries exceeded with url: …") passam por **`_rede_limpa`**, que as
+  converte em `SeparadorError` limpo com `from None` (corta o encadeamento — um
+  `log.exception` não arrasta a URL no traceback). Defesa em profundidade nos
+  limites: a GUI redige com `sem_segredos` o que mostra (`_erro`, avisos de falha
+  parcial) e o bot redige o que manda pro chat. Mantenha as duas camadas.
 
 ## Antes de fechar uma mudança (mantenha o repertório em dia)
 
