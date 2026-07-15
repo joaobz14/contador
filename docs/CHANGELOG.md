@@ -30,7 +30,9 @@ Histórico das principais mudanças do projeto.
   esse SKU. Editável na GUI de dois jeitos: botão **🏷 Atribuir SKU** no próprio
   grupo sem SKU (à esquerda, embaixo do nome) e uma **janela gerenciadora**
   (**🏷 SKUs** na barra) para adotar os anúncios da tela e editar/remover os
-  mapeamentos salvos.
+  mapeamentos salvos. O botão inline **aplica na hora, em memória** (funde os
+  grupos sem re-buscar na API — não precisa clicar em Atualizar); a janela
+  gerenciadora re-coleta ao fechar (por causa das remoções/edições).
 
 ### Arquitetura interna
 - **Camada comum de estado (`estado.py`):** a lógica de "já impresso" (antes

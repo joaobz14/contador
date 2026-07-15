@@ -6,6 +6,12 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-14 — Adoção de anúncio aplicada em memória:** o botão inline 🏷
+  Atribuir SKU passou a aplicar na hora (`_aplicar_mapa_anuncios_local`: reescreve
+  a chave e funde por SKU+qtd), sem re-buscar na API — não precisa clicar em
+  Atualizar. A janela gerenciadora segue re-coletando ao fechar (remoções/edições
+  precisam refazer a identidade). Nó `anuncio_adocao_em_memoria`.
+
 - **2026-07-14 — Adotar anúncio ML sem SKU num SKU do sistema:** de-para
   `skus_por_anuncio.json` (código do anúncio → SKU) aplicado em `identidade`
   (reescreve a chave); editável na GUI (botão inline 🏷 Atribuir SKU +

@@ -9314,6 +9314,19 @@
       "id": "anuncio_sem_sku_adota",
       "community": 8,
       "norm_label": "feature: adotar anuncio ml sem sku num sku do sistema"
+    },
+    {
+      "label": "Ado\u00e7\u00e3o de an\u00fancio aplicada em mem\u00f3ria (sem re-buscar na API)",
+      "file_type": "rationale",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "anuncio_adocao_em_memoria",
+      "community": 0,
+      "norm_label": "adocao de anuncio aplicada em memoria (sem re-buscar na api)"
     }
   ],
   "links": [
@@ -25789,6 +25802,26 @@
       "weight": 1.0,
       "source": "anuncio_sem_sku_adota",
       "target": "ordem_separacao_pessoal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_adocao_em_memoria",
+      "target": "anuncio_sem_sku_adota",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "anuncio_adocao_em_memoria",
+      "target": "separador_gui",
       "confidence_score": 1.0
     }
   ],
