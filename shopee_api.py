@@ -622,7 +622,9 @@ def salvar_etiqueta(conteudo: bytes, rotulo: str):
     ext = {"PDF": "pdf", "ZPL": "zpl", "PNG": "png", "ZIP": "zip"}.get(fmt, "bin")
     base = "".join(c if (c.isalnum() or c in " -_") else "_" for c in str(rotulo))[:50].strip()
     core.PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    destino = core.PASTA_DOWNLOADS / f"etiqueta shopee - {base}.{ext}"
+    # nome_saida_unico: carimbo unico para nao sobrescrever uma etiqueta que o
+    # monitor da Zebra ainda nao consumiu (mesmo padrao do ML — ver auditoria 5.1).
+    destino = core.nome_saida_unico(core.PASTA_DOWNLOADS, "etiqueta shopee - ", base, ext)
     # Grava em .tmp e renomeia (mesmo padrao do ML): o monitor da Zebra vigia a
     # pasta e nao pode enxergar o arquivo pela metade (imprimiria corrompido).
     tmp = destino.with_name(destino.name + ".tmp")

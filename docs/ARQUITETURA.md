@@ -160,8 +160,13 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   (`test_provedores_nao_expoe_imprimir_grupo`).
 - **Botões de impressão do Telegram (`cb_botao`)**: deixar imprimir Shopee, ou imprimir
   um grupo antigo após troca de conta/loja (inv. 10, 11).
-- **Pasta Downloads / app Zebra**: mudar o prefixo do nome do ZIP quebra a detecção pelo
-  app externo — o papel não sai.
+- **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a
+  detecção pelo app externo — o papel não sai. O **restante** do nome, ao
+  contrário, precisa ser **único** por trabalho (`nome_saida_unico`): nome
+  determinístico + `tmp.replace` apagava em silêncio um lote que o monitor ainda
+  não consumira (auditoria 5.1). Antes de gerar, a GUI **relê o estado do disco**
+  (`prov.carregar_estado`) — pendente calculado sobre estado defasado imprime em
+  dobro o que foi marcado por fora (CLI/2ª GUI).
 
 ## Desempenho da impressão Shopee (medido em produção)
 

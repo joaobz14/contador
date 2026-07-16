@@ -163,6 +163,20 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **ZIP na Downloads nunca sobrescreve um lote que a Zebra ainda não imprimiu**
+  (auditoria consolidada 5.1): o nome do arquivo era determinístico
+  (`etiqueta de envio - PRODUTO.zip`), então dois trabalhos com o mesmo rótulo
+  (dois lotes iguais seguidos, ou uma reimpressão) apontavam para o **mesmo
+  arquivo** — se o monitor estivesse lento/desligado, o segundo `replace` comia
+  o primeiro em silêncio e um lote se perdia. Agora cada saída recebe um carimbo
+  de tempo único (`nome_saida_unico`, ML e Shopee), preservando o prefixo que o
+  monitor reconhece; se colidir, soma `-1`, `-2`… até um nome livre.
+- **A geração relê o estado do disco antes de calcular os pendentes**
+  (auditoria 5.1): os pendentes vinham de `self.estado` fixado no último
+  Atualizar — uma marcação gravada por fora (CLI, ou uma 2ª GUI aberta por
+  engano) não era respeitada e o pedido sairia em dobro. Agora
+  `_gerar_sem_marcar_thread` relê via `prov.carregar_estado()` antes de gerar;
+  falha de releitura não trava a impressão (segue com o estado em memória).
 - **Migração de conta leva o `credenciais.json.bak` junto** (achado da
   auditoria) e remove um `.bak` órfão deixado na raiz por migrações antigas:
   um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — a

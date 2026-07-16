@@ -55,8 +55,22 @@ def test_salvar_etiqueta_atomico_sem_tmp_sobrando(monkeypatch, tmp_path):
     monkeypatch.setattr(sh.core, "PASTA_DOWNLOADS", tmp_path)
     destino, fmt = sh.salvar_etiqueta(b"PK\x03\x04conteudo", "SN123")
     assert fmt == "ZIP" and destino.read_bytes() == b"PK\x03\x04conteudo"
-    assert destino.name == "etiqueta shopee - SN123.zip"
+    # Prefixo que o monitor da Zebra reconhece + carimbo unico (nao sobrescreve
+    # uma etiqueta ainda nao consumida — ver auditoria 5.1).
+    assert destino.name.startswith("etiqueta shopee - SN123 - ")
+    assert destino.suffix == ".zip"
     assert not list(tmp_path.glob("*.tmp"))            # nao deixa lixo .tmp
+
+
+def test_salvar_etiqueta_consecutiva_nao_sobrescreve(monkeypatch, tmp_path):
+    """Duas etiquetas do mesmo pedido geram arquivos DISTINTOS — nome unico para
+    nao apagar uma etiqueta que o monitor da Zebra ainda nao consumiu (5.1)."""
+    monkeypatch.setattr(sh.core, "PASTA_DOWNLOADS", tmp_path)
+    a, _ = sh.salvar_etiqueta(b"PK\x03\x04um", "SN9")
+    b, _ = sh.salvar_etiqueta(b"PK\x03\x04dois", "SN9")
+    assert a != b and a.exists() and b.exists()
+    assert a.name.startswith("etiqueta shopee - SN9 - ")
+    assert b.name.startswith("etiqueta shopee - SN9 - ")
 
 
 def test_criar_documento_inclui_tracking_number(monkeypatch):

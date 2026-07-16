@@ -1197,16 +1197,45 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
     return "\n".join(partes)
 
 
+def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
+    """Escolhe um caminho de saida na Downloads que AINDA NAO EXISTE, para nunca
+    sobrescrever um arquivo que o monitor da Zebra ainda nao consumiu.
+
+    Nome deterministico + `tmp.replace` apagava em silencio um lote nao impresso
+    (dois trabalhos com o mesmo rotulo apontavam para o mesmo arquivo; se o
+    monitor estivesse lento/desligado, o segundo replace comia o primeiro — ver
+    auditoria 5.1). Preserva o `prefixo` que o monitor reconhece ("etiqueta de
+    envio - " no ML, "etiqueta shopee - " na Shopee) e anexa um carimbo de tempo
+    de alta resolucao; se ainda assim colidir (duas geracoes no mesmo
+    microssegundo, ou um `.tmp` de outra instancia gravando o mesmo destino),
+    soma um contador ate achar um nome livre. A correcao vem do laco (garante
+    nome livre); o carimbo so o torna legivel e ordenavel.
+    """
+    carimbo = datetime.now(TZ_BR).strftime("%H%M%S_%f")
+
+    def candidato(sufixo: str) -> Path:
+        return pasta / f"{prefixo}{base} - {carimbo}{sufixo}.{ext}"
+
+    alvo = candidato("")
+    n = 1
+    while alvo.exists() or alvo.with_name(alvo.name + ".tmp").exists():
+        alvo = candidato(f"-{n}")
+        n += 1
+    return alvo
+
+
 def _gerar_zip(rotulo: str, zpl_texto: str) -> Path:
     """
     Monta um ZIP no formato que o impressora_zebra_usb.py reconhece:
       - nome do ZIP comeca com um prefixo aceito ("etiqueta de envio")
       - dentro, um TXT cujo nome contem "etiqueta de envio" (identifica ML)
     Grava de forma atomica (.tmp -> rename) para o monitor so ver o arquivo pronto.
+    O nome carrega um carimbo unico (nome_saida_unico) para nao sobrescrever um
+    lote que o monitor ainda nao imprimiu.
     """
     PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
     base = "".join(c if c.isalnum() else "_" for c in rotulo)[:40].strip("_")
-    nome_zip = PASTA_DOWNLOADS / f"etiqueta de envio - {base}.zip"
+    nome_zip = nome_saida_unico(PASTA_DOWNLOADS, "etiqueta de envio - ", base, "zip")
     tmp = nome_zip.with_name(nome_zip.name + ".tmp")
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(f"Etiqueta de envio - {base}.txt", zpl_texto)

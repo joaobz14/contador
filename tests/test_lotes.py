@@ -107,3 +107,39 @@ def test_gerar_zip_nome_tem_prefixo_da_zebra_e_contem_o_zpl(core, tmp_path, monk
         nomes = zf.namelist()
         assert nomes and "etiqueta de envio" in nomes[0].lower()   # o app tambem olha o interno
         assert "^XA teste ^XZ" in zf.read(nomes[0]).decode("utf-8")
+
+
+# ----------------------------------- nome unico: nao sobrescreve lote na fila (5.1)
+def test_gerar_zip_consecutivo_nao_sobrescreve(core, tmp_path, monkeypatch):
+    """Dois lotes com o MESMO rotulo geram arquivos DISTINTOS. Com o nome
+    deterministico antigo, o segundo `replace` apagava em silencio o primeiro se
+    o monitor da Zebra ainda nao o tivesse consumido (auditoria 5.1)."""
+    monkeypatch.setattr(core, "PASTA_DOWNLOADS", tmp_path)
+    a = core._gerar_zip("Produto X - q2", "^XA um ^XZ")
+    b = core._gerar_zip("Produto X - q2", "^XA dois ^XZ")
+    assert a != b
+    assert a.exists() and b.exists()                 # os dois sobrevivem na fila
+    assert a.name.startswith("etiqueta de envio - ")
+    assert b.name.startswith("etiqueta de envio - ")
+
+
+def test_nome_saida_unico_soma_contador_na_colisao(core, tmp_path, monkeypatch):
+    """Com o carimbo de tempo fixo, um nome ja ocupado (arquivo pronto OU .tmp
+    em andamento de outra instancia) faz somar -1, -2... ate achar um livre."""
+    from datetime import datetime as _dt
+
+    class _DTFixo:
+        @staticmethod
+        def now(tz=None):
+            return _dt(2026, 7, 16, 14, 32, 5, 123456)
+
+    monkeypatch.setattr(core, "datetime", _DTFixo)
+    p1 = core.nome_saida_unico(tmp_path, "PRE - ", "X", "zip")
+    assert p1.name == "PRE - X - 143205_123456.zip"
+    p1.write_bytes(b"")                                        # ocupa p1 (arquivo pronto)
+    p2 = core.nome_saida_unico(tmp_path, "PRE - ", "X", "zip")
+    assert p2.name == "PRE - X - 143205_123456-1.zip"
+    p2.with_name(p2.name + ".tmp").write_bytes(b"")           # ocupa p2 via .tmp em andamento
+    p3 = core.nome_saida_unico(tmp_path, "PRE - ", "X", "zip")
+    assert p3.name == "PRE - X - 143205_123456-2.zip"
+    assert not p3.exists()                                     # devolve um caminho livre

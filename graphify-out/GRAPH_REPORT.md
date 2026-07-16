@@ -23,6 +23,16 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — ZIP com nome único + releitura de estado antes de gerar
+  (auditoria consolidada 5.1):** o nome determinístico do ZIP + `tmp.replace`
+  apagava em silêncio um lote que o monitor da Zebra ainda não consumira (dois
+  trabalhos com o mesmo rótulo escreviam no mesmo arquivo); `nome_saida_unico`
+  (núcleo; a Shopee chama `core.nome_saida_unico`) anexa um carimbo único ao
+  nome, preservando o prefixo que o monitor casa, e soma `-1`/`-2` na colisão.
+  A GUI ainda relê o estado do disco antes de gerar (não imprime em dobro o que
+  foi marcado por fora). Nós `separador_etiquetas_ml_nome_saida_unico` (code) +
+  `zip_nome_unico_pendencia_disco` (rationale).
+
 - **2026-07-16 — Poda do cache de AWB independente de `novos` (P2 da releitura
   externa):** a poda só persistia quando um cache miss trazia AWB novo — no
   regime normal pós-cache (tudo hit) nunca rodava e o arquivo cresceria para

@@ -875,6 +875,16 @@ class SeparadorApp:
         so gera. Ao terminar, entrega a _confirmar_e_marcar (passos 2 e 3)."""
         log.info("Gerar etiquetas: %s, %d grupo(s), ident=%s",
                  self._ctx_log(), len(grupos), self.modo_ident)
+        # Relê o estado do disco antes de gerar: os pendentes vêm de self.estado
+        # (fixado no último Atualizar) — sem reler, uma marcação gravada por fora
+        # (CLI, ou outra GUI aberta por engano) não seria respeitada e o pedido
+        # sairia em dobro. Falha de releitura não trava a impressão (segue com o
+        # estado em memória — degradação suave). Ver auditoria 5.1.
+        try:
+            self.estado = self.prov.carregar_estado()
+        except Exception as e:                      # noqa: BLE001 - releitura best-effort
+            log.warning("Releitura do estado antes de gerar falhou (%s); usando estado em memória",
+                        sem_segredos(str(e)))
         try:
             impressos, falhas = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
