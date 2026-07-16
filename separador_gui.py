@@ -109,8 +109,13 @@ class SeparadorApp:
     # ------------------------------------------------------------------ UI
     def _build_ui(self) -> None:
         self.root.title("Separador de Etiquetas")
-        # Restaura o tamanho/posicao salvos (ou usa o padrao na 1a vez).
-        self.root.geometry(self.config.get("geometria") or "580x700")
+        # Restaura o tamanho/posicao salvos (ou usa o padrao na 1a vez). Uma
+        # geometria invalida no config (editado a mao) nao pode impedir a
+        # abertura — cai no padrao (o saneamento cobre o tipo; aqui, o formato).
+        try:
+            self.root.geometry(self.config.get("geometria") or "580x700")
+        except tk.TclError:
+            self.root.geometry("580x700")
         self.root.minsize(460, 480)
 
         # Linha de marketplace (loja): Mercado Livre / Shopee.

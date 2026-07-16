@@ -23,6 +23,14 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Config saneado na abertura (achado da auditoria):** provado
+  com a GUI real (headless) que `modo_identificacao` desconhecido,
+  `marketplace`/`conta_ativa` de tipo errado e `geometria` malformada
+  derrubavam a GUI/bot na inicialização — sem mensagem com o pythonw do
+  atalho. `aplicar_config` agora saneia (`_sanear_config`: valor inválido cai
+  no default) e a GUI tolera geometria inválida. Os 8 casos da prova reabrem.
+  Nós: `separador_etiquetas_ml_sanear_config` + `config_saneado_na_abertura`.
+
 - **2026-07-16 — ProvedorML revalida o token ao imprimir (achado da auditoria):**
   os caminhos de imprimir/reimprimir usavam `self.token` cru da última coleta,
   sem checar a validade (~6h) — GUI aberta por horas → 401 repetido até um novo

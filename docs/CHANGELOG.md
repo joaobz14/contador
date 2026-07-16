@@ -102,6 +102,13 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **`config.json` com valor inválido não impede mais o app de abrir** (achado
+  da auditoria): um `modo_identificacao` desconhecido, `marketplace`/
+  `conta_ativa` de tipo errado ou `geometria` malformada derrubavam a GUI (e o
+  bot) na inicialização — e com o atalho normal (pythonw, sem console) o app
+  simplesmente "não abria", sem mensagem. Agora `aplicar_config` **saneia** o
+  config (valor inválido cai no padrão, como se a chave não existisse) e a GUI
+  tolera geometria inválida. Config ausente/corrompido já era bem tratado.
 - **Imprimir com a tela aberta há horas não falha mais por token vencido**
   (achado da auditoria): o Mercado Livre imprimia com o token guardado na
   última coleta, sem checar a validade (~6h) — o 401 se repetia até um novo
