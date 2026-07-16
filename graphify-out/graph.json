@@ -9822,6 +9822,33 @@
       "norm_label": "_focar_editor_aberto()",
       "source_file": "separador_gui.py",
       "source_location": "L983"
+    },
+    {
+      "_origin": "manual",
+      "community": 9,
+      "file_type": "code",
+      "id": "separador_gui_separadorapp_confirmar_e_marcar_corpo",
+      "label": "_confirmar_e_marcar_corpo()",
+      "metadata": {
+        "kind": "function",
+        "language": "python"
+      },
+      "norm_label": "_confirmar_e_marcar_corpo()",
+      "source_file": "separador_gui.py",
+      "source_location": "L936"
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "trava_impressao_ponta_a_ponta",
+      "label": "BARREIRA->SOLUCAO (trava anti-duplicata Shopee/ML): a etiqueta Shopee sai fisicamente durante a busca (ZIP->Downloads->Zebra), mas o estado so e marcado apos a confirmacao \"saiu certo?\". _confirmar_e_marcar reabilitava os botoes (_ocupar(False)) ANTES da confirmacao \u2014 no intervalo o lote seguia pendente e um 2o clique reimprimia em dobro (o if self.ocupado nao pegava). Agora o app fica ocupado do organizar ate a confirmacao: imprimir_lotes/imprimir ocupam antes do _confirmar_organizar e o _ocupar(False) so roda no finally de _confirmar_e_marcar (que delega o corpo a _confirmar_e_marcar_corpo). Cancelar o organizar destrava; o finally libera mesmo com excecao",
+      "norm_label": "barreira->solucao (trava anti-duplicata shopee/ml): a etiqueta shopee sai fisicamente durante a busca (zip->downloads->zebra), mas o estado so e marcado apos a confirmacao \"saiu certo?\". _confirmar_e_marcar reabilitava os botoes (_ocupar(false)) antes da confirmacao \u2014 no intervalo o lote seguia pendente e um 2o clique reimprimia em dobro (o if self.ocupado nao pegava). agora o app fica ocupado do organizar ate a confirmacao: imprimir_lotes/imprimir ocupam antes do _confirmar_organizar e o _ocupar(false) so roda no finally de _confirmar_e_marcar (que delega o corpo a _confirmar_e_marcar_corpo). cancelar o organizar destrava; o finally libera mesmo com excecao",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -27102,6 +27129,56 @@
       "weight": 1.0,
       "source": "editores_instancia_unica",
       "target": "separador_gui_separadorapp_ocupar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_impressao_ponta_a_ponta",
+      "target": "separador_gui_separadorapp_imprimir_lotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_impressao_ponta_a_ponta",
+      "target": "separador_gui_separadorapp_confirmar_e_marcar_corpo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_impressao_ponta_a_ponta",
+      "target": "separador_gui_separadorapp_imprimir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_impressao_ponta_a_ponta",
+      "target": "inv_confirma_antes_marcar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_impressao_ponta_a_ponta",
+      "target": "prio_contrato_impressao",
       "confidence_score": 1.0
     }
   ],

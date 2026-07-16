@@ -32,6 +32,16 @@
   Nós `separador_gui_separadorapp_focar_editor_aberto` (code) +
   `editores_instancia_unica` (rationale).
 
+- **2026-07-16 — Trava de ponta a ponta na impressão (anti-duplicata Shopee/ML):**
+  a etiqueta Shopee sai fisicamente durante a busca (ZIP→Downloads→Zebra), mas o
+  estado só é marcado após "saíram certo?"; `_confirmar_e_marcar` reabilitava os
+  botões antes da confirmação → um 2º clique no intervalo reimprimia o mesmo lote.
+  Agora o app fica `ocupado` do "Organizar envio" até a confirmação
+  (`imprimir_lotes`/`imprimir` ocupam antes; `_ocupar(False)` só no `finally` de
+  `_confirmar_e_marcar`, que delega o corpo a `_confirmar_e_marcar_corpo`). Nós
+  `separador_gui_separadorapp_confirmar_e_marcar_corpo` (code) +
+  `trava_impressao_ponta_a_ponta` (rationale).
+
 - **2026-07-16 — `config.json` atualizado por chave, sob trava (auditoria
   consolidada 5.4):** cada GUI regravava o dicionário inteiro a partir de um
   `self.config` velho — a última gravação revertia em silêncio as chaves de

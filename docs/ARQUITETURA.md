@@ -172,6 +172,11 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   tem `imprimir_grupo` de propósito** (um método de grupo que marcasse direto
   seria uma arma engatilhada para um botão novo) — há teste-guardião
   (`test_provedores_nao_expoe_imprimir_grupo`).
+- **Trava de ponta a ponta (`imprimir_lotes`/`imprimir` → `_confirmar_e_marcar`)**:
+  o app fica `ocupado` do "Organizar envio" até "saíram certo?" (o `_ocupar(False)`
+  só no `finally`). Não mova o `_ocupar(False)` para o começo de novo: a etiqueta
+  Shopee já saiu fisicamente na busca, mas o estado só marca após a confirmação —
+  reabilitar o botão nesse meio deixa o mesmo lote sair em dobro num 2º clique.
 - **Botões de impressão do Telegram (`cb_botao`)**: deixar imprimir Shopee, ou imprimir
   um grupo antigo após troca de conta/loja (inv. 10, 11).
 - **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a

@@ -796,7 +796,11 @@ class SeparadorApp:
         — se a Zebra atolasse, o grupo ja constava impresso sem etiqueta fisica."""
         if self.ocupado:
             return
+        # Trava de ponta a ponta (mesma do lote): ocupado do organizar até a
+        # confirmação, para o mesmo pedido não sair em dobro num 2º clique.
+        self._ocupar(True, f"Preparando: {g.nome} ...")
         if not self._confirmar_organizar([g]):
+            self._ocupar(False, "")
             return
         self._ocupar(True, f"Imprimindo: {g.nome} ...")
         threading.Thread(target=self._gerar_sem_marcar_thread,
@@ -873,7 +877,14 @@ class SeparadorApp:
             messagebox.showinfo("Imprimir lotes",
                                 "Marque ao menos um lote na caixinha à esquerda.")
             return
+        # TRAVA DE PONTA A PONTA: fica ocupado JÁ na confirmação de organizar e só
+        # libera no fim da confirmação "saíram certo?" (ver _confirmar_e_marcar).
+        # Sem isso, o botão voltava a ficar clicável enquanto a confirmação estava
+        # pendente — e como a etiqueta já saiu (ZIP→Downloads→Zebra) durante a
+        # busca, um 2º clique reimprimia o mesmo lote em dobro.
+        self._ocupar(True, "Preparando impressão ...")
         if not self._confirmar_organizar(selecionados):
+            self._ocupar(False, "")
             return
         if self.prov.suporta_identificacao:
             extra = f" ({self._ident_labels.get(self.modo_ident, '')})"
@@ -910,8 +921,19 @@ class SeparadorApp:
         """PASSOS 2 e 3 do contrato: pergunta ao operador se as etiquetas sairam
         certo (passo 2) e SO ENTAO marca como impresso (passo 3). Este e o UNICO
         ponto da GUI que chama marcar_impresso — nao marque em outro lugar, senao
-        um grupo pode constar impresso sem etiqueta fisica (invariante 1)."""
-        self._ocupar(False, "")
+        um grupo pode constar impresso sem etiqueta fisica (invariante 1).
+
+        A TRAVA DE PONTA A PONTA só é liberada no `finally` no fim: o app ficou
+        ocupado desde o organizar (ver imprimir_lotes/imprimir), cobrindo a janela
+        em que o papel já saiu mas o estado ainda não foi marcado — um 2º clique
+        no meio da confirmação não reimprime o lote."""
+        try:
+            self._confirmar_e_marcar_corpo(impressos, falhas)
+        finally:
+            self._ocupar(False, "")
+            self._render()
+
+    def _confirmar_e_marcar_corpo(self, impressos: list, falhas: list | None = None) -> None:
         falhas = falhas or []
         if falhas:                              # alguns pedidos nao geraram (parcial)
             log.warning("Lote parcial: %d pedido(s) nao sairam (%s)", len(falhas),
@@ -967,7 +989,7 @@ class SeparadorApp:
                     "acesso ao arquivo e confirme de novo na próxima impressão.")
         else:
             log.info("Nao confirmado: %d lote(s) mantidos pendentes para reimprimir", n)
-        self._render()
+        # _render() e _ocupar(False) rodam no finally de _confirmar_e_marcar.
 
     def imprimir_proximo(self) -> None:
         # Inclui grupos "parcial" (alguns envios novos a imprimir), nao so "pendente".

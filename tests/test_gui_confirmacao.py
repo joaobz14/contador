@@ -128,3 +128,99 @@ def test_gerar_segue_com_estado_em_memoria_se_releitura_falha():
     app, _cap = _app_fake(ProvFake(), {"em_memoria": True})
     gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
     assert usado["estado"] == {"em_memoria": True}   # caiu para o estado em memoria
+
+
+# ---------------------------- trava de ponta a ponta na impressão (anti-duplicata)
+class _FakeVar:
+    def __init__(self, v):
+        self._v = v
+
+    def get(self):
+        return self._v
+
+
+def _app_lotes(monkeypatch, *, organizar=True, ocupado=False):
+    """App mínimo para imprimir_lotes: threading.Thread é falso (só conta start)."""
+    started = {"n": 0}
+
+    class _FakeThread:
+        def __init__(self, target=None, args=(), daemon=None):
+            pass
+
+        def start(self):
+            started["n"] += 1
+
+    monkeypatch.setattr(gui.threading, "Thread", _FakeThread)
+    monkeypatch.setattr(gui.messagebox, "showinfo", lambda *a, **k: None)
+    app = types.SimpleNamespace(
+        ocupado=ocupado,
+        _sel_vars=[(_g("A"), _FakeVar(True))],
+        _confirmar_organizar=lambda sel: organizar,
+        _gerar_sem_marcar_thread=lambda grupos: None,   # alvo da thread (fake não roda)
+        prov=types.SimpleNamespace(suporta_identificacao=False),
+        modo_ident="nenhuma")
+    app._ocupar = lambda oc, msg="": setattr(app, "ocupado", oc)
+    return app, started
+
+
+def test_imprimir_lotes_trava_e_inicia(monkeypatch):
+    """Fluxo normal: fica ocupado (trava) e inicia a thread de geração."""
+    app, started = _app_lotes(monkeypatch, organizar=True)
+    gui.SeparadorApp.imprimir_lotes(app)
+    assert started["n"] == 1 and app.ocupado is True
+
+
+def test_imprimir_lotes_recusa_reentrada_enquanto_ocupado(monkeypatch):
+    """Um 2º clique enquanto ocupado (impressão/confirmação em curso) é recusado —
+    é o que impedia o mesmo lote de sair em dobro."""
+    app, started = _app_lotes(monkeypatch, organizar=True, ocupado=True)
+    gui.SeparadorApp.imprimir_lotes(app)
+    assert started["n"] == 0                          # não iniciou uma 2ª impressão
+
+
+def test_imprimir_lotes_cancelar_organizar_libera_a_trava(monkeypatch):
+    """Cancelar o 'Organizar envio' não pode deixar o app travado."""
+    app, started = _app_lotes(monkeypatch, organizar=False)
+    gui.SeparadorApp.imprimir_lotes(app)
+    assert started["n"] == 0 and app.ocupado is False
+
+
+def _app_confirmar(monkeypatch, *, resposta):
+    for m in ("askyesno",):
+        monkeypatch.setattr(gui.messagebox, m, lambda *a, **k: resposta)
+    for m in ("showinfo", "showwarning", "showerror"):
+        monkeypatch.setattr(gui.messagebox, m, lambda *a, **k: None)
+    marcou = []
+    app = types.SimpleNamespace(
+        ocupado=True, estado={},
+        prov=types.SimpleNamespace(
+            marcar_impresso=lambda estado, g, pend: marcou.append(g.nome)),
+        _ctx_log=lambda: "ctx")
+    app._ocupar = lambda oc, msg="": setattr(app, "ocupado", oc)
+    app._render = lambda: None
+    app._confirmar_e_marcar_corpo = types.MethodType(
+        gui.SeparadorApp._confirmar_e_marcar_corpo, app)
+    return app, marcou
+
+
+def test_confirmar_e_marcar_marca_e_libera(monkeypatch):
+    app, marcou = _app_confirmar(monkeypatch, resposta=True)   # respondeu "Sim"
+    gui.SeparadorApp._confirmar_e_marcar(app, [(_g("A"), ["S1"])], [])
+    assert marcou == ["A"] and app.ocupado is False
+
+
+def test_confirmar_e_marcar_nao_marca_mas_libera(monkeypatch):
+    app, marcou = _app_confirmar(monkeypatch, resposta=False)  # respondeu "Não"
+    gui.SeparadorApp._confirmar_e_marcar(app, [(_g("A"), ["S1"])], [])
+    assert marcou == [] and app.ocupado is False               # a trava abre mesmo assim
+
+
+def test_confirmar_e_marcar_libera_a_trava_mesmo_com_excecao(monkeypatch):
+    """Se a confirmação estourar, o finally ainda libera — o app não pode ficar
+    travado para sempre."""
+    app, _marcou = _app_confirmar(monkeypatch, resposta=True)
+    monkeypatch.setattr(gui.messagebox, "askyesno",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+    with pytest.raises(RuntimeError):
+        gui.SeparadorApp._confirmar_e_marcar(app, [(_g("A"), ["S1"])], [])
+    assert app.ocupado is False
