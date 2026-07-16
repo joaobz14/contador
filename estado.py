@@ -199,7 +199,16 @@ def carregar(arquivo: Path, dias: int, *, persistir_poda: bool) -> dict:
     estado = ler_json(arquivo)
     limpo = limpar_antigo(estado, dias)
     if persistir_poda and len(limpo) != len(estado):
-        gravar_json(arquivo, limpo)
+        # Regrava a poda sob a MESMA trava do marcar_impresso e RELENDO o disco:
+        # sem isso, a poda apaga uma marcacao que outro processo (bot) gravou
+        # entre o ler_json acima e este gravar_json — o mesmo last-writer-wins
+        # que a trava fecha no ciclo de marcacao. A poda so remove dias antigos,
+        # entao o disco relido (com a marca nova de hoje) e o retorno correto.
+        with trava(Path(arquivo)):
+            atual = ler_json(arquivo)
+            podado = limpar_antigo(atual, dias)
+            gravar_json(arquivo, podado)
+            return podado
     return limpo
 
 

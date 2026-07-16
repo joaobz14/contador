@@ -61,7 +61,10 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
    e o ciclo inteiro **ler → mesclar → salvar** roda sob **trava entre processos**
    (`estado.trava`, um `.lock` ao lado do arquivo) — GUI e bot na mesma conta não
    apagam a marcação um do outro nem em leituras simultâneas. A trava degrada
-   suavemente (sem suporte do sistema de arquivos, opera como antes).
+   suavemente (sem suporte do sistema de arquivos, opera como antes). A **poda por
+   idade** que regrava o arquivo (`carregar(persistir_poda=True)`, só ML) também
+   roda sob a mesma trava e **relê o disco** antes de gravar — senão a poda de um
+   Atualizar apagaria uma marcação que o bot gravou nesse meio-tempo.
 6. Tokens (ML e Shopee) obtidos **sempre via `obter_token`**, nunca `renovar_token`
    direto — o refresh token **rotaciona** e uma corrida pode invalidá-lo.
 7. Refresh de token **serializado por lock** (double-checked).
@@ -118,6 +121,9 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   `estado.trava`) → GUI e bot apagam a marcação um do outro (inv. 5; sem a trava,
   duas leituras simultâneas perdem a última gravação — reproduzido em teste).
   Marcar antes da confirmação → imprime errado e some da lista (inv. 1).
+- **`carregar(persistir_poda=True)`**: regravar a poda **fora da trava** ou **sem
+  reler** o disco → a poda de um Atualizar apaga uma marcação concorrente do bot
+  (mesma corrida da inv. 5, por uma porta lateral — reproduzido em teste).
 - **`obter_token` / `renovar_token`**: chamar `renovar_token` direto ou sem lock →
   corrida entre threads rotaciona o refresh token e **trava a conta** (inv. 6, 7).
 - **`_organizar_varios` / `batch_ship_order` (Shopee AWB)**: gerar etiqueta sem AWB →

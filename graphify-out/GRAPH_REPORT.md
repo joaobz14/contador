@@ -23,6 +23,14 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Poda por idade também sob a trava (follow-up da revisão P1):**
+  auditoria pós-merge achou uma porta lateral da corrida da trava — a regravação
+  da poda em `carregar(persistir_poda=True)` (Atualizar do ML) escrevia FORA da
+  trava e podia apagar uma marcação que o bot gravasse nesse meio-tempo. Agora a
+  poda roda sob `estado.trava` relendo o disco antes de gravar. Nó novo:
+  `estado_poda_sob_trava` (barreira→solução, liga `estado_carregar`+`estado_trava`).
+  Teste determinístico que falha no código antigo e passa no novo.
+
 - **2026-07-15 — Trava entre processos no estado (revisão P1):** o merge do
   `marcar_impresso` só cobria o caso sequencial; leituras simultâneas (tela+bot)
   perdiam marcação (reproduzido: 6 marcações concorrentes → 1). Nós novos:

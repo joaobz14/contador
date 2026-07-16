@@ -105,6 +105,11 @@ Histórico das principais mudanças do projeto.
   ler→mesclar→salvar roda sob `estado.trava` (arquivo `.lock` ao lado, com
   `msvcrt`/`fcntl` e degradação suave), e o `.tmp` da gravação atômica inclui o
   PID (dois processos não disputam o mesmo temporário).
+- **A poda por idade também não apaga mais marcação concorrente:** a regravação
+  do estado podado (`carregar(persistir_poda=True)`, no Atualizar do ML) escrevia
+  **fora da trava**, então um Atualizar podia apagar uma marcação que o bot
+  gravasse nesse meio-tempo (a mesma corrida da trava, por uma porta lateral).
+  Agora a poda roda sob a mesma `estado.trava` e **relê o disco** antes de gravar.
 - **Falha ao salvar o estado após a confirmação não passa mais em silêncio**
   (achado P2 da revisão técnica): se a gravação falhar depois do "sim" (disco,
   permissão, arquivo preso pelo OneDrive/antivírus), a GUI agora oferece

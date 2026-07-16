@@ -96,7 +96,10 @@ em 2º plano.
   ler→mesclar→salvar do `marcar_impresso` roda sob **trava entre processos**
   (`estado.trava`, `.lock` ao lado do arquivo, gitignorado) quando o wrapper passa
   `arquivo=` — sem ela, duas leituras simultâneas (tela + bot) perdem marcação.
-  A trava degrada suavemente; o `.tmp` do `gravar_json` inclui o PID.
+  A trava degrada suavemente; o `.tmp` do `gravar_json` inclui o PID. A **poda por
+  idade** que regrava o arquivo (`carregar(persistir_poda=True)`, só ML) usa a
+  mesma trava e **relê o disco** antes de gravar — senão um Atualizar apagaria uma
+  marcação que o bot gravasse no meio-tempo (mesma corrida, por uma porta lateral).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista

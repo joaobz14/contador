@@ -165,6 +165,40 @@ def test_marcar_impresso_concorrente_em_arquivo_real_nao_perde(core, tmp_path):
     assert not list(tmp_path.glob("*.tmp"))                  # sem lixo .tmp
 
 
+def test_poda_persistida_rele_o_disco_e_nao_apaga_marca(core, tmp_path):
+    """A poda que regrava o arquivo (carregar persistir_poda) roda sob a trava e
+    RELE o disco: uma marca que outro processo grava depois da 1a leitura do
+    carregar NAO e apagada pela poda — a mesma corrida last-writer-wins que a
+    trava fecha no marcar_impresso. Sem o rele, a poda gravaria a versao antiga
+    (sem a marca) por cima e a marca sumiria."""
+    arq = tmp_path / "estado.json"
+    velho = f"{_dia(999)}|OLD|q1"
+    hoje = f"{_dia()}|NEW|q1"
+    estado.gravar_json(arq, {velho: [1]})           # so a chave antiga -> poda remove
+
+    orig = estado.limpar_antigo
+    disparos = {"n": 0}
+
+    def poda_hook(d, dias):
+        disparos["n"] += 1
+        if disparos["n"] == 1:                       # apos a 1a leitura, FORA da trava
+            atual = estado.ler_json(arq)             # simula o bot marcando um
+            atual[hoje] = [9]                        # envio de HOJE nesse meio-tempo
+            estado.gravar_json(arq, atual)
+        return orig(d, dias)
+
+    estado.limpar_antigo = poda_hook
+    try:
+        out = estado.carregar(arq, 7, persistir_poda=True)
+    finally:
+        estado.limpar_antigo = orig
+
+    salvo = estado.ler_json(arq)
+    assert salvo.get(hoje) == [9]                    # a marca do outro processo sobreviveu
+    assert velho not in salvo                        # a poda ainda removeu o antigo
+    assert hoje in out                               # o retorno reflete o disco relido
+
+
 def test_marcar_impresso_sem_arquivo_mantem_comportamento(core):
     """Sem arquivo= (chamadas antigas/testes), nada de trava — comportamento igual."""
     g = _g(core, [1], dia=_dia())
