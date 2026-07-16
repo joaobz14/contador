@@ -47,6 +47,13 @@ _LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_
 
 ARQUIVO_CRED = core.PASTA_SCRIPT / "credenciais_shopee.json"
 
+# Cache de AWB (order_sn -> tracking_number). O AWB e IMUTAVEL depois de emitido,
+# entao guardamos o que a impressao ja descobriu: a coleta seguinte le daqui em
+# vez de re-buscar um a um na rede (menos chamadas) e — mais importante — os
+# codigos que a tela mostra para conferencia passam a vir do momento da
+# impressao, nao de um refetch que pode falhar (best-effort). Local, gitignorado.
+ARQUIVO_AWB_CACHE = core.PASTA_SCRIPT / "awb_cache_shopee.json"
+
 # Cronometragem da impressao (diagnostico): registra quanto cada fase leva, para
 # saber ONDE o tempo vai (organizar x gerar x baixar) antes de otimizar. Arquivo
 # local, gitignorado; nunca guarda dados sensiveis (so contagens e segundos).
@@ -678,12 +685,17 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
 
 
 def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
-    """Para cada grupo, busca o AWB (get_tracking_number) de CADA etiqueta JA
-    IMPRESSA e preenche g.rastreios — a etiqueta Shopee nao tem o nome do produto,
-    entao a tela lista os codigos para conferir qual etiqueta e qual produto.
-    Busca em paralelo. Envios PENDENTES sao ignorados: o AWB so existe apos
-    organizar o envio, entao nao ha o que mostrar neles."""
-    tarefas = []                                # (grupo, indice, order_sn)
+    """Para cada grupo, preenche g.rastreios com o AWB de CADA etiqueta JA
+    IMPRESSA — a etiqueta Shopee nao tem o nome do produto, entao a tela lista
+    os codigos para conferir qual etiqueta e qual produto. Envios PENDENTES sao
+    ignorados: o AWB so existe apos organizar o envio.
+
+    Le do CACHE de AWB primeiro (preenchido na impressao; o AWB e imutavel):
+    codigos que vieram da impressao nao dependem de rede e nao 'somem' se uma
+    busca falhar. So os que faltam no cache vao a rede (em paralelo); os novos
+    entram no cache, que e podado junto com o estado (por idade)."""
+    cache = _carregar_awb_cache()
+    tarefas = []                                # (grupo, indice, order_sn) — misses
     for g in grupos:
         pend = set(core.envios_pendentes(estado, g))
         ids = [i for i in g.shipment_ids if i not in pend]   # ja impressos
@@ -691,23 +703,44 @@ def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
             continue
         g.rastreios = [""] * len(ids)           # posicao por etiqueta (thread-safe)
         for idx, sn in enumerate(ids):
-            tarefas.append((g, idx, sn))
-    if not tarefas:
-        return
-    token = obter_token(cred)
+            awb = cache.get(str(sn))
+            if awb:
+                g.rastreios[idx] = awb          # cache hit: confiavel, sem rede
+            else:
+                tarefas.append((g, idx, sn))
 
-    def _um(tarefa):
-        g, idx, sn = tarefa
-        try:
-            g.rastreios[idx] = numero_rastreio(cred, token, str(sn))
-        except Exception:                       # best-effort: rastreio e so conferencia
-            pass
+    novos: dict = {}
+    if tarefas:
+        token = obter_token(cred)
+        trava = threading.Lock()
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        list(executor.map(_um, tarefas))
+        def _um(tarefa):
+            g, idx, sn = tarefa
+            try:
+                awb = numero_rastreio(cred, token, str(sn))
+            except Exception:                   # best-effort: rastreio e so conferencia
+                return
+            if awb:
+                g.rastreios[idx] = awb
+                with trava:
+                    novos[str(sn)] = awb
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            list(executor.map(_um, tarefas))
+
     for g in grupos:                            # descarta falhas, preserva a ordem
         if g.rastreios:
             g.rastreios = [c for c in g.rastreios if c]
+
+    if novos:                                   # persiste os novos, podando o cache
+        try:
+            cache.update(novos)
+            manter = _order_sns_do_estado(estado) | {
+                str(sn) for g in grupos for sn in g.shipment_ids}
+            podado = {sn: awb for sn, awb in cache.items() if sn in manter}
+            _estado.gravar_json(ARQUIVO_AWB_CACHE, podado)
+        except Exception:                       # noqa: BLE001 - cache best-effort
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -742,6 +775,34 @@ def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = No
 # ---------------------------------------------------------------------------
 def _rotulo_lote(grupo: core.Grupo, ids: list) -> str:
     return ids[0] if len(ids) == 1 else f"{grupo.chave} x{len(ids)}"
+
+
+def _carregar_awb_cache() -> dict:
+    return _estado.ler_json(ARQUIVO_AWB_CACHE)
+
+
+def _cachear_awbs(awbs: dict) -> None:
+    """Guarda os AWB (order_sn -> tracking) obtidos numa impressao. Best-effort:
+    uma falha de IO nunca atrapalha a impressao (como _log_tempos)."""
+    validos = {str(sn): awb for sn, awb in (awbs or {}).items() if awb}
+    if not validos:
+        return
+    try:
+        cache = _carregar_awb_cache()
+        cache.update(validos)
+        _estado.gravar_json(ARQUIVO_AWB_CACHE, cache)
+    except Exception:                            # noqa: BLE001 - diagnostico/cache
+        pass
+
+
+def _order_sns_do_estado(estado: dict) -> set:
+    """Todos os order_sns que aparecem no estado de impressao (para podar o cache
+    de AWB junto com o estado, que ja e podado por idade)."""
+    out: set = set()
+    for valor in estado.values():
+        if isinstance(valor, list):
+            out.update(str(x) for x in valor)
+    return out
 
 
 def _somar_rastreios(grupo, novos: list) -> None:
@@ -798,6 +859,7 @@ def imprimir_grupo(cred: dict, grupo: core.Grupo, estado: dict, *, organizar: bo
                               rastreios={sn: awbs.get(sn, "") for sn in pendentes})
     salvar_etiqueta(conteudo, _rotulo_lote(grupo, pendentes))
     _log_tempos(len(pendentes), _t1 - _t0, time.time() - _t1, contexto="grupo")
+    _cachear_awbs(awbs)                          # AWB imutavel: a coleta seguinte le do cache
     # UNE os AWBs recem-impressos aos ja exibidos (parcial nao perde os antigos).
     _somar_rastreios(grupo, [awbs.get(sn, "") for sn in pendentes])
     if marcar:
@@ -859,6 +921,7 @@ def imprimir_lotes(cred: dict, grupos: list, estado: dict, *,
         falhas = [(sn, "sem numero de rastreio (AWB) — organize o envio")
                   for sn in todos if not awbs.get(sn)]
     _t1 = time.time()
+    _cachear_awbs(awbs)                          # AWB imutavel: a coleta seguinte le do cache
     alvo = [sn for sn in todos if awbs.get(sn)]
     conteudo, sns_ok, falhas_gen = _gerar_lote(cred, token, alvo, awbs)
     falhas += falhas_gen

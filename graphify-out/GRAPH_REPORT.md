@@ -23,6 +23,19 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Cache de AWB da Shopee (backlog da auditoria):** os códigos de
+  rastreio da tela eram re-buscados a cada Atualizar (N chamadas) e uma busca
+  falha sumia da lista sem aviso (conferência contra lista incompleta). AWB é
+  imutável → cacheado na impressão (`_cachear_awbs` em imprimir_grupo/lotes),
+  lido cache-first em `preencher_rastreios` (só os ausentes vão à rede), podado
+  junto com o estado. Nós `shopee_api_cachear_awbs` + `shopee_awb_cache`;
+  fixture autouse isola o cache nos testes (a impressão agora grava nele).
+
+- **2026-07-16 — Seletor de dias com reflow / teclado do bot fatiado (backlog
+  da auditoria):** GUI `_reflow` quebra os chips de dia em linhas (nada
+  cortado, verificado a 460/580px); `_teclado_grupos` devolve lista de teclados
+  ≤90 botões (limite do Telegram). Nós `seletor_dias_reflow`, `bot_teclado_fatiado`.
+
 - **2026-07-16 — Lote de higiene da auditoria:** migração de conta leva o
   `.bak` junto e remove órfãos da raiz (nó `migracao_bak_zumbi` — a cadeia
   completa: `.bak` desgarrado tem refresh morto → auto-recuperação ressuscita

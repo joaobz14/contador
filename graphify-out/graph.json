@@ -9583,6 +9583,33 @@
       "id": "bot_teclado_fatiado",
       "community": 4,
       "norm_label": "barreira->solucao: _teclado_grupos devolvia um teclado; num dia com muitos grupos passava do limite de ~100 botoes do telegram e o send_message falhava (teclado nao aparecia); agora devolve uma lista fatiada em <=90 botoes, sem cabecalho orfao, e _listar_grupos envia um por mensagem"
+    },
+    {
+      "label": "_cachear_awbs()",
+      "file_type": "code",
+      "source_file": "shopee_api.py",
+      "source_location": "L748",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "manual",
+      "id": "shopee_api_cachear_awbs",
+      "community": 8,
+      "norm_label": "_cachear_awbs()"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: preencher_rastreios re-buscava o AWB de cada etiqueta impressa a cada Atualizar (N chamadas) e uma busca que falhava sumia da lista sem aviso (operador conferia lista incompleta); AWB e imutavel -> cacheado na impressao (_cachear_awbs), lido cache-first na coleta (menos rede + codigos confiaveis), podado com o estado",
+      "file_type": "rationale",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "shopee_awb_cache",
+      "community": 8,
+      "norm_label": "barreira->solucao: preencher_rastreios re-buscava o awb de cada etiqueta impressa a cada atualizar (n chamadas) e uma busca que falhava sumia da lista sem aviso (operador conferia lista incompleta); awb e imutavel -> cacheado na impressao (_cachear_awbs), lido cache-first na coleta (menos rede + codigos confiaveis), podado com o estado"
     }
   ],
   "links": [
@@ -26403,6 +26430,56 @@
       "weight": 1.0,
       "source": "bot_teclado_fatiado",
       "target": "bot_telegram_teclado_grupos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_imprimir_grupo",
+      "target": "shopee_api_cachear_awbs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_imprimir_lotes",
+      "target": "shopee_api_cachear_awbs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_awb_cache",
+      "target": "shopee_api_cachear_awbs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_awb_cache",
+      "target": "shopee_api_preencher_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_awb_cache",
+      "target": "shopee_rastreio_todos_grupos",
       "confidence_score": 1.0
     }
   ],

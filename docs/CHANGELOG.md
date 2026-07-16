@@ -30,6 +30,15 @@ Histórico das principais mudanças do projeto.
   nome — para conferir qual etiqueta é qual produto ao separar o lote. Em grupos
   de alto volume a área cresce em altura (não espreme). Pendentes não mostram
   código (o AWB só existe depois de organizar/imprimir o envio).
+- **Códigos de rastreio (AWB) da Shopee agora vêm de um cache confiável**
+  (achado da auditoria): a tela re-buscava o AWB de cada etiqueta impressa a
+  cada Atualizar (N chamadas), e uma busca que falhasse (timeout/rate-limit)
+  sumia da lista **sem aviso** — o operador conferia contra uma lista
+  incompleta sem saber. Agora o AWB (imutável depois de emitido) é **cacheado
+  no momento da impressão**; a coleta seguinte lê do cache (menos rede) e os
+  códigos são confiáveis (vêm da impressão, não de um refetch falível). Só os
+  ausentes vão à rede; o cache (`awb_cache_shopee.json`, local) é podado junto
+  com o estado.
 - **Impressão parcial não apaga mais os códigos antigos** (achado P2 da revisão
   técnica): imprimir os faltantes de um grupo parcial substituía a lista de
   rastreios da tela pelos recém-impressos, sumindo com os códigos antigos até a
