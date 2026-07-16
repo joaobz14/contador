@@ -38,6 +38,13 @@ Histórico das principais mudanças do projeto.
   mapeamentos salvos. O botão inline **aplica na hora, em memória** (funde os
   grupos sem re-buscar na API — não precisa clicar em Atualizar); a janela
   gerenciadora re-coleta ao fechar (por causa das remoções/edições).
+- **Adotar SKU pelo botão inline no modo 🌐 Ambas re-coleta em vez de aplicar
+  em memória** (achado da auditoria): os grupos fundidos do Ambas carregam
+  sub-grupos por conta que a aplicação em memória não reescrevia — envios de
+  uma conta ficavam invisíveis para a impressão em lote e a confirmação
+  marcava o estado na chave antiga do anúncio (na coleta seguinte o grupo
+  voltava como pendente, com risco de reimpressão). No ML normal o botão
+  continua instantâneo (em memória), agora com testes.
 
 ### Arquitetura interna
 - **Camada comum de estado (`estado.py`):** a lógica de "já impresso" (antes

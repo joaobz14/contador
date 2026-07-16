@@ -142,7 +142,10 @@ em 2º plano.
   O **botão inline aplica na hora, em memória** (`_aplicar_mapa_anuncios_local`
   reescreve a chave e **funde** por SKU+qtd — sem re-buscar na API); a **janela
   gerenciadora re-coleta** ao fechar (permite remover/editar, que precisa refazer
-  a identidade do zero).
+  a identidade do zero). **Exceção: no modo 🌐 Ambas o botão inline RE-COLETA**
+  (`_aplicar_adocao` roteia para `atualizar`) — os sub-grupos `.por_conta` não
+  são reescritos em memória; aplicar local esconderia envios do lote e marcaria
+  o estado na chave antiga do anúncio (reimpressão na coleta seguinte).
 - **Ordem dos grupos (tela + impressão):** `ordenar_grupos` (usado por `agrupar` e
   `fundir_grupos`) ordena por **quantidade primeiro** (mantém os blocos "qtd 1",
   "qtd 2"…) e, **só no bloco de qtd 1**, segue a **ordem da aba Nomes**; SKU não
