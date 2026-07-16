@@ -77,6 +77,74 @@ def test_carregar_sem_persistir_nao_regrava(core, tmp_path):
     assert json.loads(arq.read_text()) == original  # arquivo intacto
 
 
+# -------------------------------------------- estado corrompido visivel (5.2)
+def test_ler_estado_ausente_e_silencioso(tmp_path):
+    """Arquivo ausente = {} silencioso (caso legitimo: primeiro uso do dia)."""
+    assert estado.ler_estado(tmp_path / "nao_existe.json") == {}
+    assert not list(tmp_path.glob("*.corrupto"))
+
+
+def test_ler_estado_corrompido_preserva_e_avisa(tmp_path):
+    """JSON truncado nao vira {} mudo: e movido para .corrupto (preservado) e um
+    aviso e emitido. Sem isso, todos os grupos do dia voltavam a PENDENTE sem o
+    operador saber o porque (auditoria 5.2)."""
+    arq = tmp_path / "estado_grupos.json"
+    arq.write_text('{"2026-07-16|X|q1": [1], "trunca', encoding="utf-8")  # JSON quebrado
+    avisos = []
+    import registro
+    orig = registro.log.warning
+    registro.log.warning = lambda m, *a, **k: avisos.append(m)
+    try:
+        assert estado.ler_estado(arq) == {}          # recomeca vazio
+    finally:
+        registro.log.warning = orig
+    assert not arq.exists()                            # o original saiu do lugar
+    corrompidos = list(tmp_path.glob("estado_grupos.json.*.corrupto"))
+    assert len(corrompidos) == 1                       # preservado como .corrupto
+    assert '"trunca' in corrompidos[0].read_text()     # conteudo recuperavel intacto
+    assert avisos and "corrompido" in avisos[0].lower()
+
+
+def test_ler_estado_nao_dict_e_corrompido(tmp_path):
+    """Conteudo valido mas que nao e objeto (ex.: uma lista) tambem e tratado
+    como corrompido — o resto do codigo espera um dict."""
+    arq = tmp_path / "estado_shopee.json"
+    arq.write_text("[1, 2, 3]", encoding="utf-8")
+    assert estado.ler_estado(arq) == {}
+    assert not arq.exists()
+    assert len(list(tmp_path.glob("*.corrupto"))) == 1
+
+
+def test_ler_estado_oserro_transitorio_nao_renomeia(tmp_path, monkeypatch):
+    """Falha de leitura TRANSITORIA (arquivo preso pelo OneDrive/antivirus) cai
+    em {} mas NAO renomeia: o arquivo pode estar intacto, so ilegivel no
+    instante — move-lo aparte destruiria um estado bom."""
+    arq = tmp_path / "estado_grupos.json"
+    arq.write_text('{"2026-07-16|X|q1": [1]}', encoding="utf-8")
+
+    def _boom(*a, **k):
+        raise OSError("arquivo preso")
+
+    monkeypatch.setattr(type(arq), "read_text", _boom)
+    assert estado.ler_estado(arq) == {}
+    assert arq.exists()                                # intacto, nao renomeado
+    assert not list(tmp_path.glob("*.corrupto"))
+
+
+def test_marcar_impresso_nao_destroi_estado_corrompido(core, tmp_path):
+    """A marcacao apos corrupcao NAO grava por cima do corrompido: a leitura via
+    ler_estado ja o preservou como .corrupto e recomeca vazio; o novo arquivo so
+    tem a marca nova, e o conteudo antigo continua recuperavel no .corrupto."""
+    arq = tmp_path / "estado.json"
+    arq.write_text('{"lixo corrompido', encoding="utf-8")
+    g = _g(core, [7], dia=_dia())
+    estado.marcar_impresso(lambda: estado.ler_estado(arq),
+                           lambda d: estado.salvar(arq, d), {}, g, [7], arquivo=arq)
+    assert estado.ler_json(arq) == {estado.chave_estado(g): [7]}   # arquivo novo, so a marca
+    corrompidos = list(tmp_path.glob("estado.json.*.corrupto"))
+    assert len(corrompidos) == 1 and "lixo corrompido" in corrompidos[0].read_text()
+
+
 def test_marcar_impresso_merge_last_writer(core):
     """Tela marca [5], bot (com memoria velha) marca [6]: nenhum some (inv. 5)."""
     g = _g(core, [5, 6], dia=_dia())

@@ -773,8 +773,10 @@ def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = No
     disco e mescla (uniao) antes de gravar, para nao apagar marcacoes de outro
     processo feitas nesse meio-tempo (mesma convencao do nucleo). arquivo= liga
     a trava entre processos no ciclo ler->mesclar->salvar."""
+    # ler_estado (nao ler_json): estado corrompido e preservado, nao sobrescrito
+    # em silencio destruindo o recuperavel (auditoria 5.2).
     _estado.marcar_impresso(
-        lambda: _estado.ler_json(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns,
+        lambda: _estado.ler_estado(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns,
         arquivo=ARQUIVO_ESTADO)
 
 

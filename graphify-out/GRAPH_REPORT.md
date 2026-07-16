@@ -23,6 +23,15 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Estado corrompido preservado, não sobrescrito (auditoria
+  consolidada 5.2):** `ler_json` silenciava corrupção como `{}` (indistinguível
+  de ausente) e a próxima marcação gravava por cima, destruindo o recuperável.
+  `ler_estado` move o corrompido para `.corrupto` (com aviso) e recomeça vazio;
+  distingue ausência (`{}` silencioso) e falha transitória (OSError → `{}` sem
+  renomear). Usado por `carregar` e pelo `ler` injetado no `marcar_impresso` do
+  núcleo e da Shopee. Nós `estado_ler_estado` (code) +
+  `estado_corrompido_visivel` (rationale).
+
 - **2026-07-16 — ZIP com nome único + releitura de estado antes de gerar
   (auditoria consolidada 5.1):** o nome determinístico do ZIP + `tmp.replace`
   apagava em silêncio um lote que o monitor da Zebra ainda não consumira (dois

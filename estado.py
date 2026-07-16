@@ -55,6 +55,63 @@ def ler_json(caminho: Path) -> dict:
         return {}
 
 
+def _avisar_corrompido(msg: str) -> None:
+    """Aviso best-effort de estado corrompido. Import tardio de `registro` para
+    manter este modulo folha (sem dependencia no topo) e para o log NUNCA
+    derrubar a operacao (filosofia do projeto)."""
+    try:
+        import registro
+        registro.log.warning(registro.sem_segredos(msg))
+    except Exception:
+        pass
+
+
+def _preservar_corrompido(arquivo: Path, motivo) -> None:
+    """Move um estado corrompido para `{nome}.{timestamp}.corrupto` (preservando
+    o conteudo recuperavel) e avisa. Best-effort: se o rename falhar, volta ao
+    comportamento antigo ({} silencioso) — nunca quebra a operacao."""
+    try:
+        carimbo = datetime.now(_TZ_BR).strftime("%Y%m%d_%H%M%S")
+        destino = arquivo.with_name(f"{arquivo.name}.{carimbo}.corrupto")
+        arquivo.replace(destino)
+        _avisar_corrompido(
+            f"Estado corrompido em '{arquivo.name}' ({motivo}): preservado como "
+            f"'{destino.name}' e recomecado vazio. Se grupos voltarem a PENDENTE, "
+            f"e por isso — confira o .corrupto antes de reimprimir.")
+    except OSError:
+        pass
+
+
+def ler_estado(arquivo: Path) -> dict:
+    """Le o estado de impressao. Diferente de `ler_json`, NAO silencia corrupcao
+    como {}: um arquivo que existe mas nao parseia (ou nao e um dict) e
+    CORROMPIDO — indistinguivel de ausente, ele faria todos os grupos do dia
+    voltarem a PENDENTE e, pior, a proxima marcacao gravaria por cima,
+    destruindo o que era recuperavel (auditoria 5.2). Aqui o corrompido e
+    movido para .corrupto (com aviso) e a leitura recomeca vazia; a proxima
+    gravacao cria um arquivo novo, sem apagar o antigo.
+
+    Ausencia continua {} silencioso (caso legitimo: primeiro uso do dia). Uma
+    falha de leitura TRANSITORIA (OSError — arquivo preso pelo OneDrive/antivirus)
+    tambem cai em {} SEM renomear: o arquivo pode estar intacto, so ilegivel
+    naquele instante — move-lo aparte seria destruir um estado bom."""
+    if not arquivo.exists():
+        return {}
+    try:
+        texto = arquivo.read_text(encoding="utf-8")
+    except OSError:
+        return {}                                   # transitorio: nao renomeia
+    try:
+        dados = json.loads(texto)
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        _preservar_corrompido(arquivo, e)
+        return {}
+    if not isinstance(dados, dict):
+        _preservar_corrompido(arquivo, f"conteudo nao e objeto JSON ({type(dados).__name__})")
+        return {}
+    return dados
+
+
 def gravar_json(caminho: Path, dados) -> None:
     """Grava JSON de forma atomica e DURAVEL: escreve em .tmp, forca o disco a
     persistir (flush+fsync) e so entao renomeia. O fsync evita o classico
@@ -227,7 +284,7 @@ def carregar(arquivo: Path, dias: int, *, persistir_poda: bool) -> dict:
     """Le o estado do arquivo e poda as entradas antigas. Se persistir_poda e a
     poda mudou algo, regrava o arquivo ja podado (comportamento do ML; a Shopee
     poda em memoria mas nao regrava)."""
-    estado = ler_json(arquivo)
+    estado = ler_estado(arquivo)
     limpo = limpar_antigo(estado, dias)
     if persistir_poda and len(limpo) != len(estado):
         # Regrava a poda sob a MESMA trava do marcar_impresso e RELENDO o disco:
@@ -236,7 +293,7 @@ def carregar(arquivo: Path, dias: int, *, persistir_poda: bool) -> dict:
         # que a trava fecha no ciclo de marcacao. A poda so remove dias antigos,
         # entao o disco relido (com a marca nova de hoje) e o retorno correto.
         with trava(Path(arquivo)):
-            atual = ler_json(arquivo)
+            atual = ler_estado(arquivo)
             podado = limpar_antigo(atual, dias)
             gravar_json(arquivo, podado)
             return podado

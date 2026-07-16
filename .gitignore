@@ -23,6 +23,7 @@ shopee_tempos.log
 separador.log
 *.tmp
 *.bak
+*.corrupto
 
 # Bytecode / cache do Python
 __pycache__/
