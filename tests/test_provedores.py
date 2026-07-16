@@ -60,15 +60,24 @@ def test_shopee_coletar_guarda_contagem(monkeypatch):
     assert prov.contagem_dias == {"2026-07-04": 3}
 
 
-def test_shopee_imprimir_grupo_delega(monkeypatch):
+def test_shopee_imprimir_lotes_delega_com_branch_e_remetente(monkeypatch):
     prov = pv.ProvedorShopee()
     prov.cred = {"x": 1}
     capturado = {}
-    monkeypatch.setattr(sh, "imprimir_grupo",
-                        lambda cred, grupo, estado, **k: capturado.update(k=k) or ["SN1"])
-    assert prov.imprimir_grupo("G", {}) == ["SN1"]
+    monkeypatch.setattr(sh, "imprimir_lotes",
+                        lambda cred, grupos, estado, **k: capturado.update(k=k) or (["ok"], []))
+    assert prov.imprimir_lotes(["G"], {}) == (["ok"], [])
     # repassa o setup unico (ponto/remetente) para o shopee_api
     assert "branch_id" in capturado["k"] and "sender_real_name" in capturado["k"]
+
+
+def test_provedores_nao_expoe_imprimir_grupo():
+    """A interface de provedor NAO tem imprimir_grupo de proposito: a GUI
+    imprime tudo por imprimir_lotes (gera SEM marcar; a confirmacao marca
+    depois — invariante 1). Um metodo de grupo que marcasse direto seria uma
+    arma engatilhada para um botao novo furar a invariante."""
+    for prov in (pv.Provedor, pv.ProvedorML, pv.ProvedorShopee, pv.ProvedorMLAmbas):
+        assert not hasattr(prov, "imprimir_grupo"), prov.__name__
 
 
 def test_ml_imprimir_revalida_o_token_da_coleta(monkeypatch):
@@ -85,12 +94,9 @@ def test_ml_imprimir_revalida_o_token_da_coleta(monkeypatch):
                         lambda token, grupos, estado, **k: usado.update(lotes=token) or [])
     monkeypatch.setattr(core, "reimprimir",
                         lambda token, g: usado.update(reimp=token) or [])
-    monkeypatch.setattr(core, "imprimir_pendentes",
-                        lambda token, g, e: usado.update(grupo=token) or [])
     prov.imprimir_lotes([], {})
     prov.reimprimir("g")
-    prov.imprimir_grupo("g", {})
-    assert usado == {"lotes": "FRESCO", "reimp": "FRESCO", "grupo": "FRESCO"}
+    assert usado == {"lotes": "FRESCO", "reimp": "FRESCO"}
     assert prov.token == "FRESCO"               # cache atualizado de quebra
 
 

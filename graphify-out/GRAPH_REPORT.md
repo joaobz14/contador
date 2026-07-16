@@ -23,6 +23,13 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Interface de provedor sem `imprimir_grupo` (achado da
+  auditoria):** os 4 métodos eram código morto (GUI usa só `imprimir_lotes`;
+  bot/CLI usam as funções de módulo) e marcavam estado direto — risco latente
+  à invariante 1. Removidos do código E do grafo (5 nós + 10 arestas do
+  inventário AST, mantendo-o em dia); nó de decisão novo
+  `provedor_sem_imprimir_grupo` + teste-guardião.
+
 - **2026-07-16 — SKU só de espaços cai no fallback do anúncio (achado da
   auditoria, provado dinamicamente):** o `if sku` de `identidade()` testava
   antes do strip — whitespace virava chave/nome vazios. Strip antecipado; o

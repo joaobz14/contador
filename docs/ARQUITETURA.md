@@ -135,7 +135,10 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   (`_aplicar_adocao`); mudar isso esconde envios do lote e grava estado na chave
   errada (reproduzido em teste na auditoria).
 - **`preparar_lotes` / `gerar_zip_lotes` / `imprimir_pendentes`**: alterar a ordem
-  "gera → confirma → marca" fura a invariante 1.
+  "gera → confirma → marca" fura a invariante 1. A interface de provedor **não
+  tem `imprimir_grupo` de propósito** (um método de grupo que marcasse direto
+  seria uma arma engatilhada para um botão novo) — há teste-guardião
+  (`test_provedores_nao_expoe_imprimir_grupo`).
 - **Botões de impressão do Telegram (`cb_botao`)**: deixar imprimir Shopee, ou imprimir
   um grupo antigo após troca de conta/loja (inv. 10, 11).
 - **Pasta Downloads / app Zebra**: mudar o prefixo do nome do ZIP quebra a detecção pelo
