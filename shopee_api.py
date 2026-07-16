@@ -668,14 +668,23 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
     tn = numero_rastreio(cred, token, order_sn)
     if tn:
         return tn
-    info = parametros_envio(cred, token, order_sn).get("response", {}).get("info_needed", {}) or {}
-    if "dropoff" not in info:
+    param = parametros_envio(cred, token, order_sn)
+    info = param.get("response", {}).get("info_needed", {}) or {}
+    if envio_ja_arranjado(param):
+        # JA organizado (info_needed sem pickup/dropoff/non_integrated) mas o AWB
+        # ainda nao saiu — organizado manualmente no painel, ou o batch organizou
+        # e a resposta foi ambigua. NAO re-organizar (nem tratar info_needed={}
+        # como "nao oferece drop-off", que era o falso erro do achado 5.3): so
+        # aguardar o rastreio ja em processamento, no polling abaixo.
+        pass
+    elif "dropoff" not in info:
         raise core.SeparadorError(
             f"O pedido {order_sn} nao oferece Postagem (drop-off) — info_needed={info}. "
             f"Organize manualmente no painel da Shopee."
         )
-    dropoff = _montar_dropoff(info, branch_id=branch_id, sender_real_name=sender_real_name)
-    ship_order(cred, token, order_sn, dropoff=dropoff)
+    else:
+        dropoff = _montar_dropoff(info, branch_id=branch_id, sender_real_name=sender_real_name)
+        ship_order(cred, token, order_sn, dropoff=dropoff)
     # O AWB nao sai na hora: a Shopee leva alguns segundos para emiti-lo.
     for _ in range(tentativas):
         time.sleep(espera)
