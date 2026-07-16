@@ -163,6 +163,17 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Pedido Shopee já organizado (mas com AWB ainda em processamento) não vira
+  mais falso erro** (auditoria consolidada 5.3): se o envio já fora organizado
+  — manualmente no painel, ou pelo lote com resposta ambígua — mas o AWB ainda
+  não saíra, `numero_rastreio` voltava vazio e `info_needed` vinha `{}`; o
+  código lia a ausência de `dropoff` como "não oferece Postagem" e mandava
+  "organize manualmente" o que já estava organizado. Agora `organizar_envio`
+  chama `envio_ja_arranjado` (helper que já existia, testado, mas **sem nenhum
+  chamador de produção** — a falta de uso era o próprio bug): quando o envio já
+  está arranjado, **pula o `ship_order` e só aguarda o AWB** em vez de recusar.
+  Só recusa como incompatível o pedido que realmente exige outro método e ainda
+  não foi organizado.
 - **Estado corrompido não some mais em silêncio** (auditoria consolidada 5.2):
   um `estado_grupos.json`/`estado_shopee.json` ilegível (antivírus, disco,
   edição manual) era lido como `{}` — indistinguível de ausente — e a **próxima

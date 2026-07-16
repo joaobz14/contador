@@ -340,6 +340,42 @@ def test_organizar_envio_erro_se_so_pickup(monkeypatch):
         sh.organizar_envio({}, "TOK", "A1")
 
 
+# --------- ja organizado mas AWB ainda em processamento: aguardar, nao re-erro (5.3)
+def test_organizar_envio_ja_organizado_so_aguarda_o_awb(monkeypatch):
+    """Pedido ja organizado (info_needed={}) mas sem AWB na 1a consulta: NAO
+    dispara o falso "nao oferece drop-off" e NAO re-organiza — so aguarda o AWB
+    que ja esta em processamento (auditoria 5.3)."""
+    chamadas = {"n": 0}
+
+    def fake_rastreio(c, t, sn):       # vazio na 1a consulta; AWB sai depois
+        chamadas["n"] += 1
+        return "" if chamadas["n"] == 1 else "BR7"
+
+    chamou_ship = {"v": False}
+    monkeypatch.setattr(sh, "numero_rastreio", fake_rastreio)
+    monkeypatch.setattr(sh, "parametros_envio",              # ja organizado
+                        lambda c, t, sn: {"response": {"info_needed": {}}})
+    monkeypatch.setattr(sh, "ship_order",
+                        lambda *a, **k: chamou_ship.update(v=True) or {})
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    assert sh.organizar_envio({}, "TOK", "A1") == "BR7"      # aguardou e devolveu o AWB
+    assert chamou_ship["v"] is False                          # NAO re-organizou
+
+
+def test_organizar_envio_ja_organizado_awb_nunca_sai_erro_correto(monkeypatch):
+    """Ja organizado mas o AWB nunca aparece: timeout com a mensagem de AWB
+    pendente (nao a de "nao oferece drop-off")."""
+    import pytest
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {}}})
+    monkeypatch.setattr(sh, "ship_order",
+                        lambda *a, **k: pytest.fail("nao deveria re-organizar"))
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    with pytest.raises(sh.core.SeparadorError, match="AWB"):
+        sh.organizar_envio({}, "TOK", "A1", tentativas=2)
+
+
 # ----------------------------------------------------- imprimir grupo / estado
 def _grupo(chave="A01", ids=("SN1", "SN2"), dia=""):
     g = sh.core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=list(ids))

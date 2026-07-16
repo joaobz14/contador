@@ -23,6 +23,15 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Shopee já organizado sem AWB aguarda em vez de falso-errar
+  (auditoria consolidada 5.3):** `envio_ja_arranjado` existia e era testado mas
+  **sem chamador de produção** — a falta de uso era o bug. `organizar_envio`
+  passou a consultá-lo: se o envio já está arranjado (info_needed sem
+  pickup/dropoff/non_integrated), pula o `ship_order` e só aguarda o AWB, em vez
+  de recusar `info_needed={}` como "não oferece drop-off". Nó
+  `shopee_organizado_sem_awb` (rationale) + aresta `calls`
+  `organizar_envio → envio_ja_arranjado`.
+
 - **2026-07-16 — Estado corrompido preservado, não sobrescrito (auditoria
   consolidada 5.2):** `ler_json` silenciava corrupção como `{}` (indistinguível
   de ausente) e a próxima marcação gravava por cima, destruindo o recuperável.

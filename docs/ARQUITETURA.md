@@ -154,6 +154,10 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   corrida entre threads rotaciona o refresh token e **trava a conta** (inv. 6, 7).
 - **`_organizar_varios` / `batch_ship_order` (Shopee AWB)**: gerar etiqueta sem AWB →
   `logistics.tracking_number_invalid`; a etiqueta só existe após organizar (inv. 8, 9).
+  **`organizar_envio` deve consultar `envio_ja_arranjado` antes de recusar**: um
+  pedido já organizado tem `info_needed={}` até o AWB sair — sem o helper, isso
+  virava um falso "não oferece drop-off" (5.3). Já arranjado → pular `ship_order`
+  e aguardar o AWB.
 - **`ProvedorMLAmbas` / `fundir_grupos`**: usar o token/estado da conta errada ao fundir
   → imprime com credencial errada ou marca no arquivo errado. A adoção de anúncio
   sem SKU **não pode ser aplicada em memória** neste modo (os sub-grupos

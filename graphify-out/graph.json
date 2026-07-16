@@ -9690,6 +9690,19 @@
       "source_file": "estado.py",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "shopee_organizado_sem_awb",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.3): pedido ja organizado (no painel ou pelo lote) tem numero_rastreio vazio e info_needed={} ate o AWB sair; organizar_envio lia a ausencia de dropoff como \"nao oferece Postagem\" e mandava reorganizar o que ja estava organizado. O helper envio_ja_arranjado existia e era testado mas SEM chamador de producao \u2014 a falta de uso era o proprio bug. Agora organizar_envio consulta envio_ja_arranjado antes de recusar: se ja arranjado, pula o ship_order e so aguarda o AWB; so recusa o que nao esta arranjado E nao oferece drop-off",
+      "norm_label": "barreira->solucao (auditoria 5.3): pedido ja organizado (no painel ou pelo lote) tem numero_rastreio vazio e info_needed={} ate o awb sair; organizar_envio lia a ausencia de dropoff como \"nao oferece postagem\" e mandava reorganizar o que ja estava organizado. o helper envio_ja_arranjado existia e era testado mas sem chamador de producao \u2014 a falta de uso era o proprio bug. agora organizar_envio consulta envio_ja_arranjado antes de recusar: se ja arranjado, pula o ship_order e so aguarda o awb; so recusa o que nao esta arranjado e nao oferece drop-off",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -26760,6 +26773,36 @@
       "weight": 1.0,
       "source": "shopee_api_marcar_impresso",
       "target": "estado_ler_estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_organizar_envio",
+      "target": "shopee_api_envio_ja_arranjado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_organizado_sem_awb",
+      "target": "shopee_api_organizar_envio",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_organizado_sem_awb",
+      "target": "shopee_api_envio_ja_arranjado",
       "confidence_score": 1.0
     }
   ],

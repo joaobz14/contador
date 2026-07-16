@@ -235,6 +235,14 @@ em 2º plano.
   como **Postagem (drop-off)** via `ship_order` — sempre essa opção, nunca buyer-pickup.
   `info_needed.dropoff` lista os campos exigidos (geralmente vazio; às vezes
   `branch_id`/`sender_real_name`).
+- **Já organizado ≠ sem drop-off:** um pedido já organizado (no painel, ou pelo
+  lote) tem `info_needed={}` até o AWB sair. `organizar_envio` consulta
+  `envio_ja_arranjado(param)` **antes** de recusar: se já arranjado, **pula o
+  `ship_order` e só aguarda o AWB**; só levanta "não oferece Postagem (drop-off)"
+  quando o envio **não** está arranjado E não oferece drop-off. Sem isso,
+  `info_needed={}` disparava um falso erro mandando reorganizar o que já estava
+  organizado (achado 5.3). `envio_ja_arranjado` = nenhum de
+  pickup/dropoff/non_integrated em `info_needed`.
 - **Organizar em lote:** `_organizar_varios` é em camadas — AWB existente
   (idempotência) → `batch_ship_order` (até 50 num request) → confirmação **pelo
   AWB** (não confiar no formato da resposta do batch) → fallback individual
