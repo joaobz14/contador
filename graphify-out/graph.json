@@ -9610,6 +9610,19 @@
       "id": "shopee_awb_cache",
       "community": 8,
       "norm_label": "barreira->solucao: preencher_rastreios re-buscava o awb de cada etiqueta impressa a cada atualizar (n chamadas) e uma busca que falhava sumia da lista sem aviso (operador conferia lista incompleta); awb e imutavel -> cacheado na impressao (_cachear_awbs), lido cache-first na coleta (menos rede + codigos confiaveis), podado com o estado"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO (P1 releitura externa): no Windows o msvcrt.LK_LOCK desiste em ~10s e o refresh roda HTTP de ate 30s dentro da trava \u2014 o 2o processo degradava NO MEIO do refresh do 1o (refresh paralelo, corrida reaberta); trava(espera=) re-tenta so quando a falha e LENTA (~10s = ocupada; falha rapida = FS sem suporte, degrada na hora) ate superar 2xTIMEOUT \u2014 dai degradar e seguro (detentor ja salvou)",
+      "file_type": "rationale",
+      "source_file": "estado.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "trava_espera_windows",
+      "community": 8,
+      "norm_label": "barreira->solucao (p1 releitura externa): no windows o msvcrt.lk_lock desiste em ~10s e o refresh roda http de ate 30s dentro da trava \u2014 o 2o processo degradava no meio do refresh do 1o (refresh paralelo, corrida reaberta); trava(espera=) re-tenta so quando a falha e lenta (~10s = ocupada; falha rapida = fs sem suporte, degrada na hora) ate superar 2xtimeout \u2014 dai degradar e seguro (detentor ja salvou)"
     }
   ],
   "links": [
@@ -26480,6 +26493,46 @@
       "weight": 1.0,
       "source": "shopee_awb_cache",
       "target": "shopee_rastreio_todos_grupos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_espera_windows",
+      "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_espera_windows",
+      "target": "separador_etiquetas_ml_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_espera_windows",
+      "target": "shopee_api_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "trava_espera_windows",
+      "target": "token_refresh_trava_processos",
       "confidence_score": 1.0
     }
   ],

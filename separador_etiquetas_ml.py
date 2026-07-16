@@ -394,7 +394,13 @@ def obter_token(cred: dict) -> str:
         # sao a corrida que pode travar a conta). Sem a trava (sistema de
         # arquivos sem suporte), degrada para o comportamento anterior: rele o
         # disco do mesmo jeito, so sem a espera.
-        with _estado.trava(ARQUIVO_CRED):
+        # espera=2*TIMEOUT: o refresh roda HTTP de ate TIMEOUT segundos DENTRO
+        # da trava; no Windows o LK_LOCK desiste em ~10s por tentativa, entao
+        # sem a espera estendida o segundo processo degradaria NO MEIO do
+        # refresh do primeiro e dispararia um refresh paralelo. Esperando mais
+        # que a duracao maxima da operacao, degradar vira seguro (o detentor ja
+        # salvou; a releitura abaixo adota o token dele).
+        with _estado.trava(ARQUIVO_CRED, espera=2 * TIMEOUT):
             disco = _ler_json(ARQUIVO_CRED)
             if disco.get("access_token"):
                 cred.update(disco)

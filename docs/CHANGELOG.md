@@ -99,6 +99,16 @@ Histórico das principais mudanças do projeto.
   protegendo contra corrida de refresh **entre processos** (GUI + bot na mesma
   conta); `renovar_token` não re-tenta (o `refresh_token` rotaciona e é de uso
   único — re-tentar travaria a conta).
+- **A trava do refresh não desiste mais no meio do refresh (Windows)** (P1 da
+  releitura técnica externa): o `msvcrt.LK_LOCK` desiste sozinho após ~10s,
+  mas o refresh roda HTTP de até 30s dentro da trava — no Windows o segundo
+  processo podia degradar **no meio** do refresh do primeiro e disparar um
+  refresh paralelo (reabrindo a corrida). Agora a trava aceita `espera=` e o
+  caminho do token re-tenta até superar `2×TIMEOUT` (60s > duração máxima):
+  degradar depois disso é seguro (o detentor já salvou; a releitura adota).
+  Falha rápida (FS sem suporte) continua degradando na hora, e os caminhos do
+  estado mantêm o comportamento de sempre. POSIX (CI) já bloqueava
+  indefinidamente — o cenário era exclusivo do Windows de produção.
 - **Refresh de token serializado também ENTRE PROCESSOS** (achado da
   auditoria): a releitura do disco fechava quase toda a janela, mas se GUI e
   bot chegassem **simultaneamente** sem token válido, os dois renovavam — e o

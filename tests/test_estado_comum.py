@@ -134,6 +134,100 @@ def test_trava_degrada_sem_quebrar(tmp_path):
         pass
 
 
+# ---------------------------------------------------------------------------
+# TRAVA NO WINDOWS (msvcrt): espera estendida para secoes longas (P1 releitura)
+# O LK_LOCK desiste sozinho apos ~10s; sem a espera=, o segundo processo
+# degradaria NO MEIO de um refresh de token (que roda HTTP de ate 30s dentro
+# da trava) e dispararia um refresh paralelo. Logica testada com msvcrt FAKE e
+# relogio FAKE (determinismo; o modulo real so existe no Windows).
+# ---------------------------------------------------------------------------
+class _RelogioFake:
+    def __init__(self):
+        self.agora = 0.0
+
+    def monotonic(self):
+        return self.agora
+
+
+def _instalar_msvcrt_fake(monkeypatch, relogio, plano: list):
+    """Instala um msvcrt fake e liga o ramo Windows da trava. `plano` dita o
+    resultado de cada LK_LOCK, em ordem: 'ocupado' (gasta ~10s e falha, como o
+    LK_LOCK real com a trava tomada), 'rapido' (falha em ms — FS sem suporte)
+    ou 'ok' (adquire). Devolve a lista de chamadas registradas."""
+    import types
+    chamadas: list = []
+    mod = types.SimpleNamespace(LK_LOCK=1, LK_UNLCK=2)
+
+    def locking(_fd, modo, _n):
+        if modo == mod.LK_UNLCK:
+            chamadas.append("unlock")
+            return
+        acao = plano.pop(0) if plano else "ocupado"
+        chamadas.append(acao)
+        if acao == "ok":
+            return
+        relogio.agora += 10.0 if acao == "ocupado" else 0.001
+        raise OSError(36, "resource deadlock avoided")
+
+    mod.locking = locking
+    import sys
+    monkeypatch.setitem(sys.modules, "msvcrt", mod)
+    monkeypatch.setattr(estado.os, "name", "nt")
+    monkeypatch.setattr(estado, "time", relogio)
+    return chamadas
+
+
+def test_trava_windows_espera_re_tenta_ate_adquirir(monkeypatch, tmp_path):
+    """Trava ocupada por outro processo (2 tentativas de ~10s falham): com
+    espera=60 a trava RE-TENTA e adquire na 3a — nao degrada no meio da secao
+    critica do outro processo."""
+    relogio = _RelogioFake()
+    chamadas = _instalar_msvcrt_fake(monkeypatch, relogio,
+                                     ["ocupado", "ocupado", "ok"])
+    with estado.trava(tmp_path / "cred.json", espera=60):
+        pass
+    assert chamadas == ["ocupado", "ocupado", "ok", "unlock"]  # adquiriu e liberou
+
+
+def test_trava_windows_padrao_mantem_uma_tentativa(monkeypatch, tmp_path):
+    """Sem espera= (caminhos do estado): comportamento de sempre — UMA tentativa
+    (~10s do proprio LK_LOCK) e degrada, sem re-tentar."""
+    relogio = _RelogioFake()
+    chamadas = _instalar_msvcrt_fake(monkeypatch, relogio, ["ocupado"])
+    executou = []
+    with estado.trava(tmp_path / "estado.json"):
+        executou.append(1)
+    assert executou == [1]                       # corpo rodou (degradou, nao travou)
+    assert chamadas == ["ocupado"]               # 1 tentativa, sem unlock
+
+
+def test_trava_windows_fs_sem_suporte_degrada_na_hora(monkeypatch, tmp_path):
+    """Falha RAPIDA (FS sem suporte, ms): degrada imediatamente MESMO com
+    espera=60 — nao fica 60s re-tentando um lock que nunca vai existir."""
+    relogio = _RelogioFake()
+    chamadas = _instalar_msvcrt_fake(monkeypatch, relogio, ["rapido"])
+    with estado.trava(tmp_path / "cred.json", espera=60):
+        pass
+    assert chamadas == ["rapido"]                # 1 tentativa so
+    assert relogio.agora < 1                     # nao esperou os 60s
+
+
+def test_trava_windows_espera_esgotada_degrada(monkeypatch, tmp_path):
+    """Ocupada alem da espera: degrada (suave) depois de esgotar — a essa
+    altura o detentor ja terminou a operacao protegida (espera > duracao
+    maxima), entao seguir sem trava e seguro."""
+    relogio = _RelogioFake()
+    chamadas = _instalar_msvcrt_fake(monkeypatch, relogio,
+                                     ["ocupado"] * 10)
+    executou = []
+    with estado.trava(tmp_path / "cred.json", espera=25):
+        executou.append(1)
+    assert executou == [1]                       # degradou e seguiu
+    assert "unlock" not in chamadas
+    assert chamadas.count("ocupado") >= 3        # re-tentou ate passar de 25s
+    assert relogio.agora >= 25
+
+
 def test_marcar_impresso_concorrente_em_arquivo_real_nao_perde(core, tmp_path):
     """N threads marcando ids DIFERENTES no mesmo arquivo real, com a janela da
     corrida alargada (sleep dentro do ler): o resultado tem a UNIAO de todos.

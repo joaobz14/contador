@@ -246,8 +246,10 @@ def obter_token(cred: dict) -> str:
         # Trava de ARQUIVO entre processos (mesma protecao do nucleo): bot e
         # GUI na mesma loja nao renovam em paralelo — quem chega depois espera
         # e adota o token salvo pelo primeiro, sem gastar outro refresh.
-        # Degrada suave: sem trava, rele o disco como antes.
-        with _estado.trava(ARQUIVO_CRED):
+        # Degrada suave: sem trava, rele o disco como antes. espera=2*TIMEOUT:
+        # no Windows o LK_LOCK desiste em ~10s e o refresh dura ate TIMEOUT —
+        # ver o obter_token do nucleo.
+        with _estado.trava(ARQUIVO_CRED, espera=2 * TIMEOUT):
             disco = core._ler_json(ARQUIVO_CRED)
             if disco.get("access_token"):
                 cred.update(disco)

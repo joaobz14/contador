@@ -23,6 +23,16 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Trava do refresh com espera calibrada no Windows (P1 da
+  releitura técnica externa):** o `msvcrt.LK_LOCK` desiste em ~10s, mas o
+  refresh roda HTTP de até 30s dentro da trava — no Windows o 2º processo
+  degradava **no meio** do refresh do 1º (refresh paralelo; POSIX/CI bloqueia
+  indefinidamente e nunca pegaria). `trava(espera=)` re-tenta apenas quando a
+  falha é lenta (~10s = ocupada; rápida = FS sem suporte → degrada na hora) até
+  superar `2×TIMEOUT`; degradar depois disso é seguro (o detentor já salvou).
+  Lógica testada com msvcrt+relógio fakes (4 cenários) + espiões da `espera`
+  nos dois `obter_token`. Nó `trava_espera_windows`.
+
 - **2026-07-16 — Cache de AWB da Shopee (backlog da auditoria):** os códigos de
   rastreio da tela eram re-buscados a cada Atualizar (N chamadas) e uma busca
   falha sumia da lista sem aviso (conferência contra lista incompleta). AWB é
