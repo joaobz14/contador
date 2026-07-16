@@ -9530,6 +9530,19 @@
       "id": "token_refresh_trava_processos",
       "community": 6,
       "norm_label": "barreira->solucao: a releitura do disco nao fechava a janela de gui e bot chegarem simultaneamente sem token valido (dois refreshes; o 2o manda refresh_token ja rotacionado -> pode travar a conta); o ciclo rele-ou-renova do obter_token (ml e shopee) agora roda sob estado.trava ao lado das credenciais \u2014 quem espera adota o token salvo"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: a migracao de conta deixava o credenciais.json.bak na raiz \u2014 um .bak desgarrado guarda refresh_token JA ROTACIONADO (morto) e a auto-recuperacao podia 'restaurar' um credenciais.json zumbi (refresh invalido + prompt de migracao em loop); a migracao agora leva o .bak junto e remove orfaos (par completo na raiz e preservado)",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "migracao_bak_zumbi",
+      "community": 6,
+      "norm_label": "barreira->solucao: a migracao de conta deixava o credenciais.json.bak na raiz \u2014 um .bak desgarrado guarda refresh_token ja rotacionado (morto) e a auto-recuperacao podia 'restaurar' um credenciais.json zumbi (refresh invalido + prompt de migracao em loop); a migracao agora leva o .bak junto e remove orfaos (par completo na raiz e preservado)"
     }
   ],
   "links": [
@@ -26300,6 +26313,26 @@
       "weight": 1.0,
       "source": "shopee_api_obter_token",
       "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "migracao_bak_zumbi",
+      "target": "separador_etiquetas_ml_migrar_conta_legado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "migracao_bak_zumbi",
+      "target": "separador_etiquetas_ml_carregar_credenciais_com_backup",
       "confidence_score": 1.0
     }
   ],

@@ -23,6 +23,16 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Lote de higiene da auditoria:** migração de conta leva o
+  `.bak` junto e remove órfãos da raiz (nó `migracao_bak_zumbi` — a cadeia
+  completa: `.bak` desgarrado tem refresh morto → auto-recuperação ressuscita
+  um `credenciais.json` zumbi → refresh inválido + prompt de migração em
+  loop); CLI Shopee com estado real e contagem de pedidos (não itens); bot
+  redige também os erros esperados; pins de dependência (`requests<3`,
+  `python-telegram-bot<23`); limitação "Sem data reabre na virada do dia"
+  documentada como decisão na ARQUITETURA (mexer na chave de estado colidiria
+  com a poda — só se o caso aparecer na operação real).
+
 - **2026-07-16 — Refresh de token sob trava entre processos (achado da
   auditoria):** a releitura do disco não fechava a janela de GUI e bot
   chegarem **simultâneos** sem token válido — dois refreshes, o 2º com

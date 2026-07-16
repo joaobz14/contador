@@ -358,6 +358,9 @@ monitora a pasta e envia à impressora.
 - **Logs nunca gravam segredos:** todo texto de erro passa por uma redação antes de
   ir ao `separador.log`/tela/bot (a URL assinada da Shopee leva o token na query).
 - **Backups `.bak`** das credenciais, com auto-recuperação (também não versionados).
+  ⚠ O `.bak` só vale ao lado do arquivo que ele espelha — **não** copie um `.bak`
+  antigo para outra pasta "para recuperar": o `refresh_token` dele já rotacionou
+  (está morto) e o refresh falharia; refaça o `pegar_token` na dúvida.
 
 ---
 

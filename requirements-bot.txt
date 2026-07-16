@@ -1,4 +1,5 @@
 # Dependencias do bot do Telegram (opcional; nao precisa para usar o app/GUI)
 -r requirements.txt
 # [job-queue] habilita o aviso automatico da manha (agendador).
-python-telegram-bot[job-queue]>=20
+# Teto <23: o CI roda com a serie 22.x; uma major nova so entra de proposito.
+python-telegram-bot[job-queue]>=20,<23
