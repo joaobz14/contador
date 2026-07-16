@@ -734,15 +734,19 @@ def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
         if g.rastreios:
             g.rastreios = [c for c in g.rastreios if c]
 
-    if novos:                                   # persiste os novos, podando o cache
-        try:
-            cache.update(novos)
-            manter = _order_sns_do_estado(estado) | {
-                str(sn) for g in grupos for sn in g.shipment_ids}
-            podado = {sn: awb for sn, awb in cache.items() if sn in manter}
+    # Persiste novos + poda SEMPRE que algo mudar — a poda nao pode depender de
+    # haver `novos` (P2 da releitura): no regime normal pos-cache tudo e cache
+    # hit, `novos` fica vazio e o arquivo cresceria para sempre. So regrava
+    # quando o conteudo muda (best-effort preservado: cache correto = sem IO).
+    try:
+        cache.update(novos)
+        manter = _order_sns_do_estado(estado) | {
+            str(sn) for g in grupos for sn in g.shipment_ids}
+        podado = {sn: awb for sn, awb in cache.items() if sn in manter}
+        if podado != _carregar_awb_cache():
             _estado.gravar_json(ARQUIVO_AWB_CACHE, podado)
-        except Exception:                       # noqa: BLE001 - cache best-effort
-            pass
+    except Exception:                           # noqa: BLE001 - cache best-effort
+        pass
 
 
 # ---------------------------------------------------------------------------

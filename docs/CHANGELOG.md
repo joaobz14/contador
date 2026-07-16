@@ -30,6 +30,13 @@ Histórico das principais mudanças do projeto.
   nome — para conferir qual etiqueta é qual produto ao separar o lote. Em grupos
   de alto volume a área cresce em altura (não espreme). Pendentes não mostram
   código (o AWB só existe depois de organizar/imprimir o envio).
+- **A poda do cache de AWB roda mesmo sem códigos novos** (P2 da releitura
+  técnica externa): a poda só era persistida quando um cache miss trazia AWB
+  novo da rede — no regime normal pós-cache (tudo cache hit) ela nunca rodava
+  e o arquivo cresceria para sempre. Agora a poda roda a cada coleta e só
+  regrava quando o conteúdo muda. De quebra, o mapa do código passou a
+  descrever o bot fielmente (consulta ML/Shopee + impressão só do ML — dizia
+  "somente leitura").
 - **Códigos de rastreio (AWB) da Shopee agora vêm de um cache confiável**
   (achado da auditoria): a tela re-buscava o AWB de cada etiqueta impressa a
   cada Atualizar (N chamadas), e uma busca que falhasse (timeout/rate-limit)

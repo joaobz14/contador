@@ -9623,6 +9623,19 @@
       "id": "trava_espera_windows",
       "community": 8,
       "norm_label": "barreira->solucao (p1 releitura externa): no windows o msvcrt.lk_lock desiste em ~10s e o refresh roda http de ate 30s dentro da trava \u2014 o 2o processo degradava no meio do refresh do 1o (refresh paralelo, corrida reaberta); trava(espera=) re-tenta so quando a falha e lenta (~10s = ocupada; falha rapida = fs sem suporte, degrada na hora) ate superar 2xtimeout \u2014 dai degradar e seguro (detentor ja salvou)"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO (P2 releitura externa): a poda do awb_cache so persistia dentro de `if novos:` \u2014 no regime normal pos-cache tudo e hit, novos fica vazio e o arquivo cresceria para sempre; a poda agora roda a cada coleta e so regrava quando o conteudo muda",
+      "file_type": "rationale",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "awb_cache_poda_sempre",
+      "community": 8,
+      "norm_label": "barreira->solucao (p2 releitura externa): a poda do awb_cache so persistia dentro de `if novos:` \u2014 no regime normal pos-cache tudo e hit, novos fica vazio e o arquivo cresceria para sempre; a poda agora roda a cada coleta e so regrava quando o conteudo muda"
     }
   ],
   "links": [
@@ -26533,6 +26546,26 @@
       "weight": 1.0,
       "source": "trava_espera_windows",
       "target": "token_refresh_trava_processos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "awb_cache_poda_sempre",
+      "target": "shopee_api_preencher_rastreios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "awb_cache_poda_sempre",
+      "target": "shopee_awb_cache",
       "confidence_score": 1.0
     }
   ],

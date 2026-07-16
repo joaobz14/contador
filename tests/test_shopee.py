@@ -446,6 +446,55 @@ def test_preencher_rastreios_poda_o_cache_com_o_estado(monkeypatch, tmp_path):
     assert "SN1" in cache and "VELHO" not in cache       # podou o desgarrado
 
 
+def test_poda_do_cache_roda_mesmo_sem_awbs_novos(monkeypatch, tmp_path):
+    """P2 da releitura: no regime normal pos-cache TUDO e cache hit (`novos`
+    vazio) — e a poda tem que rodar mesmo assim, senao o arquivo cresce para
+    sempre. Entrada antiga some SEM nenhuma chamada de rede."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"SN1": "BR-SN1", "VELHO": "BR-VELHO"})
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao ir a rede")))
+    monkeypatch.setattr(sh, "numero_rastreio",
+                        lambda *a: (_ for _ in ()).throw(AssertionError("nao buscar")))
+    g = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    estado = {"2026-06-25|A|q1": ["SN1"]}
+    sh.preencher_rastreios({}, [g], estado)      # so cache hits -> novos == {}
+    assert g.rastreios == ["BR-SN1"]
+    assert sh._carregar_awb_cache() == {"SN1": "BR-SN1"}   # VELHO podado
+
+
+def test_poda_do_cache_sem_grupos_impressos(monkeypatch, tmp_path):
+    """Sem nenhum grupo impresso na coleta (nada a preencher), o cache antigo
+    ainda e podado — entradas fora do estado e dos grupos atuais somem."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"VELHO": "BR-VELHO"})
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao ir a rede")))
+    g = _grupo("A", ids=["SN1"], dia="2026-06-25")          # tudo pendente
+    sh.preencher_rastreios({}, [g], {})                     # estado vazio
+    assert sh._carregar_awb_cache() == {}                   # VELHO podado
+
+
+def test_cache_correto_nao_regrava_o_arquivo(monkeypatch, tmp_path):
+    """Cache ja identico ao podado: nenhum IO de gravacao (best-effort barato)."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"SN1": "BR-SN1"})
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao ir a rede")))
+    gravacoes = []
+    original = sh._estado.gravar_json
+    monkeypatch.setattr(sh._estado, "gravar_json",
+                        lambda caminho, dados: gravacoes.append(caminho) or original(caminho, dados))
+    g = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    estado = {"2026-06-25|A|q1": ["SN1"]}
+    sh.preencher_rastreios({}, [g], estado)
+    assert g.rastreios == ["BR-SN1"]
+    assert gravacoes == []                                   # nada regravado
+
+
 def test_cachear_awbs_ignora_vazios_e_nunca_levanta(monkeypatch, tmp_path):
     arq = tmp_path / "awb.json"
     monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
