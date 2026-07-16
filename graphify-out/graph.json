@@ -9541,6 +9541,19 @@
       "id": "bot_aviso_blindado",
       "community": 4,
       "norm_label": "barreira->solucao: job_bom_dia enviava excecao crua ao chat (unico ponto do bot sem sem_segredos; se o aviso um dia incluir shopee, vazaria a url assinada) e uma falha de envio num chat calava os demais; agora redige e isola por chat"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: seller_sku so de espacos passava no `if sku` antes do strip e virava chave/nome vazios (grupo sem rotulo, estado 'dia||q1'); agora o strip vem antes e o caso cai no fallback do anuncio (adotavel pelo mapa)",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "identidade_sku_whitespace",
+      "community": 6,
+      "norm_label": "barreira->solucao: seller_sku so de espacos passava no `if sku` antes do strip e virava chave/nome vazios (grupo sem rotulo, estado 'dia||q1'); agora o strip vem antes e o caso cai no fallback do anuncio (adotavel pelo mapa)"
     }
   ],
   "links": [
@@ -26346,6 +26359,16 @@
       "weight": 1.0,
       "source": "bot_aviso_blindado",
       "target": "bot_telegram_job_bom_dia",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "identidade_sku_whitespace",
+      "target": "separador_etiquetas_ml_identidade",
       "confidence_score": 1.0
     }
   ],

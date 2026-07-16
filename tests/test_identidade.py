@@ -17,6 +17,22 @@ def test_identidade_usa_seller_custom_field(core):
     assert core.identidade(item, {}) == ("XYZ", "XYZ")
 
 
+def test_identidade_sku_so_espacos_cai_no_fallback_do_anuncio(core):
+    """seller_sku de whitespace (anuncio mal cadastrado) NAO pode virar chave
+    vazia — trata como sem SKU (fallback item_id:variacao, adotavel pelo mapa)."""
+    item = {"seller_sku": "   ", "id": "MLB77", "variation_id": 0,
+            "title": "Produto Teste"}
+    assert core.identidade(item, {}) == ("MLB77:0", "Produto Teste")
+    # e o mapa de adocao funciona em cima do fallback, como nos demais
+    assert core.identidade(item, {}, {"MLB77:0": "F1AP"}) == ("F1AP", "F1AP")
+
+
+def test_identidade_custom_field_espacos_tambem_cai_no_fallback(core):
+    item = {"seller_custom_field": " \t ", "id": "MLB88", "variation_id": 0,
+            "title": "Outro"}
+    assert core.identidade(item, {})[0] == "MLB88:0"
+
+
 def test_identidade_por_gtin_com_voltagem(core):
     item = {
         "id": "MLB1", "variation_id": 7, "title": "Furadeira",

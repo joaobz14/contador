@@ -539,9 +539,11 @@ def _voltagem(item: dict) -> str:
 
 
 def identidade(item: dict, cache: dict, skus_anuncio: dict | None = None) -> tuple[str, str]:
-    sku = item.get("seller_sku") or item.get("seller_custom_field")
+    # strip ANTES de decidir: um seller_sku so de espacos (anuncio mal
+    # cadastrado) nao pode virar chave vazia — cai no fallback do anuncio
+    # (GTIN/item_id), como se nao tivesse SKU (ai da para adotar pelo mapa).
+    sku = str(item.get("seller_sku") or item.get("seller_custom_field") or "").strip()
     if sku:
-        sku = str(sku).strip()
         return sku, sku
 
     item_id = item.get("id") or "?"

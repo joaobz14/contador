@@ -28,6 +28,10 @@ Histórico das principais mudanças do projeto.
   rastreios da tela pelos recém-impressos, sumindo com os códigos antigos até a
   próxima coleta. Agora `_somar_rastreios` **une** (sem duplicar, preservando a
   ordem).
+- **Anúncio com SKU só de espaços não vira mais grupo sem nome** (achado da
+  auditoria): um `seller_sku` de whitespace virava chave/nome **vazios** (linha
+  sem rótulo na tela, estado sob `dia||q1`). Agora é tratado como anúncio sem
+  SKU — cai no código do anúncio e pode ser adotado pelo de-para normalmente.
 - **Adotar anúncios ML sem SKU num SKU do sistema:** anúncios antigos sem
   `seller_sku` apareciam pelo título e carimbavam o código do anúncio (MLB…).
   Agora um de-para **`skus_por_anuncio.json`** (versionado) mapeia o código do
