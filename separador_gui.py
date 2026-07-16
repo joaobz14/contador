@@ -227,6 +227,29 @@ class SeparadorApp:
         self.root.bind("<Escape>",
                        lambda e: self.busca_var.set("") if self.busca_var.get() else None)
 
+    def _reflow(self, frame, widgets: list) -> None:
+        """Dispoe `widgets` em linhas dentro de `frame`, QUEBRANDO para a linha
+        de baixo quando nao cabem na largura atual — nenhum chip de dia fica
+        cortado, em qualquer largura de janela ou contagem (antes eram
+        empacotados numa linha unica e o 5º dia sumia numa janela estreita).
+        Reposiciona a cada resize (<Configure>)."""
+        def posicionar(_e=None) -> None:
+            larg = frame.winfo_width()
+            if larg <= 1:                         # ainda sem geometria: tenta depois
+                return
+            r = c = usado = 0
+            for w in widgets:
+                lw = w.winfo_reqwidth() + 8       # +8 = padx entre chips
+                if c > 0 and usado + lw > larg:   # nao cabe: quebra a linha
+                    r += 1
+                    c = 0
+                    usado = 0
+                w.grid(row=r, column=c, sticky="w", padx=(0, 8), pady=1)
+                usado += lw
+                c += 1
+        frame.bind("<Configure>", posicionar)
+        frame.after_idle(posicionar)
+
     def _rebuild_dias(self, contagem: dict | None = None) -> None:
         """Reconstroi o seletor de dia de despacho.
 
@@ -243,26 +266,31 @@ class SeparadorApp:
         self.radios = []
         hoje_iso = core._hoje_br()
 
-        def _radio(parent, iso: str, rotulo: str) -> None:
+        def _radio(parent, iso: str, rotulo: str):
             r = ttk.Radiobutton(parent, text=rotulo, value=iso, variable=self.dia_sel)
-            r.pack(side="left", padx=(0, 8))
             self.radios.append(r)
+            return r
 
-        ttk.Label(self.linha_dia, text="Dia de despacho:").pack(side="left", padx=(0, 8))
+        # Os chips (prefixo + dias) sao dispostos por _reflow, que quebra em
+        # varias linhas se nao couberem na largura — nada fica cortado.
+        itens_dia = [ttk.Label(self.linha_dia, text="Dia de despacho:")]
         for iso in self._dias_uteis:
             rotulo = core.rotulo_dia(iso) + (" (hoje)" if iso == hoje_iso else "")
             if contagem:
                 rotulo += f" · {contagem.get(iso, 0)}"
-            _radio(self.linha_dia, iso, rotulo)
+            itens_dia.append(_radio(self.linha_dia, iso, rotulo))
+        self._reflow(self.linha_dia, itens_dia)
 
         extras = sorted(d for d in contagem if d and d not in self._dias_uteis)
         sem_data = contagem.get("", 0)
         if extras or sem_data:
-            ttk.Label(self.linha_outras, text="Outras datas:").pack(side="left", padx=(0, 8))
+            itens_outras = [ttk.Label(self.linha_outras, text="Outras datas:")]
             for iso in extras:
-                _radio(self.linha_outras, iso, f"{core.rotulo_dia(iso)} · {contagem[iso]}")
+                itens_outras.append(
+                    _radio(self.linha_outras, iso, f"{core.rotulo_dia(iso)} · {contagem[iso]}"))
             if sem_data:
-                _radio(self.linha_outras, "", f"Sem data · {sem_data}")
+                itens_outras.append(_radio(self.linha_outras, "", f"Sem data · {sem_data}"))
+            self._reflow(self.linha_outras, itens_outras)
             self.linha_outras.pack(fill="x", after=self.linha_dia)
         else:
             self.linha_outras.pack_forget()
