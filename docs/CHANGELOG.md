@@ -320,6 +320,11 @@ Histórico das principais mudanças do projeto.
   pode ser mergeada (viram órfãos), e recuperar do `main` o que ficar de fora.
 
 ### Qualidade
+- **Build do GitHub Pages para de falhar (`docs/.nojekyll`):** o Pages publica a
+  pasta `docs/` (a página estática de autorização da Shopee, `index.html`) e
+  rodava o Jekyll em cima dela sem necessidade — o build quebrava e mandava um ❌
+  a cada push no `main`. Um `.nojekyll` vazio desliga o Jekyll: os arquivos são
+  publicados como estão (a página OAuth serve idêntica) e o build fica verde.
 - **Linter no CI (`ruff`)** (auditoria 5.13): um job novo roda `ruff check .` em
   cada PR/push, pegando import morto / nome indefinido antes da revisão manual
   (a classe que já foi achada à mão). Config em `ruff.toml`, começando pelas
