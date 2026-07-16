@@ -106,6 +106,12 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Teclado de impressão fatiado no limite do Telegram** (achado da auditoria):
+  num dia com muitos grupos, o teclado de botões "Imprimir" passava de ~100
+  botões e o Telegram recusava o envio — o teclado simplesmente não aparecia.
+  Agora os botões são fatiados em vários teclados (≤ 90 cada), sem deixar
+  cabeçalho de quantidade órfão no fim de um teclado; os índices dos botões
+  continuam apontando para a lista guardada (nada muda no que se imprime).
 - **Aviso da manhã blindado** (achado da auditoria): o texto de falha ao montar
   o aviso agora passa por `sem_segredos` antes de ir pro chat (fecha o último
   ponto do bot que enviava exceção crua), e uma falha de envio num chat (ex.:

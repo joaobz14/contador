@@ -34,10 +34,18 @@ def test_rotulo_grupo_cabe_no_limite():
     assert len(rotulo) <= 60  # limite seguro do botao do Telegram
 
 
+def _linhas_teclados(teclados):
+    """Concatena as linhas de todos os teclados fatiados (para as assercoes que
+    olham o conteudo total, independente do fatiamento)."""
+    return [linha for kb in teclados for linha in kb.inline_keyboard]
+
+
 def test_teclado_grupos_um_botao_por_grupo_com_etiquetas():
-    # Dois grupos de mesma quantidade -> 1 cabecalho + 2 botoes
+    # Dois grupos de mesma quantidade -> 1 cabecalho + 2 botoes (num teclado so)
     grupos = [_grupo("A", qtd=1, ships=(1, 2)), _grupo("B", qtd=1, ships=(3,))]
-    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    teclados = bot._teclado_grupos(grupos)
+    assert len(teclados) == 1
+    linhas = teclados[0].inline_keyboard
     assert [linha[0].callback_data for linha in linhas] == ["noop", "ver:0", "ver:1"]
     assert "Quantidade por pedido = 1" in linhas[0][0].text
 
@@ -46,7 +54,7 @@ def test_teclado_grupos_separa_por_quantidade():
     # Quantidades diferentes -> um cabecalho por quantidade, na ordem crescente.
     # O indice do callback aponta para a posicao na lista ORIGINAL (nao reordena).
     grupos = [_grupo("A", qtd=2, ships=(1,)), _grupo("B", qtd=1, ships=(2,))]
-    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    linhas = _linhas_teclados(bot._teclado_grupos(grupos))
     textos_callbacks = [(l[0].text, l[0].callback_data) for l in linhas]
     assert textos_callbacks[0][1] == "noop"
     assert "= 1" in textos_callbacks[0][0]
@@ -58,13 +66,42 @@ def test_teclado_grupos_separa_por_quantidade():
 
 def test_teclado_grupos_ignora_grupos_sem_etiqueta():
     grupos = [_grupo("A", ships=(1,)), _grupo("B", ships=())]
-    linhas = bot._teclado_grupos(grupos).inline_keyboard
+    linhas = _linhas_teclados(bot._teclado_grupos(grupos))
     assert [linha[0].callback_data for linha in linhas] == ["noop", "ver:0"]
 
 
-def test_teclado_grupos_vazio_retorna_none():
-    assert bot._teclado_grupos([]) is None
-    assert bot._teclado_grupos([_grupo("A", ships=())]) is None
+def test_teclado_grupos_vazio_retorna_lista_vazia():
+    assert bot._teclado_grupos([]) == []
+    assert bot._teclado_grupos([_grupo("A", ships=())]) == []
+
+
+def test_teclado_grupos_fatia_no_limite_do_telegram():
+    """Muitos grupos -> varios teclados, cada um <= MAX_BOTOES_TECLADO botoes
+    (o Telegram recusa > 100 num teclado so). Nenhum botao 'ver:i' se perde e
+    os indices continuam apontando para a lista original."""
+    grupos = [_grupo(f"G{i}", qtd=1, ships=(i,)) for i in range(200)]
+    teclados = bot._teclado_grupos(grupos)
+    assert len(teclados) >= 3                                  # 200 + 1 cabecalho > 90
+    for kb in teclados:
+        assert len(kb.inline_keyboard) <= bot.MAX_BOTOES_TECLADO
+        assert kb.inline_keyboard[-1][0].callback_data != "noop"   # sem cabecalho orfao no fim
+    # todos os grupos aparecem exatamente uma vez, na ordem original
+    vistos = [l[0].callback_data for kb in teclados for l in kb.inline_keyboard
+              if l[0].callback_data.startswith("ver:")]
+    assert vistos == [f"ver:{i}" for i in range(200)]
+
+
+def test_teclado_grupos_cabecalho_nao_fica_orfao_no_fim(monkeypatch):
+    """Um cabecalho que cairia na ultima linha de um teclado (com o grupo no
+    proximo) e empurrado para o teclado seguinte."""
+    monkeypatch.setattr(bot, "MAX_BOTOES_TECLADO", 3)
+    # bloco qtd 1: cab + 2 grupos (3 linhas, enche o 1o teclado); bloco qtd 2:
+    # cab + 1 grupo. O cabecalho de qtd 2 nao pode fechar o 1o teclado sozinho.
+    grupos = [_grupo("A", qtd=1, ships=(1,)), _grupo("B", qtd=1, ships=(2,)),
+              _grupo("C", qtd=2, ships=(3,))]
+    teclados = bot._teclado_grupos(grupos)
+    for kb in teclados:
+        assert kb.inline_keyboard[-1][0].callback_data != "noop"
 
 
 def test_grupo_do_indice_fora_de_faixa():
