@@ -339,7 +339,9 @@ def coletar_grupos(cred: dict, *, dia: str | None = None, somente_hoje: bool = T
         # Namespaceia o estado de impressao por dia de despacho (igual ao ML).
         for g in grupos:
             g.dia = alvo_dia
-    qtd = sum(len(d.get("item_list", [])) for d in detalhes) if alvo_dia is None else \
+    # qtd = numero de PEDIDOS (nao de itens), igual ao filtro por dia — o CLI
+    # exibe "Pedidos prontos para imprimir: N" e as duas unidades divergiam.
+    qtd = len(detalhes) if alvo_dia is None else \
         sum(1 for d in detalhes if _data_envio(d.get("ship_by_date")) == alvo_dia)
     return grupos, qtd, contagem_por_dia(detalhes)
 
@@ -932,7 +934,9 @@ def main() -> None:
 
     rotulo = {"amanha": f"AMANHA ({dia})", "todos": "todos os dias"}.get(comando, "HOJE")
     print(f"\n[Shopee] Mostrando {rotulo}")
-    core.listar(grupos, {}, qtd)
+    # Estado REAL, nao {}: sem ele a coluna de status mentia [PENDENTE] para
+    # grupos ja impressos pela tela/bot.
+    core.listar(grupos, carregar_estado(), qtd)
 
 
 if __name__ == "__main__":

@@ -1,1 +1,3 @@
-requests
+# Teto de versao maior: uma major nova (breaking) nao entra sozinha num
+# "Atualizar programa" — sobe-se o teto de proposito, com o CI verde.
+requests>=2.31,<3

@@ -1,5 +1,4 @@
 """Suporte a multiplas contas: subpastas, migracao e selecao."""
-import pytest
 
 
 def _patch_pastas(core, monkeypatch, tmp_path):
@@ -78,6 +77,53 @@ def test_migrar_conta_legado_idempotente(core, monkeypatch, tmp_path):
 def test_migrar_sem_arquivos_na_raiz_nao_quebra(core, monkeypatch, tmp_path):
     _patch_pastas(core, monkeypatch, tmp_path)
     core.migrar_conta_legado("Gastromaq")   # nao ha nada para migrar -> silencioso
+
+
+def test_migrar_leva_o_bak_junto(core, monkeypatch, tmp_path):
+    """O .bak vai junto na migracao: um .bak desgarrado na raiz guarda um
+    refresh_token ja rotacionado (morto) — a auto-recuperacao poderia um dia
+    'restaurar' um credenciais.json zumbi na raiz (achado da auditoria)."""
+    pasta_script, pasta_contas = _patch_pastas(core, monkeypatch, tmp_path)
+    (pasta_script / "credenciais.json").write_text('{"refresh_token":"r"}', encoding="utf-8")
+    (pasta_script / "credenciais.json.bak").write_text('{"refresh_token":"r"}', encoding="utf-8")
+
+    core.migrar_conta_legado("Gastromaq")
+
+    assert (pasta_contas / "Gastromaq" / "credenciais.json.bak").exists()
+    assert not (pasta_script / "credenciais.json.bak").exists()   # raiz limpa
+
+
+def test_migrar_ja_migrado_remove_bak_orfao_da_raiz(core, monkeypatch, tmp_path):
+    """Conta ja migrada (por uma versao antiga, que NAO levava o .bak): o .bak
+    orfao da raiz e removido — sem principal ao lado, ele so alimenta a cadeia
+    do zumbi (auto-restauracao de credencial morta + prompt de migracao em loop)."""
+    pasta_script, pasta_contas = _patch_pastas(core, monkeypatch, tmp_path)
+    dest = pasta_contas / "Gastromaq"
+    dest.mkdir(parents=True)
+    (dest / "credenciais.json").write_text('{"refresh_token":"novo"}', encoding="utf-8")
+    (pasta_script / "credenciais.json.bak").write_text('{"refresh_token":"MORTO"}', encoding="utf-8")
+
+    core.migrar_conta_legado("Gastromaq")
+
+    assert not (pasta_script / "credenciais.json.bak").exists()
+    # a conta migrada fica intacta
+    assert (dest / "credenciais.json").read_text(encoding="utf-8") == '{"refresh_token":"novo"}'
+
+
+def test_migrar_ja_migrado_nao_remove_bak_com_principal_na_raiz(core, monkeypatch, tmp_path):
+    """Se a raiz tem credenciais.json E .bak (par completo, ex.: conta nova que
+    o dono colocou ali), o .bak NAO e apagado — so o orfao (sem principal) e
+    lixo garantido."""
+    pasta_script, pasta_contas = _patch_pastas(core, monkeypatch, tmp_path)
+    dest = pasta_contas / "Gastromaq"
+    dest.mkdir(parents=True)
+    (dest / "credenciais.json").write_text("{}", encoding="utf-8")
+    (pasta_script / "credenciais.json").write_text('{"refresh_token":"par"}', encoding="utf-8")
+    (pasta_script / "credenciais.json.bak").write_text('{"refresh_token":"par"}', encoding="utf-8")
+
+    core.migrar_conta_legado("Gastromaq")   # ja migrado -> retorna cedo
+
+    assert (pasta_script / "credenciais.json.bak").exists()      # par preservado
 
 
 def test_aplicar_config_define_conta(core, monkeypatch, tmp_path):

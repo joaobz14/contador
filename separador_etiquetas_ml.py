@@ -218,14 +218,31 @@ def listar_contas() -> list[str]:
 
 
 def migrar_conta_legado(nome: str) -> None:
-    """Move arquivos da raiz para contas/{nome}/ se necessario (uma unica vez)."""
+    """Move arquivos da raiz para contas/{nome}/ se necessario (uma unica vez).
+
+    O `credenciais.json.bak` VAI JUNTO (e, se a conta ja foi migrada, um .bak
+    orfao deixado na raiz por uma migracao antiga e REMOVIDO): o refresh_token
+    dele rotaciona junto com o principal — um .bak desgarrado do principal
+    guarda um refresh JA CONSUMIDO (morto). Se ficasse, a auto-recuperacao
+    (_carregar_credenciais_com_backup) poderia um dia "restaurar" um
+    credenciais.json zumbi na raiz: refresh invalido (na pior hipotese, a
+    corrida que trava a conta) + o prompt de migracao voltando a cada abertura."""
     destino = PASTA_CONTAS / nome
+    bak_raiz = _caminho_backup(PASTA_SCRIPT / "credenciais.json")
     if (destino / "credenciais.json").exists():
-        return  # ja migrado
+        # Ja migrado: só limpa o .bak orfao (nunca e valido mante-lo — o
+        # principal que ele espelhava foi embora).
+        if not (PASTA_SCRIPT / "credenciais.json").exists() and bak_raiz.exists():
+            try:
+                bak_raiz.unlink()
+            except OSError:
+                pass
+        return
     if not (PASTA_SCRIPT / "credenciais.json").exists():
         return  # nao ha nada para migrar
     destino.mkdir(parents=True, exist_ok=True)
-    for nome_arq in ("credenciais.json", "estado_grupos.json", "envios_cache.json", "itens_cache.json"):
+    for nome_arq in ("credenciais.json", "credenciais.json.bak",
+                     "estado_grupos.json", "envios_cache.json", "itens_cache.json"):
         origem = PASTA_SCRIPT / nome_arq
         if origem.exists():
             origem.replace(destino / nome_arq)

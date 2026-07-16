@@ -231,6 +231,23 @@ def test_coletar_grupos_devolve_contagem_da_mesma_busca(monkeypatch):
     assert contagem == {"2026-07-06": 1}                    # sem rede extra
 
 
+def test_coletar_grupos_todos_conta_pedidos_nao_itens(monkeypatch):
+    """No modo 'todos' o qtd e o numero de PEDIDOS (o CLI exibe 'Pedidos
+    prontos para imprimir: N') — antes somava ITENS e as unidades divergiam
+    do filtro por dia."""
+    det = [{"order_sn": "A1", "ship_by_date": 0,
+            "item_list": [{"model_sku": "PRP", "model_quantity_purchased": 1},
+                          {"model_sku": "A02", "model_quantity_purchased": 2}]},
+           {"order_sn": "A2", "ship_by_date": 0,
+            "item_list": [{"model_sku": "PRP", "model_quantity_purchased": 1}]}]
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["A1", "A2"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+    monkeypatch.setattr(sh.core, "carregar_nomes", lambda: {})
+    _grupos, qtd, _contagem = sh.coletar_grupos({}, somente_hoje=False)
+    assert qtd == 2                          # 2 pedidos (nao 3 itens)
+
+
 # ----------------------------------------------------- organizar envio (drop-off)
 def test_montar_dropoff_vazio_quando_nada_exigido():
     assert sh._montar_dropoff({"dropoff": []}) == {}

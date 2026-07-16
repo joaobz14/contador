@@ -276,7 +276,7 @@ async def _responder(update, context, nome: str, executor) -> None:
     try:
         texto = await asyncio.to_thread(executor)
     except core.SeparadorError as e:
-        await context.bot.send_message(chat_id, f"Erro: {e}")
+        await context.bot.send_message(chat_id, f"Erro: {sem_segredos(e)}")
         return
     except Exception as e:  # noqa: BLE001 - mostrar qualquer falha ao usuario
         log.exception("Falha na acao /%s", nome)
@@ -308,7 +308,7 @@ async def _listar_grupos(update, context, nome: str, dia: str | None,
     try:
         grupos = await asyncio.to_thread(_coletar_grupos, context, dia, somente_hoje)
     except core.SeparadorError as e:
-        await context.bot.send_message(chat_id, f"Erro: {e}")
+        await context.bot.send_message(chat_id, f"Erro: {sem_segredos(e)}")
         return
     except Exception as e:  # noqa: BLE001 - mostrar qualquer falha ao usuario
         log.exception("Falha na acao /%s", nome)
@@ -391,7 +391,7 @@ async def _executar_impressao(update, context, idx: int) -> None:
     try:
         impressos = await asyncio.to_thread(_imprimir_grupo, grupo)
     except core.SeparadorError as e:
-        await context.bot.send_message(chat_id, f"Erro ao imprimir: {e}")
+        await context.bot.send_message(chat_id, f"Erro ao imprimir: {sem_segredos(e)}")
         return
     except Exception as e:  # noqa: BLE001
         log.exception("Falha ao imprimir '%s'", grupo.nome)

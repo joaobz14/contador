@@ -124,6 +124,12 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Migração de conta leva o `credenciais.json.bak` junto** (achado da
+  auditoria) e remove um `.bak` órfão deixado na raiz por migrações antigas:
+  um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — a
+  auto-recuperação poderia um dia "restaurar" um `credenciais.json` zumbi na
+  raiz (refresh inválido + o prompt de migração voltando a cada abertura).
+  Um par completo (principal + `.bak`) na raiz nunca é apagado.
 - **`config.json` com valor inválido não impede mais o app de abrir** (achado
   da auditoria): um `modo_identificacao` desconhecido, `marketplace`/
   `conta_ativa` de tipo errado ou `geometria` malformada derrubavam a GUI (e o
@@ -160,6 +166,14 @@ Histórico das principais mudanças do projeto.
   exibidos/logados passam por `sem_segredos`.
 
 ### Documentação
+- **Higiene pós-auditoria:** CLI da Shopee mostra o status real de impressão
+  (passava estado vazio — tudo aparecia `[PENDENTE]`) e conta **pedidos** (não
+  itens) no modo `todos`; o bot passa `sem_segredos` também nos erros
+  esperados (cinto-e-suspensório); dependências com teto de versão maior
+  (`requests<3`, `python-telegram-bot<23`); limitação conhecida dos grupos
+  "Sem data" documentada na `ARQUITETURA` (reabrem na virada do dia — decisão
+  de documentar, não mexer na chave de estado); aviso sobre `.bak` desgarrado
+  no README/ARQUITETURA.
 - **README completo e atualizado:** cobre o estado atual do app (ordem de
   separação pela aba Nomes, adoção de anúncios sem SKU, rastreio Shopee em todos
   os grupos, log operacional) com **imagens novas** da tela (ML, Shopee, editor

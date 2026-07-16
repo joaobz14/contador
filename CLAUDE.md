@@ -125,7 +125,9 @@ em 2º plano.
   o servidor já ter rotacionado gastaria um token de uso único.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e
   leitura tolerante. Credenciais têm espelho **`.bak`** com auto-recuperação
-  (queda de energia não exige refazer o token); `.bak` é gitignorado.
+  (queda de energia não exige refazer o token); `.bak` é gitignorado. O `.bak`
+  só vale **ao lado do principal** (a migração de conta o leva junto e remove
+  órfãos da raiz) — um `.bak` desgarrado tem refresh_token já rotacionado (morto).
 - **Fuso:** sempre Brasília (`TZ_BR`, `_hoje_br()`, `_amanha_br()`).
 - **Dia de despacho:** a GUI mostra os próximos **dias úteis** (`proximos_dias_uteis()`
   + `rotulo_dia()`) e passa a data escolhida como `dia=` (ML e Shopee filtram igual;

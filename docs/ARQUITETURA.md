@@ -90,9 +90,22 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `envios_cache.json` | `filtrar_para_imprimir` (envios finalizados) | Não | por conta | ❌ Não |
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
+| | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |
 | **`nomes_sku.json`** | `carregar_nomes` (SKU→nome) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
 | **`skus_por_anuncio.json`** | `carregar_skus_anuncio` (código do anúncio ML sem SKU → SKU) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
+
+## Limitações conhecidas (decisões documentadas, não bugs abertos)
+
+- **Grupos "Sem data" reabrem na virada do dia:** o fallback da chave de estado
+  (`grupo.dia or hoje`) foi desenhado para o "hoje implícito" de CLI/bot — o
+  radio **Sem data** da GUI (`dia=""`) o herdou. Um pedido **sem prazo** impresso
+  hoje e ainda pronto amanhã volta como pendente (o operador vê o grupo
+  reaparecer — nada some). Caso raríssimo (o núcleo tenta 4 campos + `/sla`
+  antes de ficar sem data). Consertar exigiria mexer na chave de estado (um
+  namespace fixo tipo `sem-data|` seria **descartado pela poda**, que valida o
+  prefixo de data) — decidiu-se documentar; se aparecer na operação real,
+  carimbar a data da coleta no grupo é o caminho.
 
 ## Testes como documentação viva (que regra cada um protege)
 
