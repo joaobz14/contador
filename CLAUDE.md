@@ -27,7 +27,7 @@ repo) monitora e imprime.
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
-| `bot_telegram.py` | Bot de **consulta** (somente leitura). |
+| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `tools/` | Ferramentas de dev (screenshot da GUI headless). |

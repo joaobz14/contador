@@ -23,6 +23,14 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Poda do cache de AWB independente de `novos` (P2 da releitura
+  externa):** a poda só persistia quando um cache miss trazia AWB novo — no
+  regime normal pós-cache (tudo hit) nunca rodava e o arquivo cresceria para
+  sempre. Poda a cada coleta; regrava só se mudou. Teste que falha no código
+  antigo. Também corrigido o mapa do código (§7 do relatório): o bot é
+  consulta ML/Shopee + impressão só do ML, não "somente leitura". Nó
+  `awb_cache_poda_sempre`.
+
 - **2026-07-16 — Trava do refresh com espera calibrada no Windows (P1 da
   releitura técnica externa):** o `msvcrt.LK_LOCK` desiste em ~10s, mas o
   refresh roda HTTP de até 30s dentro da trava — no Windows o 2º processo
