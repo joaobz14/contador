@@ -4,6 +4,13 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Interface
+- **Seletor de dias quebra em linha em vez de cortar** (achado da auditoria):
+  numa janela estreita (ou com contagens de 2+ dígitos) o 5º dia útil sumia à
+  direita. Agora os chips de dia reposicionam em várias linhas conforme a
+  largura (`_reflow`) — nenhum dia fica invisível, em qualquer tamanho de
+  janela. Verificado por screenshot headless a 460px e 580px.
+
 ### Separação e identificação
 - **Ordem de separação pessoal por SKU:** a tela e a impressão seguem a ordem
   da aba **Nomes** no bloco "Quantidade por pedido = 1" (`ordenar_grupos`), com

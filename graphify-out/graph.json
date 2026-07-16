@@ -9543,6 +9543,33 @@
       "id": "migracao_bak_zumbi",
       "community": 6,
       "norm_label": "barreira->solucao: a migracao de conta deixava o credenciais.json.bak na raiz \u2014 um .bak desgarrado guarda refresh_token ja rotacionado (morto) e a auto-recuperacao podia 'restaurar' um credenciais.json zumbi (refresh invalido + prompt de migracao em loop); a migracao agora leva o .bak junto e remove orfaos (par completo na raiz e preservado)"
+    },
+    {
+      "label": "SeparadorApp._reflow()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L230",
+      "metadata": {
+        "language": "python",
+        "kind": "method"
+      },
+      "_origin": "manual",
+      "id": "separador_gui_separadorapp_reflow",
+      "community": 2,
+      "norm_label": "separadorapp._reflow()"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: seletor de dias empacotado numa linha unica cortava o 5o dia util numa janela estreita/contagens de 2 digitos; _reflow reposiciona os chips em varias linhas conforme a largura (nada fica cortado)",
+      "file_type": "rationale",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "seletor_dias_reflow",
+      "community": 2,
+      "norm_label": "barreira->solucao: seletor de dias empacotado numa linha unica cortava o 5o dia util numa janela estreita/contagens de 2 digitos; _reflow reposiciona os chips em varias linhas conforme a largura (nada fica cortado)"
     }
   ],
   "links": [
@@ -26333,6 +26360,26 @@
       "weight": 1.0,
       "source": "migracao_bak_zumbi",
       "target": "separador_etiquetas_ml_carregar_credenciais_com_backup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_rebuild_dias",
+      "target": "separador_gui_separadorapp_reflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "seletor_dias_reflow",
+      "target": "separador_gui_separadorapp_reflow",
       "confidence_score": 1.0
     }
   ],
