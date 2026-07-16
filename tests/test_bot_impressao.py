@@ -214,6 +214,50 @@ def test_lista_imprimivel_so_mercado_livre():
     assert bot._lista_imprimivel(_Ctx()) is False        # sem registro -> nao imprime
 
 
+# ------------------------------------------------------------ aviso da manha
+def _ctx_aviso(chat_ids, send):
+    class _Bot:
+        async def send_message(self, chat_id, texto, **k):
+            return send(chat_id, texto)
+
+    class _Ctx:
+        bot_data = {"cfg": {"chat_ids": chat_ids}}
+        bot = _Bot()
+
+    return _Ctx()
+
+
+def test_job_bom_dia_erro_sai_redigido(monkeypatch):
+    """Falha ao montar o aviso: o texto que vai pro chat passa por sem_segredos
+    (uma excecao com URL assinada nao pode vazar o token)."""
+    import asyncio
+    enviados = []
+    monkeypatch.setattr(bot, "_prontos", lambda: (_ for _ in ()).throw(
+        RuntimeError("boom url?access_token=SEGREDO123&sign=ASS456")))
+    ctx = _ctx_aviso([1], lambda cid, txt: enviados.append((cid, txt)))
+    asyncio.run(bot.job_bom_dia(ctx))
+    assert enviados, "o aviso de falha deveria ser enviado"
+    texto = enviados[0][1]
+    assert "SEGREDO123" not in texto and "ASS456" not in texto
+    assert "access_token=***" in texto
+
+
+def test_job_bom_dia_falha_num_chat_nao_cala_os_outros(monkeypatch):
+    """Chat 1 bloqueou o bot (send levanta): o chat 2 ainda recebe o aviso."""
+    import asyncio
+    enviados = []
+
+    def send(chat_id, texto):
+        if chat_id == 1:
+            raise RuntimeError("Forbidden: bot was blocked by the user")
+        enviados.append(chat_id)
+
+    monkeypatch.setattr(bot, "_prontos", lambda: [])
+    ctx = _ctx_aviso([1, 2], send)
+    asyncio.run(bot.job_bom_dia(ctx))
+    assert enviados == [2]                       # o 2 recebeu apesar do 1
+
+
 # ------------------------------------------------------------- resumo por loja
 def test_resumo_ml_usa_so_o_coletor_ml(monkeypatch):
     """Loja ML: o resumo vem de _prontos(); a Shopee NAO e consultada."""

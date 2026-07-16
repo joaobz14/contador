@@ -23,6 +23,13 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Aviso da manhã blindado (achado da auditoria):** `job_bom_dia`
+  era o único ponto do bot que enviava exceção crua ao chat (sem `sem_segredos`
+  — hoje só-ML, sem segredo na URL; viraria vazamento se o aviso incluir a
+  Shopee) e uma falha de envio num chat calava os demais. Redigido + isolado
+  por chat. Nó `bot_aviso_blindado`; validado com stub do telegram (o pacote
+  real não importa neste ambiente — os testes rodam no CI).
+
 - **2026-07-16 — Config saneado na abertura (achado da auditoria):** provado
   com a GUI real (headless) que `modo_identificacao` desconhecido,
   `marketplace`/`conta_ativa` de tipo errado e `geometria` malformada

@@ -581,10 +581,17 @@ async def job_bom_dia(context: ContextTypes.DEFAULT_TYPE) -> None:
         texto = relatorio.texto_bom_dia(prontos, core._hoje_br(), core._amanha_br())
     except Exception as e:  # noqa: BLE001
         log.exception("Falha ao montar o aviso da manha")
-        texto = f"Nao consegui montar o aviso da manha: {e}"
+        # sem_segredos: convencao de TODO texto de excecao que sai pro chat —
+        # hoje o aviso e so-ML, mas se um dia incluir Shopee a excecao crua
+        # carregaria a URL assinada (access_token/sign).
+        texto = f"Nao consegui montar o aviso da manha: {sem_segredos(e)}"
     for chat_id in cfg["chat_ids"]:
-        for bloco in relatorio.dividir_mensagem(texto):
-            await context.bot.send_message(chat_id, bloco)
+        # Falha num chat (ex.: bot bloqueado) nao pode calar o aviso dos outros.
+        try:
+            for bloco in relatorio.dividir_mensagem(texto):
+                await context.bot.send_message(chat_id, bloco)
+        except Exception:  # noqa: BLE001
+            log.exception("Falha ao enviar o aviso da manha para o chat %s", chat_id)
 
 
 def _agendar_aviso(app, cfg: dict) -> None:
