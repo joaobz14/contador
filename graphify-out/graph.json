@@ -9528,6 +9528,19 @@
       "id": "config_saneado_na_abertura",
       "community": 6,
       "norm_label": "barreira->solucao: config.json com valor de tipo/valor invalido derrubava gui e bot na inicializacao (keyerror/attributeerror/typeerror antes de a janela existir; com pythonw o app 'nao abre' sem mensagem); aplicar_config saneia via _sanear_config e a gui tolera geometria invalida"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: job_bom_dia enviava excecao crua ao chat (unico ponto do bot sem sem_segredos; se o aviso um dia incluir Shopee, vazaria a URL assinada) e uma falha de envio num chat calava os demais; agora redige e isola por chat",
+      "file_type": "rationale",
+      "source_file": "bot_telegram.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bot_aviso_blindado",
+      "community": 4,
+      "norm_label": "barreira->solucao: job_bom_dia enviava excecao crua ao chat (unico ponto do bot sem sem_segredos; se o aviso um dia incluir shopee, vazaria a url assinada) e uma falha de envio num chat calava os demais; agora redige e isola por chat"
     }
   ],
   "links": [
@@ -26323,6 +26336,16 @@
       "weight": 1.0,
       "source": "config_saneado_na_abertura",
       "target": "separador_etiquetas_ml_aplicar_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "bot_telegram.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "bot_aviso_blindado",
+      "target": "bot_telegram_job_bom_dia",
       "confidence_score": 1.0
     }
   ],

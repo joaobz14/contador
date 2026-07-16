@@ -81,6 +81,10 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Aviso da manhã blindado** (achado da auditoria): o texto de falha ao montar
+  o aviso agora passa por `sem_segredos` antes de ir pro chat (fecha o último
+  ponto do bot que enviava exceção crua), e uma falha de envio num chat (ex.:
+  bot bloqueado) não cala mais o aviso dos demais chats.
 - **Resumo respeita a loja ativa** (achado P2 da revisão técnica): com a Shopee
   selecionada, o `/resumo` (e o botão 📊 Resumo) trazia dados do **Mercado
   Livre**. Agora consulta a loja do chat (Shopee usa a `contagem_por_dia` da
