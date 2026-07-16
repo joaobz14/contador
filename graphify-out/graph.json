@@ -9474,6 +9474,33 @@
       "id": "ambas_adocao_recoleta",
       "community": 2,
       "norm_label": "barreira->solucao: no modo ambas a adocao inline em memoria nao reescrevia os sub-grupos .por_conta (envios invisiveis no lote + estado gravado na chave antiga do anuncio -> reimpressao); _aplicar_adocao roteia o ambas para re-coleta"
+    },
+    {
+      "label": "ProvedorML._token_atual()",
+      "file_type": "code",
+      "source_file": "provedores.py",
+      "source_location": "L88",
+      "metadata": {
+        "language": "python",
+        "kind": "method"
+      },
+      "_origin": "manual",
+      "id": "provedores_provedorml_token_atual",
+      "community": 3,
+      "norm_label": "provedorml._token_atual()"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: ProvedorML imprimia com self.token da ultima coleta sem checar validade (~6h) -> 401 repetido ate novo Atualizar; _token_atual revalida via obter_token nos caminhos de imprimir/reimprimir",
+      "file_type": "rationale",
+      "source_file": "provedores.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "provedor_ml_token_revalidado",
+      "community": 3,
+      "norm_label": "barreira->solucao: provedorml imprimia com self.token da ultima coleta sem checar validade (~6h) -> 401 repetido ate novo atualizar; _token_atual revalida via obter_token nos caminhos de imprimir/reimprimir"
     }
   ],
   "links": [
@@ -26219,6 +26246,26 @@
       "weight": 1.0,
       "source": "ambas_adocao_recoleta",
       "target": "anuncio_adocao_em_memoria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "provedores.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "provedores_provedorml_token_atual",
+      "target": "separador_etiquetas_ml_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "provedores.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "provedor_ml_token_revalidado",
+      "target": "provedores_provedorml_token_atual",
       "confidence_score": 1.0
     }
   ],

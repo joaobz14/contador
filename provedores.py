@@ -85,6 +85,16 @@ class ProvedorML(Provedor):
         self.token = core.obter_token(self.cred)   # cache + lock (nao rotaciona a toa)
         return self.token
 
+    def _token_atual(self) -> str:
+        """Token VALIDO para imprimir/reimprimir. Nao reusar self.token cru: ele
+        vem da ultima coleta e pode ter expirado (GUI aberta por horas) — o 401
+        se repetiria ate um novo Atualizar. obter_token revalida a expiracao e
+        so renova quando preciso (cache + lock + rele o disco)."""
+        if self.cred is None:
+            return self._renovar()
+        self.token = core.obter_token(self.cred)
+        return self.token
+
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
         token = self._renovar()
         coleta = core.coletar_grupos(
@@ -105,17 +115,14 @@ class ProvedorML(Provedor):
         core.marcar_impresso(estado, grupo, ids)
 
     def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
-        token = self.token or self._renovar()
-        return core.imprimir_pendentes(token, grupo, estado)
+        return core.imprimir_pendentes(self._token_atual(), grupo, estado)
 
     def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
         # (impressos, falhas) — o ML nao tem falha parcial, entao falhas=[].
-        token = self.token or self._renovar()
-        return core.gerar_zip_lotes(token, grupos, estado, modo=modo), []
+        return core.gerar_zip_lotes(self._token_atual(), grupos, estado, modo=modo), []
 
     def reimprimir(self, grupo) -> list:
-        token = self.token or self._renovar()
-        return core.reimprimir(token, grupo)
+        return core.reimprimir(self._token_atual(), grupo)
 
 
 class ProvedorShopee(Provedor):

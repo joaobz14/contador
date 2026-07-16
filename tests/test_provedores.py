@@ -71,6 +71,40 @@ def test_shopee_imprimir_grupo_delega(monkeypatch):
     assert "branch_id" in capturado["k"] and "sender_real_name" in capturado["k"]
 
 
+def test_ml_imprimir_revalida_o_token_da_coleta(monkeypatch):
+    """self.token vem da ultima coleta e pode ter EXPIRADO (GUI aberta por
+    horas): imprimir/reimprimir revalidam via obter_token em vez de reusar o
+    token cru — senao o 401 se repetiria ate um novo Atualizar."""
+    import separador_etiquetas_ml as core
+    prov = pv.ProvedorML()
+    prov.cred = {"access_token": "VELHO", "access_token_exp": 0}
+    prov.token = "VELHO"                        # cache da coleta, ja vencido
+    monkeypatch.setattr(core, "obter_token", lambda cred: "FRESCO")
+    usado = {}
+    monkeypatch.setattr(core, "gerar_zip_lotes",
+                        lambda token, grupos, estado, **k: usado.update(lotes=token) or [])
+    monkeypatch.setattr(core, "reimprimir",
+                        lambda token, g: usado.update(reimp=token) or [])
+    monkeypatch.setattr(core, "imprimir_pendentes",
+                        lambda token, g, e: usado.update(grupo=token) or [])
+    prov.imprimir_lotes([], {})
+    prov.reimprimir("g")
+    prov.imprimir_grupo("g", {})
+    assert usado == {"lotes": "FRESCO", "reimp": "FRESCO", "grupo": "FRESCO"}
+    assert prov.token == "FRESCO"               # cache atualizado de quebra
+
+
+def test_ml_imprimir_sem_coleta_previa_carrega_credenciais(monkeypatch):
+    """Imprimir sem nunca ter coletado (cred None) carrega as credenciais."""
+    import separador_etiquetas_ml as core
+    prov = pv.ProvedorML()
+    monkeypatch.setattr(core, "carregar_credenciais", lambda: {"seller_id": 1})
+    monkeypatch.setattr(core, "obter_token", lambda cred: "TOK")
+    monkeypatch.setattr(core, "reimprimir", lambda token, g: [token])
+    assert prov.reimprimir("g") == ["TOK"]
+    assert prov.cred == {"seller_id": 1}
+
+
 def test_marcar_impresso_vai_para_o_estado_certo(monkeypatch):
     # ML -> core.marcar_impresso ; Shopee -> shopee.marcar_impresso
     import separador_etiquetas_ml as core
