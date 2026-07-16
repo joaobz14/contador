@@ -9501,6 +9501,33 @@
       "id": "provedor_ml_token_revalidado",
       "community": 3,
       "norm_label": "barreira->solucao: provedorml imprimia com self.token da ultima coleta sem checar validade (~6h) -> 401 repetido ate novo atualizar; _token_atual revalida via obter_token nos caminhos de imprimir/reimprimir"
+    },
+    {
+      "label": "_sanear_config()",
+      "file_type": "code",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L180",
+      "metadata": {
+        "language": "python",
+        "kind": "function"
+      },
+      "_origin": "manual",
+      "id": "separador_etiquetas_ml_sanear_config",
+      "community": 6,
+      "norm_label": "_sanear_config()"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: config.json com valor de tipo/valor invalido derrubava GUI e bot na inicializacao (KeyError/AttributeError/TypeError antes de a janela existir; com pythonw o app 'nao abre' sem mensagem); aplicar_config saneia via _sanear_config e a GUI tolera geometria invalida",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "config_saneado_na_abertura",
+      "community": 6,
+      "norm_label": "barreira->solucao: config.json com valor de tipo/valor invalido derrubava gui e bot na inicializacao (keyerror/attributeerror/typeerror antes de a janela existir; com pythonw o app 'nao abre' sem mensagem); aplicar_config saneia via _sanear_config e a gui tolera geometria invalida"
     }
   ],
   "links": [
@@ -26266,6 +26293,36 @@
       "weight": 1.0,
       "source": "provedor_ml_token_revalidado",
       "target": "provedores_provedorml_token_atual",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_aplicar_config",
+      "target": "separador_etiquetas_ml_sanear_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "config_saneado_na_abertura",
+      "target": "separador_etiquetas_ml_sanear_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "config_saneado_na_abertura",
+      "target": "separador_etiquetas_ml_aplicar_config",
       "confidence_score": 1.0
     }
   ],

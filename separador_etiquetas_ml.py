@@ -164,6 +164,33 @@ def carregar_config() -> dict:
     return _ler_json(ARQUIVO_CONFIG)
 
 
+# Valores validos das preferencias. O config.json e escrito so pelo app (valores
+# sempre saidos de widgets validos), mas um arquivo editado a mao ou sincronizado
+# pela metade NAO pode derrubar a GUI na abertura: sem o saneamento, um
+# modo_identificacao desconhecido dava KeyError, um marketplace nao-string dava
+# AttributeError e uma conta_ativa nao-string dava TypeError — todos ANTES de a
+# janela existir (com o pythonw do atalho, o app "nao abre" sem mensagem alguma).
+MODOS_IDENT = ("carimbo", "carimbo_nome", "divisoria", "nenhuma")
+_MARKETPLACES = ("Mercado Livre", "Shopee")
+
+
+def _sanear_config(cfg) -> dict:
+    """Descarta valores de tipo/valor invalido do config: a chave some e quem
+    le usa o proprio default (mesmo efeito de um config ausente, que ja e o
+    caso bem tratado). Chaves desconhecidas sao preservadas."""
+    if not isinstance(cfg, dict):
+        return {}
+    if cfg.get("modo_identificacao") not in MODOS_IDENT:
+        cfg.pop("modo_identificacao", None)
+    if cfg.get("marketplace") not in _MARKETPLACES:
+        cfg.pop("marketplace", None)
+    if not (isinstance(cfg.get("conta_ativa"), str) and cfg["conta_ativa"].strip()):
+        cfg.pop("conta_ativa", None)
+    if not isinstance(cfg.get("geometria"), str):
+        cfg.pop("geometria", None)
+    return cfg
+
+
 def salvar_config(cfg: dict) -> None:
     _gravar_json(ARQUIVO_CONFIG, cfg)
 
@@ -205,15 +232,19 @@ def migrar_conta_legado(nome: str) -> None:
 
 
 def conta_ativa() -> str:
-    """Retorna o nome da conta ativa do config.json ('' se nao configurada)."""
-    return carregar_config().get("conta_ativa", "")
+    """Retorna o nome da conta ativa do config.json ('' se nao configurada ou
+    de tipo invalido — o chamador compara com a lista de contas)."""
+    valor = carregar_config().get("conta_ativa", "")
+    return valor if isinstance(valor, str) else ""
 
 
 def aplicar_config() -> dict:
-    """Le o config.json e aplica as preferencias ao modulo (ex.: CARIMBAR_SKU).
-    Devolve o config lido. Chamado na abertura da tela/CLI."""
+    """Le o config.json, SANEIA os valores (tipo/valor invalido cai no default
+    em vez de derrubar a GUI/bot na abertura) e aplica as preferencias ao
+    modulo (ex.: CARIMBAR_SKU). Devolve o config saneado. Chamado na abertura
+    da tela/CLI/bot — e o ponto unico de validacao do config."""
     global CARIMBAR_SKU, MODO_IDENT
-    cfg = carregar_config()
+    cfg = _sanear_config(carregar_config())
     # Modo de identificacao novo tem prioridade; cai no carimbar_sku legado.
     if "modo_identificacao" in cfg:
         MODO_IDENT = cfg["modo_identificacao"]

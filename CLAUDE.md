@@ -102,6 +102,10 @@ em 2º plano.
   marcação que o bot gravasse no meio-tempo (mesma corrida, por uma porta lateral).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
+- **Config sempre via `aplicar_config()`** — é o ponto único de **saneamento** do
+  `config.json` (`_sanear_config`): valor de tipo/valor inválido é descartado e
+  cai no default (um config editado à mão não pode derrubar a GUI/bot na
+  abertura). Valores válidos de identificação: `MODOS_IDENT`.
 - **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista
   único). `ProvedorMLAmbas` coleta as contas em sequência e **funde** grupos de
   mesmo SKU+qtd (`fundir_grupos`; sub-grupos em `.por_conta`); imprime cada
