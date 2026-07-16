@@ -16,6 +16,7 @@ estado_grupos.json
 estado_shopee.json
 itens_cache.json
 envios_cache.json
+awb_cache_shopee.json
 config.json
 bot.log
 shopee_tempos.log

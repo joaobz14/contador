@@ -88,6 +88,7 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `bot_config.json` | `bot_telegram` (token do bot) | **Sim** | por máquina | ❌ Não |
 | `itens_cache.json` | cache de detalhes de produto | Não | por conta | ❌ Não |
 | `envios_cache.json` | `filtrar_para_imprimir` (envios finalizados) | Não | por conta | ❌ Não |
+| `awb_cache_shopee.json` | cache de AWB da Shopee (`_cachear_awbs`/`preencher_rastreios`) | Não | por máquina | ❌ Não |
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |

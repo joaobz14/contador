@@ -2,7 +2,17 @@
 import hashlib
 import hmac
 
+import pytest
+
 import shopee_api as sh
+
+
+@pytest.fixture(autouse=True)
+def _awb_cache_isolado(monkeypatch, tmp_path):
+    """Isola o cache de AWB por teste (a impressao agora grava nele): sem isto,
+    os testes de imprimir_grupo/lotes escreveriam no awb_cache_shopee.json do
+    repo. Testes que precisam controlar o cache re-apontam ARQUIVO_AWB_CACHE."""
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", tmp_path / "awb_cache_test.json")
 
 
 def test_assinatura_hmac_sha256_deterministica():
@@ -366,7 +376,9 @@ def test_imprimir_grupo_pula_ja_impressos(monkeypatch):
     assert sh.imprimir_grupo({}, g, estado) == []
 
 
-def test_preencher_rastreios_lista_todos_os_impressos(monkeypatch):
+def test_preencher_rastreios_lista_todos_os_impressos(monkeypatch, tmp_path):
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", tmp_path / "awb.json")   # cache vazio
+
     def g(chave, ids):
         x = sh.core.Grupo(chave=chave, nome=chave, quantidade=1, shipment_ids=list(ids))
         x.dia = "2026-06-25"
@@ -383,6 +395,80 @@ def test_preencher_rastreios_lista_todos_os_impressos(monkeypatch):
     assert g2.rastreios == ["BR-SN2", "BR-SN3"]      # varios impressos -> lista todos
     assert g3.rastreios == []                        # pendente (sem AWB) -> nada
     assert g4.rastreios == ["BR-SN5"]                # parcial -> so o ja impresso
+
+
+# ------------------------------------------------ cache de AWB (achado da auditoria)
+def test_preencher_rastreios_le_do_cache_sem_ir_a_rede(monkeypatch, tmp_path):
+    """AWB ja no cache (da impressao): usa direto, SEM chamar a rede — os
+    codigos vem do momento da impressao, nao de um refetch que pode falhar."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"SN1": "BR-SN1", "SN2": "BR-SN2"})
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao ir a rede")))
+    monkeypatch.setattr(sh, "numero_rastreio",
+                        lambda *a: (_ for _ in ()).throw(AssertionError("nao buscar")))
+    g = _grupo("A", ids=["SN1", "SN2"], dia="2026-06-25")
+    estado = {"2026-06-25|A|q1": ["SN1", "SN2"]}
+    sh.preencher_rastreios({}, [g], estado)
+    assert g.rastreios == ["BR-SN1", "BR-SN2"]
+
+
+def test_preencher_rastreios_busca_so_os_ausentes_e_cacheia(monkeypatch, tmp_path):
+    """SN1 no cache, SN2 nao: so o SN2 vai a rede; o SN2 entra no cache."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"SN1": "BR-SN1"})
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    buscados = []
+    monkeypatch.setattr(sh, "numero_rastreio",
+                        lambda c, t, sn: buscados.append(sn) or f"BR-{sn}")
+    g = _grupo("A", ids=["SN1", "SN2"], dia="2026-06-25")
+    estado = {"2026-06-25|A|q1": ["SN1", "SN2"]}
+    sh.preencher_rastreios({}, [g], estado)
+    assert buscados == ["SN2"]                        # SN1 veio do cache
+    assert g.rastreios == ["BR-SN1", "BR-SN2"]
+    assert sh._carregar_awb_cache() == {"SN1": "BR-SN1", "SN2": "BR-SN2"}
+
+
+def test_preencher_rastreios_poda_o_cache_com_o_estado(monkeypatch, tmp_path):
+    """Um AWB de order_sn que saiu do estado (podado por idade) e que nao esta
+    nos grupos atuais some do cache na proxima gravacao."""
+    arq = tmp_path / "awb.json"
+    sh._estado.gravar_json(arq, {"VELHO": "BR-VELHO"})   # nao esta no estado nem nos grupos
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: f"BR-{sn}")
+    g = _grupo("A", ids=["SN1"], dia="2026-06-25")
+    estado = {"2026-06-25|A|q1": ["SN1"]}
+    sh.preencher_rastreios({}, [g], estado)
+    cache = sh._carregar_awb_cache()
+    assert "SN1" in cache and "VELHO" not in cache       # podou o desgarrado
+
+
+def test_cachear_awbs_ignora_vazios_e_nunca_levanta(monkeypatch, tmp_path):
+    arq = tmp_path / "awb.json"
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    sh._cachear_awbs({"SN1": "BR-1", "SN2": ""})         # vazio descartado
+    assert sh._carregar_awb_cache() == {"SN1": "BR-1"}
+    # caminho impossivel de gravar: best-effort, nao levanta
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", sh.core.Path("/nao/existe/awb.json"))
+    sh._cachear_awbs({"SN9": "BR-9"})
+
+
+def test_imprimir_grupo_cacheia_os_awbs(monkeypatch, tmp_path):
+    """A impressao guarda os AWB no cache (a coleta seguinte le de la)."""
+    arq = tmp_path / "awb.json"
+    monkeypatch.setattr(sh, "ARQUIVO_AWB_CACHE", arq)
+    _forca_individual(monkeypatch)
+    monkeypatch.setattr(sh, "obter_token", lambda c: "TOK")
+    monkeypatch.setattr(sh, "organizar_envio", lambda c, t, sn, **k: f"BR-{sn}")
+    monkeypatch.setattr(sh, "gerar_etiqueta", lambda c, ids, **k: b"PK")
+    monkeypatch.setattr(sh, "salvar_etiqueta", lambda conteudo, rotulo: ("p", "ZIP"))
+    monkeypatch.setattr(sh, "salvar_estado", lambda estado: None)
+    g = _grupo("A", ids=["SN1", "SN2"], dia="2026-06-25")
+    sh.imprimir_grupo({}, g, {})
+    assert sh._carregar_awb_cache() == {"SN1": "BR-SN1", "SN2": "BR-SN2"}
 
 
 def test_imprimir_lotes_nao_marca_estado(monkeypatch):
