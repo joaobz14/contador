@@ -675,6 +675,19 @@ class SeparadorApp:
             self._erro(f"Não consegui salvar o SKU do anúncio.\n{e}")
             return
         log.info("anuncio->sku: %s = %s (%s)", g.chave, sku, self._ctx_log())
+        self._aplicar_adocao()
+
+    def _aplicar_adocao(self) -> None:
+        """Aplica o de-para recém-salvo à lista atual, pelo caminho seguro do
+        modo ativo. ML normal: em memória (instantâneo). Modo 🌐 Ambas:
+        RE-COLETA (self.atualizar) — os grupos fundidos carregam sub-grupos por
+        conta (.por_conta) cuja chave a aplicação em memória NÃO reescreve:
+        fundir sem mesclar o .por_conta esconderia envios da impressão em lote,
+        e a confirmação marcaria o estado na chave ANTIGA do anúncio (na coleta
+        seguinte o grupo voltaria como pendente — risco de reimpressão)."""
+        if isinstance(self.prov, provedores.ProvedorMLAmbas):
+            self.atualizar()
+            return
         self._aplicar_mapa_anuncios_local()
 
     def _aplicar_mapa_anuncios_local(self) -> None:

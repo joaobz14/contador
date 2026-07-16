@@ -23,6 +23,16 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Adoção inline no modo Ambas re-coleta (achado da auditoria):**
+  a auditoria completa provou (teste dinâmico) que o botão 🏷 Atribuir SKU em
+  modo 🌐 Ambas, aplicado em memória, não reescrevia os sub-grupos `.por_conta`
+  — envios de uma conta sumiam do lote e a marcação caía na chave antiga do
+  anúncio (grupo voltava pendente na coleta seguinte → reimpressão). Novo
+  `_aplicar_adocao` roteia: ML normal em memória (como era), Ambas re-coleta.
+  Nós novos: `separador_gui_separadorapp_aplicar_adocao` (código) e
+  `ambas_adocao_recoleta` (barreira→solução). Testes em `test_gui_adocao.py`
+  (roteamento + primeira cobertura do `_aplicar_mapa_anuncios_local`).
+
 - **2026-07-16 — Poda por idade também sob a trava (follow-up da revisão P1):**
   auditoria pós-merge achou uma porta lateral da corrida da trava — a regravação
   da poda em `carregar(persistir_poda=True)` (Atualizar do ML) escrevia FORA da

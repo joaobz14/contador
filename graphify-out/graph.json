@@ -9447,6 +9447,33 @@
       "id": "estado_poda_sob_trava",
       "community": 8,
       "norm_label": "barreira->solucao: poda por idade regravava o estado fora da trava e apagava marcacao concorrente do bot; agora poda sob estado.trava relendo o disco"
+    },
+    {
+      "label": "SeparadorApp._aplicar_adocao()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L679",
+      "metadata": {
+        "language": "python",
+        "kind": "method"
+      },
+      "_origin": "manual",
+      "id": "separador_gui_separadorapp_aplicar_adocao",
+      "community": 2,
+      "norm_label": "separadorapp._aplicar_adocao()"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: no modo Ambas a adocao inline em memoria nao reescrevia os sub-grupos .por_conta (envios invisiveis no lote + estado gravado na chave antiga do anuncio -> reimpressao); _aplicar_adocao roteia o Ambas para re-coleta",
+      "file_type": "rationale",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "ambas_adocao_recoleta",
+      "community": 2,
+      "norm_label": "barreira->solucao: no modo ambas a adocao inline em memoria nao reescrevia os sub-grupos .por_conta (envios invisiveis no lote + estado gravado na chave antiga do anuncio -> reimpressao); _aplicar_adocao roteia o ambas para re-coleta"
     }
   ],
   "links": [
@@ -26152,6 +26179,46 @@
       "weight": 1.0,
       "source": "estado_poda_sob_trava",
       "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_aplicar_adocao",
+      "target": "separador_gui_separadorapp_atualizar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ambas_adocao_recoleta",
+      "target": "separador_gui_separadorapp_aplicar_adocao",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ambas_adocao_recoleta",
+      "target": "provedores_provedormlambas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ambas_adocao_recoleta",
+      "target": "anuncio_adocao_em_memoria",
       "confidence_score": 1.0
     }
   ],
