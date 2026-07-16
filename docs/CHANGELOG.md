@@ -183,6 +183,15 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Trava de segurança contra imprimir o mesmo lote em dobro (Shopee/ML):** na
+  Shopee a etiqueta sai fisicamente **durante a busca** (o ZIP cai na Downloads e
+  a Zebra imprime na hora), mas o app só marca o estado **depois** que você
+  responde "as etiquetas saíram certo?". No intervalo, o botão voltava a ficar
+  clicável e o lote continuava "pendente" — um 2º clique (fácil de dar quando a
+  gente esquece que já apertou) reimprimia tudo. Agora o app fica **travado de
+  ponta a ponta**: `ocupado` desde a confirmação de "Organizar envio" até a
+  resposta de "saíram certo?", então um clique no meio é recusado. Cancelar o
+  organizar destrava; a trava também é liberada se a confirmação falhar.
 - **`config.json` é atualizado por chave, não regravado inteiro** (auditoria
   consolidada 5.4): cada GUI guardava `self.config` desde a abertura e, ao salvar
   qualquer preferência, regravava o dicionário inteiro — a última gravação

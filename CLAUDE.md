@@ -244,6 +244,17 @@ em 2º plano.
   tela pergunta "as etiquetas saíram certo?" e só então marca (vale p/ ML e
   Shopee, lote E individual — o individual roteia pelo fluxo do lote). Bot/CLI
   marcam direto (não têm como ver a impressora).
+- **Trava de ponta a ponta na impressão (anti-duplicata):** o app fica `ocupado`
+  **desde a confirmação de "Organizar envio" até você responder "saíram certo?"**
+  — `imprimir_lotes`/`imprimir` chamam `_ocupar(True)` antes do
+  `_confirmar_organizar` e o `_ocupar(False)` só roda no **`finally` de
+  `_confirmar_e_marcar`** (por isso ele delega o corpo a
+  `_confirmar_e_marcar_corpo`). Sem essa trava havia uma janela perigosa: na
+  Shopee a etiqueta **já sai fisicamente durante a busca** (ZIP→Downloads→Zebra),
+  mas o estado só é marcado depois da confirmação — com o botão reabilitado nesse
+  meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
+  pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
+  libera a trava; o `finally` libera mesmo se a confirmação estourar.
 
 ## Pegadinhas de domínio (Shopee) — validadas com loja real
 
