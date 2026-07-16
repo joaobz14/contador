@@ -23,6 +23,13 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — ProvedorML revalida o token ao imprimir (achado da auditoria):**
+  os caminhos de imprimir/reimprimir usavam `self.token` cru da última coleta,
+  sem checar a validade (~6h) — GUI aberta por horas → 401 repetido até um novo
+  Atualizar. Novo `_token_atual()` revalida via `obter_token` (só renova quando
+  preciso). Ambas (`_token`) e Shopee já revalidavam. Nós:
+  `provedores_provedorml_token_atual` + `provedor_ml_token_revalidado`.
+
 - **2026-07-16 — Adoção inline no modo Ambas re-coleta (achado da auditoria):**
   a auditoria completa provou (teste dinâmico) que o botão 🏷 Atribuir SKU em
   modo 🌐 Ambas, aplicado em memória, não reescrevia os sub-grupos `.por_conta`

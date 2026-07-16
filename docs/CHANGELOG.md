@@ -102,6 +102,11 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Imprimir com a tela aberta há horas não falha mais por token vencido**
+  (achado da auditoria): o Mercado Livre imprimia com o token guardado na
+  última coleta, sem checar a validade (~6h) — o 401 se repetia até um novo
+  Atualizar. Agora os caminhos de imprimir/reimprimir revalidam via
+  `obter_token` (que só renova quando preciso). Ambas e Shopee já faziam certo.
 - `marcar_impresso` recarrega o estado do disco e **mescla** antes de gravar:
   a tela e o bot na mesma conta ao mesmo tempo não apagam mais a marcação um
   do outro (last-writer-merge em vez de last-writer-wins).
