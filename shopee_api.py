@@ -563,10 +563,17 @@ def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUET
     None, busca em paralelo. Sem AWB, aborta com mensagem clara em vez de deixar
     a Shopee devolver 'tracking_number_invalid'. `token` evita re-buscar o token
     em chamadas paralelas. Polling de 1s."""
+    if not order_sns:
+        raise core.SeparadorError("Nenhum pedido informado para gerar a etiqueta.")
     token = token or obter_token(cred)
     if rastreios is None:
         rastreios = _rastreios_paralelo(cred, token, order_sns)
-    sem_awb = [sn for sn, tn in rastreios.items() if not tn]
+    # Valida TODOS os order_sns, nao so as chaves presentes em `rastreios`: um
+    # pedido AUSENTE do mapa (mapa parcial) passava batido e seguia sem AWB ate a
+    # Shopee devolver 'tracking_number_invalid' (auditoria 5.9). Compara por str
+    # para tolerar chaves int/str no mapa.
+    _mapa = {str(sn): tn for sn, tn in rastreios.items()}
+    sem_awb = [str(sn) for sn in order_sns if not _mapa.get(str(sn))]
     if sem_awb:
         raise core.SeparadorError(
             "Sem numero de rastreio (AWB) para: " + ", ".join(sem_awb) + ". "
@@ -767,10 +774,13 @@ ARQUIVO_ESTADO = core.PASTA_SCRIPT / "estado_shopee.json"
 
 
 # Estado de "ja impresso" da Shopee: mesma camada comum do ML (estado.py), so
-# muda o arquivo. A Shopee poda em memoria mas NAO regrava o disco (persistir_poda
-# =False), preservando o comportamento anterior.
+# muda o arquivo. persistir_poda=True (igual ao ML): sem isso a poda so valia em
+# memoria e cada marcar_impresso regravava o disco com as entradas antigas
+# intactas — o arquivo crescia sem limite (auditoria 5.7). A regravacao da poda
+# roda sob a MESMA trava do marcar_impresso e RELENDO o disco (ver carregar), entao
+# nao apaga uma marcacao concorrente.
 def carregar_estado() -> dict:
-    return _estado.carregar(ARQUIVO_ESTADO, core.DIAS_ESTADO, persistir_poda=False)
+    return _estado.carregar(ARQUIVO_ESTADO, core.DIAS_ESTADO, persistir_poda=True)
 
 
 def salvar_estado(estado: dict) -> None:

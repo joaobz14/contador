@@ -15,6 +15,7 @@ tools/setup_gui_tests.sh instala tudo. Abre na TELA INICIAL (nao busca
 pedidos), entao nao precisa de rede nem de credenciais.
 """
 import os
+import subprocess
 import sys
 import time
 import tkinter as tk
@@ -33,6 +34,8 @@ if marketplace != "Mercado Livre":
     app._trocar_marketplace(marketplace)
 root.update()
 time.sleep(0.3)                            # deixa o WM/render assentar
-os.system(f"import -window root {saida}")  # captura a tela do display virtual
+# subprocess com lista de args (nao os.system com f-string): um `saida` com
+# espacos ou metacaracteres de shell quebrava/era interpretado (auditoria 5.15).
+subprocess.run(["import", "-window", "root", saida], check=True)  # captura o display virtual
 root.destroy()
 print(f"Screenshot salvo: {saida}  (marketplace: {marketplace})")

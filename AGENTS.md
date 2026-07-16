@@ -97,9 +97,11 @@ em 2º plano.
   (`estado.trava`, `.lock` ao lado do arquivo, gitignorado) quando o wrapper passa
   `arquivo=` — sem ela, duas leituras simultâneas (tela + bot) perdem marcação.
   A trava degrada suavemente; o `.tmp` do `gravar_json` inclui o PID. A **poda por
-  idade** que regrava o arquivo (`carregar(persistir_poda=True)`, só ML) usa a
-  mesma trava e **relê o disco** antes de gravar — senão um Atualizar apagaria uma
-  marcação que o bot gravasse no meio-tempo (mesma corrida, por uma porta lateral).
+  idade** que regrava o arquivo (`carregar(persistir_poda=True)`, ML **e** Shopee
+  desde 5.7 — antes a Shopee só podava em memória e o `estado_shopee.json` crescia
+  sem limite) usa a mesma trava e **relê o disco** antes de gravar — senão um
+  Atualizar apagaria uma marcação que o bot gravasse no meio-tempo (mesma corrida,
+  por uma porta lateral).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Config sempre via `aplicar_config()`** — é o ponto único de **saneamento** do
@@ -184,8 +186,10 @@ em 2º plano.
   nome vai em UTF-8 e o campo do carimbo é envolto por `^CI28`…`^CI0` (`^CI28` só
   antes do `^FD`, reset logo após o `^FS`) — sem isso os acentos saem embolados na
   Zebra; o `^CI0` evita vazar o encoding para a etiqueta de envio (o `^CI`
-  persiste). A `divisoria` já emite `^CI28`. **Não** converta o nome para CP850 (o
-  app da Zebra lê o ZPL como UTF-8).
+  persiste). A `divisoria` liga `^CI28` e **fecha com `^CI0` antes do `^XZ`**
+  (5.8) — sem o reset, o `^CI` persistente vazaria UTF-8 para as DANFEs/etiquetas
+  do lote seguintes. **Não** converta o nome para CP850 (o app da Zebra lê o ZPL
+  como UTF-8).
 - **Identificação na Shopee (sem carimbo):** a etiqueta Shopee é uma imagem pronta
   **sem o nome do produto** (e não há faixa livre estável para carimbar — validado
   com 10 etiquetas: o miolo varia com a rota). Então a **tela** substitui o carimbo
@@ -265,6 +269,10 @@ em 2º plano.
   `log.exception` não arrasta a URL no traceback). Defesa em profundidade nos
   limites: a GUI redige com `sem_segredos` o que mostra (`_erro`, avisos de falha
   parcial) e o bot redige o que manda pro chat. Mantenha as duas camadas.
+  `sem_segredos` cobre a forma **query** (`chave=valor`) **e** a forma **JSON/repr
+  de dict** (`"chave": "valor"`), e as chaves incluem `client_secret`/`partner_key`
+  além de token/sign/code (5.11) — assim um corpo de request serializado por
+  engano num texto de erro também é redigido.
 
 ## Antes de fechar uma mudança (mantenha o repertório em dia)
 

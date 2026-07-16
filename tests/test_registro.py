@@ -24,6 +24,26 @@ def test_redige_code_e_refresh_token_do_oauth():
     assert out.count("=***") == 3
 
 
+def test_redige_forma_json_e_repr_de_dict():
+    """Defesa em profundidade (5.11): um corpo/credencial serializado como JSON
+    ou repr de dict tambem e redigido — a regex de query sozinha nao pegaria."""
+    j = '{"refresh_token": "RT_JSON_123", "client_secret": "CS_9", "partner_key": "PK_7"}'
+    out = registro.sem_segredos(j)
+    for segredo in ("RT_JSON_123", "CS_9", "PK_7"):
+        assert segredo not in out
+    assert out.count('"***"') == 3
+    # repr de dict (aspas simples), como num f-string de debug
+    d = "Falha: {'access_token': 'AT_ABC', 'shop_id': 99}"
+    red = registro.sem_segredos(d)
+    assert "AT_ABC" not in red and "'***'" in red
+    assert "'shop_id': 99" in red                      # nao-segredo intacto
+
+
+def test_valor_json_numerico_nao_e_redigido():
+    """"code": 200 (sem aspas) e status, nao segredo — nao redige."""
+    assert registro.sem_segredos('{"code": 200}') == '{"code": 200}'
+
+
 def test_texto_sem_segredo_fica_intacto():
     msg = "Shopee /api/v2/order/get: error_auth - invalid token"
     assert registro.sem_segredos(msg) == msg

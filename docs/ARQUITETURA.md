@@ -130,6 +130,9 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 ## CI (qualidade)
 
 `.github/workflows/testes.yml` roda em push para `main` e em PR:
+- **`lint`**: `ruff check .` (config `ruff.toml`, regras `F` + `E9`) — pega import
+  morto / nome indefinido antes da revisão manual (5.13). `E501` (linha longa)
+  fica deferido de propósito.
 - **`pytest`** em Python 3.11 e 3.12.
 - **`gui-smoke`**: abre a GUI de verdade headless com `xvfb`, nos dois marketplaces,
   via `tools/gui_screenshot.py`; publica os PNGs como artefato. Protege import,

@@ -21,6 +21,10 @@ Histórico das principais mudanças do projeto.
   envolto por `^CI28`…`^CI0` (UTF-8) — nomes como "FOGÃO" saem corretos na
   Zebra (antes os acentos embolavam). Cirúrgico: não afeta a nota fiscal acima
   nem vaza encoding para a etiqueta de envio.
+- **Etiqueta divisória reseta o encoding no fim** (auditoria 5.8): a divisória
+  ligava `^CI28` (UTF-8) e não desligava; como o `^CI` persiste entre etiquetas,
+  as DANFEs/etiquetas do lote impressas depois dela herdavam o encoding. Agora
+  fecha com `^CI0` antes do `^XZ` (mesmo cuidado que o carimbo já tinha).
 - **Nomes por SKU:** ordem inicial dos SKUs mais usados no topo do
   `nomes_sku.json` + novos produtos cadastrados. A ordem das chaves passou a
   ser **preservada** (é a ordem de separação, não alfabética).
@@ -91,6 +95,12 @@ Histórico das principais mudanças do projeto.
   que impede o método de voltar.
 
 ### Segurança
+- **Redação de segredos cobre também a forma JSON e mais chaves** (auditoria
+  5.11): `sem_segredos` só redigia `chave=valor` (query-string). Agora também
+  redige `"chave": "valor"` (JSON / repr de dict) e inclui `client_secret`/
+  `partner_key` além de token/sign/code — defesa em profundidade caso um corpo
+  de request seja serializado por engano num texto de erro. Valor numérico sem
+  aspas (ex.: `"code": 200`) não é redigido (é status, não segredo).
 - **Erro da Shopee não vaza mais o token:** os erros HTTP da Shopee passam por
   `_levantar_se_erro` (em vez de `raise_for_status`), que carregava a URL
   assinada com `access_token`/`sign` para o log, a tela e o chat do bot.
@@ -163,6 +173,17 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **`estado_shopee.json` agora é podado no disco, não só em memória**
+  (auditoria 5.7): a Shopee usava `persistir_poda=False`, então cada marcação
+  regravava o arquivo com as entradas antigas intactas e ele crescia sem limite.
+  Agora usa `persistir_poda=True` como o ML (a regravação já roda sob trava e
+  relendo o disco, então não apaga marcação concorrente).
+- **`gerar_etiqueta` (Shopee) valida o AWB de TODOS os pedidos pedidos, não só
+  as chaves do mapa** (auditoria 5.9): `order_sns=[A,B]` com `rastreios={A:…}`
+  passava e B seguia sem `tracking_number` até o erro remoto
+  `tracking_number_invalid`. Agora calcula os ausentes a partir de `order_sns`
+  (compara por str), aborta antes do create citando o pedido sem AWB, e rejeita
+  lista de pedidos vazia.
 - **Pedido Shopee já organizado (mas com AWB ainda em processamento) não vira
   mais falso erro** (auditoria consolidada 5.3): se o envio já fora organizado
   — manualmente no painel, ou pelo lote com resposta ambígua — mas o AWB ainda
@@ -272,6 +293,15 @@ Histórico das principais mudanças do projeto.
   pode ser mergeada (viram órfãos), e recuperar do `main` o que ficar de fora.
 
 ### Qualidade
+- **Linter no CI (`ruff`)** (auditoria 5.13): um job novo roda `ruff check .` em
+  cada PR/push, pegando import morto / nome indefinido antes da revisão manual
+  (a classe que já foi achada à mão). Config em `ruff.toml`, começando pelas
+  regras `F` + `E9` (zero ruído hoje); `E501` (linha longa) fica deferido de
+  propósito.
+- **Ferramenta de screenshot da GUI usa `subprocess.run`, não `os.system`**
+  (auditoria 5.15): o caminho de saída vinha de `sys.argv` e era concatenado sem
+  escape num comando de shell — espaços quebravam, metacaracteres eram
+  interpretados. Restrito à ferramenta de dev/CI, mas endurecido.
 - **CI (GitHub Actions):** roda o `pytest` em cada Pull Request e push no `main`
   (Python 3.11 e 3.12), mostrando um check verde/vermelho automático. Badge no
   topo do README.

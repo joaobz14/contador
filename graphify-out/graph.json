@@ -9703,6 +9703,71 @@
       "source_file": "shopee_api.py",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "divisoria_reset_ci0",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.8): zpl_divisoria ligava ^CI28 (UTF-8) e nao resetava; o ^CI persiste entre etiquetas, entao DANFEs/etiquetas do lote seguintes herdavam o encoding. Agora fecha com ^CI0 antes do ^XZ (mesmo cuidado do carimbo do nome)",
+      "norm_label": "barreira->solucao (auditoria 5.8): zpl_divisoria ligava ^ci28 (utf-8) e nao resetava; o ^ci persiste entre etiquetas, entao danfes/etiquetas do lote seguintes herdavam o encoding. agora fecha com ^ci0 antes do ^xz (mesmo cuidado do carimbo do nome)",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "shopee_poda_disco",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.7): a Shopee usava persistir_poda=False, entao a poda so valia em memoria e cada marcar_impresso regravava o disco com as entradas antigas intactas \u2014 estado_shopee.json crescia sem limite. Agora persistir_poda=True como o ML (regravacao sob trava relendo o disco, nao apaga marcacao concorrente)",
+      "norm_label": "barreira->solucao (auditoria 5.7): a shopee usava persistir_poda=false, entao a poda so valia em memoria e cada marcar_impresso regravava o disco com as entradas antigas intactas \u2014 estado_shopee.json crescia sem limite. agora persistir_poda=true como o ml (regravacao sob trava relendo o disco, nao apaga marcacao concorrente)",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "gerar_etiqueta_valida_todos",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.9): gerar_etiqueta validava AWB vazio so entre rastreios.items(), nao todos os order_sns \u2014 um pedido ausente do mapa seguia sem tracking_number ate o erro remoto tracking_number_invalid. Agora calcula os ausentes a partir de order_sns (compara por str) e rejeita lista vazia",
+      "norm_label": "barreira->solucao (auditoria 5.9): gerar_etiqueta validava awb vazio so entre rastreios.items(), nao todos os order_sns \u2014 um pedido ausente do mapa seguia sem tracking_number ate o erro remoto tracking_number_invalid. agora calcula os ausentes a partir de order_sns (compara por str) e rejeita lista vazia",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "sem_segredos_json",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.11): sem_segredos so redigia chave=valor (query). Ampliado para a forma JSON/repr de dict (\"chave\": \"valor\") e para as chaves client_secret/partner_key \u2014 defesa em profundidade se um corpo de request for serializado num texto de erro. Valor numerico sem aspas nao e redigido (status, nao segredo)",
+      "norm_label": "barreira->solucao (auditoria 5.11): sem_segredos so redigia chave=valor (query). ampliado para a forma json/repr de dict (\"chave\": \"valor\") e para as chaves client_secret/partner_key \u2014 defesa em profundidade se um corpo de request for serializado num texto de erro. valor numerico sem aspas nao e redigido (status, nao segredo)",
+      "source_file": "registro.py",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "ci_ruff_lint",
+      "label": "DECISAO (auditoria 5.13): o CI so rodava pytest + smoke da GUI; import morto e nome indefinido so apareciam em revisao manual. Job novo roda ruff check . (config ruff.toml, regras F+E9 \u2014 zero ruido hoje). E501 (linha longa) fica deferido de proposito: o projeto usa linhas longas",
+      "norm_label": "decisao (auditoria 5.13): o ci so rodava pytest + smoke da gui; import morto e nome indefinido so apareciam em revisao manual. job novo roda ruff check . (config ruff.toml, regras f+e9 \u2014 zero ruido hoje). e501 (linha longa) fica deferido de proposito: o projeto usa linhas longas",
+      "source_file": ".github/workflows/testes.yml",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -26803,6 +26868,76 @@
       "weight": 1.0,
       "source": "shopee_organizado_sem_awb",
       "target": "shopee_api_envio_ja_arranjado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "divisoria_reset_ci0",
+      "target": "separador_etiquetas_ml_zpl_divisoria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "divisoria_reset_ci0",
+      "target": "carimbo_encoding_ci28",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_poda_disco",
+      "target": "shopee_api_carregar_estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_poda_disco",
+      "target": "estado_carregar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "gerar_etiqueta_valida_todos",
+      "target": "shopee_api_gerar_etiqueta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "registro.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "sem_segredos_json",
+      "target": "registro_sem_segredos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": ".github/workflows/testes.yml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "ci_ruff_lint",
+      "target": "ci_pytest",
       "confidence_score": 1.0
     }
   ],
