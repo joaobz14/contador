@@ -191,7 +191,17 @@ em 2º plano.
   ausentes, podando o cache junto com o estado.
   Pendentes não têm AWB (só existe após organizar), então não mostram código.
 - **Impressão:** ZPL → `.zip` em `PASTA_DOWNLOADS` com nome que a Zebra reconhece
-  (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee).
+  (prefixos: `etiqueta de envio` p/ ML, `etiqueta shopee` p/ Shopee). O nome
+  carrega um **carimbo de tempo único** (`nome_saida_unico`, no núcleo; a Shopee
+  chama `core.nome_saida_unico`) — nome determinístico + `replace` apagava em
+  silêncio um lote que o monitor ainda não consumiu (dois trabalhos com o mesmo
+  rótulo escreviam no mesmo arquivo). O **prefixo é o que o monitor casa**, então
+  o sufixo é livre; a correção vem do laço que busca um nome inexistente (soma
+  `-1`, `-2`… na colisão), o carimbo só o torna legível. **Antes de gerar, a GUI
+  relê o estado do disco** (`prov.carregar_estado()` em `_gerar_sem_marcar_thread`):
+  os pendentes vêm de `self.estado` da última coleta — sem reler, uma marcação
+  gravada por fora (CLI/2ª GUI) sairia em dobro. Releitura é best-effort (falhou
+  → segue com o estado em memória).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `config.json`, `bot_config.json`, logs (`bot.log`, `shopee_tempos.log`,
   `separador.log`).
