@@ -195,6 +195,21 @@ def salvar_config(cfg: dict) -> None:
     _gravar_json(ARQUIVO_CONFIG, cfg)
 
 
+def atualizar_config(**mudancas) -> dict:
+    """Atualiza SO as chaves informadas no config.json, RELENDO o disco sob trava
+    antes de gravar. Uma GUI com o `self.config` velho (aberta ha horas) nao pode
+    regravar o dicionario inteiro por cima de chaves que OUTRA instancia mudou —
+    seria um lost update logico, revertendo conta/marketplace/identificacao em
+    silencio (auditoria 5.4). A trava (estado.trava) serializa entre processos e
+    degrada suave (sem ela, ainda rele o disco). Saneia o que veio do disco (um
+    config editado a mao nao derruba o app) e devolve o config ja gravado."""
+    with _estado.trava(ARQUIVO_CONFIG):
+        atual = _sanear_config(_ler_json(ARQUIVO_CONFIG))
+        atual.update(mudancas)
+        salvar_config(atual)
+    return atual
+
+
 def definir_conta(nome: str) -> Path:
     """Atualiza as globais de arquivo para apontar para contas/{nome}/."""
     global ARQUIVO_CRED, ARQUIVO_ESTADO, ARQUIVO_CACHE, ARQUIVO_ENVIOS_CACHE

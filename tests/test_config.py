@@ -78,3 +78,35 @@ def test_conta_ativa_tolera_tipo_errado(core, tmp_path, monkeypatch):
 def test_sanear_config_nao_dict_vira_vazio(core):
     assert core._sanear_config(["lista"]) == {}
     assert core._sanear_config(None) == {}
+
+
+# ------------------------------------- atualizacao por chave, sob trava (5.4)
+def test_atualizar_config_preserva_chaves_de_outra_instancia(core, tmp_path, monkeypatch):
+    """Uma instancia salva a geometria a partir de um config velho; nao pode
+    reverter a conta/marketplace que OUTRA instancia gravou no disco no meio-tempo
+    — atualizar_config grava so a chave informada, relendo o disco (5.4)."""
+    monkeypatch.setattr(core, "ARQUIVO_CONFIG", tmp_path / "config.json")
+    # disco atual: outra instancia ja trocou a conta e o marketplace
+    core.salvar_config({"conta_ativa": "Loja2", "marketplace": "Shopee"})
+    # esta instancia, com self.config velho, so quer salvar a geometria
+    out = core.atualizar_config(geometria="800x600+0+0")
+    assert out == {"conta_ativa": "Loja2", "marketplace": "Shopee",
+                   "geometria": "800x600+0+0"}
+    assert core.carregar_config() == out           # no disco tambem
+
+
+def test_atualizar_config_duas_chaves_em_sequencia_sobrevivem(core, tmp_path, monkeypatch):
+    monkeypatch.setattr(core, "ARQUIVO_CONFIG", tmp_path / "config.json")
+    core.atualizar_config(conta_ativa="A")
+    core.atualizar_config(modo_identificacao="carimbo")
+    assert core.carregar_config() == {"conta_ativa": "A", "modo_identificacao": "carimbo"}
+
+
+def test_atualizar_config_saneia_o_disco_corrompido_a_mao(core, tmp_path, monkeypatch):
+    """Um config editado a mao com valor invalido cai no saneamento na releitura,
+    sem propagar o lixo (mesma garantia de aplicar_config)."""
+    monkeypatch.setattr(core, "ARQUIVO_CONFIG", tmp_path / "config.json")
+    core.salvar_config({"marketplace": "Loja Fantasma", "conta_ativa": "Boa"})
+    out = core.atualizar_config(geometria="100x100")
+    assert "marketplace" not in out               # valor invalido descartado
+    assert out["conta_ativa"] == "Boa" and out["geometria"] == "100x100"

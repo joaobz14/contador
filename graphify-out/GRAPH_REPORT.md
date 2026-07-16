@@ -23,6 +23,14 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — `config.json` atualizado por chave, sob trava (auditoria
+  consolidada 5.4):** cada GUI regravava o dicionário inteiro a partir de um
+  `self.config` velho — a última gravação revertia em silêncio as chaves de
+  outra instância. `atualizar_config(**chaves)` relê o disco sob `estado.trava`,
+  aplica só as chaves do evento e saneia; os 6 pontos da GUI passaram a persistir
+  por chave. Nós `separador_etiquetas_ml_atualizar_config` (code) +
+  `config_por_chave` (rationale).
+
 - **2026-07-16 — Lote de higiene/endurecimento P3 (auditoria consolidada):**
   5.8 divisória fecha com `^CI0` (nós `divisoria_reset_ci0`); 5.7 Shopee poda o
   disco (`persistir_poda=True`, nó `shopee_poda_disco`); 5.9 `gerar_etiqueta`

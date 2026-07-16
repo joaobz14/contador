@@ -9768,6 +9768,33 @@
       "source_file": ".github/workflows/testes.yml",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "_origin": "manual",
+      "community": 9,
+      "file_type": "code",
+      "id": "separador_etiquetas_ml_atualizar_config",
+      "label": "atualizar_config()",
+      "metadata": {
+        "kind": "function",
+        "language": "python"
+      },
+      "norm_label": "atualizar_config()",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L198"
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "config_por_chave",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.4): cada GUI mantinha self.config desde a abertura e ao salvar qualquer preferencia regravava o dicionario INTEIRO \u2014 a ultima gravacao revertia em silencio as chaves que outra instancia mudou (fechar uma GUI de manha desfazia a conta/marketplace da outra). atualizar_config rele o disco sob estado.trava, aplica so as chaves do evento e saneia; a GUI mantem self.config[chave] local e persiste por chave. salvar_config (dict inteiro) fica so para bot/testes",
+      "norm_label": "barreira->solucao (auditoria 5.4): cada gui mantinha self.config desde a abertura e ao salvar qualquer preferencia regravava o dicionario inteiro \u2014 a ultima gravacao revertia em silencio as chaves que outra instancia mudou (fechar uma gui de manha desfazia a conta/marketplace da outra). atualizar_config rele o disco sob estado.trava, aplica so as chaves do evento e saneia; a gui mantem self.config[chave] local e persiste por chave. salvar_config (dict inteiro) fica so para bot/testes",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -26938,6 +26965,66 @@
       "weight": 1.0,
       "source": "ci_ruff_lint",
       "target": "ci_pytest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_atualizar_config",
+      "target": "separador_etiquetas_ml_sanear_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_atualizar_config",
+      "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_ao_fechar",
+      "target": "separador_etiquetas_ml_atualizar_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_trocar_conta",
+      "target": "separador_etiquetas_ml_atualizar_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "config_por_chave",
+      "target": "separador_etiquetas_ml_atualizar_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "config_por_chave",
+      "target": "separador_etiquetas_ml_sanear_config",
       "confidence_score": 1.0
     }
   ],
