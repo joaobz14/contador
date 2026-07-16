@@ -120,7 +120,12 @@ em 2º plano.
   (`estado.trava`, `.lock` ao lado das credenciais) que serializa **processos**
   (GUI + bot na mesma conta): quem chega depois espera, **relê o disco**
   (`_ler_json(ARQUIVO_CRED)`) e adota o token salvo pelo primeiro — nunca dois
-  refreshes em paralelo. A trava degrada suave (sem ela, relê o disco como antes).
+  refreshes em paralelo. A trava degrada suave (sem ela, relê o disco como
+  antes), mas no caminho do token ela é adquirida com **`espera=2*TIMEOUT`**: no
+  Windows o `msvcrt.LK_LOCK` desiste sozinho em ~10s e, sem a espera estendida,
+  o segundo processo degradaria **no meio** do refresh do primeiro (HTTP de até
+  30s) — re-tentando até superar a duração máxima da operação, degradar depois
+  disso é seguro (o detentor já salvou; a releitura adota).
   `renovar_token` **não re-tenta** (`tentativas=1`): re-tentar o refresh grant após
   o servidor já ter rotacionado gastaria um token de uso único.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e

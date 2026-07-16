@@ -145,7 +145,7 @@ def test_obter_token_rele_o_disco_dentro_da_trava_de_processos(core, tmp_path, m
                         lambda c: renovacoes.append(1) or "NAO_DEVIA")
 
     @contextlib.contextmanager
-    def trava_simulada(caminho):
+    def trava_simulada(caminho, *, espera=0):
         assert caminho == arq                     # trava no arquivo certo
         # "outro processo" terminou o refresh enquanto esperavamos a trava:
         core._gravar_json(arq, {"access_token": "DO_OUTRO",
@@ -158,6 +158,28 @@ def test_obter_token_rele_o_disco_dentro_da_trava_de_processos(core, tmp_path, m
     assert core.obter_token(cred) == "DO_OUTRO"
     assert renovacoes == []                       # nenhum refresh gasto
     assert cred["refresh_token"] == "R2"          # adotou o refresh mais novo
+
+
+def test_obter_token_usa_espera_maior_que_o_refresh(core, tmp_path, monkeypatch):
+    """A trava do refresh e adquirida com espera > duracao maxima da operacao
+    (2x o timeout HTTP): no Windows o LK_LOCK desiste em ~10s por tentativa e,
+    sem a espera, o segundo processo degradaria NO MEIO do refresh do primeiro
+    (P1 da releitura tecnica)."""
+    import contextlib
+
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    capt = {}
+
+    @contextlib.contextmanager
+    def trava_espiona(caminho, *, espera=0):
+        capt["espera"] = espera
+        yield
+
+    monkeypatch.setattr(core._estado, "trava", trava_espiona)
+    monkeypatch.setattr(core, "renovar_token", lambda c: "TOK")
+    core.obter_token({"access_token": "", "access_token_exp": 0})
+    assert capt["espera"] >= 2 * core.TIMEOUT    # ultrapassa o refresh com folga
 
 
 def test_obter_token_concorrente_so_um_refresh(tmp_path, monkeypatch):

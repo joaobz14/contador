@@ -745,7 +745,7 @@ def test_obter_token_shopee_rele_o_disco_dentro_da_trava(monkeypatch, tmp_path):
                         lambda c: (_ for _ in ()).throw(AssertionError("nao renovar")))
 
     @contextlib.contextmanager
-    def trava_simulada(caminho):
+    def trava_simulada(caminho, *, espera=0):
         assert caminho == arq
         sh.core._gravar_json(arq, {"access_token": "DO_OUTRO",
                                    "access_token_exp": _t.time() + 9999,
@@ -756,6 +756,26 @@ def test_obter_token_shopee_rele_o_disco_dentro_da_trava(monkeypatch, tmp_path):
     cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "R1"}
     assert sh.obter_token(cred) == "DO_OUTRO"
     assert cred["refresh_token"] == "R2"
+
+
+def test_obter_token_shopee_usa_espera_maior_que_o_refresh(monkeypatch, tmp_path):
+    """Mesma garantia do nucleo: a trava do refresh Shopee espera mais que a
+    duracao maxima da operacao (2x o timeout HTTP) antes de degradar."""
+    import contextlib
+
+    arq = tmp_path / "credenciais_shopee.json"
+    monkeypatch.setattr(sh, "ARQUIVO_CRED", arq)
+    capt = {}
+
+    @contextlib.contextmanager
+    def trava_espiona(caminho, *, espera=0):
+        capt["espera"] = espera
+        yield
+
+    monkeypatch.setattr(sh._estado, "trava", trava_espiona)
+    monkeypatch.setattr(sh, "renovar_token", lambda c: "TOK")
+    sh.obter_token({"access_token": "", "access_token_exp": 0})
+    assert capt["espera"] >= 2 * sh.TIMEOUT
 
 
 def test_obter_token_shopee_adota_token_do_disco(monkeypatch, tmp_path):

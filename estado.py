@@ -27,6 +27,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -78,19 +79,39 @@ def gravar_json(caminho: Path, dados) -> None:
 # ---------------------------------------------------------------------------
 # TRAVA ENTRE PROCESSOS (para o ciclo ler -> mesclar -> salvar do estado)
 # ---------------------------------------------------------------------------
+# Uma tentativa do msvcrt.LK_LOCK com o lock OCUPADO leva ~10s (10 re-tentativas
+# de 1s, pela doc do CPython); com o sistema de arquivos SEM SUPORTE, falha em
+# milissegundos. O limiar distingue os dois casos para a espera estendida
+# (espera=) re-tentar so quando ha outro processo segurando a trava — e nao
+# ficar insistindo num FS que nunca vai travar.
+_LIMIAR_OCUPADO = 5.0
+
+
 @contextlib.contextmanager
-def trava(caminho: Path):
+def trava(caminho: Path, *, espera: float = 0):
     """Exclusao mutua ENTRE PROCESSOS para o arquivo `caminho` (via um .lock ao
     lado). O merge do marcar_impresso protege o caso sequencial, mas se a tela e
     o bot LEREM ao mesmo tempo (antes de qualquer um gravar), a ultima gravacao
     venceria e uma marcacao se perderia — esta trava serializa o ciclo inteiro.
 
-    Windows usa msvcrt.locking (bloqueia ate ~10s, depois OSError); POSIX usa
-    fcntl.flock (bloqueia). DEGRADACAO SUAVE: se a trava nao puder ser obtida
-    (sistema de arquivos sem suporte, permissao, timeout), segue SEM ela — o
-    comportamento volta a ser o merge de hoje, que ja cobre o caso sequencial;
-    melhor isso que impedir a marcacao de uma etiqueta ja impressa. O .lock e
-    local e gitignorado; fica no disco (esvaziado) apos o uso, sem problema."""
+    Windows usa msvcrt.locking (espera ate ~10s POR TENTATIVA, depois OSError);
+    POSIX usa fcntl.flock (bloqueia indefinidamente). DEGRADACAO SUAVE: se a
+    trava nao puder ser obtida (sistema de arquivos sem suporte, permissao,
+    espera esgotada), segue SEM ela — melhor isso que impedir a marcacao de uma
+    etiqueta ja impressa. O .lock e local e gitignorado.
+
+    `espera` (segundos, so no Windows): tempo MINIMO re-tentando quando a trava
+    esta OCUPADA por outro processo, antes de degradar. O padrao (0) mantem o
+    comportamento de sempre (~10s de uma tentativa). Para secoes criticas mais
+    LONGAS que 10s — o refresh de token roda HTTP de ate TIMEOUT=30s dentro da
+    trava — passe uma espera que ultrapasse com folga a duracao maxima da
+    operacao protegida (ex.: 2x o timeout HTTP): ai degradar apos a espera e
+    SEGURO, pois o detentor ja terminou e salvou, e a releitura do disco adota o
+    resultado dele. Sem isso, o segundo processo desistia em ~10s NO MEIO do
+    refresh do primeiro e disparava um refresh paralelo (a corrida que trava a
+    conta). Falha RAPIDA (FS sem suporte) degrada na hora, como antes — a espera
+    so se aplica a falha LENTA (~10s), que denuncia trava ocupada. No POSIX a
+    espera e irrelevante: o flock ja bloqueia ate liberar."""
     lock_path = caminho.with_name(caminho.name + ".lock")
     try:
         f = open(lock_path, "a+")
@@ -99,17 +120,27 @@ def trava(caminho: Path):
         return
     travado = False
     try:
-        try:
-            if os.name == "nt":
-                import msvcrt
-                f.seek(0)
-                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
-            else:
+        if os.name == "nt":
+            import msvcrt
+            inicio = time.monotonic()
+            while True:
+                t0 = time.monotonic()
+                try:
+                    f.seek(0)
+                    msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+                    travado = True
+                    break
+                except OSError:
+                    ocupada = time.monotonic() - t0 >= _LIMIAR_OCUPADO
+                    if not ocupada or time.monotonic() - inicio >= espera:
+                        break                   # sem suporte, ou espera esgotada: degrada
+        else:
+            try:
                 import fcntl
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            travado = True
-        except OSError:
-            pass                                # degrada: opera sem trava
+                travado = True
+            except OSError:
+                pass                            # degrada: opera sem trava
         yield
     finally:
         if travado:
