@@ -236,29 +236,51 @@ def _rotulo_grupo(grupo) -> str:
     return f"🖨 {grupo.total_etiquetas}× {grupo.nome}"[:60]
 
 
-def _teclado_grupos(grupos: list) -> InlineKeyboardMarkup | None:
+# O Telegram recusa um teclado inline com mais de 100 botoes ("reply markup
+# too long"). Fatiamos em teclados de ate este tamanho (margem sob 100) para um
+# dia com MUITOS grupos nao deixar o teclado sem ser enviado (era enviado inteiro
+# e o send_message falhava em silencio).
+MAX_BOTOES_TECLADO = 90
+
+
+def _teclado_grupos(grupos: list) -> list[InlineKeyboardMarkup]:
     """Botoes 'Imprimir' por grupo, SEPARADOS por quantidade do pedido (igual a
     tela). Antes de cada bloco vai uma linha-cabecalho nao-clicavel
     ('— Quantidade por pedido = N —'), ja que o Telegram nao deixa por texto
-    solto no meio dos botoes. So entram grupos com etiquetas; None se nao houver
-    nada imprimivel.
+    solto no meio dos botoes. So entram grupos com etiquetas.
 
-    O callback de cada botao carrega so o indice do grupo na lista guardada no
-    chat_data, entao o agrupamento visual nao altera qual grupo sera impresso.
+    Devolve uma LISTA de teclados (fatiados por MAX_BOTOES_TECLADO); vazia se
+    nao houver nada imprimivel. O callback de cada botao carrega so o indice do
+    grupo na lista guardada no chat_data, entao o agrupamento/fatiamento visual
+    nao altera qual grupo sera impresso.
     """
     por_qtd: dict[int, list] = {}
     for i, g in enumerate(grupos):
         if g.total_etiquetas:
             por_qtd.setdefault(g.quantidade, []).append((i, g))
     if not por_qtd:
-        return None
+        return []
     linhas: list = []
     for qtd in sorted(por_qtd):
         linhas.append([InlineKeyboardButton(
             f"— Quantidade por pedido = {qtd} —", callback_data="noop")])
         for i, g in por_qtd[qtd]:
             linhas.append([InlineKeyboardButton(_rotulo_grupo(g), callback_data=f"ver:{i}")])
-    return InlineKeyboardMarkup(linhas)
+
+    # Fatia em teclados de ate MAX_BOTOES_TECLADO botoes (1 botao por linha aqui).
+    teclados: list = []
+    atual: list = []
+    for linha in linhas:
+        if len(atual) >= MAX_BOTOES_TECLADO:
+            # nao deixa um cabecalho orfao no fim de um teclado (o grupo dele
+            # foi para o proximo): empurra o cabecalho para o teclado seguinte.
+            carry = [atual.pop()] if atual[-1][0].callback_data == "noop" else []
+            teclados.append(InlineKeyboardMarkup(atual))
+            atual = carry
+        atual.append(linha)
+    if atual:
+        teclados.append(InlineKeyboardMarkup(atual))
+    return teclados
 
 
 async def _responder(update, context, nome: str, executor) -> None:
@@ -325,9 +347,10 @@ async def _listar_grupos(update, context, nome: str, dia: str | None,
         await context.bot.send_message(chat_id, bloco)
     if _eh_shopee(context):
         return  # Shopee no bot e somente consulta
-    teclado = _teclado_grupos(grupos)
-    if teclado:
-        await context.bot.send_message(chat_id, "🖨 Toque num grupo para imprimir:", reply_markup=teclado)
+    teclados = _teclado_grupos(grupos)
+    for n, teclado in enumerate(teclados):
+        texto = "🖨 Toque num grupo para imprimir:" if n == 0 else "🖨 (continuação)"
+        await context.bot.send_message(chat_id, texto, reply_markup=teclado)
 
 
 def _grupo_do_indice(context, idx: int):

@@ -9570,6 +9570,19 @@
       "id": "seletor_dias_reflow",
       "community": 2,
       "norm_label": "barreira->solucao: seletor de dias empacotado numa linha unica cortava o 5o dia util numa janela estreita/contagens de 2 digitos; _reflow reposiciona os chips em varias linhas conforme a largura (nada fica cortado)"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: _teclado_grupos devolvia UM teclado; num dia com muitos grupos passava do limite de ~100 botoes do Telegram e o send_message falhava (teclado nao aparecia); agora devolve uma LISTA fatiada em <=90 botoes, sem cabecalho orfao, e _listar_grupos envia um por mensagem",
+      "file_type": "rationale",
+      "source_file": "bot_telegram.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bot_teclado_fatiado",
+      "community": 4,
+      "norm_label": "barreira->solucao: _teclado_grupos devolvia um teclado; num dia com muitos grupos passava do limite de ~100 botoes do telegram e o send_message falhava (teclado nao aparecia); agora devolve uma lista fatiada em <=90 botoes, sem cabecalho orfao, e _listar_grupos envia um por mensagem"
     }
   ],
   "links": [
@@ -26380,6 +26393,16 @@
       "weight": 1.0,
       "source": "seletor_dias_reflow",
       "target": "separador_gui_separadorapp_reflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "bot_telegram.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "bot_teclado_fatiado",
+      "target": "bot_telegram_teclado_grupos",
       "confidence_score": 1.0
     }
   ],
