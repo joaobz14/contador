@@ -9434,6 +9434,19 @@
       "id": "gui_persistencia_pos_confirmacao",
       "community": 0,
       "norm_label": "correcao: falha de persistencia pos-confirmacao nao passa em silencio"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: poda por idade regravava o estado FORA da trava e apagava marcacao concorrente do bot; agora poda sob estado.trava relendo o disco",
+      "file_type": "rationale",
+      "source_file": "estado.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "estado_poda_sob_trava",
+      "community": 8,
+      "norm_label": "barreira->solucao: poda por idade regravava o estado fora da trava e apagava marcacao concorrente do bot; agora poda sob estado.trava relendo o disco"
     }
   ],
   "links": [
@@ -26119,6 +26132,26 @@
       "weight": 1.0,
       "source": "gui_persistencia_pos_confirmacao",
       "target": "registro_sem_segredos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "estado_poda_sob_trava",
+      "target": "estado_carregar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "estado_poda_sob_trava",
+      "target": "estado_trava",
       "confidence_score": 1.0
     }
   ],
