@@ -1163,8 +1163,9 @@ def zpl_divisoria(grupo: Grupo) -> str:
         f"^FO20,260^A0N,120,120^FB{w},1,0,C,0^FD{sku}^FS"
         f"^FO20,410^A0N,45,45^FB{w},3,6,C,0^FD{nome}^FS"
         f"^FO20,640^A0N,55,55^FB{w},1,0,C,0^FD{info}^FS"
-        "^XZ"
-    )
+        "^CI0"                 # reseta o encoding: ^CI persiste entre etiquetas —
+        "^XZ"                  # sem isso, as DANFEs/etiquetas do lote seguintes a
+    )                          # divisoria herdariam ^CI28 (mesmo cuidado do carimbo, 5.8)
 
 
 def baixar_zpl(token: str, shipment_ids: list[int]) -> str:

@@ -23,6 +23,16 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Lote de higiene/endurecimento P3 (auditoria consolidada):**
+  5.8 divisória fecha com `^CI0` (nós `divisoria_reset_ci0`); 5.7 Shopee poda o
+  disco (`persistir_poda=True`, nó `shopee_poda_disco`); 5.9 `gerar_etiqueta`
+  valida o AWB de todos os `order_sns` e rejeita lista vazia
+  (`gerar_etiqueta_valida_todos`); 5.11 `sem_segredos` cobre a forma JSON +
+  `client_secret`/`partner_key` (`sem_segredos_json`); 5.13 `ruff` no CI
+  (`ci_ruff_lint`, config `ruff.toml` F+E9); 5.15 o screenshot usa
+  `subprocess.run` em vez de `os.system` (sem nó — hardening de ferramenta de
+  dev). 0 arestas órfãs.
+
 - **2026-07-16 — Shopee já organizado sem AWB aguarda em vez de falso-errar
   (auditoria consolidada 5.3):** `envio_ja_arranjado` existia e era testado mas
   **sem chamador de produção** — a falta de uso era o bug. `organizar_envio`

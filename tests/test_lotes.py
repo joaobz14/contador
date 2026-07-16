@@ -31,6 +31,15 @@ def test_zpl_divisoria_tem_sku_nome_e_quantidade(core):
     assert "q2" in z and "3 etiqueta(s)" in z
 
 
+def test_zpl_divisoria_reseta_encoding_no_fim(core):
+    """A divisoria liga ^CI28 (UTF-8) e DEVE resetar com ^CI0 antes do ^XZ — o
+    ^CI persiste entre etiquetas, entao sem o reset as DANFEs/etiquetas do lote
+    seguintes herdariam o encoding e os acentos poderiam sair errados (5.8)."""
+    z = core.zpl_divisoria(_grupo(core, chave="A05F", nome="Nome", qtd=1))
+    assert z.endswith("^CI0^XZ")           # reseta logo antes de fechar
+    assert z.count("^CI28") == 1 and z.count("^CI0") == 1
+
+
 def test_zpl_divisoria_combo_usa_skus(core):
     g = _grupo(core, chave="COMBO:A01x1+A03x1", comp=[("A01", 1), ("A03", 1)])
     assert "A01+A03" in core.zpl_divisoria(g)

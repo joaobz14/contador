@@ -1,0 +1,15 @@
+# Configuracao do linter do CI (auditoria 5.13 — antes o CI so rodava pytest +
+# smoke da GUI; imports mortos e regressoes de estilo so apareciam em revisao
+# manual). Comeca pelo subconjunto de ALTO VALOR e ZERO ruido:
+#   F  = pyflakes (imports mortos, nomes indefinidos, redefinicoes, f-strings sem
+#        placeholder) — exatamente a classe de regressao ja achada a mao antes.
+#   E9 = erros de sintaxe.
+#
+# E501 (linha longa: ~269 ocorrencias) e as demais E7xx (';' e lambda= idiomaticos
+# nos testes) ficam DE FORA de proposito: o projeto usa linhas longas
+# deliberadamente e apertar isso seria um reformat grande — fica para outro PR se
+# o dono quiser. O objetivo aqui e travar a regressao de import morto, barato.
+line-length = 100
+
+[lint]
+select = ["F", "E9"]

@@ -112,6 +112,34 @@ def test_gerar_etiqueta_aborta_sem_awb(monkeypatch):
         sh.gerar_etiqueta({"x": 1}, ["A1"])
 
 
+def test_gerar_etiqueta_rejeita_mapa_parcial(monkeypatch):
+    """order_sns=[A,B] com rastreios só de A: B seguia sem AWB até o erro remoto
+    tracking_number_invalid. Agora aborta antes do create, citando B (5.9)."""
+    import pytest
+    monkeypatch.setattr(sh, "criar_documento",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nao chamar")))
+    with pytest.raises(sh.core.SeparadorError, match="rastreio"):
+        sh.gerar_etiqueta({"x": 1}, ["A", "B"], rastreios={"A": "BR1"}, token="TOK")
+
+
+def test_gerar_etiqueta_rejeita_lista_vazia(monkeypatch):
+    import pytest
+    with pytest.raises(sh.core.SeparadorError, match="Nenhum pedido"):
+        sh.gerar_etiqueta({"x": 1}, [], token="TOK")
+
+
+def test_gerar_etiqueta_ignora_chaves_extras_no_mapa(monkeypatch):
+    """Uma chave a mais no mapa (pedido que nem foi solicitado) nao atrapalha: a
+    validacao olha os order_sns, nao o mapa inteiro."""
+    monkeypatch.setattr(sh, "criar_documento", lambda *a, **k: None)
+    monkeypatch.setattr(sh, "resultado_documento", lambda *a, **k: {})
+    monkeypatch.setattr(sh, "_status_documento", lambda r: {"A": "READY"})
+    monkeypatch.setattr(sh, "baixar_documento", lambda *a, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    out = sh.gerar_etiqueta({"x": 1}, ["A"], rastreios={"A": "BR1", "Z": "BR9"}, token="TOK")
+    assert out == b"PK\x03\x04"                            # Z extra ignorado, nao erra
+
+
 def test_numero_rastreio_le_response(monkeypatch):
     monkeypatch.setattr(sh, "_get_shop",
                         lambda cred, token, path, params: {"response": {"tracking_number": "BR9 "}})
@@ -398,6 +426,24 @@ def test_marcar_impresso_namespaceia_por_dia(monkeypatch):
     g = _grupo(dia="2026-06-25")
     sh.marcar_impresso(estado, g, ["SN1"])
     assert estado["2026-06-25|A01|q1"] == ["SN1"]
+
+
+def test_carregar_estado_poda_o_disco(monkeypatch, tmp_path):
+    """persistir_poda=True (5.7): uma entrada antiga (fora da janela) some do
+    ARQUIVO no disco, nao so em memoria — antes o estado_shopee.json crescia sem
+    limite (cada marcacao regravava com as entradas antigas intactas)."""
+    import json
+    from datetime import datetime, timedelta, timezone
+    import estado as est
+    tz = timezone(timedelta(hours=-3))
+    hoje = datetime.now(tz).date().isoformat()
+    antiga = (datetime.now(tz).date() - timedelta(days=999)).isoformat()
+    arq = tmp_path / "estado_shopee.json"
+    monkeypatch.setattr(sh, "ARQUIVO_ESTADO", arq)
+    est.gravar_json(arq, {f"{antiga}|X|q1": ["S0"], f"{hoje}|Y|q1": ["S9"]})
+    out = sh.carregar_estado()
+    assert out == {f"{hoje}|Y|q1": ["S9"]}                 # poda em memoria
+    assert json.loads(arq.read_text()) == out             # E regravou o disco podado
 
 
 def test_imprimir_grupo_organiza_gera_marca(monkeypatch):

@@ -8,6 +8,26 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    # Linter (ruff): pega import morto / nome indefinido antes da revisao manual
+    # (auditoria 5.13). Config em ruff.toml — comeca pelas regras F + E9.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar o ruff
+        run: pip install "ruff==0.15.8"
+
+      - name: Rodar o ruff
+        run: ruff check .
+
   pytest:
     runs-on: ubuntu-latest
     strategy:
