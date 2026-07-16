@@ -23,6 +23,12 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — SKU só de espaços cai no fallback do anúncio (achado da
+  auditoria, provado dinamicamente):** o `if sku` de `identidade()` testava
+  antes do strip — whitespace virava chave/nome vazios. Strip antecipado; o
+  caso vira "anúncio sem SKU" normal (adotável pelo mapa). Nó
+  `identidade_sku_whitespace`.
+
 - **2026-07-16 — Aviso da manhã blindado (achado da auditoria):** `job_bom_dia`
   era o único ponto do bot que enviava exceção crua ao chat (sem `sem_segredos`
   — hoje só-ML, sem segredo na URL; viraria vazamento se o aviso incluir a
