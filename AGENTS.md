@@ -108,6 +108,14 @@ em 2º plano.
   `config.json` (`_sanear_config`): valor de tipo/valor inválido é descartado e
   cai no default (um config editado à mão não pode derrubar a GUI/bot na
   abertura). Valores válidos de identificação: `MODOS_IDENT`.
+- **Gravar config por chave via `atualizar_config(**chaves)`, não `salvar_config`
+  do dict inteiro:** cada GUI mantém `self.config` desde a abertura; regravar o
+  dicionário inteiro reverte em silêncio as chaves que outra instância mudou
+  (lost update — fechar uma GUI de manhã desfazia a conta/marketplace da outra,
+  5.4). `atualizar_config` relê o disco **sob `estado.trava`**, aplica só as
+  chaves do evento e saneia. A GUI mantém `self.config[chave]` local (sua própria
+  visão) e persiste via `atualizar_config(chave=valor)`. `salvar_config` (dict
+  inteiro) fica só para o bot/testes.
 - **Modo "🌐 Ambas" (ML):** radio extra no seletor de conta (dia de motorista
   único). `ProvedorMLAmbas` coleta as contas em sequência e **funde** grupos de
   mesmo SKU+qtd (`fundir_grupos`; sub-grupos em `.por_conta`); imprime cada

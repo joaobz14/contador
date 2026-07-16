@@ -63,7 +63,10 @@ class SeparadorApp:
     def _ao_fechar(self) -> None:
         try:
             self.config["geometria"] = self.root.geometry()
-            core.salvar_config(self.config)
+            # atualizar_config (nao salvar_config): grava SO a geometria, relendo o
+            # disco sob trava — fechar uma GUI aberta ha horas nao reverte a conta/
+            # marketplace que outra instancia trocou (lost update, 5.4).
+            core.atualizar_config(geometria=self.config["geometria"])
         except Exception:
             pass
         self.root.destroy()
@@ -86,14 +89,14 @@ class SeparadorApp:
             nome = (nome or "Gastromaq").strip() or "Gastromaq"
             core.migrar_conta_legado(nome)
             self.config["conta_ativa"] = nome
-            core.salvar_config(self.config)
+            core.atualizar_config(conta_ativa=nome)
         # 2) Garante que a conta ativa aponte para uma conta existente
         contas = core.listar_contas()
         ativa = self.config.get("conta_ativa", "")
         if contas and ativa not in contas:
             ativa = contas[0]
             self.config["conta_ativa"] = ativa
-            core.salvar_config(self.config)
+            core.atualizar_config(conta_ativa=ativa)
         if ativa:
             core.definir_conta(ativa)
 
@@ -347,7 +350,7 @@ class SeparadorApp:
         if self.conta_var.get() == provedores.CONTA_AMBAS:
             self.conta_var.set(self.config.get("conta_ativa", ""))
         self.config["marketplace"] = nome
-        core.salvar_config(self.config)
+        core.atualizar_config(marketplace=nome)
         self._rebuild_conta_selector()
         self._atualizar_visibilidade_topo()
         self.grupos = []
@@ -366,7 +369,7 @@ class SeparadorApp:
                 self.prov = provedores.criar_provedor(self.marketplace)
             self.prov.definir_conta(nome)
             self.config["conta_ativa"] = nome
-            core.salvar_config(self.config)
+            core.atualizar_config(conta_ativa=nome)
         self.grupos = []
         self._tela_inicial()
 
@@ -450,7 +453,7 @@ class SeparadorApp:
         core.MODO_IDENT = self.modo_ident
         core.CARIMBAR_SKU = (self.modo_ident == "carimbo")
         self.config["modo_identificacao"] = self.modo_ident
-        core.salvar_config(self.config)
+        core.atualizar_config(modo_identificacao=self.modo_ident)
 
     def _tela_inicial(self) -> None:
         """Tela de abertura: nada e buscado ate o usuario escolher e clicar."""

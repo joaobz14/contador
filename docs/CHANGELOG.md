@@ -173,6 +173,14 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **`config.json` é atualizado por chave, não regravado inteiro** (auditoria
+  consolidada 5.4): cada GUI guardava `self.config` desde a abertura e, ao salvar
+  qualquer preferência, regravava o dicionário inteiro — a última gravação
+  revertia em silêncio as chaves que outra instância havia mudado (ex.: fechar
+  uma GUI aberta de manhã desfazia a conta/marketplace trocados na outra).
+  Agora `core.atualizar_config(**chaves)` relê o disco **sob trava**, aplica só
+  as chaves daquele evento e grava — a GUI não regrava preferência que não
+  mexeu. O saneamento continua valendo na releitura.
 - **`estado_shopee.json` agora é podado no disco, não só em memória**
   (auditoria 5.7): a Shopee usava `persistir_poda=False`, então cada marcação
   regravava o arquivo com as entradas antigas intactas e ele crescia sem limite.
