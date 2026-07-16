@@ -163,6 +163,17 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Estado corrompido não some mais em silêncio** (auditoria consolidada 5.2):
+  um `estado_grupos.json`/`estado_shopee.json` ilegível (antivírus, disco,
+  edição manual) era lido como `{}` — indistinguível de ausente — e a **próxima
+  marcação gravava por cima**, destruindo o histórico recuperável (todos os
+  grupos do dia voltavam a PENDENTE, sem explicação). Agora o caminho do estado
+  usa `estado.ler_estado`: um arquivo que existe mas não parseia (ou não é um
+  dict) é **movido para `.corrupto`** (conteúdo preservado) com aviso no
+  `separador.log`, e a leitura recomeça vazia — a gravação seguinte cria um
+  arquivo novo sem apagar o antigo. Ausência continua `{}` silencioso (caso
+  legítimo); uma falha **transitória** de leitura (OneDrive/antivírus prendendo
+  o arquivo) **não** renomeia (o arquivo pode estar intacto).
 - **ZIP na Downloads nunca sobrescreve um lote que a Zebra ainda não imprimiu**
   (auditoria consolidada 5.1): o nome do arquivo era determinístico
   (`etiqueta de envio - PRODUTO.zip`), então dois trabalhos com o mesmo rótulo

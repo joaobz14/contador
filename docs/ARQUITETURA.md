@@ -96,6 +96,7 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |
+| `*.corrupto` | estado ilegível preservado por `ler_estado` (ver risco abaixo) | Não | por evento | ❌ Não |
 | **`nomes_sku.json`** | `carregar_nomes` (SKU→nome) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
 | **`skus_por_anuncio.json`** | `carregar_skus_anuncio` (código do anúncio ML sem SKU → SKU) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
 
@@ -139,7 +140,13 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 - **`marcar_impresso`**: perder o merge com o disco OU remover a trava (`arquivo=` →
   `estado.trava`) → GUI e bot apagam a marcação um do outro (inv. 5; sem a trava,
   duas leituras simultâneas perdem a última gravação — reproduzido em teste).
-  Marcar antes da confirmação → imprime errado e some da lista (inv. 1).
+  Marcar antes da confirmação → imprime errado e some da lista (inv. 1). **Ler o
+  estado por `ler_json` em vez de `ler_estado`**: um `estado_grupos.json`/
+  `estado_shopee.json` corrompido viraria `{}` mudo e a marcação seguinte
+  gravaria por cima, destruindo o recuperável (todos os grupos do dia voltam a
+  PENDENTE). `ler_estado` move o corrompido para `.corrupto` com aviso e
+  recomeça vazio, sem apagar o antigo (5.2); ausência segue `{}` silencioso,
+  falha transitória (OSError) não renomeia.
 - **`carregar(persistir_poda=True)`**: regravar a poda **fora da trava** ou **sem
   reler** o disco → a poda de um Atualizar apaga uma marcação concorrente do bot
   (mesma corrida da inv. 5, por uma porta lateral — reproduzido em teste).

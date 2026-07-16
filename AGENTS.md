@@ -133,6 +133,16 @@ em 2º plano.
   (queda de energia não exige refazer o token); `.bak` é gitignorado. O `.bak`
   só vale **ao lado do principal** (a migração de conta o leva junto e remove
   órfãos da raiz) — um `.bak` desgarrado tem refresh_token já rotacionado (morto).
+- **Estado de impressão lê por `estado.ler_estado`, não `ler_json`:** `ler_json`
+  silencia qualquer falha como `{}` (certo p/ config → `_sanear_config`, cred →
+  `.bak`, caches → refazer). No **estado** isso é perigoso: corrompido lido como
+  `{}` faz todos os grupos voltarem a PENDENTE e a **próxima marcação grava por
+  cima**, destruindo o recuperável. `ler_estado` distingue **corrupção**
+  (existe mas não parseia, ou não é dict → move p/ `.corrupto` com aviso e
+  recomeça vazio, sem apagar o antigo) de **ausência** (`{}` silencioso) e de
+  **falha transitória** (OSError → `{}` sem renomear; o arquivo pode estar só
+  preso pelo OneDrive). Usado por `carregar` e pelo `ler` injetado no
+  `marcar_impresso` (núcleo e Shopee). `.corrupto` é gitignorado.
 - **Fuso:** sempre Brasília (`TZ_BR`, `_hoje_br()`, `_amanha_br()`).
 - **Dia de despacho:** a GUI mostra os próximos **dias úteis** (`proximos_dias_uteis()`
   + `rotulo_dia()`) e passa a data escolhida como `dia=` (ML e Shopee filtram igual;
