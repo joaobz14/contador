@@ -626,6 +626,35 @@ def test_post_shop_erro_http_vira_separadorerror_limpo(monkeypatch):
 
 
 # ------------------------------------------ token: adota o do disco (GUI+bot mesma loja)
+def test_obter_token_shopee_rele_o_disco_dentro_da_trava(monkeypatch, tmp_path):
+    """Mesma protecao do nucleo: a releitura do disco acontece DENTRO da trava
+    de arquivo — se outro processo terminou o refresh enquanto esperavamos
+    (simulado pelo context manager injetado), adota o token dele em vez de
+    gastar outro refresh."""
+    import contextlib
+    import time as _t
+
+    arq = tmp_path / "credenciais_shopee.json"
+    monkeypatch.setattr(sh, "ARQUIVO_CRED", arq)
+    sh.core._gravar_json(arq, {"access_token": "", "access_token_exp": 0,
+                               "refresh_token": "R1"})
+    monkeypatch.setattr(sh, "renovar_token",
+                        lambda c: (_ for _ in ()).throw(AssertionError("nao renovar")))
+
+    @contextlib.contextmanager
+    def trava_simulada(caminho):
+        assert caminho == arq
+        sh.core._gravar_json(arq, {"access_token": "DO_OUTRO",
+                                   "access_token_exp": _t.time() + 9999,
+                                   "refresh_token": "R2"})
+        yield
+
+    monkeypatch.setattr(sh._estado, "trava", trava_simulada)
+    cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "R1"}
+    assert sh.obter_token(cred) == "DO_OUTRO"
+    assert cred["refresh_token"] == "R2"
+
+
 def test_obter_token_shopee_adota_token_do_disco(monkeypatch, tmp_path):
     """Se outro processo (bot vs app) ja renovou o token da loja e salvou,
     obter_token adota o do disco em vez de renovar (evita corrida no refresh)."""

@@ -368,17 +368,22 @@ def obter_token(cred: dict) -> str:
     with _LOCK_TOKEN:
         if _token_valido(cred):                      # outra thread ja renovou?
             return cred["access_token"]
-        # Outro PROCESSO (ex.: bot e GUI na MESMA conta) pode ter renovado desde
-        # que carregamos o cred — o lock so serializa threads, nao processos.
-        # Rele o disco e adota o token salvo: se ja houver um valido, NAO
-        # renovamos (evita gastar o refresh_token de uso unico e a corrida que
-        # travaria a conta); se nao, renovamos com o refresh_token MAIS RECENTE.
-        disco = _ler_json(ARQUIVO_CRED)
-        if disco.get("access_token"):
-            cred.update(disco)
-            if _token_valido(cred):
-                return cred["access_token"]
-        return renovar_token(cred)
+        # Outro PROCESSO (ex.: bot e GUI na MESMA conta) pode estar renovando
+        # AGORA — o _LOCK_TOKEN so serializa threads. A trava de arquivo
+        # (estado.trava, .lock ao lado das credenciais) serializa o refresh
+        # entre processos: quem chegar depois espera, RELE o disco e adota o
+        # token que o primeiro salvou, em vez de gastar outro refresh (o
+        # refresh_token e de uso unico e rotaciona — dois refreshes simultaneos
+        # sao a corrida que pode travar a conta). Sem a trava (sistema de
+        # arquivos sem suporte), degrada para o comportamento anterior: rele o
+        # disco do mesmo jeito, so sem a espera.
+        with _estado.trava(ARQUIVO_CRED):
+            disco = _ler_json(ARQUIVO_CRED)
+            if disco.get("access_token"):
+                cred.update(disco)
+                if _token_valido(cred):
+                    return cred["access_token"]
+            return renovar_token(cred)
 
 
 def _espera_retry(resp: requests.Response, tentativa: int) -> float:

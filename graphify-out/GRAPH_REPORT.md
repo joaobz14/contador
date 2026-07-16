@@ -23,6 +23,18 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Refresh de token sob trava entre processos (achado da
+  auditoria):** a releitura do disco não fechava a janela de GUI e bot
+  chegarem **simultâneos** sem token válido — dois refreshes, o 2º com
+  refresh_token já rotacionado (a corrida temida de travar a conta). O ciclo
+  relê-ou-renova do `obter_token` (ML e Shopee) agora roda sob `estado.trava`
+  ao lado das credenciais; quem espera adota o token salvo. 3 testes novos
+  (2 determinísticos + 1 de concorrência real com flock) que falham no código
+  antigo. Nó `token_refresh_trava_processos` (liga os dois `obter_token` e a
+  `estado_trava`). Aprendizado de teste: a fixture `core` neutraliza o
+  `time.sleep` do módulo `time` inteiro — testes de ordenação por sleep devem
+  dispensá-la ou usar sequenciamento determinístico.
+
 - **2026-07-16 — Interface de provedor sem `imprimir_grupo` (achado da
   auditoria):** os 4 métodos eram código morto (GUI usa só `imprimir_lotes`;
   bot/CLI usam as funções de módulo) e marcavam estado direto — risco latente

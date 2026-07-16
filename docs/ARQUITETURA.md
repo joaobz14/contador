@@ -67,7 +67,9 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
    Atualizar apagaria uma marcação que o bot gravou nesse meio-tempo.
 6. Tokens (ML e Shopee) obtidos **sempre via `obter_token`**, nunca `renovar_token`
    direto — o refresh token **rotaciona** e uma corrida pode invalidá-lo.
-7. Refresh de token **serializado por lock** (double-checked).
+7. Refresh de token **serializado por lock** (double-checked) — entre threads
+   (lock) **e entre processos** (trava de arquivo ao lado das credenciais, via
+   `estado.trava`; quem espera adota o token salvo em vez de renovar de novo).
 8. Na Shopee, a etiqueta **só existe após organizar o envio e obter o AWB**.
 9. `create_shipping_document` **exige `tracking_number`** no corpo.
 10. O bot **não imprime grupos da Shopee** (só consulta).
