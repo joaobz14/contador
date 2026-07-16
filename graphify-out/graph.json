@@ -9517,6 +9517,19 @@
       "id": "provedor_sem_imprimir_grupo",
       "community": 3,
       "norm_label": "decisao: a interface de provedor nao tem imprimir_grupo \u2014 os metodos (mortos: gui so usa imprimir_lotes, bot/cli usam as funcoes de modulo) marcavam estado direto e furariam a invariante 1 se um botao novo os chamasse; removidos com teste-guardiao (test_provedores_nao_expoe_imprimir_grupo)"
+    },
+    {
+      "label": "BARREIRA->SOLUCAO: a releitura do disco nao fechava a janela de GUI e bot chegarem SIMULTANEAMENTE sem token valido (dois refreshes; o 2o manda refresh_token ja rotacionado -> pode travar a conta); o ciclo rele-ou-renova do obter_token (ML e Shopee) agora roda sob estado.trava ao lado das credenciais \u2014 quem espera adota o token salvo",
+      "file_type": "rationale",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "token_refresh_trava_processos",
+      "community": 6,
+      "norm_label": "barreira->solucao: a releitura do disco nao fechava a janela de gui e bot chegarem simultaneamente sem token valido (dois refreshes; o 2o manda refresh_token ja rotacionado -> pode travar a conta); o ciclo rele-ou-renova do obter_token (ml e shopee) agora roda sob estado.trava ao lado das credenciais \u2014 quem espera adota o token salvo"
     }
   ],
   "links": [
@@ -26237,6 +26250,56 @@
       "weight": 1.0,
       "source": "provedor_sem_imprimir_grupo",
       "target": "provedores_provedor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "token_refresh_trava_processos",
+      "target": "separador_etiquetas_ml_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "token_refresh_trava_processos",
+      "target": "shopee_api_obter_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "token_refresh_trava_processos",
+      "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_obter_token",
+      "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_obter_token",
+      "target": "estado_trava",
       "confidence_score": 1.0
     }
   ],

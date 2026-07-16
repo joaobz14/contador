@@ -83,6 +83,14 @@ Histórico das principais mudanças do projeto.
   protegendo contra corrida de refresh **entre processos** (GUI + bot na mesma
   conta); `renovar_token` não re-tenta (o `refresh_token` rotaciona e é de uso
   único — re-tentar travaria a conta).
+- **Refresh de token serializado também ENTRE PROCESSOS** (achado da
+  auditoria): a releitura do disco fechava quase toda a janela, mas se GUI e
+  bot chegassem **simultaneamente** sem token válido, os dois renovavam — e o
+  segundo mandava um refresh_token já rotacionado (a corrida que pode travar a
+  conta). Agora o ciclo relê-ou-renova roda sob a **trava de arquivo**
+  (`estado.trava`, a mesma do estado) ao lado das credenciais: quem chega
+  depois espera e **adota** o token salvo pelo primeiro. Degrada suave (sem
+  trava, comportamento anterior). Vale para ML e Shopee.
 
 ### Diagnóstico
 - **Log operacional (`separador.log`, via `registro.py`):** a GUI registra

@@ -115,9 +115,12 @@ em 2º plano.
   direto). Não é persistido no config (escolha pontual).
 - **Token: sempre `obter_token(cred)`** (ML e Shopee) — cache + lock double-checked.
   Nunca chamar `renovar_token` direto: o refresh_token **rotaciona** e uma corrida
-  pode invalidá-lo (travando a conta). Como o lock só cobre **threads**, dentro
-  dele `obter_token` **relê o disco** (`_ler_json(ARQUIVO_CRED)`) e adota o token
-  salvo — protege também **processos** distintos na mesma conta (GUI + bot).
+  pode invalidá-lo (travando a conta). O lock de thread só cobre **threads**;
+  dentro dele o ciclo relê-ou-renova roda sob a **trava de arquivo**
+  (`estado.trava`, `.lock` ao lado das credenciais) que serializa **processos**
+  (GUI + bot na mesma conta): quem chega depois espera, **relê o disco**
+  (`_ler_json(ARQUIVO_CRED)`) e adota o token salvo pelo primeiro — nunca dois
+  refreshes em paralelo. A trava degrada suave (sem ela, relê o disco como antes).
   `renovar_token` **não re-tenta** (`tentativas=1`): re-tentar o refresh grant após
   o servidor já ter rotacionado gastaria um token de uso único.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e

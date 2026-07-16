@@ -126,6 +126,84 @@ def test_obter_token_adota_token_do_disco_de_outro_processo(core, tmp_path, monk
     assert cred["refresh_token"] == "R_NOVO"          # adotou o refresh mais recente do disco
 
 
+def test_obter_token_rele_o_disco_dentro_da_trava_de_processos(core, tmp_path, monkeypatch):
+    """A releitura do disco acontece DEPOIS de adquirir a trava de ARQUIVO:
+    simulamos outro processo que termina o refresh enquanto esperavamos a
+    trava (o context manager injetado grava o token novo na entrada).
+    obter_token deve ADOTAR esse token — nunca disparar um segundo refresh (o
+    refresh_token e de uso unico; a corrida podia travar a conta). No codigo
+    antigo (sem trava), o disco era lido ainda vazio e renovava junto."""
+    import contextlib
+    import time
+
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    core._gravar_json(arq, {"access_token": "", "access_token_exp": 0,
+                            "refresh_token": "R1"})     # vazio ANTES da trava
+    renovacoes = []
+    monkeypatch.setattr(core, "renovar_token",
+                        lambda c: renovacoes.append(1) or "NAO_DEVIA")
+
+    @contextlib.contextmanager
+    def trava_simulada(caminho):
+        assert caminho == arq                     # trava no arquivo certo
+        # "outro processo" terminou o refresh enquanto esperavamos a trava:
+        core._gravar_json(arq, {"access_token": "DO_OUTRO",
+                                "access_token_exp": time.time() + 9999,
+                                "refresh_token": "R2"})
+        yield
+
+    monkeypatch.setattr(core._estado, "trava", trava_simulada)
+    cred = {"access_token": "VELHO", "access_token_exp": 0, "refresh_token": "R1"}
+    assert core.obter_token(cred) == "DO_OUTRO"
+    assert renovacoes == []                       # nenhum refresh gasto
+    assert cred["refresh_token"] == "R2"          # adotou o refresh mais novo
+
+
+def test_obter_token_concorrente_so_um_refresh(tmp_path, monkeypatch):
+    """Concorrencia real (trava de arquivo de verdade): dois 'processos' sem
+    token valido chegam juntos — apenas UM renova; o outro espera a trava e
+    adota o token salvo. Sem a fixture `core` (ela neutraliza o time.sleep,
+    que aqui precisa ser real para segurar a trava)."""
+    import threading
+    import time as _t
+
+    import separador_etiquetas_ml as core_mod
+
+    arq = tmp_path / "credenciais.json"
+    monkeypatch.setattr(core_mod, "ARQUIVO_CRED", arq)
+    core_mod._gravar_json(arq, {"access_token": "", "access_token_exp": 0,
+                                "refresh_token": "R1"})
+    renovacoes = []
+
+    def renovar_lento(cred):
+        _t.sleep(0.1)                             # janela para o 2o chegar
+        renovacoes.append(1)
+        cred["access_token"] = "RENOVADO"
+        cred["access_token_exp"] = _t.time() + 9999
+        cred["refresh_token"] = "R2"
+        core_mod._gravar_json(arq, dict(cred))
+        return "RENOVADO"
+
+    monkeypatch.setattr(core_mod, "renovar_token", renovar_lento)
+    # _LOCK_TOKEN e por processo; para simular DOIS processos, cada worker usa
+    # um lock proprio (senao o lock de thread ja serializa e o teste nao
+    # exercita a trava de arquivo).
+    tokens = []
+
+    def processo():
+        monkeypatch.setattr(core_mod, "_LOCK_TOKEN", threading.Lock())
+        cred = {"access_token": "", "access_token_exp": 0, "refresh_token": "R1"}
+        tokens.append(core_mod.obter_token(cred))
+
+    t1 = threading.Thread(target=processo)
+    t2 = threading.Thread(target=processo)
+    t1.start(); _t.sleep(0.02); t2.start()
+    t1.join(); t2.join()
+    assert tokens == ["RENOVADO", "RENOVADO"]
+    assert renovacoes == [1]                      # UM refresh so (o 2o adotou)
+
+
 def test_renovar_token_nao_retenta_o_refresh_grant(core, monkeypatch):
     """O refresh grant NAO pode ser re-tentado: um retry apos o servidor ja ter
     rotacionado o refresh_token (uso unico) gastaria um token invalido."""

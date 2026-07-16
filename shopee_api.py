@@ -236,15 +236,17 @@ def obter_token(cred: dict) -> str:
     with _LOCK_TOKEN:
         if _token_valido(cred):                      # outra thread ja renovou?
             return cred["access_token"]
-        # Outro PROCESSO (bot e GUI consultando a mesma loja) pode ter renovado —
-        # o lock so cobre threads. Rele o disco e adota o token salvo antes de
-        # gastar o refresh_token (mesma protecao do nucleo).
-        disco = core._ler_json(ARQUIVO_CRED)
-        if disco.get("access_token"):
-            cred.update(disco)
-            if _token_valido(cred):
-                return cred["access_token"]
-        return renovar_token(cred)
+        # Trava de ARQUIVO entre processos (mesma protecao do nucleo): bot e
+        # GUI na mesma loja nao renovam em paralelo — quem chega depois espera
+        # e adota o token salvo pelo primeiro, sem gastar outro refresh.
+        # Degrada suave: sem trava, rele o disco como antes.
+        with _estado.trava(ARQUIVO_CRED):
+            disco = core._ler_json(ARQUIVO_CRED)
+            if disco.get("access_token"):
+                cred.update(disco)
+                if _token_valido(cred):
+                    return cred["access_token"]
+            return renovar_token(cred)
 
 
 # ---------------------------------------------------------------------------
