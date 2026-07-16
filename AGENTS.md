@@ -164,7 +164,14 @@ em 2º plano.
   SKU → nome. Editável na GUI pelo botão **✏ Nomes** (`EditorNomes`, com setas
   ↑/↓); use `carregar_nomes()`/`salvar_nomes()` (apara, descarta vazios). A **ordem
   das chaves é significativa e PRESERVADA** (não alfabética) — é a ordem de
-  separação (ver ordenação abaixo).
+  separação (ver ordenação abaixo). **Editores são instância única e travados na
+  operação (5.5):** `EditorNomes`/`EditorSkusAnuncio` são editores de
+  *substituição total* (a ordem importa, não dá para mesclar duas edições); um 2º
+  clique traz a janela aberta para frente (`_focar_editor_aberto`) em vez de abrir
+  outra que sobrescreveria a primeira. Os botões ✏ Nomes / 🏷 SKUs / inline 🏷
+  Atribuir SKU ficam **desabilitados durante `ocupado`** e nada muta `self.grupos`
+  no meio de uma impressão (`_atribuir_sku` e o `_fechar` do EditorNomes checam
+  `ocupado`; o arquivo já foi salvo, reflete no próximo render).
 - **Anúncio ML sem SKU → SKU:** anúncios antigos sem `seller_sku` caem no código
   do anúncio (`{item_id}:{var_id}` ou `GTIN:…`) como chave e usam o título como
   nome. O de-para **`skus_por_anuncio.json`** (versionado) os **adota** num SKU do

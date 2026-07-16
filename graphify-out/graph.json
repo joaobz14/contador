@@ -9795,6 +9795,33 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "editores_instancia_unica",
+      "label": "BARREIRA->SOLUCAO (auditoria 5.5): EditorNomes/EditorSkusAnuncio sao editores de SUBSTITUICAO TOTAL (a ordem das chaves e a ordem de separacao \u2014 nao da para mesclar duas edicoes). Abrir dois partia do mesmo snapshot e o 2o a salvar apagava o 1o (perda silenciosa de nomes/ordem). Agora instancia unica (_focar_editor_aberto traz a janela aberta para frente) + botoes desabilitados durante ocupado + _atribuir_sku e o _fechar do EditorNomes checam ocupado para nao mutar self.grupos no meio da thread de impressao",
+      "norm_label": "barreira->solucao (auditoria 5.5): editornomes/editorskusanuncio sao editores de substituicao total (a ordem das chaves e a ordem de separacao \u2014 nao da para mesclar duas edicoes). abrir dois partia do mesmo snapshot e o 2o a salvar apagava o 1o (perda silenciosa de nomes/ordem). agora instancia unica (_focar_editor_aberto traz a janela aberta para frente) + botoes desabilitados durante ocupado + _atribuir_sku e o _fechar do editornomes checam ocupado para nao mutar self.grupos no meio da thread de impressao",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "_origin": "manual",
+      "community": 9,
+      "file_type": "code",
+      "id": "separador_gui_separadorapp_focar_editor_aberto",
+      "label": "_focar_editor_aberto()",
+      "metadata": {
+        "kind": "function",
+        "language": "python"
+      },
+      "norm_label": "_focar_editor_aberto()",
+      "source_file": "separador_gui.py",
+      "source_location": "L983"
     }
   ],
   "links": [
@@ -27025,6 +27052,56 @@
       "weight": 1.0,
       "source": "config_por_chave",
       "target": "separador_etiquetas_ml_sanear_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_abrir_editor_nomes",
+      "target": "separador_gui_separadorapp_focar_editor_aberto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "editores_instancia_unica",
+      "target": "separador_gui_separadorapp_abrir_editor_nomes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "editores_instancia_unica",
+      "target": "separador_gui_separadorapp_focar_editor_aberto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "editores_instancia_unica",
+      "target": "separador_gui_editornomes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "editores_instancia_unica",
+      "target": "separador_gui_separadorapp_ocupar",
       "confidence_score": 1.0
     }
   ],

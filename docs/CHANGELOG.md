@@ -5,6 +5,16 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Interface
+- **Editores de Nomes e SKUs com instância única e travados durante a operação**
+  (auditoria consolidada 5.5): abrir o mesmo editor duas vezes partia do mesmo
+  snapshot e a última janela a salvar apagava o que a primeira gravou (perda
+  silenciosa de nomes ou da **ordem de separação**). Agora um 2º clique no botão
+  traz a janela já aberta para frente em vez de abrir outra. Os botões ✏ Nomes /
+  🏷 SKUs (e o inline 🏷 Atribuir SKU) ficam **desabilitados durante coleta/
+  impressão** — nenhuma edição muta `self.grupos` enquanto a thread de impressão
+  os percorre; fechar o editor de Nomes durante uma impressão não reaplica na
+  lista em memória (os nomes já foram salvos no arquivo, refletem no próximo
+  render).
 - **Seletor de dias quebra em linha em vez de cortar** (achado da auditoria):
   numa janela estreita (ou com contagens de 2+ dígitos) o 5º dia útil sumia à
   direita. Agora os chips de dia reposicionam em várias linhas conforme a

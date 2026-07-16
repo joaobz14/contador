@@ -23,6 +23,15 @@
   (referência do operador) até a próxima coleta. Nós `shopee_api_somar_rastreios`
   (união sem duplicar, ordem estável) + `awb_uniao_parcial` (rationale).
 
+- **2026-07-16 — Editores instância única + travados na operação (auditoria
+  consolidada 5.5):** `EditorNomes`/`EditorSkusAnuncio` são editores de
+  substituição total (a ordem é a ordem de separação — não dá para mesclar); abrir
+  dois clobbava. Agora um 2º clique foca a janela aberta (`_focar_editor_aberto`),
+  os botões ficam desabilitados durante `ocupado`, e `_atribuir_sku`/`_fechar` do
+  EditorNomes checam `ocupado` para não mutar `self.grupos` no meio da impressão.
+  Nós `separador_gui_separadorapp_focar_editor_aberto` (code) +
+  `editores_instancia_unica` (rationale).
+
 - **2026-07-16 — `config.json` atualizado por chave, sob trava (auditoria
   consolidada 5.4):** cada GUI regravava o dicionário inteiro a partir de um
   `self.config` velho — a última gravação revertia em silêncio as chaves de

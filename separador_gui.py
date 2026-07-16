@@ -29,6 +29,8 @@ class SeparadorApp:
         self.grupos: list = []
         self.estado: dict = {}
         self.ocupado = False
+        self._editor_nomes = None             # instancia unica dos editores (5.5)
+        self._editor_skus = None
         self.config = core.aplicar_config()   # aplica conta_ativa + identificacao
         # Modo de identificacao do produto na impressao: carimbo | divisoria | nenhuma.
         self.modo_ident = self.config.get("modo_identificacao")
@@ -134,11 +136,13 @@ class SeparadorApp:
             r.pack(side="left", padx=(0, 8))
             self._radios_mkt.append(r)
         # Editor de nomes amigaveis (SKU -> nome), a direita da linha da loja.
-        ttk.Button(topo_mkt, text="✏ Nomes",
-                   command=self.abrir_editor_nomes).pack(side="right")
+        self.btn_nomes = ttk.Button(topo_mkt, text="✏ Nomes",
+                                    command=self.abrir_editor_nomes)
+        self.btn_nomes.pack(side="right")
         # Gerenciador do de-para "anuncio sem SKU -> SKU" (ML).
-        ttk.Button(topo_mkt, text="🏷 SKUs",
-                   command=self.abrir_editor_skus).pack(side="right", padx=(0, 6))
+        self.btn_skus = ttk.Button(topo_mkt, text="🏷 SKUs",
+                                   command=self.abrir_editor_skus)
+        self.btn_skus.pack(side="right", padx=(0, 6))
 
         topo = ttk.Frame(self.root, padding=10)
         topo.pack(fill="x")
@@ -378,6 +382,11 @@ class SeparadorApp:
         estado = "disabled" if ocupado else "normal"
         self.btn_atualizar.config(state=estado)
         self.btn_proximo.config(state=estado)
+        # Editores desabilitados durante coleta/impressão: abrir um editor mexe em
+        # nomes_sku/skus_anuncio e reaplica em self.grupos — não pode correr com a
+        # thread de impressão que itera os grupos (auditoria 5.5).
+        self.btn_nomes.config(state=estado)
+        self.btn_skus.config(state=estado)
         self.cb_ident.config(state="disabled" if ocupado else "readonly")
         for r in self.radios:
             r.config(state=estado)
@@ -695,6 +704,8 @@ class SeparadorApp:
         """Pergunta o SKU do sistema para adotar o anúncio (grupo sem SKU), salva
         no de-para 'anúncio → SKU' e aplica NA HORA, em memória (sem re-buscar na
         API): a lista re-agrupa igual ao que um Atualizar faria, instantâneo."""
+        if self.ocupado:                             # não mutar self.grupos durante
+            return                                   # coleta/impressão (5.5)
         sku = simpledialog.askstring(
             "Atribuir SKU",
             f"Anúncio sem SKU:\n{g.nome}\n\nCódigo: {g.chave}\n\n"
@@ -968,16 +979,31 @@ class SeparadorApp:
         self.imprimir(pend)
 
     # --------------------------------------------------------- EDITOR DE NOMES
+    def _focar_editor_aberto(self, editor) -> bool:
+        """Se um editor já está aberto, traz para frente em vez de abrir um 2º —
+        duas janelas do mesmo editor partem do mesmo snapshot e a última a salvar
+        apaga o que a primeira gravou (perda silenciosa de nomes/ordem, 5.5)."""
+        if editor is not None and editor.win.winfo_exists():
+            editor.win.lift()
+            editor.win.focus_set()
+            return True
+        return False
+
     def abrir_editor_nomes(self) -> None:
         """Janela para incluir/alterar/remover os nomes amigaveis (SKU -> nome)
         sem editar o JSON na mao. Grava via core.salvar_nomes (atomico) e aplica
-        na lista atual ao fechar, sem precisar reatualizar."""
-        EditorNomes(self)
+        na lista atual ao fechar, sem precisar reatualizar. Instância única (5.5)."""
+        if self.ocupado or self._focar_editor_aberto(self._editor_nomes):
+            return
+        self._editor_nomes = EditorNomes(self)
 
     def abrir_editor_skus(self) -> None:
         """Janela para gerenciar o de-para 'anúncio sem SKU → SKU': adotar os
-        anúncios sem SKU da tela atual e editar/remover os mapeamentos salvos."""
-        EditorSkusAnuncio(self)
+        anúncios sem SKU da tela atual e editar/remover os mapeamentos salvos.
+        Instância única (5.5)."""
+        if self.ocupado or self._focar_editor_aberto(self._editor_skus):
+            return
+        self._editor_skus = EditorSkusAnuncio(self)
 
 
 class EditorNomes:
@@ -1128,9 +1154,12 @@ class EditorNomes:
             messagebox.showerror("Nomes", f"Não consegui salvar:\n{e}", parent=self.win)
 
     def _fechar(self) -> None:
+        self.app._editor_nomes = None                # libera a instância única (5.5)
         # Reaplica os nomes E reordena a lista ja carregada (a nova ordem do bloco
-        # "qtd 1" aparece na hora, sem precisar reatualizar).
-        if self.alterado and self.app.grupos:
+        # "qtd 1" aparece na hora, sem precisar reatualizar). Se estiver ocupado
+        # (impressão em curso), NÃO mexe em self.grupos — os nomes já foram salvos
+        # no arquivo por _salvar_um; o próximo render/Atualizar reflete (5.5).
+        if self.alterado and self.app.grupos and not self.app.ocupado:
             core.aplicar_nomes(self.app.grupos, self.nomes)
             self.app.grupos = core.ordenar_grupos(self.app.grupos)
             try:
@@ -1264,8 +1293,10 @@ class EditorSkusAnuncio:
             messagebox.showerror("SKUs", f"Não consegui salvar:\n{e}", parent=self.win)
 
     def _fechar(self) -> None:
+        self.app._editor_skus = None                 # libera a instância única (5.5)
         # Adotar/mudar SKU muda o agrupamento (via identidade): re-coleta para
-        # aplicar. Só atualiza se algo mudou e já havia dados carregados.
+        # aplicar. Só atualiza se algo mudou e já havia dados carregados (atualizar
+        # já é no-op se estiver ocupado — não corre com a impressão).
         alterou = self.alterado and bool(self.app.grupos)
         self.win.destroy()
         if alterou:
