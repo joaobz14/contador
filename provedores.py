@@ -52,11 +52,14 @@ class Provedor:
         raise NotImplementedError
 
     # ---- impressao --------------------------------------------------------
-    def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
-        raise NotImplementedError
-
+    # NAO ha imprimir_grupo aqui DE PROPOSITO: a GUI imprime tudo (individual
+    # inclusive) por imprimir_lotes, que GERA SEM MARCAR — a marcacao so vem
+    # depois da confirmacao fisica (invariante 1). Um metodo de grupo que
+    # marcasse direto ja existiu, morto, e seria uma arma engatilhada se algum
+    # botao novo o chamasse. Bot e CLI (que marcam direto por design) usam as
+    # funcoes de modulo (core.imprimir_pendentes / shopee_api.imprimir_grupo).
     def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
-        """Imprime varios grupos. Devolve (impressos, falhas)."""
+        """Imprime varios grupos SEM marcar. Devolve (impressos, falhas)."""
         raise NotImplementedError
 
     def reimprimir(self, grupo) -> list:
@@ -114,9 +117,6 @@ class ProvedorML(Provedor):
     def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
         core.marcar_impresso(estado, grupo, ids)
 
-    def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
-        return core.imprimir_pendentes(self._token_atual(), grupo, estado)
-
     def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
         # (impressos, falhas) — o ML nao tem falha parcial, entao falhas=[].
         return core.gerar_zip_lotes(self._token_atual(), grupos, estado, modo=modo), []
@@ -156,12 +156,6 @@ class ProvedorShopee(Provedor):
 
     def marcar_impresso(self, estado: dict, grupo, ids: list) -> None:
         shopee.marcar_impresso(estado, grupo, ids)
-
-    def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
-        return shopee.imprimir_grupo(
-            self._creds(), grupo, estado,
-            branch_id=self.branch_id, sender_real_name=self.sender_real_name,
-        )
 
     def imprimir_lotes(self, grupos: list, estado: dict, *, modo="nenhuma") -> tuple:
         return shopee.imprimir_lotes(
@@ -309,13 +303,6 @@ class ProvedorMLAmbas(Provedor):
         if pendentes:
             core._gerar_zip(f"AMBAS x{len(pendentes)}", "\n".join(partes))
         return pendentes, []
-
-    def imprimir_grupo(self, grupo, estado: dict, *, modo="nenhuma") -> list:
-        impressos, _ = self.imprimir_lotes([grupo], estado, modo=modo)
-        pend = impressos[0][1] if impressos else []
-        if pend:
-            self.marcar_impresso(estado, grupo, pend)
-        return pend
 
     def reimprimir(self, grupo) -> list:
         modo = core._modo_ident_efetivo()

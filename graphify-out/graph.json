@@ -1077,16 +1077,6 @@
       "norm_label": ".marcar_impresso()"
     },
     {
-      "label": ".imprimir_grupo()",
-      "file_type": "code",
-      "source_file": "provedores.py",
-      "source_location": "L55",
-      "_origin": "ast",
-      "id": "provedores_provedor_imprimir_grupo",
-      "community": 2,
-      "norm_label": ".imprimir_grupo()"
-    },
-    {
       "label": ".imprimir_lotes()",
       "file_type": "code",
       "source_file": "provedores.py",
@@ -1187,16 +1177,6 @@
       "norm_label": ".marcar_impresso()"
     },
     {
-      "label": ".imprimir_grupo()",
-      "file_type": "code",
-      "source_file": "provedores.py",
-      "source_location": "L107",
-      "_origin": "ast",
-      "id": "provedores_provedorml_imprimir_grupo",
-      "community": 2,
-      "norm_label": ".imprimir_grupo()"
-    },
-    {
       "label": ".imprimir_lotes()",
       "file_type": "code",
       "source_file": "provedores.py",
@@ -1275,16 +1255,6 @@
       "id": "provedores_provedorshopee_marcar_impresso",
       "community": 2,
       "norm_label": ".marcar_impresso()"
-    },
-    {
-      "label": ".imprimir_grupo()",
-      "file_type": "code",
-      "source_file": "provedores.py",
-      "source_location": "L153",
-      "_origin": "ast",
-      "id": "provedores_provedorshopee_imprimir_grupo",
-      "community": 2,
-      "norm_label": ".imprimir_grupo()"
     },
     {
       "label": ".imprimir_lotes()",
@@ -1425,16 +1395,6 @@
       "id": "provedores_provedormlambas_imprimir_lotes",
       "community": 2,
       "norm_label": ".imprimir_lotes()"
-    },
-    {
-      "label": ".imprimir_grupo()",
-      "file_type": "code",
-      "source_file": "provedores.py",
-      "source_location": "L306",
-      "_origin": "ast",
-      "id": "provedores_provedormlambas_imprimir_grupo",
-      "community": 2,
-      "norm_label": ".imprimir_grupo()"
     },
     {
       "label": ".reimprimir()",
@@ -6730,16 +6690,6 @@
       "norm_label": "test_shopee_coletar_guarda_contagem()"
     },
     {
-      "label": "test_shopee_imprimir_grupo_delega()",
-      "file_type": "code",
-      "source_file": "tests/test_provedores.py",
-      "source_location": "L63",
-      "_origin": "ast",
-      "id": "tests_test_provedores_test_shopee_imprimir_grupo_delega",
-      "community": 13,
-      "norm_label": "test_shopee_imprimir_grupo_delega()"
-    },
-    {
       "label": "test_marcar_impresso_vai_para_o_estado_certo()",
       "file_type": "code",
       "source_file": "tests/test_provedores.py",
@@ -9554,6 +9504,19 @@
       "id": "identidade_sku_whitespace",
       "community": 6,
       "norm_label": "barreira->solucao: seller_sku so de espacos passava no `if sku` antes do strip e virava chave/nome vazios (grupo sem rotulo, estado 'dia||q1'); agora o strip vem antes e o caso cai no fallback do anuncio (adotavel pelo mapa)"
+    },
+    {
+      "label": "DECISAO: a interface de Provedor NAO tem imprimir_grupo \u2014 os metodos (mortos: GUI so usa imprimir_lotes, bot/CLI usam as funcoes de modulo) marcavam estado DIRETO e furariam a invariante 1 se um botao novo os chamasse; removidos com teste-guardiao (test_provedores_nao_expoe_imprimir_grupo)",
+      "file_type": "rationale",
+      "source_file": "provedores.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "provedor_sem_imprimir_grupo",
+      "community": 3,
+      "norm_label": "decisao: a interface de provedor nao tem imprimir_grupo \u2014 os metodos (mortos: gui so usa imprimir_lotes, bot/cli usam as funcoes de modulo) marcavam estado direto e furariam a invariante 1 se um botao novo os chamasse; removidos com teste-guardiao (test_provedores_nao_expoe_imprimir_grupo)"
     }
   ],
   "links": [
@@ -11692,16 +11655,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provedores.py",
-      "source_location": "L55",
-      "weight": 1.0,
-      "source": "provedores_provedor",
-      "target": "provedores_provedor_imprimir_grupo",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
       "source_location": "L58",
       "weight": 1.0,
       "source": "provedores_provedor",
@@ -11885,16 +11838,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provedores.py",
-      "source_location": "L107",
-      "weight": 1.0,
-      "source": "provedores_provedorml",
-      "target": "provedores_provedorml_imprimir_grupo",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
       "source_location": "L111",
       "weight": 1.0,
       "source": "provedores_provedorml",
@@ -11960,17 +11903,6 @@
       "source_location": "L89",
       "weight": 1.0,
       "source": "provedores_provedorml_coletar",
-      "target": "provedores_provedorml_renovar",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L108",
-      "weight": 1.0,
-      "source": "provedores_provedorml_imprimir_grupo",
       "target": "provedores_provedorml_renovar",
       "confidence_score": 1.0
     },
@@ -12074,16 +12006,6 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "provedores.py",
-      "source_location": "L153",
-      "weight": 1.0,
-      "source": "provedores_provedorshopee",
-      "target": "provedores_provedorshopee_imprimir_grupo",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
       "source_location": "L159",
       "weight": 1.0,
       "source": "provedores_provedorshopee",
@@ -12128,17 +12050,6 @@
       "source_location": "L141",
       "weight": 1.0,
       "source": "provedores_provedorshopee_coletar",
-      "target": "provedores_provedorshopee_creds",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L155",
-      "weight": 1.0,
-      "source": "provedores_provedorshopee_imprimir_grupo",
       "target": "provedores_provedorshopee_creds",
       "confidence_score": 1.0
     },
@@ -12195,17 +12106,6 @@
       "weight": 1.0,
       "source": "provedores_provedorshopee_marcar_impresso",
       "target": "provedores_provedormlambas_marcar_impresso",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L154",
-      "weight": 1.0,
-      "source": "provedores_provedorshopee_imprimir_grupo",
-      "target": "provedores_provedormlambas_imprimir_grupo",
       "confidence_score": 1.0
     },
     {
@@ -12348,16 +12248,6 @@
       "weight": 1.0,
       "source": "provedores_provedormlambas",
       "target": "provedores_provedormlambas_envios_pendentes",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L306",
-      "weight": 1.0,
-      "source": "provedores_provedormlambas",
-      "target": "provedores_provedormlambas_imprimir_grupo",
       "confidence_score": 1.0
     },
     {
@@ -12541,17 +12431,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L310",
-      "weight": 1.0,
-      "source": "provedores_provedormlambas_imprimir_grupo",
-      "target": "provedores_provedormlambas_marcar_impresso",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "provedores.py",
@@ -12559,17 +12438,6 @@
       "weight": 1.0,
       "source": "provedores_rationale_266",
       "target": "provedores_provedormlambas_marcar_impresso",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "provedores.py",
-      "source_location": "L307",
-      "weight": 1.0,
-      "source": "provedores_provedormlambas_imprimir_grupo",
-      "target": "provedores_provedormlambas_imprimir_lotes",
       "confidence_score": 1.0
     },
     {
@@ -23355,16 +23223,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_provedores.py",
-      "source_location": "L63",
-      "weight": 1.0,
-      "source": "tests_test_provedores",
-      "target": "tests_test_provedores_test_shopee_imprimir_grupo_delega",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_provedores.py",
@@ -26369,6 +26227,16 @@
       "weight": 1.0,
       "source": "identidade_sku_whitespace",
       "target": "separador_etiquetas_ml_identidade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "provedores.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "provedor_sem_imprimir_grupo",
+      "target": "provedores_provedor",
       "confidence_score": 1.0
     }
   ],

@@ -60,6 +60,12 @@ Histórico das principais mudanças do projeto.
   **gera → confirma fisicamente → marca**, que é a invariante nº 1.
 - **DRY do retry HTTP:** `_com_retry` unifica a lógica de re-tentativa de
   GET/POST no núcleo; remoção de imports mortos.
+- **Interface de provedor sem `imprimir_grupo`** (achado da auditoria): os
+  quatro métodos eram código **morto** (a GUI imprime tudo por
+  `imprimir_lotes`; bot/CLI usam as funções de módulo) e **marcavam estado
+  direto** — se um botão novo os chamasse, furaria a invariante nº 1 (grupo
+  constaria impresso sem confirmação física). Removidos, com teste-guardião
+  que impede o método de voltar.
 
 ### Segurança
 - **Erro da Shopee não vaza mais o token:** os erros HTTP da Shopee passam por
