@@ -320,6 +320,13 @@ Histórico das principais mudanças do projeto.
   pode ser mergeada (viram órfãos), e recuperar do `main` o que ficar de fora.
 
 ### Qualidade
+- **Monitor semanal das APIs (`api-monitor/`):** checagem automática (uma vez por
+  semana, via `claude -p` agendado no Windows) de mudanças na documentação/
+  políticas das APIs do Mercado Livre e da Shopee — só páginas públicas, sem
+  tocar dados da conta. Estrutura, prompt reutilizável, scripts PowerShell de
+  execução e de registro no Agendador de Tarefas, e relatórios por data. O
+  baseline é criado na primeira execução local (o ambiente de nuvem da
+  configuração inicial não alcançava as fontes — ver `api-monitor/README.md`).
 - **Build do GitHub Pages para de falhar (`docs/.nojekyll`):** o Pages publica a
   pasta `docs/` (a página estática de autorização da Shopee, `index.html`) e
   rodava o Jekyll em cima dela sem necessidade — o build quebrava e mandava um ❌
