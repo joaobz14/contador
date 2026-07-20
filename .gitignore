@@ -51,3 +51,4 @@ graphify-out/.graphify_labels.json
 
 # Logs de runtime do monitor de APIs
 api-monitor/logs/
+api-monitor/fetched/

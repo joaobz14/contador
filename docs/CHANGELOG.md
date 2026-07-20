@@ -342,6 +342,11 @@ Histórico das principais mudanças do projeto.
   execução e de registro no Agendador de Tarefas, e relatórios por data. O
   baseline é criado na primeira execução local (o ambiente de nuvem da
   configuração inicial não alcançava as fontes — ver `api-monitor/README.md`).
+  As fontes da Shopee são SPAs (fetch direto vem vazio), então o
+  `run-semanal.ps1` as **pré-renderiza com o Edge headless** (`fetch-render.ps1`,
+  já instalado no Windows) e o Claude compara os arquivos locais. ML API Docs
+  via WebFetch; ML Novidades exige login (sem alternativa pública) → marcada
+  como bloqueada.
 - **Build do GitHub Pages para de falhar (`docs/.nojekyll`):** o Pages publica a
   pasta `docs/` (a página estática de autorização da Shopee, `index.html`) e
   rodava o Jekyll em cima dela sem necessidade — o build quebrava e mandava um ❌
