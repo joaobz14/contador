@@ -186,6 +186,25 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   não consumira (auditoria 5.1). Antes de gerar, a GUI **relê o estado do disco**
   (`prov.carregar_estado`) — pendente calculado sobre estado defasado imprime em
   dobro o que foi marcado por fora (CLI/2ª GUI).
+  **Contrato do app Zebra v1.25.7 (verificado em 20/07/2026):** polling de 1s na
+  pasta; aceita `*.zip` com prefixos ("etiqueta de envio", "etiqueta shopee", …)
+  e `*.plain` de DANFE; **duplicata** é detectada por `nome+tamanho+mtime`
+  (nossos nomes únicos nunca colidem; a reimpressão gera arquivo NOVO → imprime
+  sem popup); os arquivos **devem estar em UTF-8** (o monitor faz decode
+  `errors="ignore"` — bytes CP850/Latin-1 seriam descartados; o `writestr` do
+  núcleo grava UTF-8, nunca converter); o **temporário não pode casar** prefixo
+  nem extensão vigiada (`tmp_saida` → `tmp_*.part`); o botão **"Parar" descarta
+  a fila interna** e, no restart, arquivos na pasta são ignorados — coberto pelo
+  nosso gera→confirma→marca (responder "Não" e imprimir de novo gera arquivo
+  novo); fila interna de 200 segura sem perder (sem throttling do nosso lado).
+  **Compatibilidade confirmada pelos DOIS lados em 20/07/2026** (resposta formal
+  do app Zebra): o filtro do monitor é **primeiro por extensão**
+  (`.endswith(".zip")`/`.endswith(".plain")` — condição garantida como estável
+  pelo autor), e a separadora do Zebra deixa `^CI28` **persistente de
+  propósito** (não vai resetar; inócuo/levemente protetivo, porque a etiqueta de
+  envio ML é gráfico `^GFA`, a Shopee é imagem Z64 e o nosso carimbo é
+  auto-encapsulado `^CI28…^CI0`). Nenhuma mudança exigida de nenhum dos lados;
+  o `tmp_saida` daqui é defesa em profundidade além do exigido.
 
 ## Desempenho da impressão Shopee (medido em produção)
 

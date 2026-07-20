@@ -183,6 +183,21 @@ Histórico das principais mudanças do projeto.
   com o token errado depois de trocar de conta).
 
 ### Robustez
+- **Temporário de saída não casa mais os padrões do monitor da Zebra
+  (`tmp_saida` → `tmp_*.part`):** verificação de compatibilidade com o app Zebra
+  v1.25.7 constatou que o temporário antigo (`nome.zip.tmp`) **começava com um
+  prefixo aceito** pelo monitor — só a extensão `.tmp` o salvava do glob
+  (dependência frágil do matching por extensão do outro app). Agora o temporário
+  segue o formato que o contrato do Zebra pede (item B): prefixo `tmp_` +
+  extensão `.part`, que não casa prefixo nem `*.zip`/`*.plain`. Teste-guardião
+  novo; contrato v1.25.7 (duplicata por nome+tamanho+mtime, UTF-8 obrigatório,
+  "Parar" descarta fila) registrado na ARQUITETURA. Fora isso, a verificação
+  não achou conflito: nomes únicos, reimpressão gera arquivo novo, carimbo
+  `^CI28`/`^CI0` já é o formato recomendado. **Compatibilidade confirmada
+  formalmente pelos dois lados** (resposta do app Zebra, 20/07): nenhuma
+  mudança exigida de nenhum app; o filtro por extensão do monitor é garantido
+  estável, e a separadora do Zebra mantém `^CI28` persistente de propósito
+  (inócuo para nós).
 - **Trava de segurança contra imprimir o mesmo lote em dobro (Shopee/ML):** na
   Shopee a etiqueta sai fisicamente **durante a busca** (o ZIP cai na Downloads e
   a Zebra imprime na hora), mas o app só marca o estado **depois** que você

@@ -1213,6 +1213,19 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
     return "\n".join(partes)
 
 
+def tmp_saida(destino: Path) -> Path:
+    """Arquivo temporario para gravar `destino` na pasta Downloads.
+
+    Prefixo `tmp_` + extensao `.part` de proposito: o nome NAO pode casar nem
+    com os prefixos que o monitor da Zebra aceita ("etiqueta de envio",
+    "etiqueta shopee", ...) nem com as extensoes que ele vigia (*.zip/*.plain).
+    O padrao antigo (`nome.zip.tmp`) comecava com o prefixo aceito e so a
+    extensao .tmp o salvava do glob — dependencia fragil do matching por
+    extensao do outro app. O contrato do app Zebra v1.25.5+ (item B) pede
+    exatamente este formato (`tmp_*.part`)."""
+    return destino.with_name(f"tmp_{destino.name}.part")
+
+
 def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
     """Escolhe um caminho de saida na Downloads que AINDA NAO EXISTE, para nunca
     sobrescrever um arquivo que o monitor da Zebra ainda nao consumiu.
@@ -1223,7 +1236,7 @@ def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
     auditoria 5.1). Preserva o `prefixo` que o monitor reconhece ("etiqueta de
     envio - " no ML, "etiqueta shopee - " na Shopee) e anexa um carimbo de tempo
     de alta resolucao; se ainda assim colidir (duas geracoes no mesmo
-    microssegundo, ou um `.tmp` de outra instancia gravando o mesmo destino),
+    microssegundo, ou um temporario de outra instancia gravando o mesmo destino),
     soma um contador ate achar um nome livre. A correcao vem do laco (garante
     nome livre); o carimbo so o torna legivel e ordenavel.
     """
@@ -1234,7 +1247,7 @@ def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
 
     alvo = candidato("")
     n = 1
-    while alvo.exists() or alvo.with_name(alvo.name + ".tmp").exists():
+    while alvo.exists() or tmp_saida(alvo).exists():
         alvo = candidato(f"-{n}")
         n += 1
     return alvo
@@ -1245,14 +1258,16 @@ def _gerar_zip(rotulo: str, zpl_texto: str) -> Path:
     Monta um ZIP no formato que o impressora_zebra_usb.py reconhece:
       - nome do ZIP comeca com um prefixo aceito ("etiqueta de envio")
       - dentro, um TXT cujo nome contem "etiqueta de envio" (identifica ML)
-    Grava de forma atomica (.tmp -> rename) para o monitor so ver o arquivo pronto.
-    O nome carrega um carimbo unico (nome_saida_unico) para nao sobrescrever um
-    lote que o monitor ainda nao imprimiu.
+    Grava de forma atomica (temporario -> rename) para o monitor so ver o arquivo
+    pronto; o temporario (tmp_saida) tem nome que NAO casa com os prefixos nem
+    extensoes que o monitor vigia. O nome final carrega um carimbo unico
+    (nome_saida_unico) para nao sobrescrever um lote que o monitor ainda nao
+    imprimiu.
     """
     PASTA_DOWNLOADS.mkdir(parents=True, exist_ok=True)
     base = "".join(c if c.isalnum() else "_" for c in rotulo)[:40].strip("_")
     nome_zip = nome_saida_unico(PASTA_DOWNLOADS, "etiqueta de envio - ", base, "zip")
-    tmp = nome_zip.with_name(nome_zip.name + ".tmp")
+    tmp = tmp_saida(nome_zip)
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(f"Etiqueta de envio - {base}.txt", zpl_texto)
     tmp.replace(nome_zip)

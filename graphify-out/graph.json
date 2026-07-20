@@ -9849,6 +9849,33 @@
       "source_file": "separador_gui.py",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "_origin": "manual",
+      "community": 9,
+      "file_type": "code",
+      "id": "separador_etiquetas_ml_tmp_saida",
+      "label": "tmp_saida()",
+      "metadata": {
+        "kind": "function",
+        "language": "python"
+      },
+      "norm_label": "tmp_saida()",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": "L1216"
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 9,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "zebra_contrato_v1257",
+      "label": "CONTRATO EXTERNO (app Zebra v1.25.7, verificado 2026-07-20): o monitor detecta duplicata por nome+tamanho+mtime (nomes unicos do separador nunca colidem; reimpressao gera arquivo NOVO e imprime sem popup); le os arquivos com decode UTF-8 errors=ignore (arquivos DEVEM ser UTF-8 \u2014 writestr do nucleo ja e; nunca CP850); o botao Parar DESCARTA a fila interna e no restart os arquivos da pasta sao ignorados (coberto pelo gera->confirma->marca: responder Nao e reimprimir gera arquivo novo); fila interna de 200 sem perda. BARREIRA->SOLUCAO: o temporario antigo (nome.zip.tmp) comecava com prefixo aceito pelo monitor \u2014 so a extensao .tmp o salvava do glob; tmp_saida grava como tmp_{nome}.part, que nao casa prefixo nem *.zip/*.plain (item B do contrato); teste-guardiao test_tmp_saida_nao_casa_o_que_o_monitor_vigia CONFIRMACAO MUTUA (resposta do app Zebra, 20/07/2026): nenhuma mudanca exigida de nenhum lado; o filtro do monitor e PRIMEIRO por extensao (.endswith .zip/.plain \u2014 condicao garantida estavel pelo autor); a separadora do Zebra deixa ^CI28 persistente DE PROPOSITO (nao vai resetar \u2014 inocuo: etiqueta ML e grafico ^GFA, Shopee e imagem Z64, carimbo daqui e auto-encapsulado). tmp_saida fica como defesa em profundidade alem do exigido",
+      "norm_label": "contrato externo (app zebra v1.25.7, verificado 2026-07-20): o monitor detecta duplicata por nome+tamanho+mtime (nomes unicos do separador nunca colidem; reimpressao gera arquivo novo e imprime sem popup); le os arquivos com decode utf-8 errors=ignore (arquivos devem ser utf-8 \u2014 writestr do nucleo ja e; nunca cp850); o botao parar descarta a fila interna e no restart os arquivos da pasta sao ignorados (coberto pelo gera->confirma->marca: responder nao e reimprimir gera arquivo novo); fila interna de 200 sem perda. barreira->solucao: o temporario antigo (nome.zip.tmp) comecava com prefixo aceito pelo monitor \u2014 so a extensao .tmp o salvava do glob; tmp_saida grava como tmp_{nome}.part, que nao casa prefixo nem *.zip/*.plain (item b do contrato); teste-guardiao test_tmp_saida_nao_casa_o_que_o_monitor_vigia confirmacao mutua (resposta do app zebra, 20/07/2026): nenhuma mudanca exigida de nenhum lado; o filtro do monitor e primeiro por extensao (.endswith .zip/.plain \u2014 condicao garantida estavel pelo autor); a separadora do zebra deixa ^ci28 persistente de proposito (nao vai resetar \u2014 inocuo: etiqueta ml e grafico ^gfa, shopee e imagem z64, carimbo daqui e auto-encapsulado). tmp_saida fica como defesa em profundidade alem do exigido",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -27179,6 +27206,76 @@
       "weight": 1.0,
       "source": "trava_impressao_ponta_a_ponta",
       "target": "prio_contrato_impressao",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_gerar_zip",
+      "target": "separador_etiquetas_ml_tmp_saida",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_salvar_etiqueta",
+      "target": "separador_etiquetas_ml_tmp_saida",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_nome_saida_unico",
+      "target": "separador_etiquetas_ml_tmp_saida",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "zebra_contrato_v1257",
+      "target": "separador_etiquetas_ml_tmp_saida",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "zebra_contrato_v1257",
+      "target": "ext_zebra_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "zebra_contrato_v1257",
+      "target": "zip_nome_unico_pendencia_disco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "zebra_contrato_v1257",
+      "target": "zebra_prefixo_testado",
       "confidence_score": 1.0
     }
   ],
