@@ -230,7 +230,11 @@ em 2º plano.
   relê o estado do disco** (`prov.carregar_estado()` em `_gerar_sem_marcar_thread`):
   os pendentes vêm de `self.estado` da última coleta — sem reler, uma marcação
   gravada por fora (CLI/2ª GUI) sairia em dobro. Releitura é best-effort (falhou
-  → segue com o estado em memória).
+  → segue com o estado em memória). A gravação é atômica via **`tmp_saida`**
+  (`tmp_{nome}.part`): o temporário **não pode casar** com os prefixos nem com as
+  extensões (`*.zip`/`*.plain`) que o monitor vigia — exigência do contrato do
+  app Zebra v1.25.5+ (item B); teste-guardião
+  `test_tmp_saida_nao_casa_o_que_o_monitor_vigia`.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `config.json`, `bot_config.json`, logs (`bot.log`, `shopee_tempos.log`,
   `separador.log`).

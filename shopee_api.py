@@ -632,9 +632,10 @@ def salvar_etiqueta(conteudo: bytes, rotulo: str):
     # nome_saida_unico: carimbo unico para nao sobrescrever uma etiqueta que o
     # monitor da Zebra ainda nao consumiu (mesmo padrao do ML — ver auditoria 5.1).
     destino = core.nome_saida_unico(core.PASTA_DOWNLOADS, "etiqueta shopee - ", base, ext)
-    # Grava em .tmp e renomeia (mesmo padrao do ML): o monitor da Zebra vigia a
-    # pasta e nao pode enxergar o arquivo pela metade (imprimiria corrompido).
-    tmp = destino.with_name(destino.name + ".tmp")
+    # Grava em temporario e renomeia (mesmo padrao do ML): o monitor da Zebra
+    # vigia a pasta e nao pode enxergar o arquivo pela metade (imprimiria
+    # corrompido). tmp_saida: nome que nao casa os prefixos/extensoes do monitor.
+    tmp = core.tmp_saida(destino)
     tmp.write_bytes(conteudo)
     tmp.replace(destino)
     return destino, fmt

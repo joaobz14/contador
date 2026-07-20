@@ -111,7 +111,8 @@ def test_gerar_zip_nome_tem_prefixo_da_zebra_e_contem_o_zpl(core, tmp_path, monk
     destino = core._gerar_zip("Produto X - q2", "^XA teste ^XZ")
     assert destino.name.startswith("etiqueta de envio - ")
     assert destino.suffix == ".zip"
-    assert not list(tmp_path.glob("*.tmp"))          # gravacao atomica: sem .tmp sobrando
+    # gravacao atomica: nenhum temporario sobrando (padrao novo e antigo)
+    assert not list(tmp_path.glob("tmp_*.part")) and not list(tmp_path.glob("*.tmp"))
     with zipfile.ZipFile(destino) as zf:
         nomes = zf.namelist()
         assert nomes and "etiqueta de envio" in nomes[0].lower()   # o app tambem olha o interno
@@ -133,8 +134,8 @@ def test_gerar_zip_consecutivo_nao_sobrescreve(core, tmp_path, monkeypatch):
 
 
 def test_nome_saida_unico_soma_contador_na_colisao(core, tmp_path, monkeypatch):
-    """Com o carimbo de tempo fixo, um nome ja ocupado (arquivo pronto OU .tmp
-    em andamento de outra instancia) faz somar -1, -2... ate achar um livre."""
+    """Com o carimbo de tempo fixo, um nome ja ocupado (arquivo pronto OU
+    temporario em andamento de outra instancia) faz somar -1, -2... ate um livre."""
     from datetime import datetime as _dt
 
     class _DTFixo:
@@ -148,7 +149,27 @@ def test_nome_saida_unico_soma_contador_na_colisao(core, tmp_path, monkeypatch):
     p1.write_bytes(b"")                                        # ocupa p1 (arquivo pronto)
     p2 = core.nome_saida_unico(tmp_path, "PRE - ", "X", "zip")
     assert p2.name == "PRE - X - 143205_123456-1.zip"
-    p2.with_name(p2.name + ".tmp").write_bytes(b"")           # ocupa p2 via .tmp em andamento
+    core.tmp_saida(p2).write_bytes(b"")           # ocupa p2 via temporario em andamento
     p3 = core.nome_saida_unico(tmp_path, "PRE - ", "X", "zip")
     assert p3.name == "PRE - X - 143205_123456-2.zip"
     assert not p3.exists()                                     # devolve um caminho livre
+
+
+def test_tmp_saida_nao_casa_o_que_o_monitor_vigia(core, tmp_path):
+    """GUARDIAO do contrato com o app Zebra (v1.25.5+, item B): o temporario NAO
+    pode comecar com prefixo aceito pelo monitor nem casar as extensoes vigiadas
+    (*.zip / *.plain) — senao o monitor pode ler o arquivo pela metade. O padrao
+    antigo (nome.zip.tmp) comecava com o prefixo e so a extensao o salvava."""
+    import fnmatch
+    prefixos_do_monitor = (
+        "etiqueta mercadoenvios", "etiqueta de envio", "etiqueta shopee",
+        "etiquetamercadoenvios", "etiquetadeenvio", "shipping-label",
+        "etiqueta zpl", "danfe-simplificado-")
+    for destino in (tmp_path / "etiqueta de envio - X - 143205_1.zip",
+                    tmp_path / "etiqueta shopee - SN9 - 143205_1.zip"):
+        tmp = core.tmp_saida(destino)
+        assert tmp.name.startswith("tmp_") and tmp.name.endswith(".part")
+        assert not any(tmp.name.lower().startswith(p) for p in prefixos_do_monitor)
+        assert not fnmatch.fnmatch(tmp.name, "*.zip")
+        assert not fnmatch.fnmatch(tmp.name, "*.plain")
+        assert tmp.parent == destino.parent          # mesmo diretorio (rename atomico)

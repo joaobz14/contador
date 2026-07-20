@@ -32,6 +32,20 @@
   Nós `separador_gui_separadorapp_focar_editor_aberto` (code) +
   `editores_instancia_unica` (rationale).
 
+- **2026-07-20 — Contrato do app Zebra v1.25.7 + temporário `tmp_*.part`:**
+  verificação de compatibilidade com o app externo atualizado (doc do dono):
+  duplicata por nome+tamanho+mtime, decode UTF-8 `errors=ignore`, "Parar"
+  descarta a fila, fila interna de 200 — tudo sem conflito com o separador
+  atual (nomes únicos, reimpressão gera arquivo novo, carimbo `^CI28`/`^CI0`
+  já no formato recomendado). Única correção: o temporário antigo
+  (`nome.zip.tmp`) começava com prefixo aceito pelo monitor; `tmp_saida` grava
+  como `tmp_{nome}.part` (não casa prefixo nem extensão vigiada), com
+  teste-guardião. **Compatibilidade confirmada pelos dois lados em 20/07**
+  (resposta formal do Zebra): filtro por extensão garantido estável; a
+  separadora do Zebra mantém `^CI28` persistente de propósito (inócuo). Nós
+  `separador_etiquetas_ml_tmp_saida` (code) + `zebra_contrato_v1257`
+  (rationale).
+
 - **2026-07-16 — Trava de ponta a ponta na impressão (anti-duplicata Shopee/ML):**
   a etiqueta Shopee sai fisicamente durante a busca (ZIP→Downloads→Zebra), mas o
   estado só é marcado após "saíram certo?"; `_confirmar_e_marcar` reabilitava os

@@ -51,7 +51,7 @@ def test_detectar_formato_zpl_cru_shopee():
 
 
 def test_salvar_etiqueta_atomico_sem_tmp_sobrando(monkeypatch, tmp_path):
-    # Grava em .tmp e renomeia: o monitor da Zebra nunca ve o arquivo pela metade.
+    # Grava em temporario e renomeia: o monitor nunca ve o arquivo pela metade.
     monkeypatch.setattr(sh.core, "PASTA_DOWNLOADS", tmp_path)
     destino, fmt = sh.salvar_etiqueta(b"PK\x03\x04conteudo", "SN123")
     assert fmt == "ZIP" and destino.read_bytes() == b"PK\x03\x04conteudo"
@@ -59,7 +59,8 @@ def test_salvar_etiqueta_atomico_sem_tmp_sobrando(monkeypatch, tmp_path):
     # uma etiqueta ainda nao consumida — ver auditoria 5.1).
     assert destino.name.startswith("etiqueta shopee - SN123 - ")
     assert destino.suffix == ".zip"
-    assert not list(tmp_path.glob("*.tmp"))            # nao deixa lixo .tmp
+    # nao deixa temporario sobrando (padrao novo e antigo)
+    assert not list(tmp_path.glob("tmp_*.part")) and not list(tmp_path.glob("*.tmp"))
 
 
 def test_salvar_etiqueta_consecutiva_nao_sobrescreve(monkeypatch, tmp_path):
