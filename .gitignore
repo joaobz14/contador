@@ -52,3 +52,11 @@ graphify-out/.graphify_labels.json
 # Logs de runtime do monitor de APIs
 api-monitor/logs/
 api-monitor/fetched/
+
+# Saidas geradas do monitor de APIs (locais, recriadas a cada run) - versionar so
+# a infra (prompt/scripts/README), nao os baselines/relatorios (evita a churn que
+# fazia todo git pull colidir na maquina de operacao)
+api-monitor/relatorios/*
+!api-monitor/relatorios/.gitkeep
+api-monitor/snapshots/*.md
+!api-monitor/snapshots/README.md

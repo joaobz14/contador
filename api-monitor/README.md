@@ -19,9 +19,9 @@ api-monitor/
 ├─ run-semanal.ps1        # executa a checagem (pré-renderiza Shopee + chama `claude -p`)
 ├─ fetch-render.py        # renderiza as SPAs da Shopee via Playwright (Edge do sistema)
 ├─ registrar-tarefa.ps1   # registra a tarefa semanal no Agendador do Windows (rode 1x)
-├─ snapshots/             # conteúdo da última coleta, 1 arquivo por fonte
+├─ snapshots/             # conteúdo da última coleta, 1 arquivo por fonte (gitignorado; só o README é versionado)
 ├─ fetched/               # HTML pré-renderizado das SPAs (gitignorado, efêmero)
-├─ relatorios/            # 1 relatório por execução (api-monitor/relatorios/<data>.md)
+├─ relatorios/            # 1 relatório por execução (gitignorado; local)
 └─ logs/                  # saída bruta de cada run (gitignorado)
 ```
 
@@ -91,7 +91,9 @@ Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:
   foi feita num ambiente de nuvem com **rede restrita** que não alcança essas
   fontes (ver `relatorios/2026-07-17.md`). O baseline é criado na **primeira
   execução local**. Não há nada inventado.
-- **Churn de git:** cada execução sobrescreve `snapshots/` e cria um novo
-  `relatorios/<data>.md`. Isso aparece como alteração no git — versione (fica um
-  histórico bonito do que mudou nas APIs) ou ignore, como preferir. `logs/` já é
-  gitignorado.
+- **Saídas do monitor NÃO são versionadas:** `snapshots/` (baselines),
+  `relatorios/`, `fetched/` e `logs/` são **gitignorados** — são dados locais,
+  recriados a cada run. Só a **infra** (prompt, scripts, `README`, o
+  `snapshots/README.md`) é versionada. Isso evita que cada execução deixasse a
+  cópia de `C:\contador` "modificada" e travasse o `git pull` seguinte. O
+  baseline vive na sua máquina; a primeira execução o cria.

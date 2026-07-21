@@ -123,7 +123,12 @@ def gravar_json(caminho: Path, dados) -> None:
     do outro no meio da escrita). Continua terminando em .tmp (gitignore)."""
     tmp = caminho.with_name(f"{caminho.name}.{os.getpid()}.tmp")
     texto = json.dumps(dados, ensure_ascii=False, indent=2)
-    with open(tmp, "w", encoding="utf-8") as f:
+    # newline="\n": grava LF mesmo no Windows (o modo texto padrao converteria
+    # para CRLF). Os JSONs versionados (nomes_sku.json, skus_por_anuncio.json) sao
+    # LF no repo (.gitattributes eol=lf); sem isto a GUI os reescrevia em CRLF e
+    # eles ficavam "modificados" para sempre, colidindo em todo git pull. Nos JSONs
+    # gitignorados (estado/config/cache) o fim de linha e indiferente.
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         f.write(texto)
         f.flush()
         try:
