@@ -48,6 +48,22 @@ def test_filtrar_pula_cacheados_e_cacheia_terminais(core, tmp_path, monkeypatch)
     assert "10" in cache and "30" in cache and "20" not in cache
 
 
+def test_filtrar_preenche_stats_diagnostico(core, tmp_path, monkeypatch):
+    monkeypatch.setattr(core, "ARQUIVO_ENVIOS_CACHE", tmp_path / "cache.json")
+    env_por_sid = {
+        10: _envio("shipped", "delivered_to_carrier"),
+        20: _envio("ready_to_ship", core.SUBSTATUS_IMPRIMIR),
+    }
+    monkeypatch.setattr(core, "buscar_envio", lambda token, sid: env_por_sid[sid])
+    core._salvar_envios_cache({"30": _hoje()})   # 30 ja no cache
+
+    stats: dict = {}
+    core.filtrar_para_imprimir("tok", [{"shipping": {"id": s}} for s in (10, 20, 30)],
+                               stats=stats)
+    # 10 e 20 re-consultados; 30 pulado pelo cache; so o 20 fica pronto.
+    assert stats == {"checados": 2, "cache_hits": 1, "prontos": 1}
+
+
 def test_filtrar_nao_cacheia_ready_to_print(core, tmp_path, monkeypatch):
     monkeypatch.setattr(core, "ARQUIVO_ENVIOS_CACHE", tmp_path / "cache.json")
     monkeypatch.setattr(core, "buscar_envio",

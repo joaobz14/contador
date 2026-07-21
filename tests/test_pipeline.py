@@ -6,10 +6,12 @@ def _prepara(core, monkeypatch, prontos):
     monkeypatch.setattr(core, "buscar_pedidos", lambda token, seller: [{} for _ in prontos])
     chamou = {"progresso": False}
 
-    def fake_filtrar(token, pedidos, progresso=None):
+    def fake_filtrar(token, pedidos, progresso=None, stats=None):
         if progresso:
             progresso(len(prontos), len(prontos))
             chamou["progresso"] = True
+        if stats is not None:
+            stats.update(checados=len(prontos), cache_hits=0, prontos=len(prontos))
         return prontos
 
     monkeypatch.setattr(core, "filtrar_para_imprimir", fake_filtrar)
