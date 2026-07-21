@@ -38,14 +38,20 @@ Push-Location $ProjetoDir
 try {
     "[$([DateTime]::Now)] Iniciando checagem semanal (cwd=$ProjetoDir)" | Tee-Object -FilePath $LogFile
 
-    # Pre-renderiza as fontes SPA (Shopee) via Edge headless -> api-monitor/fetched/.
-    # O claude compara esses arquivos locais em vez de tentar o WebFetch (que numa
-    # SPA pega casca vazia). Best-effort: se falhar, o claude marca "bloqueada".
-    $fetchScript = Join-Path $ScriptDir 'fetch-render.ps1'
-    if (Test-Path $fetchScript) {
-        "[$([DateTime]::Now)] Pre-renderizando fontes SPA (Edge headless)..." | Tee-Object -FilePath $LogFile -Append
-        try { & $fetchScript *>&1 | Tee-Object -FilePath $LogFile -Append }
+    # Pre-renderiza as fontes SPA (Shopee) via Playwright dirigindo o Edge do
+    # sistema (fetch-render.py) -> api-monitor/fetched/. O claude compara esses
+    # arquivos locais em vez de tentar o WebFetch (que numa SPA pega casca vazia).
+    # Best-effort: se python/playwright faltar, avisa e o claude marca "bloqueada".
+    $fetchPy = Join-Path $ScriptDir 'fetch-render.py'
+    $py = (Get-Command python -ErrorAction SilentlyContinue).Source
+    if (-not $py) { $py = (Get-Command py -ErrorAction SilentlyContinue).Source }
+    if ($py -and (Test-Path $fetchPy)) {
+        "[$([DateTime]::Now)] Pre-renderizando fontes SPA (Playwright/Edge)..." | Tee-Object -FilePath $LogFile -Append
+        try { & $py $fetchPy *>&1 | Tee-Object -FilePath $LogFile -Append }
         catch { "  aviso: pre-render falhou: $($_.Exception.Message)" | Tee-Object -FilePath $LogFile -Append }
+    }
+    else {
+        "  aviso: python nao encontrado no PATH - Shopee nao sera pre-renderizada" | Tee-Object -FilePath $LogFile -Append
     }
 
     # -p (--print): modo nao-interativo, imprime o resultado e sai.
