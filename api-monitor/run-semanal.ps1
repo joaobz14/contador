@@ -36,6 +36,16 @@ Push-Location $ProjetoDir
 try {
     "[$([DateTime]::Now)] Iniciando checagem semanal (cwd=$ProjetoDir)" | Tee-Object -FilePath $LogFile
 
+    # Pre-renderiza as fontes SPA (Shopee) via Edge headless -> api-monitor/fetched/.
+    # O claude compara esses arquivos locais em vez de tentar o WebFetch (que numa
+    # SPA pega casca vazia). Best-effort: se falhar, o claude marca "bloqueada".
+    $fetchScript = Join-Path $ScriptDir 'fetch-render.ps1'
+    if (Test-Path $fetchScript) {
+        "[$([DateTime]::Now)] Pre-renderizando fontes SPA (Edge headless)..." | Tee-Object -FilePath $LogFile -Append
+        try { & $fetchScript *>&1 | Tee-Object -FilePath $LogFile -Append }
+        catch { "  aviso: pre-render falhou: $($_.Exception.Message)" | Tee-Object -FilePath $LogFile -Append }
+    }
+
     # -p (--print): modo nao-interativo, imprime o resultado e sai.
     # --permission-mode bypassPermissions: roda sem pedir confirmacao (tarefa
     #   automatica, sem ninguem para responder prompts). Se preferir restringir,

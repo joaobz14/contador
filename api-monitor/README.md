@@ -16,20 +16,35 @@ Objetivo: pegar cedo depreciação de endpoint, nova política, prazo, taxa, etc
 ```
 api-monitor/
 ├─ prompt-semanal.md      # o prompt que a rotina roda toda semana
-├─ run-semanal.ps1        # executa a checagem (chama `claude -p`)
+├─ run-semanal.ps1        # executa a checagem (pré-renderiza Shopee + chama `claude -p`)
+├─ fetch-render.ps1       # renderiza as SPAs da Shopee via Edge headless
 ├─ registrar-tarefa.ps1   # registra a tarefa semanal no Agendador do Windows (rode 1x)
 ├─ snapshots/             # conteúdo da última coleta, 1 arquivo por fonte
+├─ fetched/               # HTML pré-renderizado das SPAs (gitignorado, efêmero)
 ├─ relatorios/            # 1 relatório por execução (api-monitor/relatorios/<data>.md)
 └─ logs/                  # saída bruta de cada run (gitignorado)
 ```
 
 ## Como funciona
 
-`run-semanal.ps1` roda o **próprio Claude Code** (`claude -p`) com o texto de
-`prompt-semanal.md`, a partir da raiz do projeto. O Claude busca cada fonte,
-compara com o snapshot salvo, lista só o que mudou de fato, sobrescreve o
-snapshot e grava um relatório em `relatorios/<data>.md` (com aviso de "requer
-atenção" quando a mudança afeta operação real).
+`run-semanal.ps1` primeiro **pré-renderiza as fontes SPA da Shopee** com o
+**Edge headless** (já instalado no Windows — `fetch-render.ps1`), salvando o DOM
+já hidratado em `fetched/`. Depois roda o **próprio Claude Code** (`claude -p`)
+com o texto de `prompt-semanal.md`: o Claude lê a Shopee dos arquivos locais e
+busca o ML direto, compara com o snapshot salvo, lista só o que mudou de fato,
+sobrescreve o snapshot e grava `relatorios/<data>.md` (com "requer atenção"
+quando a mudança afeta operação real).
+
+### Cobertura real das 4 fontes
+
+- **ML API Docs** (fonte 2): via WebFetch — **funciona**.
+- **Shopee Announcements / Documents** (3, 4): SPAs — capturadas via **Edge
+  headless** (`fetch-render.ps1`). Se o Edge não renderizar na sua máquina, o
+  log de `run-semanal.ps1` avisa e o relatório marca "bloqueada" (sem inventar).
+- **ML Novidades** (fonte 1): a página `/devcenter/news/` exige **login** (área
+  logada do console) — não há URL/RSS público equivalente, então não é
+  automatizável por fetch. Fica marcada como bloqueada. As mudanças de **API**
+  de verdade aparecem na fonte 2 (API Docs), que é monitorada.
 
 ## Instalação (uma vez, na máquina Windows)
 
