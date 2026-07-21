@@ -93,6 +93,7 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `envios_cache.json` | `filtrar_para_imprimir` (envios finalizados) | Não | por conta | ❌ Não |
 | `awb_cache_shopee.json` | cache de AWB da Shopee (`_cachear_awbs`/`preencher_rastreios`) | Não | por máquina | ❌ Não |
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
+| `shopee_tempos.log` / `ml_tempos.log` | cronometragem por fase (`_log_tempos`) — diagnóstico | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |
@@ -225,6 +226,32 @@ loja real e **não muda o tempo** — organizar é latência fixa do AWB, não n
 chamadas. Mantido (sem downside), mas **não é o ganho**. Regra prática para a Shopee:
 o AWB é um piso intransponível; o ganho está em **paralelizar por pedido** as chamadas
 que a plataforma processa concorrentemente (a geração do documento).
+
+## Desempenho do "Atualizar" do ML
+
+As 3 fases de `coletar_grupos` (`buscar_pedidos` → `filtrar_para_imprimir` →
+`extrair_itens`+`agrupar`) **já são paralelas** (`ThreadPoolExecutor`). A fase que
+domina o tempo é o **filtro**: uma chamada `GET /shipments/{id}` por pedido, para
+decidir quem está `ready_to_print` e qual o dia de despacho.
+
+**Causa de "ficou mais lento com o tempo":** o cache `envios_cache.json` só guarda
+status **terminais** (`STATUS_TERMINAIS`: shipped/delivered/cancelled/not_delivered)
+— uma vez terminais, esses são pulados para sempre (dentro da janela). Mas um pedido
+`paid` que ainda **não** virou `ready_to_print` **nunca** entra no cache, então é
+re-consultado em **todo** Atualizar. Conforme o volume de pedidos pagos-não-despachados
+na janela de `DIAS_JANELA=30` cresce, a fase de filtro cresce junto. Não é regressão
+de código — é volume × latência da API.
+
+**Feito (medida antes de otimizar mais):** `filtrar_para_imprimir` subiu de 12 → **20
+workers**; `coletar_grupos` registra cada fase (com nº de envios re-consultados vs.
+pulados pelo cache) em **`ml_tempos.log`** (via `_log_tempos` do núcleo; gitignorado,
+só contagens/segundos). Com esse log dá para confirmar o ganho e decidir o próximo passo.
+
+**Próximo passo (não feito — área de risco):** cache de **TTL curto** para envios
+não-terminais-e-não-prontos, para o Atualizar repetido não re-consultar todos. O risco
+é esconder um envio que virou `ready_to_print` **dentro** do TTL (o operador não veria
+o pronto até o TTL expirar) — por isso exige definir o TTL e aceitar o trade-off antes.
+Registrado em `PRIORIDADES_TECNICAS.md`.
 
 ## Perguntas que o grafo enriquecido deve responder
 

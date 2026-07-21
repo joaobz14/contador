@@ -65,6 +65,10 @@ ARQUIVO_SKUS_ANUNCIO = PASTA_SCRIPT / "skus_por_anuncio.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
+# Cronometragem por fase do "Atualizar" do ML (busca x filtro de envios x extrair).
+# Diagnostico local para saber ONDE o tempo vai antes de otimizar (como o
+# shopee_tempos.log). Gitignorado; so contagens e segundos, nunca dados sensiveis.
+ARQUIVO_TEMPOS = PASTA_SCRIPT / "ml_tempos.log"
 # Preferencias do app (ex.: carimbar o SKU), editaveis pela tela.
 ARQUIVO_CONFIG = PASTA_SCRIPT / "config.json"
 PASTA_CONTAS = PASTA_SCRIPT / "contas"
@@ -750,11 +754,16 @@ def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str
     return ped, sid, status
 
 
-def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None) -> list[dict]:
+def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
+                          stats: dict | None = None) -> list[dict]:
     """Mantem pedidos em ready_to_print. progresso(feitos, total) e chamado por pedido.
 
     Pula os envios ja conhecidos como finalizados (cache de status terminais),
     reduzindo bastante as chamadas a API em atualizacoes repetidas.
+
+    Se `stats` (dict) for passado, preenche com contagens de diagnostico
+    (`checados` = envios re-consultados, `cache_hits` = pulados pelo cache,
+    `prontos`). Default None nao muda nada para os chamadores existentes.
     """
     cache = _carregar_envios_cache()
     hoje = _hoje_br()
@@ -766,7 +775,10 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None) -> li
     prontos: list[dict] = []
     novos_terminais: dict = {}
     feitos = 0
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    # 20 workers (era 12): a fase mais cara e uma chamada /shipments por pedido
+    # nao-terminal; mais concorrencia encurta o "Atualizar". Ha retry+Retry-After
+    # (ver _com_retry) para absorver 429 se a API reclamar.
+    with ThreadPoolExecutor(max_workers=20) as ex:
         for ped, sid, status in ex.map(lambda p: _avaliar_pedido(token, p), a_checar):
             feitos += 1
             if progresso:
@@ -781,6 +793,10 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None) -> li
         print()
     cache.update(novos_terminais)
     _salvar_envios_cache(_limpar_envios_cache(cache))
+    if stats is not None:
+        stats["checados"] = total
+        stats["cache_hits"] = len(pedidos) - total
+        stats["prontos"] = len(prontos)
     return prontos
 
 
@@ -958,6 +974,27 @@ class Coleta:
     grupos: list[Grupo]
 
 
+def _log_tempos(n_pedidos: int, busca: float, filtro: float, extrair: float,
+                stats: dict) -> None:
+    """Anexa uma linha com o tempo de cada fase do 'Atualizar' do ML. Nunca
+    levanta (diagnostico nao pode atrapalhar a operacao) e nunca guarda dados
+    sensiveis — so contagens e segundos (como o _log_tempos da Shopee)."""
+    try:
+        total = busca + filtro + extrair
+        checados = stats.get("checados", 0)
+        cache_hits = stats.get("cache_hits", 0)
+        prontos = stats.get("prontos", 0)
+        linha = (f"{datetime.now():%Y-%m-%d %H:%M:%S} | {n_pedidos} pedido(s) | "
+                 f"busca {busca:5.1f}s | filtro {filtro:5.1f}s "
+                 f"({checados} checados, {cache_hits} cache) | "
+                 f"extrair {extrair:5.1f}s | {prontos} prontos | "
+                 f"total {total:5.1f}s\n")
+        with open(ARQUIVO_TEMPOS, "a", encoding="utf-8") as f:
+            f.write(linha)
+    except OSError:
+        pass
+
+
 def coletar_grupos(
     token: str, seller_id: str, *, dia: str | None = None,
     somente_hoje: bool = True, progresso=None,
@@ -970,8 +1007,12 @@ def coletar_grupos(
     Selecao do alvo: se `dia` (YYYY-MM-DD) for informado, usa esse dia de
     despacho; senao, `somente_hoje` decide entre hoje e todos os dias.
     """
+    _t0 = time.perf_counter()
     pedidos = buscar_pedidos(token, seller_id)
-    prontos = filtrar_para_imprimir(token, pedidos, progresso=progresso)
+    _t1 = time.perf_counter()
+    stats: dict = {}
+    prontos = filtrar_para_imprimir(token, pedidos, progresso=progresso, stats=stats)
+    _t2 = time.perf_counter()
     if dia is not None:
         alvo = [p for p in prontos if p["_envio"]["expected_date"] == dia]
     elif somente_hoje:
@@ -981,6 +1022,7 @@ def coletar_grupos(
         alvo = prontos
     itens = extrair_itens(token, alvo)
     grupos = agrupar(itens)
+    _log_tempos(len(pedidos), _t1 - _t0, _t2 - _t1, time.perf_counter() - _t2, stats)
     aplicar_nomes(grupos, carregar_nomes())
     if dia is not None:
         # Grupos de um dia especifico carregam esse dia para o estado de

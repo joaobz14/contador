@@ -162,6 +162,26 @@ dependendo do terminal. Vale garantir:
 
 Essa mudanca nao afeta regra de negocio, mas melhora manutencao e suporte.
 
+## 8. Cache de TTL curto para envios ML nao-prontos (desempenho do Atualizar)
+
+A fase mais cara do "Atualizar" do ML e o filtro de envios (`filtrar_para_imprimir`):
+uma chamada `GET /shipments/{id}` por pedido nao-terminal. O cache `envios_cache.json`
+so guarda status **terminais**, entao um pedido `paid` que ainda nao virou
+`ready_to_print` e re-consultado a **cada** Atualizar. Conforme o volume de pedidos
+pagos-nao-despachados na janela de `DIAS_JANELA=30` cresce, essa fase cresce junto.
+
+Ja feito (baixo risco): filtro subiu para 20 workers e `coletar_grupos` registra os
+tempos por fase em `ml_tempos.log` (via `_log_tempos`) — inclui quantos envios foram
+re-consultados vs. pulados pelo cache. **Meca com esse log antes de decidir o passo
+seguinte.**
+
+Passo seguinte (medio risco, adiado): guardar tambem os **nao-terminais-e-nao-prontos**
+com um **TTL curto** (ex.: algumas horas), para o Atualizar repetido no mesmo dia nao
+re-consultar todos. O risco e **esconder um envio que virou `ready_to_print` dentro do
+TTL** — o operador nao veria o pronto ate o TTL expirar. So implementar apos definir um
+TTL conservador e aceitar explicitamente o trade-off (ou dar um "forcar releitura" que
+ignora o cache curto). Nao mexer sem essa decisao.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:

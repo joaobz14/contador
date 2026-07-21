@@ -4,6 +4,19 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Desempenho
+- **"Atualizar" do ML mais rápido + cronometragem por fase:** a fase cara do
+  Atualizar é o filtro de envios (uma chamada `GET /shipments/{id}` por pedido
+  não-terminal), que agora roda com **20 workers** (era 12) — mais concorrência
+  encurta o tempo total, com o retry/`Retry-After` já existente absorvendo 429.
+  Para saber onde o tempo vai antes de otimizar mais, `coletar_grupos` passou a
+  registrar cada fase (busca / filtro / extrair, com nº de envios re-consultados
+  vs. pulados pelo cache) em **`ml_tempos.log`** (gitignorado, só contagens e
+  segundos — espelha o `shopee_tempos.log`). A causa de fundo (pedido `paid`
+  ainda não `ready_to_print` é re-consultado a cada Atualizar) fica registrada em
+  `PRIORIDADES_TECNICAS.md` como candidato a cache de TTL curto — adiado por tocar
+  área de risco (não pode esconder um envio que ficou pronto dentro do TTL).
+
 ### Qualidade / operação
 - **Fim da churn de git na máquina de operação:** dois atritos recorrentes que
   faziam todo `git pull` em `C:\contador` colidir foram removidos na origem.

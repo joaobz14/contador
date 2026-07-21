@@ -242,7 +242,7 @@ em 2º plano.
   `test_tmp_saida_nao_casa_o_que_o_monitor_vigia`.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `config.json`, `bot_config.json`, logs (`bot.log`, `shopee_tempos.log`,
-  `separador.log`).
+  `ml_tempos.log`, `separador.log`).
 - **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
   loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
   sem debugger. Duas regras: (1) log **nunca** atrapalha a operação (defensivo,
@@ -293,6 +293,18 @@ em 2º plano.
   em paralelo por pedido** (`_gerar_lote`; a Shopee processa requests
   concorrentes em paralelo) — mediu ~70% menos na fase de gerar. Cronometragem
   por fase em `shopee_tempos.log` (`_log_tempos`, gitignorado).
+- **Desempenho do "Atualizar" ML:** as 3 fases (`buscar_pedidos` → `filtrar_para_imprimir`
+  → `extrair_itens`+`agrupar`) já são paralelas. A fase cara é o **filtro** — uma
+  chamada `GET /shipments/{id}` por pedido **não-terminal** (o cache de envios
+  `envios_cache.json` só guarda status **terminais**, então pedido `paid` ainda não
+  `ready_to_print` é re-consultado a cada Atualizar; cresce com o volume da janela
+  de `DIAS_JANELA=30`). `filtrar_para_imprimir` roda com **20 workers** e aceita um
+  `stats={}` opcional (checados/cache_hits/prontos) que `coletar_grupos` loga por
+  fase em `ml_tempos.log` (`_log_tempos` do núcleo, gitignorado; espelha o da
+  Shopee — nunca levanta, só contagens/segundos). Para cortar a re-consulta que
+  cresce, o próximo passo é um **cache de TTL curto** para envios não-terminais-e-não-prontos
+  (backlog em `PRIORIDADES_TECNICAS.md`) — mexe em área de risco (não pode esconder
+  um envio que virou `ready_to_print` dentro do TTL), por isso ficou fora deste lote.
 - A etiqueta térmica vem como **ZIP com ZPL (`~DGR/Z64`) dentro** — a Zebra imprime
   direto; não reembrulhar.
 - **Erro da Shopee não pode vazar o token (HTTP E transporte):** a URL assinada

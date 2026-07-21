@@ -20,6 +20,7 @@ awb_cache_shopee.json
 config.json
 bot.log
 shopee_tempos.log
+ml_tempos.log
 separador.log
 *.tmp
 *.bak

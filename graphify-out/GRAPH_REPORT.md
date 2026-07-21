@@ -6,6 +6,17 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-21 — Desempenho do "Atualizar" ML (medir + acelerar sem risco):** a
+  fase cara é o filtro de envios (`filtrar_para_imprimir`, uma chamada
+  `GET /shipments/{id}` por pedido não-terminal); ficou mais lento com o tempo
+  porque `envios_cache.json` só guarda status **terminais** — pedido `paid` ainda
+  não `ready_to_print` é re-consultado a cada Atualizar e cresce com o volume da
+  janela `DIAS_JANELA=30`. Feito: filtro 12→**20 workers** e `coletar_grupos` loga
+  cada fase (checados vs. cache_hits, via `stats` opcional) em `ml_tempos.log`
+  (`_log_tempos` do núcleo, gitignorado; espelha o da Shopee). Adiado (área de
+  risco, `PRIORIDADES_TECNICAS #8`): cache de TTL curto para não-prontos. Nós:
+  `ml_atualizar_desempenho` (rationale), `separador_etiquetas_ml_log_tempos`.
+
 - **2026-07-15 — Persistência pós-confirmação tolerante (revisão P2):** falha ao
   gravar o estado depois do "sim" não estoura mais o callback do Tk nem passa em
   silêncio — `_marcar_lote_tolerante` (puro, testável sem display) oferece
