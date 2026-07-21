@@ -9876,6 +9876,19 @@
       "source_file": "separador_etiquetas_ml.py",
       "source_location": null,
       "source_url": null
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "gravar_json_lf",
+      "label": "BARREIRA->SOLUCAO (git churn na maquina de operacao): a GUI reescrevia os JSONs versionados (nomes_sku.json, skus_por_anuncio.json) em CRLF no Windows e eles ficavam \"modificados\" para sempre contra o repo (LF via .gitattributes eol=lf), colidindo em todo git pull. gravar_json passou a abrir com newline=\"\\n\" (grava LF). De par: as saidas do monitor de APIs (relatorios/snapshots/fetched/logs) foram gitignoradas \u2014 so a infra e versionada",
+      "norm_label": "barreira->solucao (git churn na maquina de operacao): a gui reescrevia os jsons versionados (nomes_sku.json, skus_por_anuncio.json) em crlf no windows e eles ficavam \"modificados\" para sempre contra o repo (lf via .gitattributes eol=lf), colidindo em todo git pull. gravar_json passou a abrir com newline=\"\\n\" (grava lf). de par: as saidas do monitor de apis (relatorios/snapshots/fetched/logs) foram gitignoradas \u2014 so a infra e versionada",
+      "source_file": "estado.py",
+      "source_location": null,
+      "source_url": null
     }
   ],
   "links": [
@@ -27276,6 +27289,26 @@
       "weight": 1.0,
       "source": "zebra_contrato_v1257",
       "target": "zebra_prefixo_testado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "estado.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "gravar_json_lf",
+      "target": "estado_gravar_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "gravar_json_lf",
+      "target": "separador_etiquetas_ml_salvar_nomes",
       "confidence_score": 1.0
     }
   ],

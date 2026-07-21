@@ -4,6 +4,16 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Qualidade / operação
+- **Fim da churn de git na máquina de operação:** dois atritos recorrentes que
+  faziam todo `git pull` em `C:\contador` colidir foram removidos na origem.
+  (1) `gravar_json` passa a gravar **LF** (`newline="\n"`) — a GUI reescrevia os
+  JSONs versionados (`nomes_sku.json`, `skus_por_anuncio.json`) em CRLF no
+  Windows e eles ficavam "modificados" para sempre contra o repo (que é LF).
+  (2) as saídas geradas do monitor de APIs (`api-monitor/relatorios/`,
+  `snapshots/*.md`, `fetched/`, `logs/`) agora são **gitignoradas** — só a infra
+  é versionada; os baselines/relatórios são locais, recriados a cada run.
+
 ### Interface
 - **Editores de Nomes e SKUs com instância única e travados durante a operação**
   (auditoria consolidada 5.5): abrir o mesmo editor duas vezes partia do mesmo

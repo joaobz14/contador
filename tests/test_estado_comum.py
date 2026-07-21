@@ -78,6 +78,18 @@ def test_carregar_sem_persistir_nao_regrava(core, tmp_path):
 
 
 # -------------------------------------------- estado corrompido visivel (5.2)
+def test_gravar_json_escreve_lf_nao_crlf(tmp_path):
+    """Grava LF mesmo no Windows (newline='\\n'): os JSONs versionados
+    (nomes_sku.json, skus_por_anuncio.json) sao LF no repo; sem isto a GUI os
+    reescrevia em CRLF e eles ficavam 'modificados' para sempre, colidindo em
+    todo git pull na maquina de operacao."""
+    arq = tmp_path / "x.json"
+    estado.gravar_json(arq, {"a": 1, "b": [2, 3]})
+    dados = arq.read_bytes()
+    assert b"\r\n" not in dados          # nenhuma quebra CRLF
+    assert b"\n" in dados                # mas tem LF (indent=2 gera multilinha)
+
+
 def test_ler_estado_ausente_e_silencioso(tmp_path):
     """Arquivo ausente = {} silencioso (caso legitimo: primeiro uso do dia)."""
     assert estado.ler_estado(tmp_path / "nao_existe.json") == {}

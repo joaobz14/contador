@@ -139,10 +139,15 @@ em 2º plano.
   `renovar_token` **não re-tenta** (`tentativas=1`): re-tentar o refresh grant após
   o servidor já ter rotacionado gastaria um token de uso único.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e
-  leitura tolerante. Credenciais têm espelho **`.bak`** com auto-recuperação
-  (queda de energia não exige refazer o token); `.bak` é gitignorado. O `.bak`
-  só vale **ao lado do principal** (a migração de conta o leva junto e remove
-  órfãos da raiz) — um `.bak` desgarrado tem refresh_token já rotacionado (morto).
+  leitura tolerante. `gravar_json` abre com **`newline="\n"`** — grava **LF**
+  mesmo no Windows; sem isso a GUI reescrevia os JSONs **versionados**
+  (`nomes_sku.json`, `skus_por_anuncio.json`, que o repo mantém em LF via
+  `.gitattributes eol=lf`) em CRLF e eles ficavam "modificados" para sempre,
+  colidindo em todo `git pull` da máquina de operação. Credenciais têm espelho
+  **`.bak`** com auto-recuperação (queda de energia não exige refazer o token);
+  `.bak` é gitignorado. O `.bak` só vale **ao lado do principal** (a migração de
+  conta o leva junto e remove órfãos da raiz) — um `.bak` desgarrado tem
+  refresh_token já rotacionado (morto).
 - **Estado de impressão lê por `estado.ler_estado`, não `ler_json`:** `ler_json`
   silencia qualquer falha como `{}` (certo p/ config → `_sanear_config`, cred →
   `.bak`, caches → refazer). No **estado** isso é perigoso: corrompido lido como
