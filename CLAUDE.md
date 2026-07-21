@@ -5,7 +5,11 @@
 > 2. Para **arquitetura/relações** ("quem chama X?", "o que quebra se eu mexer em
 >    Y?"), **consulte o grafo `graphify-out/`** (skill graphify: `query`/`path`/
 >    `explain`; sem o CLI, leia `graph.json`) e `docs/ARQUITETURA.md` — **antes**
->    de reler arquivos crus.
+>    de reler arquivos crus. Já para **comportamento/desempenho** ("por que está
+>    lento", "o que este código faz de fato"), leia a **fonte**: o grafo orienta
+>    (onde olhar e por quê), mas número e fluxo exato (workers, timeouts, laços,
+>    semântica de cache) só o código tem — a **camada AST** do grafo é um snapshot
+>    e pode defasar. Regra curta: grafo p/ orientar, código p/ decidir/mudar.
 > 3. **Antes de mexer em estado / token / impressão**, `docs/ARQUITETURA.md` é
 >    leitura obrigatória (12 invariantes críticas + áreas de risco).
 > 4. **NÃO** rode `graphify hook install` (apagaria a camada de docs do grafo).
