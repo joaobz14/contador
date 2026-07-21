@@ -2,11 +2,11 @@
 # Executa a checagem semanal das APIs (ML + Shopee) rodando o proprio Claude Code
 # (claude -p) com o prompt de api-monitor/prompt-semanal.md.
 #
-# Roda na maquina Windows do dono (rede aberta). Nao usa Git Bash — PowerShell
+# Roda na maquina Windows do dono (rede aberta). Nao usa Git Bash - PowerShell
 # nativo, para evitar traducao de caminho Windows->shell.
 #
 # Uso manual:  powershell -NoProfile -ExecutionPolicy Bypass -File api-monitor\run-semanal.ps1
-# (o Agendador de Tarefas chama exatamente esta linha — ver registrar-tarefa.ps1)
+# (o Agendador de Tarefas chama exatamente esta linha - ver registrar-tarefa.ps1)
 
 $ErrorActionPreference = 'Stop'
 
@@ -29,7 +29,9 @@ if (-not (Get-Command $Claude -ErrorAction SilentlyContinue)) {
     throw "Comando 'claude' nao encontrado no PATH. Ajuste a variavel `$Claude neste script."
 }
 
-$prompt = Get-Content -Path $PromptFile -Raw
+# -Encoding UTF8: o prompt-semanal.md tem acentos; sem forcar UTF-8 o PS 5.1 le
+# como ANSI e o prompt chega mojibake no claude.
+$prompt = Get-Content -Path $PromptFile -Raw -Encoding UTF8
 
 # Trabalha na raiz do projeto (o prompt referencia caminhos relativos: api-monitor/...).
 Push-Location $ProjetoDir
