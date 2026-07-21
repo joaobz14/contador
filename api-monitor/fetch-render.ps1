@@ -1,6 +1,6 @@
 # fetch-render.ps1
 # Pre-renderiza as fontes que sao SPA (JavaScript no cliente) usando o Edge
-# headless — que JA vem no Windows, sem instalar nada — e salva o DOM ja
+# headless - que JA vem no Windows, sem instalar nada - e salva o DOM ja
 # hidratado em api-monitor/fetched/<slug>.html. O run-semanal.ps1 chama isto
 # ANTES do claude, para o claude comparar arquivos LOCAIS em vez de depender do
 # WebFetch (que numa SPA pega so a casca vazia).
@@ -9,7 +9,7 @@
 # capturada pelo caminho normal, e o /devcenter/news/ e login (nem Edge resolve).
 #
 # Se o Edge nao renderizar (saida vazia/suspeita), o log avisa e o claude cai
-# no comportamento de "fonte bloqueada" — nada quebra.
+# no comportamento de "fonte bloqueada" - nada quebra.
 
 $ErrorActionPreference = 'Stop'
 $ScriptDir = $PSScriptRoot
@@ -28,7 +28,7 @@ $edge = @("$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
           "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe") |
         Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 if (-not $edge) {
-    Write-Warning "Edge nao encontrado — Shopee nao sera pre-renderizada (o claude marcara como bloqueada)."
+    Write-Warning "Edge nao encontrado - Shopee nao sera pre-renderizada (o claude marcara como bloqueada)."
     return
 }
 Write-Host "Edge: $edge"
@@ -57,7 +57,7 @@ foreach ($f in $fontes) {
             Move-Item -Force $tmp $out
             # heuristica so para o LOG (o claude decide de verdade): SPA que nao
             # renderizou costuma vir bem curta.
-            $flag = if ($len -lt 2000) { 'SUSPEITO (curto — pode ser casca vazia/login)' } else { 'ok' }
+            $flag = if ($len -lt 2000) { 'SUSPEITO (curto - pode ser casca vazia/login)' } else { 'ok' }
             Write-Host ("  -> {0} bytes [{1}] -> {2}" -f $len, $flag, $out)
         }
         else {
