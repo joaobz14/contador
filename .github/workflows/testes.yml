@@ -47,7 +47,10 @@ jobs:
         run: python tools/validar_obsidian.py
 
       - name: Testar o validador
-        run: pip install pytest && pytest tests/test_validar_obsidian.py -q
+        # --noconftest: o teste so usa a stdlib (nao as fixtures do
+        # tests/conftest.py, que importa o app e exigiria instalar requests).
+        # Mantem o job leve, sem instalar as dependencias da aplicacao.
+        run: pip install pytest && pytest tests/test_validar_obsidian.py -q --noconftest
 
   pytest:
     runs-on: ubuntu-latest
