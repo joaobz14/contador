@@ -45,10 +45,11 @@ Thumbs.db
 .claude/worktrees/
 
 # Obsidian: estado local da interface e cache da maquina (NAO ignorar a pasta
-# .obsidian inteira — app.json/appearance.json/core-plugins.json/graph.json sao
-# config estavel e compartilhada).
+# .obsidian inteira — app.json/appearance.json/core-plugins.json sao config
+# estavel e compartilhada).
 obsidian/.obsidian/workspace.json
 obsidian/.obsidian/workspace-mobile.json
+obsidian/.obsidian/graph.json
 obsidian/.obsidian/cache/
 obsidian/.trash/
 
