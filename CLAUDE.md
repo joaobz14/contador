@@ -35,7 +35,7 @@ repo) monitora e imprime.
 | `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
-| `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless) e `graph_sync.py` (sincronizador seguro do grafo Graphify). |
+| `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify) e `validar_obsidian.py` (validador do cofre `obsidian/`). |
 | `api-monitor/` | Rotina **semanal** que checa mudanças nas docs/políticas públicas das APIs (ML+Shopee), sem dados de conta (Playwright/Edge + `claude -p`; saídas gitignoradas). |
 
 ## Comandos
@@ -74,6 +74,12 @@ em 2º plano.
   sugerido (ordem recomendada de evolução). **`docs/AMAZON_SP_API.md`**:
   levantamento (pesquisa, nada implementado) de como a Amazon SP-API encaixaria
   no app no futuro — o risco decisivo é de negócio/BR (só FBM/MFN gera etiqueta).
+- **`obsidian/` é a base de contexto humano e operacional** (cofre versionado):
+  decisões, conceitos, estado atual, incidentes, runbooks, funcionalidades e
+  orientação para agentes. **Graphify continua sendo a base estrutural/semântica**;
+  o Obsidian não a substitui. Ao **iniciar** uma tarefa, leia `obsidian/IA/Comece
+  aqui.md`, `Fontes de verdade.md` e `Estado atual.md` (o cofre é público — **nunca**
+  ponha segredos nele). Valide com `python tools/validar_obsidian.py` (roda no CI).
 - **`AGENTS.md` é espelho deste arquivo** (adaptado para o Codex: título e
   trailer). Alterou uma convenção aqui? Replique lá.
 - **NÃO rode `graphify hook install`**: o hook reconstrói o grafo só com código
@@ -377,6 +383,11 @@ uma mudança, atualize **o que se aplicar** (faz parte do "pronto", não é opci
   acima); valide **0 arestas órfãs**.
 - **`docs/PRIORIDADES_TECNICAS.md`** — se concluiu um item ou registrou uma
   decisão de "não fazer agora".
+- **`obsidian/`** — verifique/atualize as notas afetadas quando houver mudança de
+  **comportamento, arquitetura, decisão, integração, incidente ou procedimento**
+  operacional (ex.: nova funcionalidade → nota em `Funcionalidades/`; nova decisão →
+  `Decisões/`). Mudança **cosmética/interna sem impacto documental não exige** tocar
+  as notas. Rode `python tools/validar_obsidian.py` (links, frontmatter, segredos).
 
 Regra de ouro: **mudou algo neste guia, replique no espelho `AGENTS.md`.** Cada
 item é barato; a soma evita as brechas (ex.: o CHANGELOG ficar dezenas de commits
