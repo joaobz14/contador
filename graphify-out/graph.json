@@ -12199,7 +12199,7 @@
    "label": "linhas_consolidado()",
    "file_type": "code",
    "source_file": "historico.py",
-   "source_location": "L205",
+   "source_location": "L216",
    "_origin": "manual",
    "id": "historico_linhas_consolidado",
    "community": 8,
@@ -12213,7 +12213,7 @@
    "label": "gerar_pdf()",
    "file_type": "code",
    "source_file": "historico.py",
-   "source_location": "L224",
+   "source_location": "L236",
    "_origin": "manual",
    "id": "historico_gerar_pdf",
    "community": 8,
@@ -12376,7 +12376,7 @@
    "label": "_pdf_escape()",
    "file_type": "code",
    "source_file": "historico.py",
-   "source_location": "L220",
+   "source_location": "L232",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14056,7 +14056,7 @@
    "label": "test_gerar_pdf_valido_e_pagina()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L74",
+   "source_location": "L85",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14070,7 +14070,7 @@
    "label": "test_resumo_dia_vazio()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L86",
+   "source_location": "L97",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14084,7 +14084,7 @@
    "label": "test_poda_descarta_eventos_antigos()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L93",
+   "source_location": "L104",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14098,7 +14098,7 @@
    "label": "test_registrar_e_best_effort_nunca_levanta()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L108",
+   "source_location": "L119",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14112,7 +14112,7 @@
    "label": "test_core_marcar_impresso_registra_no_historico()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L117",
+   "source_location": "L128",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -14126,7 +14126,7 @@
    "label": "test_core_marcar_impresso_nao_conta_reimpressao()",
    "file_type": "code",
    "source_file": "tests/test_historico.py",
-   "source_location": "L131",
+   "source_location": "L142",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16123,6 +16123,34 @@
    "community": 0,
    "norm_label": "validador do cofre (tools/validar_obsidian.py): so stdlib, deterministico, roda no ci (job obsidian) e via tests/test_validar_obsidian.py. checa nos markdown rastreados do obsidian/: links wiki resolvem ([[nota]], |alias, #secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e segredos reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao nome de um campo como vazamento.",
    "_origin": "manual"
+  },
+  {
+   "label": "_nome_sem_sku()",
+   "file_type": "code",
+   "source_file": "historico.py",
+   "source_location": "L205",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "historico_nome_sem_sku",
+   "community": 8,
+   "norm_label": "_nome_sem_sku()"
+  },
+  {
+   "label": "test_consolidado_nao_repete_sku_no_rotulo()",
+   "file_type": "code",
+   "source_file": "tests/test_historico.py",
+   "source_location": "L74",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_historico_test_consolidado_nao_repete_sku_no_rotulo",
+   "community": 56,
+   "norm_label": "test_consolidado_nao_repete_sku_no_rotulo()"
   }
  ],
  "links": [
@@ -16722,6 +16750,16 @@
    "weight": 1.0,
    "source": "historico_gerar_pdf",
    "target": "historico_pdf_escape",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "historico.py",
+   "source_location": "L223",
+   "weight": 1.0,
+   "source": "historico_linhas_consolidado",
+   "target": "historico_nome_sem_sku",
    "confidence_score": 1.0
   },
   {
@@ -22310,6 +22348,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "tests_test_historico_test_consolidado_nao_repete_sku_no_rotulo",
+   "target": "tests_test_historico_agora",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_historico.py",
    "source_location": "L56",
    "weight": 1.0,
    "source": "tests_test_historico_test_consolidado_soma_sku_entre_marketplaces_e_ordena_por_nomes",
@@ -25921,7 +25969,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "historico.py",
-   "source_location": "L224",
+   "source_location": "L236",
    "weight": 1.0,
    "source": "historico",
    "target": "historico_gerar_pdf",
@@ -25951,7 +25999,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "historico.py",
-   "source_location": "L205",
+   "source_location": "L216",
    "weight": 1.0,
    "source": "historico",
    "target": "historico_linhas_consolidado",
@@ -25971,6 +26019,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "historico.py",
+   "source_location": "L205",
+   "weight": 1.0,
+   "source": "historico",
+   "target": "historico_nome_sem_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "historico.py",
    "source_location": "L99",
    "weight": 1.0,
    "source": "historico",
@@ -25981,7 +26039,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "historico.py",
-   "source_location": "L220",
+   "source_location": "L232",
    "weight": 1.0,
    "source": "historico",
    "target": "historico_pdf_escape",
@@ -29871,6 +29929,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
+   "source_location": "L74",
+   "weight": 1.0,
+   "source": "tests_test_historico",
+   "target": "tests_test_historico_test_consolidado_nao_repete_sku_no_rotulo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_historico.py",
    "source_location": "L49",
    "weight": 1.0,
    "source": "tests_test_historico",
@@ -29881,7 +29949,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L131",
+   "source_location": "L142",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_core_marcar_impresso_nao_conta_reimpressao",
@@ -29891,7 +29959,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L117",
+   "source_location": "L128",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_core_marcar_impresso_registra_no_historico",
@@ -29911,7 +29979,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L74",
+   "source_location": "L85",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_gerar_pdf_valido_e_pagina",
@@ -29921,7 +29989,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L93",
+   "source_location": "L104",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_poda_descarta_eventos_antigos",
@@ -29931,7 +29999,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L108",
+   "source_location": "L119",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_registrar_e_best_effort_nunca_levanta",
@@ -29951,7 +30019,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_historico.py",
-   "source_location": "L86",
+   "source_location": "L97",
    "weight": 1.0,
    "source": "tests_test_historico",
    "target": "tests_test_historico_test_resumo_dia_vazio",
@@ -39121,5 +39189,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "bcab879e557d2c6223c7e862e8ee4e69f9fa9c7a"
+ "built_at_commit": "1ec273fbbc3b7169b5ae07319add52182a3c3ccc"
 }

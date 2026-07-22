@@ -25,9 +25,9 @@
   "semantic_hash": "985a368f39808c2974ce2acb4e2a4eb9553205c8"
  },
  ".github/workflows/testes.yml": {
-  "mtime": 1784737295.449448,
-  "ast_hash": "82ad8d2691562ad420936c6ce25499626a636d96",
-  "semantic_hash": "82ad8d2691562ad420936c6ce25499626a636d96"
+  "mtime": 1784738148.4014287,
+  "ast_hash": "aa1d8bdfd0bcd6c33e10f628c1f6fe7983004aa2",
+  "semantic_hash": "aa1d8bdfd0bcd6c33e10f628c1f6fe7983004aa2"
  },
  "AGENTS.md": {
   "mtime": 1784737401.3694458,
@@ -140,14 +140,14 @@
   "semantic_hash": "7a08e6a8e189a922e80127d85b4fd6c86a9a920d"
  },
  "historico.py": {
-  "mtime": 1784736107.8014753,
-  "ast_hash": "e4c7281009b346104c29cd65a9ca3dc3883c615f",
-  "semantic_hash": "e4c7281009b346104c29cd65a9ca3dc3883c615f"
+  "mtime": 1784741860.2412872,
+  "ast_hash": "ade7f49fa111a86e7d710f0e3d1db69706dd9e5d",
+  "semantic_hash": "ade7f49fa111a86e7d710f0e3d1db69706dd9e5d"
  },
  "nomes_sku.json": {
-  "mtime": 1784736107.8014753,
-  "ast_hash": "3905b8debd49513fb416e7115ae38ae6d37dc0a4",
-  "semantic_hash": "3905b8debd49513fb416e7115ae38ae6d37dc0a4"
+  "mtime": 1784739669.0805962,
+  "ast_hash": "bf64dfc1887f93550f422a214d9125f8fe012b56",
+  "semantic_hash": "bf64dfc1887f93550f422a214d9125f8fe012b56"
  },
  "obsidian/.obsidian/app.json": {
   "mtime": 1784736107.8062694,
@@ -163,11 +163,6 @@
   "mtime": 1784736107.806605,
   "ast_hash": "1bfb432d34d450a2d11abdbfed8a986c2dcfa4d6",
   "semantic_hash": "1bfb432d34d450a2d11abdbfed8a986c2dcfa4d6"
- },
- "obsidian/.obsidian/graph.json": {
-  "mtime": 1784736107.806605,
-  "ast_hash": "2333c875bc7fdd5b5b5c9e85e618e42733426407",
-  "semantic_hash": "2333c875bc7fdd5b5b5c9e85e618e42733426407"
  },
  "obsidian/Bem-vindo.md": {
   "mtime": 1784736569.4534647,
@@ -208,6 +203,61 @@
   "mtime": 1784736506.731215,
   "ast_hash": "e3b5d793ed45139ed59dc544d76679dea90d7b09",
   "semantic_hash": "e3b5d793ed45139ed59dc544d76679dea90d7b09"
+ },
+ "obsidian/Funcionalidades/Resumo do dia.md": {
+  "mtime": 1784736764.7494602,
+  "ast_hash": "5d8279fa56429750e727ac76b4bb24829b92a313",
+  "semantic_hash": "5d8279fa56429750e727ac76b4bb24829b92a313"
+ },
+ "obsidian/IA/Comece aqui.md": {
+  "mtime": 1784736658.5894628,
+  "ast_hash": "3205a24fb353953b415a0f2c6a203e9f08d6d775",
+  "semantic_hash": "3205a24fb353953b415a0f2c6a203e9f08d6d775"
+ },
+ "obsidian/IA/Estado atual.md": {
+  "mtime": 1784736725.2574613,
+  "ast_hash": "a2323339a2fb66ef1a22b311f8c3085aac85f317",
+  "semantic_hash": "a2323339a2fb66ef1a22b311f8c3085aac85f317"
+ },
+ "obsidian/IA/Fontes de verdade.md": {
+  "mtime": 1784736682.269462,
+  "ast_hash": "451344bdf6e6e6af03cb7620a26f1190ebfd65d5",
+  "semantic_hash": "451344bdf6e6e6af03cb7620a26f1190ebfd65d5"
+ },
+ "obsidian/IA/Mapa de tarefas.md": {
+  "mtime": 1784736744.0654607,
+  "ast_hash": "ceb02214a214e027bd58bdb4c8b1b8dbfc621931",
+  "semantic_hash": "ceb02214a214e027bd58bdb4c8b1b8dbfc621931"
+ },
+ "obsidian/Marketplaces/Amazon (pesquisa).md": {
+  "mtime": 1784736927.2694566,
+  "ast_hash": "b6154d0e83aeba1569512d1a7867543e7207af1f",
+  "semantic_hash": "b6154d0e83aeba1569512d1a7867543e7207af1f"
+ },
+ "obsidian/Marketplaces/Mercado Livre.md": {
+  "mtime": 1784736904.8174572,
+  "ast_hash": "8abd9b41f26a6a3c561dfda82587a3dc3958215b",
+  "semantic_hash": "8abd9b41f26a6a3c561dfda82587a3dc3958215b"
+ },
+ "obsidian/Marketplaces/Shopee.md": {
+  "mtime": 1784736917.9254568,
+  "ast_hash": "331da7c40e60a10c2583d004a657721f9a272533",
+  "semantic_hash": "331da7c40e60a10c2583d004a657721f9a272533"
+ },
+ "obsidian/README.md": {
+  "mtime": 1784736626.9054635,
+  "ast_hash": "fdbd082313da1cfc08a4c86f1fc03e89084ac1dd",
+  "semantic_hash": "fdbd082313da1cfc08a4c86f1fc03e89084ac1dd"
+ },
+ "obsidian/Runbooks/Recuperar estado ou credencial.md": {
+  "mtime": 1784736876.2134578,
+  "ast_hash": "bfaf6874cb4f897c980b3de9f080c47e47406d0a",
+  "semantic_hash": "bfaf6874cb4f897c980b3de9f080c47e47406d0a"
+ },
+ "obsidian/Runbooks/Setup de credenciais (OAuth).md": {
+  "mtime": 1784736857.5174582,
+  "ast_hash": "8764b6af400ac026320ba1b46349838d7fe4e5e9",
+  "semantic_hash": "8764b6af400ac026320ba1b46349838d7fe4e5e9"
  },
  "obsidian/Sistemas externos.md": {
   "mtime": 1784736990.017455,
@@ -370,9 +420,9 @@
   "semantic_hash": "28b386a155ff2ced85e03cd87b8e84ccc1eb3d1c"
  },
  "tests/test_historico.py": {
-  "mtime": 1784736107.8134754,
-  "ast_hash": "35fe78f1bd6a81a6f57b12ed8aadca01bbda1a0c",
-  "semantic_hash": "35fe78f1bd6a81a6f57b12ed8aadca01bbda1a0c"
+  "mtime": 1784741876.1332881,
+  "ast_hash": "6dccc83b153d324b32a4dced084c4c727cd4564c",
+  "semantic_hash": "6dccc83b153d324b32a4dced084c4c727cd4564c"
  },
  "tests/test_identidade.py": {
   "mtime": 1784202399.1688724,
