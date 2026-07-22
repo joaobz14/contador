@@ -310,7 +310,7 @@ def salvar(arquivo: Path, estado: dict) -> None:
 
 
 def marcar_impresso(ler, salvar_fn, estado: dict, grupo, ids=None, *,
-                    arquivo: Path | None = None) -> None:
+                    arquivo: Path | None = None, registrar=None) -> None:
     """Marca como impressos os ids informados (ou todos do grupo), acumulando
     com os ja registrados no dia.
 
@@ -332,19 +332,32 @@ def marcar_impresso(ler, salvar_fn, estado: dict, grupo, ids=None, *,
     de escrever direto no arquivo."""
     ids = grupo.shipment_ids if ids is None else ids
     chave = chave_estado(grupo)
+    novos: list = []                            # ids que ESTA chamada marcou (delta)
 
     def _ciclo() -> None:
         disco = ler()
         imp = impressos(estado, grupo)          # o que ja sabiamos em memoria
         imp.update(impressos(disco, grupo))     # + o que outro processo gravou
+        antes = set(imp)                        # snapshot ANTES dos recem-impressos
         imp.update(ids)                         # + os recem-impressos
         ordenados = sorted(imp)
         disco[chave] = ordenados                # grava por cima do disco atual
         salvar_fn(disco)
         estado[chave] = ordenados               # reflete na memoria do chamador
+        novos[:] = [i for i in ids if i not in antes]
 
     if arquivo is not None:
         with trava(Path(arquivo)):
             _ciclo()
     else:
         _ciclo()
+
+    # Historico de impressao: so os ids REALMENTE novos (delta), fora da trava do
+    # estado (grava em outro arquivo, com trava propria) e best-effort — uma falha
+    # aqui nao pode derrubar uma marcacao ja gravada. Reimpressao/re-marcacao do
+    # mesmo id nao gera evento (delta vazio).
+    if registrar is not None and novos:
+        try:
+            registrar(novos)
+        except Exception:
+            pass

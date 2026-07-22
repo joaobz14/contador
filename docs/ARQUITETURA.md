@@ -94,6 +94,7 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `awb_cache_shopee.json` | cache de AWB da Shopee (`_cachear_awbs`/`preencher_rastreios`) | Não | por máquina | ❌ Não |
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | `shopee_tempos.log` / `ml_tempos.log` | cronometragem por fase (`_log_tempos`) — diagnóstico | Não | por máquina | ❌ Não |
+| `historico_impressao.json` | registro de impressão por dia de ação (`historico.py`) — alimenta o "📋 Resumo do dia" | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |

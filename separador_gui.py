@@ -15,6 +15,7 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, simpledialog, ttk
 
+import historico
 import provedores
 import separador_etiquetas_ml as core
 from registro import log, sem_segredos
@@ -151,6 +152,11 @@ class SeparadorApp:
         self.btn_proximo = ttk.Button(topo, text="⏭ Próximo pendente",
                                        command=self.imprimir_proximo)
         self.btn_proximo.pack(side="left", padx=6)
+        # Resumo do que foi impresso HOJE (dia de acao). So leitura do historico
+        # (nao toca estado/grupos), entao fica habilitado mesmo durante a operacao.
+        self.btn_resumo = ttk.Button(topo, text="📋 Resumo do dia",
+                                     command=self.abrir_resumo_dia)
+        self.btn_resumo.pack(side="right")
 
         # Seletor de conta (mostrado apenas quando ha 2+ contas configuradas).
         self.conta_var = tk.StringVar(value=self.config.get("conta_ativa", ""))
@@ -1026,6 +1032,71 @@ class SeparadorApp:
         if self.ocupado or self._focar_editor_aberto(self._editor_skus):
             return
         self._editor_skus = EditorSkusAnuncio(self)
+
+    def abrir_resumo_dia(self) -> None:
+        """Mostra o resumo do que foi impresso HOJE (dia de acao, todas as contas
+        ML + Shopee), com opcao de salvar em .txt para imprimir. So leitura do
+        historico — nao toca estado/grupos, pode abrir durante a operacao."""
+        try:
+            resumo = historico.resumo_do_dia(core.ARQUIVO_HISTORICO)
+            texto = historico.formatar_resumo(resumo)
+        except Exception as e:                       # nunca deixa o botao quebrar
+            messagebox.showwarning("Resumo do dia",
+                                   "Nao foi possivel montar o resumo: "
+                                   f"{sem_segredos(str(e))}")
+            return
+        JanelaResumo(self, texto, resumo.get("data", ""))
+
+
+class JanelaResumo:
+    """Janela do resumo diario de impressao (somente leitura) + salvar .txt."""
+
+    def __init__(self, app: "SeparadorApp", texto: str, data: str) -> None:
+        self.texto = texto
+        self.data = data
+        win = tk.Toplevel(app.root)
+        self.win = win
+        win.title("Resumo do dia")
+        win.geometry("480x460")
+        win.transient(app.root)
+
+        corpo = ttk.Frame(win, padding=10)
+        corpo.pack(fill="both", expand=True)
+        txt = tk.Text(corpo, wrap="none", font=("Courier New", 10))
+        txt.insert("1.0", texto)
+        txt.config(state="disabled")                 # somente leitura
+        txt.pack(fill="both", expand=True)
+
+        rodape = ttk.Frame(win, padding=(10, 0, 10, 10))
+        rodape.pack(fill="x")
+        ttk.Button(rodape, text="💾 Salvar para imprimir (.txt)",
+                   command=self._salvar).pack(side="right")
+        ttk.Button(rodape, text="Fechar", command=win.destroy).pack(side="right", padx=(0, 6))
+
+    def _salvar(self) -> None:
+        from tkinter import filedialog
+        inicial = f"resumo_impressao_{self.data or 'hoje'}.txt"
+        try:
+            caminho = filedialog.asksaveasfilename(
+                parent=self.win, title="Salvar resumo",
+                defaultextension=".txt", initialfile=inicial,
+                initialdir=str(core.PASTA_DOWNLOADS),
+                filetypes=[("Texto", "*.txt")])
+            if not caminho:
+                return
+            from pathlib import Path
+            Path(caminho).write_text(self.texto, encoding="utf-8")
+        except OSError as e:
+            messagebox.showwarning("Resumo do dia",
+                                   f"Nao foi possivel salvar: {sem_segredos(str(e))}")
+            return
+        # Abre no app padrao (Bloco de Notas) para o operador imprimir (Ctrl+P).
+        # Best-effort e so no Windows (os.startfile); em outros SO apenas salva.
+        try:
+            import os
+            os.startfile(caminho)                    # type: ignore[attr-defined]
+        except (AttributeError, OSError):
+            pass
 
 
 class EditorNomes:
