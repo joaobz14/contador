@@ -7,14 +7,18 @@ Histórico das principais mudanças do projeto.
 ### Interface
 - **Resumo do dia (o que você imprimiu hoje):** novo botão **📋 Resumo do dia** na
   tela abre uma janela com tudo que saiu da impressora **hoje** (dia de ação, não
-  de despacho), separado por Mercado Livre (por conta) e Shopee, com totais de
-  etiquetas e unidades — e um botão **Salvar para imprimir (.txt)** para levar à
-  impressora comum ou arquivar. Por baixo, um registro novo (`historico.py`,
+  de despacho), separado por Mercado Livre (por conta) e Shopee, na **ordem da aba
+  Nomes** (a mesma ordem de separação). Para imprimir, o botão **Imprimir soma por
+  produto (PDF)** gera um **PDF compacto** (economiza folha) com a **soma por SKU**
+  consolidando todas as contas ML + Shopee — a lista de produção/separação
+  (`A01 - 2L 110 - 5`), também na ordem da aba Nomes. Um botão **Detalhado (.txt)**
+  guarda o detalhado por marketplace. Por baixo, um registro novo (`historico.py`,
   `historico_impressao.json`, local/gitignorado) grava cada impressão confirmada
   com carimbo de tempo, no mesmo ponto em que o estado é marcado — então **GUI,
   bot e CLI** entram no resumo. Conta só o que foi realmente impresso pela
   primeira vez (o delta): reimpressão/dupla marcação não infla o número.
   Reimpressão manual, que não passa pela marcação, fica de fora do resumo (v1).
+  O PDF é gerado em **Python puro** (sem dependência nova para instalar).
 
 ### Desempenho
 - **"Atualizar" do ML mais rápido + cronometragem por fase:** a fase cara do

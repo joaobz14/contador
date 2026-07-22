@@ -9977,6 +9977,35 @@
       "file_type": "rationale",
       "id": "historico_dia_de_acao",
       "label": "RESUMO DO DIA (o que imprimi hoje): o estado de \"ja impresso\" e por DIA DE DESPACHO e nao guarda QUANDO a etiqueta saiu, entao nao responde \"o que imprimi hoje\". historico.py e um log separado por DIA DE ACAO (carimbo de tempo Brasilia), gravado no momento da marcacao confirmada. Hook unico: o callback registrar de estado.marcar_impresso recebe SO O DELTA (ids realmente novos) \u2014 reimpressao/re-marcacao do mesmo id nao gera evento (sem contagem dobrada). Os wrappers do nucleo (ML, conta_ativa()) e Shopee (conta=\"\") passam o callback, cobrindo GUI, bot e CLI. Best-effort: roda FORA da trava do estado (arquivo/trava proprios) e NUNCA levanta (nao pode derrubar uma marcacao ja gravada; filosofia do _log_tempos). Arquivo unico por maquina (historico_impressao.json), gitignorado, podado por DIAS_HISTORICO=60, nao trocado por definir_conta. GUI: botao \"Resumo do dia\" (JanelaResumo, so leitura) com resumo_do_dia+formatar_resumo e \"Salvar para imprimir\" (.txt). Reimpressao manual nao passa por marcar_impresso, entao fica fora do resumo (v1)."
+    },
+    {
+      "label": "linhas_consolidado()",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L170",
+      "_origin": "manual",
+      "id": "historico_linhas_consolidado",
+      "community": 8,
+      "norm_label": "linhas_consolidado()"
+    },
+    {
+      "label": "gerar_pdf()",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L190",
+      "_origin": "manual",
+      "id": "historico_gerar_pdf",
+      "community": 8,
+      "norm_label": "gerar_pdf()"
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "resumo_soma_por_produto",
+      "label": "IMPRESSAO DO RESUMO = SOMA POR PRODUTO EM PDF: a tela mostra o detalhado por marketplace/conta, mas a IMPRESSAO que interessa e a soma por SKU (lista de producao/separacao, ex.: \"A01 - 2L 110 - 5\"). linhas_consolidado agrega TODAS as contas ML + Shopee num so SKU (mesmo SKU em ML e Shopee soma); a saida e PDF (gerar_pdf, Python puro Helvetica/WinAnsi, sem dependencia externa) em vez de .txt \u2014 o .txt via Bloco de Notas gastava folha demais. Tela E consolidado seguem a ORDEM DA ABA NOMES (resumo_do_dia(ordem=list(carregar_nomes())); SKU fora da lista vai ao fim em ordem natural, mesma filosofia de ordenar_grupos), nao alfabetica. Unidades = etiquetas * qtd por pedido."
     }
   ],
   "links": [
@@ -27547,6 +27576,66 @@
       "weight": 1.0,
       "source": "historico_dia_de_acao",
       "target": "estado_chave_estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_janelaresumo",
+      "target": "historico_linhas_consolidado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_janelaresumo",
+      "target": "historico_gerar_pdf",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_linhas_consolidado",
+      "target": "historico_resumo_do_dia",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "resumo_soma_por_produto",
+      "target": "historico_gerar_pdf",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "resumo_soma_por_produto",
+      "target": "historico_linhas_consolidado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "resumo_soma_por_produto",
+      "target": "separador_etiquetas_ml_ordenar_grupos",
       "confidence_score": 1.0
     }
   ],

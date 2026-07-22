@@ -6,6 +6,14 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-22 — Resumo do dia: impressão = soma por produto em PDF (ordem Nomes):**
+  a impressão que interessa é a **soma por SKU** (lista de produção,
+  `A01 - 2L 110 - 5`), consolidando todas as contas ML + Shopee — `linhas_consolidado`
+  + `gerar_pdf` (PDF em Python puro, sem dependência). Saída em **PDF** no lugar do
+  `.txt` (que gastava folha). Tela e consolidado seguem a **ordem da aba Nomes**
+  (`resumo_do_dia(ordem=...)`). Nós: `historico_linhas_consolidado`,
+  `historico_gerar_pdf`, rationale `resumo_soma_por_produto`.
+
 - **2026-07-22 — Resumo do dia (histórico de impressão por dia de ação):** módulo
   novo `historico.py` (registro com carimbo de tempo + `resumo_do_dia`/
   `formatar_resumo`). O estado é por dia de despacho e não sabe QUANDO a etiqueta
