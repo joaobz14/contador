@@ -71,6 +71,17 @@ def test_consolidado_soma_sku_entre_marketplaces_e_ordena_por_nomes(core, tmp_pa
     assert historico.linhas_consolidado(r)[0] == "A01F - 2L 220 - 4"
 
 
+def test_consolidado_nao_repete_sku_no_rotulo(core, tmp_path):
+    # o nome do grupo ML ja vem "SKU — amigavel" (aplicar_nomes) — o consolidado
+    # nao pode repetir o SKU ("A01 - A01 — 2L 110")
+    arq = tmp_path / "hist.json"
+    g = make_grupo(core, [1, 2], chave="A01", nome="A01 — 2L 110", qtd=1)
+    historico.registrar(arq, marketplace="Mercado Livre", conta="c",
+                        grupo=g, ids=[1, 2], agora=_agora())
+    r = historico.resumo_do_dia(arq, "2026-07-22")
+    assert historico.linhas_consolidado(r) == ["A01 - 2L 110 - 2"]
+
+
 def test_gerar_pdf_valido_e_pagina(core, tmp_path):
     pdf = tmp_path / "s.pdf"
     historico.gerar_pdf(pdf, "Titulo", [f"SKU{i} - nome - {i}" for i in range(200)])
