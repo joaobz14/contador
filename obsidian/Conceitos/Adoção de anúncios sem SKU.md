@@ -1,7 +1,7 @@
 ---
 tags: [conceito, ml, sku, agrupamento]
 aliases: [skus_por_anuncio, anúncio sem SKU, adoção de anúncio]
-type: conceito
+type: concept
 ---
 
 # 🏷️ Adoção de anúncios sem SKU

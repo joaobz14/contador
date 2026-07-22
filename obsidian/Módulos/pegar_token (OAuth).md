@@ -1,7 +1,7 @@
 ---
 tags: [modulo, token, oauth, setup]
 aliases: [pegar_token.py, pegar_token_shopee.py, OAuth inicial]
-type: modulo
+type: module
 arquivo: pegar_token.py / pegar_token_shopee.py
 ---
 

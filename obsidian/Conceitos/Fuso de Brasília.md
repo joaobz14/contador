@@ -1,7 +1,7 @@
 ---
 tags: [conceito, data, fuso]
 aliases: [Brasília, TZ_BR, fuso horário]
-type: conceito
+type: concept
 ---
 
 # 🕰️ Fuso de Brasília

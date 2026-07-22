@@ -1,7 +1,7 @@
 ---
 tags: [conceito, ml, provedor, multiconta]
 aliases: [Ambas, ProvedorMLAmbas, fundir_grupos]
-type: conceito
+type: concept
 ---
 
 # 🌐 Modo "Ambas" (ML)

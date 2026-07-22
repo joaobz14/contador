@@ -1,7 +1,7 @@
 ---
 tags: [conceito, estado, concorrencia, invariante]
 aliases: [Estado de impresso, já impresso, pendente parcial impresso]
-type: conceito
+type: concept
 ---
 
 # 📦 Estado "já impresso"

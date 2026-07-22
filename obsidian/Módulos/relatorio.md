@@ -1,7 +1,7 @@
 ---
 tags: [modulo, bot, formatacao]
 aliases: [relatorio.py]
-type: modulo
+type: module
 arquivo: relatorio.py
 ---
 

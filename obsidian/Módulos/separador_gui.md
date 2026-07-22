@@ -1,7 +1,7 @@
 ---
 tags: [modulo, gui, tkinter]
 aliases: [separador_gui.py, a tela, GUI]
-type: modulo
+type: module
 arquivo: separador_gui.py
 ---
 

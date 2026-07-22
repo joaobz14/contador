@@ -1,7 +1,7 @@
 ---
 tags: [conceito, provedor, arquitetura]
 aliases: [Provedor, abstração de marketplace, self.prov]
-type: conceito
+type: concept
 ---
 
 # 🔌 Provedor — abstração de marketplace

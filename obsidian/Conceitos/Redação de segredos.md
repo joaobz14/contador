@@ -1,7 +1,7 @@
 ---
 tags: [conceito, seguranca, log, shopee]
 aliases: [sem_segredos, redação de segredos, vazamento de token]
-type: conceito
+type: concept
 ---
 
 # 🔐 Redação de segredos

@@ -1,7 +1,7 @@
 ---
 tags: [conceito, io, durabilidade, seguranca]
 aliases: [gravar_json, escrita atômica, LF, .bak]
-type: conceito
+type: concept
 ---
 
 # 💽 Escrita atômica de JSON

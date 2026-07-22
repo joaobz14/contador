@@ -1,7 +1,7 @@
 ---
 tags: [moc, invariante, seguranca]
 aliases: [Invariantes, Regras de ouro, Invariantes críticas]
-type: invariante
+type: reference
 ---
 
 # 🛡️ Invariantes críticas

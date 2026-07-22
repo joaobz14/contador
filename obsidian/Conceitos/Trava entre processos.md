@@ -1,7 +1,7 @@
 ---
 tags: [conceito, concorrencia, estado, seguranca]
 aliases: [estado.trava, lock, trava de arquivo]
-type: conceito
+type: concept
 ---
 
 # 🔒 Trava entre processos (`estado.trava`)
