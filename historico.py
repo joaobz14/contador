@@ -202,6 +202,17 @@ def formatar_resumo(resumo: dict, *, largura: int = 40) -> str:
     return "\n".join(linhas)
 
 
+def _nome_sem_sku(chave: str, nome: str) -> str:
+    """Remove o SKU do inicio do nome quando ele ja vem embutido — o rotulo do
+    grupo no ML e `f"{sku} — {amigavel}"` (aplicar_nomes), entao sem isso o
+    consolidado repetiria o SKU ('A01 - A01 — 2L 110'). Cobre os separadores
+    usados (travessao, hifen, dois-pontos)."""
+    for sep in (" — ", " – ", " - ", ": "):
+        if nome.startswith(f"{chave}{sep}"):
+            return nome[len(chave) + len(sep):].strip()
+    return nome
+
+
 def linhas_consolidado(resumo: dict) -> list:
     """Linhas da 'soma por produto' para a impressao: uma por SKU (todas as contas
     ML + Shopee somadas), no formato 'SKU - nome - unidades'. Ordem = a de `resumo`
@@ -209,7 +220,8 @@ def linhas_consolidado(resumo: dict) -> list:
     linhas = []
     for item in resumo.get("consolidado", []):
         chave, nome, un = item["chave"], item["nome"], item["unidades"]
-        rotulo = f"{chave} - {nome}" if nome and nome != chave else str(chave)
+        amigavel = _nome_sem_sku(chave, nome) if nome else ""
+        rotulo = f"{chave} - {amigavel}" if amigavel and amigavel != chave else str(chave)
         linhas.append(f"{rotulo} - {un}")
     return linhas
 
