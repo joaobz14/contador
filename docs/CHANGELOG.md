@@ -4,6 +4,21 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Ferramentas de desenvolvimento
+- **Grafo Graphify auditado e re-sincronizado + atualizador seguro:** a camada AST
+  do grafo (`graphify-out/graph.json`) estava congelada no commit de 2026-07-08 e
+  125 commits atrás do código (módulos `estado.py`, `historico.py`, `registro.py`,
+  `api-monitor/`, dezenas de funções/testes sem nó; centenas de linhas erradas).
+  Novo **`tools/graph_sync.py`**: re-deriva a camada estrutural do código atual e
+  **preserva integralmente a camada semântica** (as decisões/invariantes mantidas à
+  mão) por IDs estáveis — modos `--check` (detecta defasagem, exit≠0), `--update`
+  (aplica, grava atômico) e `--validate`. A camada semântica ganhou um espelho
+  durável em **`graphify-out/semantic.json`** e uma **guarda no CI**
+  (`tests/test_graphify_sync.py`). Resultado da sincronização: +239 nós, −3 (testes
+  renomeados), 405 localizações corrigidas, 0 aresta órfã; conhecimento novo do
+  `api-monitor` e do próprio processo de manutenção do grafo. `graph.html` continua
+  defasado (só o CLI `graphify` o regenera — pendência documentada no relatório).
+
 ### Interface
 - **Resumo do dia (o que você imprimiu hoje):** novo botão **📋 Resumo do dia** na
   tela abre uma janela com tudo que saiu da impressora **hoje** (dia de ação, não

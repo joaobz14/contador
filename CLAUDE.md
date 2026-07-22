@@ -35,7 +35,8 @@ repo) monitora e imprime.
 | `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
-| `tools/` | Ferramentas de dev (screenshot da GUI headless). |
+| `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless) e `graph_sync.py` (sincronizador seguro do grafo Graphify). |
+| `api-monitor/` | Rotina **semanal** que checa mudanças nas docs/políticas públicas das APIs (ML+Shopee), sem dados de conta (Playwright/Edge + `claude -p`; saídas gitignoradas). |
 
 ## Comandos
 
@@ -77,15 +78,24 @@ em 2º plano.
   trailer). Alterou uma convenção aqui? Replique lá.
 - **NÃO rode `graphify hook install`**: o hook reconstrói o grafo só com código
   (AST) e apagaria a camada de docs/arquitetura — foi desinstalado de propósito.
-  Após mudanças grandes, refaça a extração completa + a passada semântica dos
-  docs manualmente.
-- **SEMPRE atualize o grafo com o que aprender:** ao terminar uma tarefa,
-  acrescente ao `graphify-out/graph.json` os módulos/funções novos e, como nós de
-  `rationale`/`concept`, as **descobertas, barreiras e soluções** encontradas
-  (ligue-as com `rationale_for`/`calls`/`imports`/`conceptually_related_to`).
-  Registre também um resumo em "Atualizações manuais (pós-build)" no
-  `GRAPH_REPORT.md`. Edite o JSON direto (sem o CLI); valide que não sobraram
-  arestas órfãs. Isso preserva a camada de docs até o próximo rebuild completo.
+- **Manutenção segura do grafo via `tools/graph_sync.py` (não edite centenas de
+  nós à mão):** o `graph.json` tem 2 camadas — **AST** (código, regenerável) e
+  **semântica** (`rationale`/`concept`, mantida à mão, espelhada em
+  `graphify-out/semantic.json`). O sincronizador reconcilia por **IDs estáveis**:
+  refaz a estrutura (`contains`/`method`/`imports`), **preserva** `calls` e toda a
+  semântica, corrige números de linha, remove nó de símbolo morto e reconecta
+  âncora manual quebrada (nunca deixa aresta órfã); grava atômico. Fluxo:
+  `python tools/graph_sync.py --check` (detecta defasagem; roda no CI via
+  `tests/test_graphify_sync.py`) → `--update` (aplica; re-emite `semantic.json` +
+  `manifest.json`) → `--validate`. `built_at_commit` passa a ser o HEAD
+  sincronizado. `graph.html` só o CLI regenera (fica defasado — pendência conhecida).
+- **SEMPRE atualize o grafo com o que aprender:** ao terminar uma tarefa, rode
+  `tools/graph_sync.py --update` (cobre módulos/funções/linhas/estrutura) **e**
+  acrescente **à mão** os nós de `rationale`/`concept` com as **descobertas,
+  barreiras e soluções** (ligue-as por `rationale_for`/`conceptually_related_to`);
+  rode `--update` de novo para canonizar. Registre um resumo em "Atualizações
+  manuais (pós-build)" no `GRAPH_REPORT.md`. Valide com `--validate` (0 arestas
+  órfãs). Isso preserva a camada de docs até o próximo rebuild completo do CLI.
 
 ## Convenções
 

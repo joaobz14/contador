@@ -1,10 +1,58 @@
-# Graph Report - .  (2026-07-08)
+# Graph Report - .
+
+## Estado de sincronização (leia primeiro)
+
+O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
+
+| Camada | O que é | Origem / data | Contagem |
+|---|---|---|---|
+| **AST + estrutura** | nós de arquivos/classes/funções/métodos + `contains`/`method`/`imports`/`calls` | **último build completo do CLI:** commit `5233aef` (2026-07-08). **Re-sincronizada** com o código por `tools/graph_sync.py` no commit `f1dd2d0` (2026-07-22). | reflete o código atual |
+| **Semântica** | `rationale`/`concept`/`document` + `rationale_for`/`conceptually_related_to`/`shares_data_with` | mantida **à mão**, contínua (ver "Atualizações manuais" abaixo). Espelhada em `graphify-out/semantic.json`. | preservada 100% |
+
+- **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
+- **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
+  **1177 nodes · 2105 edges · 10 hyperedges** (320 nós semânticos preservados).
+- O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
+  centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
+  CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
+  recalculadas pelo sincronizador.
+- **`graph.html` está DEFASADO** (visualização *baked* do build de 2026-07-08, embute
+  os dados antigos; não lê o `graph.json`). **Pendência conhecida:** só um
+  `graphify` CLI o regenera com segurança — não editar o HTML gigante à mão.
+
+### Como validar e re-sincronizar (reprodutível, sem o CLI)
+
+```bash
+python tools/graph_sync.py --check      # detecta defasagem (exit!=0 se houver)
+python tools/graph_sync.py --update     # re-deriva AST, preserva semântica, grava atômico
+python tools/graph_sync.py --validate   # valida integridade do graph.json atual
+pytest tests/test_graphify_sync.py -q   # guarda no CI (defasagem + camada semântica)
+```
+
+**NUNCA** rodar `graphify hook install` (reconstruiria só o AST e apagaria a camada
+semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 
 ## Atualizações manuais (pós-build)
 
 > Enriquecimentos da camada de docs feitos à mão (o CLI `graphify` não roda neste
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
-> fonte consultável; os números do relatório abaixo refletem o build automático.
+> fonte consultável; os números do **Summary** abaixo refletem o build automático de
+> 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-22 — Auditoria completa + re-sincronização do grafo (AST 125 commits
+  defasada):** a camada AST estava congelada em `5233aef` (2026-07-08); de lá até
+  `f1dd2d0` (HEAD) 125 commits mexeram no código (módulos novos `estado.py`,
+  `historico.py`, `registro.py`, `api-monitor/`, dezenas de funções/testes novos).
+  Criado **`tools/graph_sync.py`** — reconciliador que re-deriva a camada estrutural
+  e **preserva a semântica** por IDs estáveis. Aplicado: **+239 nós, −3 nós**
+  (renomeações de teste), **405 localizações corrigidas**, `calls`/`imports_from`
+  reconciliados (sem reconstrução destrutiva), **0 aresta órfã**. Camada semântica
+  preservada 100% (todos os 306 `rationale_for` resolvem). Conhecimento novo:
+  nós `api_monitor_sistema` (concept — monitor semanal das APIs) e
+  `graph_sync_processo` (rationale — o modelo de manutenção em 2 camadas) +
+  hyperedge `graph_manutencao`. Emitido **`graphify-out/semantic.json`** (backup
+  durável da camada manual) e **`tests/test_graphify_sync.py`** (guarda no CI).
+  `graph.html` fica defasado (pendência: só o CLI regenera).
 
 - **2026-07-22 — Resumo do dia: impressão = soma por produto em PDF (ordem Nomes):**
   a impressão que interessa é a **soma por SKU** (lista de produção,
