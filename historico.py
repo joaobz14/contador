@@ -17,6 +17,7 @@ Invariantes:
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -89,24 +90,58 @@ def registrar(arquivo, *, marketplace: str, conta: str, grupo, ids,
         pass
 
 
-def resumo_do_dia(arquivo, data: str | None = None) -> dict:
+def _natural_key(texto: str) -> list:
+    """Chave de ordenacao natural: 'A2' antes de 'A10' (nao alfabetica pura)."""
+    return [int(t) if t.isdigit() else t.lower()
+            for t in re.split(r"(\d+)", str(texto))]
+
+
+def _ordenador(ordem: list | None):
+    """Devolve uma funcao-chave que ordena itens pela ordem da aba Nomes (posicao
+    do SKU em `ordem`); SKU fora da lista vai pro fim, em ordem natural pelo nome
+    (mesma filosofia de `core.ordenar_grupos`)."""
+    pos = {sku: i for i, sku in enumerate(ordem or [])}
+    fim = len(ordem or [])
+    return lambda item: (pos.get(item["chave"], fim), _natural_key(item["nome"]))
+
+
+def resumo_do_dia(arquivo, data: str | None = None, ordem: list | None = None) -> dict:
     """Agrega os eventos de UMA data (default hoje, Brasilia).
 
-    Retorna: {data, secoes: [{marketplace, conta, itens: [{nome, qtd, pedidos,
-    unidades}], pedidos, unidades}], total_pedidos, total_unidades}. `pedidos` =
-    numero de etiquetas (1 por pedido); `unidades` = pedidos * qtd por pedido."""
+    `ordem` (opcional): lista de SKUs na ordem da aba Nomes; quando passada, os
+    itens (de cada secao E do consolidado) seguem essa ordem. Sem ela, ordem
+    natural pelo nome.
+
+    Retorna: {data, secoes: [{marketplace, conta, itens: [{chave, nome, qtd,
+    pedidos, unidades}], pedidos, unidades}], consolidado: [{chave, nome,
+    pedidos, unidades}], total_pedidos, total_unidades}. `pedidos` = numero de
+    etiquetas (1 por pedido); `unidades` = pedidos * qtd por pedido."""
     data = data or _hoje_br()
     registros = [r for r in _ler(Path(arquivo))
                  if isinstance(r, dict) and r.get("data") == data]
+    ordenar = _ordenador(ordem)
 
     # Agrupa por (marketplace, conta) e, dentro, por (chave, nome, qtd).
     secoes: dict = {}
+    # Consolidado por SKU (chave), somando TUDO (todas as contas ML + Shopee) —
+    # e a lista de "soma por produto" da impressao.
+    consol: dict = {}
     for r in registros:
         chave_sec = (r.get("marketplace", ""), r.get("conta", "") or "")
-        item_key = (r.get("chave", ""), r.get("nome", ""), int(r.get("qtd", 1) or 1))
+        chave = r.get("chave", "")
+        nome = r.get("nome", "") or chave
+        qtd = int(r.get("qtd", 1) or 1)
+        etiquetas = int(r.get("etiquetas", 0) or 0)
         sec = secoes.setdefault(chave_sec, {})
-        acc = sec.setdefault(item_key, 0)
-        sec[item_key] = acc + int(r.get("etiquetas", 0) or 0)
+        acc = sec.setdefault((chave, nome, qtd), 0)
+        sec[(chave, nome, qtd)] = acc + etiquetas
+        c = consol.setdefault(chave, {"chave": chave, "nome": nome,
+                                      "pedidos": 0, "unidades": 0})
+        # prefere um nome amigavel (diferente do proprio SKU) se aparecer
+        if c["nome"] == chave and nome != chave:
+            c["nome"] = nome
+        c["pedidos"] += etiquetas
+        c["unidades"] += etiquetas * qtd
 
     saida_secoes = []
     total_pedidos = total_unidades = 0
@@ -115,11 +150,11 @@ def resumo_do_dia(arquivo, data: str | None = None) -> dict:
         sec_pedidos = sec_unidades = 0
         for (chave, nome, qtd), pedidos in itens.items():
             unidades = pedidos * qtd
-            lista.append({"nome": nome or chave, "qtd": qtd,
+            lista.append({"chave": chave, "nome": nome or chave, "qtd": qtd,
                           "pedidos": pedidos, "unidades": unidades})
             sec_pedidos += pedidos
             sec_unidades += unidades
-        lista.sort(key=lambda i: i["nome"].lower())
+        lista.sort(key=ordenar)
         saida_secoes.append({
             "marketplace": marketplace, "conta": conta, "itens": lista,
             "pedidos": sec_pedidos, "unidades": sec_unidades,
@@ -128,7 +163,8 @@ def resumo_do_dia(arquivo, data: str | None = None) -> dict:
         total_unidades += sec_unidades
 
     saida_secoes.sort(key=lambda s: (s["marketplace"], s["conta"]))
-    return {"data": data, "secoes": saida_secoes,
+    consolidado = sorted(consol.values(), key=ordenar)
+    return {"data": data, "secoes": saida_secoes, "consolidado": consolidado,
             "total_pedidos": total_pedidos, "total_unidades": total_unidades}
 
 
@@ -164,3 +200,84 @@ def formatar_resumo(resumo: dict, *, largura: int = 40) -> str:
     linhas.append(f"Total: {resumo['total_pedidos']} etiquetas "
                   f"/ {resumo['total_unidades']} unidades")
     return "\n".join(linhas)
+
+
+def linhas_consolidado(resumo: dict) -> list:
+    """Linhas da 'soma por produto' para a impressao: uma por SKU (todas as contas
+    ML + Shopee somadas), no formato 'SKU - nome - unidades'. Ordem = a de `resumo`
+    (aba Nomes quando `resumo_do_dia` recebeu `ordem`)."""
+    linhas = []
+    for item in resumo.get("consolidado", []):
+        chave, nome, un = item["chave"], item["nome"], item["unidades"]
+        rotulo = f"{chave} - {nome}" if nome and nome != chave else str(chave)
+        linhas.append(f"{rotulo} - {un}")
+    return linhas
+
+
+# ---------------------------------------------------------------------------
+# PDF (Python puro, sem dependencia externa) — texto simples, fonte Helvetica.
+# ---------------------------------------------------------------------------
+def _pdf_escape(texto: str) -> str:
+    return texto.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
+
+
+def gerar_pdf(caminho, titulo: str, linhas: list, *, tamanho: int = 11,
+              titulo_tam: int = 15) -> None:
+    """Gera um PDF A4 de texto (titulo + lista de linhas), paginando sozinho.
+
+    Compacto de proposito (fonte pequena, sem margens gordas) — o alvo e a
+    impressora comum e nao desperdicar folha. Sem biblioteca externa: emite o PDF
+    na mao (Helvetica embutida, WinAnsiEncoding para acentos)."""
+    larg, alt, margem = 595, 842, 40           # A4 em pontos
+    leading = tamanho + 4
+    util = alt - 2 * margem - (titulo_tam + 12)
+    por_pag = max(1, int(util // leading))
+    paginas = [linhas[i:i + por_pag] for i in range(0, len(linhas), por_pag)] or [[]]
+
+    objetos: dict = {}
+    objetos[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objetos[3] = (b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica "
+                  b"/Encoding /WinAnsiEncoding >>")
+    proximo = 4
+    kids = []
+    for idx, pag in enumerate(paginas):
+        content_id, page_id = proximo, proximo + 1
+        proximo += 2
+        ct = ["BT"]
+        if idx == 0:
+            ct += [f"/F1 {titulo_tam} Tf",
+                   f"1 0 0 1 {margem} {alt - margem - titulo_tam} Tm",
+                   f"({_pdf_escape(titulo)}) Tj"]
+            y0 = alt - margem - titulo_tam - 12 - tamanho
+        else:
+            y0 = alt - margem - tamanho
+        ct += [f"/F1 {tamanho} Tf", f"{leading} TL", f"1 0 0 1 {margem} {y0} Tm"]
+        for i, ln in enumerate(pag):
+            ct.append(f"({_pdf_escape(ln)}) Tj" if i == 0
+                      else f"T* ({_pdf_escape(ln)}) Tj")
+        ct.append("ET")
+        stream = "\n".join(ct).encode("cp1252", "replace")
+        objetos[content_id] = (b"<< /Length " + str(len(stream)).encode()
+                               + b" >>\nstream\n" + stream + b"\nendstream")
+        objetos[page_id] = (
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %d %d] "
+            "/Resources << /Font << /F1 3 0 R >> >> /Contents %d 0 R >>"
+            % (larg, alt, content_id)).encode()
+        kids.append(page_id)
+    objetos[2] = ("<< /Type /Pages /Count %d /Kids [%s] >>"
+                  % (len(kids), " ".join(f"{k} 0 R" for k in kids))).encode()
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets: dict = {}
+    for num in sorted(objetos):
+        offsets[num] = len(out)
+        out += ("%d 0 obj\n" % num).encode() + objetos[num] + b"\nendobj\n"
+    xref_pos = len(out)
+    total = max(objetos) + 1
+    out += ("xref\n0 %d\n" % total).encode() + b"0000000000 65535 f \n"
+    for num in range(1, total):
+        out += (("%010d 00000 n \n" % offsets[num]).encode() if num in offsets
+                else b"0000000000 65535 f \n")
+    out += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
+            % (total, xref_pos)).encode()
+    Path(caminho).write_bytes(bytes(out))

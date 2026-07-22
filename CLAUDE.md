@@ -122,9 +122,15 @@ em 2º plano.
   Shopee), gitignorado, podado por idade (`DIAS_HISTORICO=60`); **não** é trocado
   por `definir_conta` (o resumo agrega tudo). A GUI mostra `resumo_do_dia` +
   `formatar_resumo` no botão **📋 Resumo do dia** (`JanelaResumo`, só leitura —
-  não toca estado/grupos, fica habilitado durante a operação; "Salvar para
-  imprimir" gera um `.txt` e abre no app padrão). **Reimpressão não passa por
-  `marcar_impresso`, então não entra no resumo** (decisão de v1).
+  não toca estado/grupos, fica habilitado durante a operação). A **tela** é o
+  detalhado por marketplace/conta; a **impressão** é um **PDF compacto com a soma
+  por produto (SKU)** — `linhas_consolidado` + `gerar_pdf` (PDF em Python puro,
+  Helvetica/WinAnsi, sem dependência externa) —, consolidando **todas as contas
+  ML + Shopee** num só SKU (é a lista de produção/separação: `A01 - 2L 110 - 5`).
+  Tela e PDF seguem a **ordem da aba Nomes** (`resumo_do_dia(ordem=...)`, a mesma
+  ordem de separação; SKU fora dela vai ao fim em ordem natural). Ainda há um
+  "Detalhado (.txt)" para arquivar. **Reimpressão não passa por `marcar_impresso`,
+  então não entra no resumo** (decisão de v1).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Config sempre via `aplicar_config()`** — é o ponto único de **saneamento** do

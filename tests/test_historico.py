@@ -46,6 +46,43 @@ def test_formatar_resumo_tem_titulo_secoes_e_total(core, tmp_path):
     assert "Total: 2 etiquetas / 4 unidades" in texto
 
 
+def test_consolidado_soma_sku_entre_marketplaces_e_ordena_por_nomes(core, tmp_path):
+    arq = tmp_path / "hist.json"
+    ga = make_grupo(core, [1, 2, 3], chave="A01", nome="2L 110", qtd=1)
+    gs = make_grupo(core, ["S1", "S2"], chave="A01", nome="2L 110", qtd=1)
+    gf = make_grupo(core, [4, 5], chave="A01F", nome="2L 220", qtd=2)
+    gz = make_grupo(core, [9], chave="Z99", nome="Zebra", qtd=1)
+    historico.registrar(arq, marketplace="Mercado Livre", conta="cozilatti",
+                        grupo=ga, ids=[1, 2, 3], agora=_agora())
+    historico.registrar(arq, marketplace="Shopee", conta="",
+                        grupo=gs, ids=["S1", "S2"], agora=_agora())
+    historico.registrar(arq, marketplace="Mercado Livre", conta="cozilatti",
+                        grupo=gf, ids=[4, 5], agora=_agora())
+    historico.registrar(arq, marketplace="Mercado Livre", conta="GASTROMAQ",
+                        grupo=gz, ids=[9], agora=_agora())
+
+    # ordem da aba Nomes: A01F antes de A01; Z99 nao esta -> vai pro fim
+    r = historico.resumo_do_dia(arq, "2026-07-22", ordem=["A01F", "A01"])
+    consol = {c["chave"]: c for c in r["consolidado"]}
+    assert consol["A01"]["unidades"] == 5     # 3 (ML) + 2 (Shopee) somados
+    assert consol["A01F"]["unidades"] == 4    # 2 etiquetas * qtd 2
+    # ordem segue Nomes; SKU fora da lista por ultimo
+    assert [c["chave"] for c in r["consolidado"]] == ["A01F", "A01", "Z99"]
+    assert historico.linhas_consolidado(r)[0] == "A01F - 2L 220 - 4"
+
+
+def test_gerar_pdf_valido_e_pagina(core, tmp_path):
+    pdf = tmp_path / "s.pdf"
+    historico.gerar_pdf(pdf, "Titulo", [f"SKU{i} - nome - {i}" for i in range(200)])
+    dados = pdf.read_bytes()
+    assert dados.startswith(b"%PDF-") and dados.rstrip().endswith(b"%%EOF")
+    assert dados.count(b"/MediaBox") >= 2      # 200 linhas -> paginou
+
+    # acentos nao quebram (cp1252 / WinAnsiEncoding)
+    historico.gerar_pdf(pdf, "Resumo", ["Fritadeira Eletrica 220V - 3"])
+    assert pdf.read_bytes().startswith(b"%PDF-")
+
+
 def test_resumo_dia_vazio(core, tmp_path):
     arq = tmp_path / "hist.json"
     r = historico.resumo_do_dia(arq, "2026-07-22")

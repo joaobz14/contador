@@ -1038,22 +1038,28 @@ class SeparadorApp:
         ML + Shopee), com opcao de salvar em .txt para imprimir. So leitura do
         historico — nao toca estado/grupos, pode abrir durante a operacao."""
         try:
-            resumo = historico.resumo_do_dia(core.ARQUIVO_HISTORICO)
+            # ordem= a da aba Nomes (SKU -> nome): a lista do resumo e o PDF
+            # seguem a ordem de separacao configurada, nao alfabetica.
+            ordem = list(core.carregar_nomes().keys())
+            resumo = historico.resumo_do_dia(core.ARQUIVO_HISTORICO, ordem=ordem)
             texto = historico.formatar_resumo(resumo)
         except Exception as e:                       # nunca deixa o botao quebrar
             messagebox.showwarning("Resumo do dia",
                                    "Nao foi possivel montar o resumo: "
                                    f"{sem_segredos(str(e))}")
             return
-        JanelaResumo(self, texto, resumo.get("data", ""))
+        JanelaResumo(self, resumo, texto)
 
 
 class JanelaResumo:
-    """Janela do resumo diario de impressao (somente leitura) + salvar .txt."""
+    """Janela do resumo diario de impressao (somente leitura). A TELA mostra o
+    detalhado por marketplace/conta; a IMPRESSAO e um PDF compacto com a soma por
+    produto (SKU), na ordem da aba Nomes — o alvo e a impressora comum."""
 
-    def __init__(self, app: "SeparadorApp", texto: str, data: str) -> None:
+    def __init__(self, app: "SeparadorApp", resumo: dict, texto: str) -> None:
+        self.resumo = resumo
         self.texto = texto
-        self.data = data
+        self.data = resumo.get("data", "")
         win = tk.Toplevel(app.root)
         self.win = win
         win.title("Resumo do dia")
@@ -1069,34 +1075,63 @@ class JanelaResumo:
 
         rodape = ttk.Frame(win, padding=(10, 0, 10, 10))
         rodape.pack(fill="x")
-        ttk.Button(rodape, text="💾 Salvar para imprimir (.txt)",
-                   command=self._salvar).pack(side="right")
+        ttk.Button(rodape, text="🖨 Imprimir soma por produto (PDF)",
+                   command=self._salvar_pdf).pack(side="right")
+        ttk.Button(rodape, text="💾 Detalhado (.txt)",
+                   command=self._salvar_txt).pack(side="right", padx=(0, 6))
         ttk.Button(rodape, text="Fechar", command=win.destroy).pack(side="right", padx=(0, 6))
 
-    def _salvar(self) -> None:
-        from tkinter import filedialog
-        inicial = f"resumo_impressao_{self.data or 'hoje'}.txt"
-        try:
-            caminho = filedialog.asksaveasfilename(
-                parent=self.win, title="Salvar resumo",
-                defaultextension=".txt", initialfile=inicial,
-                initialdir=str(core.PASTA_DOWNLOADS),
-                filetypes=[("Texto", "*.txt")])
-            if not caminho:
-                return
-            from pathlib import Path
-            Path(caminho).write_text(self.texto, encoding="utf-8")
-        except OSError as e:
-            messagebox.showwarning("Resumo do dia",
-                                   f"Nao foi possivel salvar: {sem_segredos(str(e))}")
-            return
-        # Abre no app padrao (Bloco de Notas) para o operador imprimir (Ctrl+P).
-        # Best-effort e so no Windows (os.startfile); em outros SO apenas salva.
+    def _abrir_para_imprimir(self, caminho: str) -> None:
+        # Abre no app padrao (PDF -> visualizador; txt -> Bloco de Notas) para o
+        # operador imprimir (Ctrl+P). Best-effort e so no Windows (os.startfile).
         try:
             import os
             os.startfile(caminho)                    # type: ignore[attr-defined]
         except (AttributeError, OSError):
             pass
+
+    def _salvar_txt(self) -> None:
+        from pathlib import Path
+        from tkinter import filedialog
+        try:
+            caminho = filedialog.asksaveasfilename(
+                parent=self.win, title="Salvar resumo detalhado",
+                defaultextension=".txt",
+                initialfile=f"resumo_impressao_{self.data or 'hoje'}.txt",
+                initialdir=str(core.PASTA_DOWNLOADS),
+                filetypes=[("Texto", "*.txt")])
+            if not caminho:
+                return
+            Path(caminho).write_text(self.texto, encoding="utf-8")
+        except OSError as e:
+            messagebox.showwarning("Resumo do dia",
+                                   f"Nao foi possivel salvar: {sem_segredos(str(e))}")
+            return
+        self._abrir_para_imprimir(caminho)
+
+    def _salvar_pdf(self) -> None:
+        from tkinter import filedialog
+        linhas = historico.linhas_consolidado(self.resumo)
+        if not linhas:
+            messagebox.showinfo("Resumo do dia", "Nada impresso hoje para somar.")
+            return
+        titulo = (f"Soma por produto - {historico._br(self.data)}  "
+                  f"(total {self.resumo.get('total_unidades', 0)} unidades)")
+        try:
+            caminho = filedialog.asksaveasfilename(
+                parent=self.win, title="Salvar soma por produto (PDF)",
+                defaultextension=".pdf",
+                initialfile=f"soma_produtos_{self.data or 'hoje'}.pdf",
+                initialdir=str(core.PASTA_DOWNLOADS),
+                filetypes=[("PDF", "*.pdf")])
+            if not caminho:
+                return
+            historico.gerar_pdf(caminho, titulo, linhas)
+        except OSError as e:
+            messagebox.showwarning("Resumo do dia",
+                                   f"Nao foi possivel gerar o PDF: {sem_segredos(str(e))}")
+            return
+        self._abrir_para_imprimir(caminho)
 
 
 class EditorNomes:
