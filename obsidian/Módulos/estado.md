@@ -1,7 +1,7 @@
 ---
 tags: [modulo, estado, concorrencia]
 aliases: [estado.py, camada de estado]
-type: modulo
+type: module
 arquivo: estado.py
 ---
 

@@ -1,7 +1,7 @@
 ---
 tags: [modulo, ml, nucleo, impressao]
 aliases: [separador_etiquetas_ml, núcleo, core]
-type: modulo
+type: module
 arquivo: separador_etiquetas_ml.py
 ---
 

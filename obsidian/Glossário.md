@@ -1,7 +1,7 @@
 ---
 tags: [glossario, referencia]
 aliases: [Glossário, Termos]
-type: referencia
+type: glossary
 ---
 
 # 📖 Glossário

@@ -28,6 +28,30 @@ jobs:
       - name: Rodar o ruff
         run: ruff check .
 
+  obsidian:
+    # Valida o cofre de conhecimento (obsidian/): links, frontmatter, vazios,
+    # colisoes de nome, referencias de fonte e segredos. Job leve — so a stdlib,
+    # sem instalar o app inteiro.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Validar o cofre Obsidian
+        run: python tools/validar_obsidian.py
+
+      - name: Testar o validador
+        # --noconftest: o teste so usa a stdlib (nao as fixtures do
+        # tests/conftest.py, que importa o app e exigiria instalar requests).
+        # Mantem o job leve, sem instalar as dependencias da aplicacao.
+        run: pip install pytest && pytest tests/test_validar_obsidian.py -q --noconftest
+
   pytest:
     runs-on: ubuntu-latest
     strategy:

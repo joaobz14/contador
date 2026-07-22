@@ -4,6 +4,17 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Documentação
+- **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada
+  de **contexto humano e operacional** (decisões, conceitos, estado atual, incidentes,
+  runbooks, funcionalidades, marketplaces, integrações) com uma seção **IA/** de
+  onboarding para agentes (`Comece aqui`, `Fontes de verdade`, `Estado atual`, `Mapa de
+  tarefas`). Corrigidas afirmações desatualizadas (resumo do dia agora é PDF consolidado
+  por SKU, não `.txt`; removidas métricas antigas do grafo e a nota vazia). Cada fonte
+  tem um papel — o Graphify segue como base estrutural/semântica. Novo validador
+  `tools/validar_obsidian.py` (links, frontmatter, vazios, colisões de nome, referências
+  de fonte e **segredos**), com testes e um job de CI dedicado.
+
 ### Ferramentas de desenvolvimento
 - **Grafo Graphify auditado e re-sincronizado + atualizador seguro:** a camada AST
   do grafo (`graphify-out/graph.json`) estava congelada no commit de 2026-07-08 e

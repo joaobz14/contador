@@ -1,7 +1,7 @@
 ---
 tags: [modulo, shopee, impressao]
 aliases: [shopee_api.py, integração Shopee]
-type: modulo
+type: module
 arquivo: shopee_api.py
 ---
 

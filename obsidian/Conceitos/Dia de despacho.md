@@ -1,7 +1,7 @@
 ---
 tags: [conceito, data, ml, shopee, gui]
 aliases: [dia de despacho, dias úteis, contagem por dia]
-type: conceito
+type: concept
 ---
 
 # 📅 Dia de despacho

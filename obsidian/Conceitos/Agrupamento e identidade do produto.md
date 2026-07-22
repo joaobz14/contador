@@ -1,7 +1,7 @@
 ---
 tags: [conceito, agrupamento, identidade, ml]
 aliases: [agrupar, identidade, ordenar_grupos, SKU GTIN variação]
-type: conceito
+type: concept
 ---
 
 # 🧬 Agrupamento e identidade do produto

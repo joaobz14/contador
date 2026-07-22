@@ -1,7 +1,7 @@
 ---
 tags: [conceito, impressao, carimbo, zpl, ml]
 aliases: [carimbo, MODO_IDENT, carimbo_nome, divisória, DANFE]
-type: conceito
+type: concept
 ---
 
 # 🖋️ Identificação na impressão (carimbo)

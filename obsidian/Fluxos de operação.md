@@ -1,7 +1,7 @@
 ---
 tags: [moc, fluxo]
 aliases: [Fluxos, Fluxos de operação]
-type: fluxo
+type: hub
 ---
 
 # 🔄 Fluxos de operação

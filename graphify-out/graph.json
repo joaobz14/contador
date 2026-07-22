@@ -15591,6 +15591,538 @@
    "id": "tools_graph_sync_write_manifest",
    "community": 60,
    "norm_label": "write_manifest()"
+  },
+  {
+   "label": "test_validar_obsidian.py",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian",
+   "community": 61,
+   "norm_label": "test_validar_obsidian.py"
+  },
+  {
+   "label": "_nota()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L16",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_nota",
+   "community": 61,
+   "norm_label": "_nota()"
+  },
+  {
+   "label": "_vault()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L29",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_vault",
+   "community": 61,
+   "norm_label": "_vault()"
+  },
+  {
+   "label": "_erros()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L38",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_erros",
+   "community": 61,
+   "norm_label": "_erros()"
+  },
+  {
+   "label": "_tem()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L42",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_tem",
+   "community": 61,
+   "norm_label": "_tem()"
+  },
+  {
+   "label": "test_vault_valido_sem_erros()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L46",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
+   "community": 61,
+   "norm_label": "test_vault_valido_sem_erros()"
+  },
+  {
+   "label": "test_link_valido_e_quebrado()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L54",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "community": 61,
+   "norm_label": "test_link_valido_e_quebrado()"
+  },
+  {
+   "label": "test_link_por_alias()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L64",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_link_por_alias",
+   "community": 61,
+   "norm_label": "test_link_por_alias()"
+  },
+  {
+   "label": "test_link_com_secao_e_alias()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L72",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "community": 61,
+   "norm_label": "test_link_com_secao_e_alias()"
+  },
+  {
+   "label": "test_embed()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_embed",
+   "community": 61,
+   "norm_label": "test_embed()"
+  },
+  {
+   "label": "test_arquivo_vazio()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L88",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "community": 61,
+   "norm_label": "test_arquivo_vazio()"
+  },
+  {
+   "label": "test_colisao_por_caixa()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L96",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "community": 61,
+   "norm_label": "test_colisao_por_caixa()"
+  },
+  {
+   "label": "test_unicode_normalizacao_no_link()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L105",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "community": 61,
+   "norm_label": "test_unicode_normalizacao_no_link()"
+  },
+  {
+   "label": "test_referencias_de_fonte()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L115",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_referencias_de_fonte",
+   "community": 61,
+   "norm_label": "test_referencias_de_fonte()"
+  },
+  {
+   "label": "test_segredo_valor_real_e_flagrado()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L127",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "community": 61,
+   "norm_label": "test_segredo_valor_real_e_flagrado()"
+  },
+  {
+   "label": "test_segredo_jwt_flagrado()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L135",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "community": 61,
+   "norm_label": "test_segredo_jwt_flagrado()"
+  },
+  {
+   "label": "test_nome_de_campo_sensivel_sem_valor_nao_e_segredo()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L142",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "community": 61,
+   "norm_label": "test_nome_de_campo_sensivel_sem_valor_nao_e_segredo()"
+  },
+  {
+   "label": "test_segredo_em_bloco_de_codigo_com_placeholder_ok()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L150",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "community": 61,
+   "norm_label": "test_segredo_em_bloco_de_codigo_com_placeholder_ok()"
+  },
+  {
+   "label": "test_frontmatter_type_invalido()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L156",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "community": 61,
+   "norm_label": "test_frontmatter_type_invalido()"
+  },
+  {
+   "label": "test_frontmatter_faltando_type()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L164",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_frontmatter_faltando_type",
+   "community": 61,
+   "norm_label": "test_frontmatter_faltando_type()"
+  },
+  {
+   "label": "test_status_invalido()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L169",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_status_invalido",
+   "community": 61,
+   "norm_label": "test_status_invalido()"
+  },
+  {
+   "label": "test_link_para_mesma_nota_secao_ok()",
+   "file_type": "code",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L174",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "community": 61,
+   "norm_label": "test_link_para_mesma_nota_secao_ok()"
+  },
+  {
+   "label": "validar_obsidian.py",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian",
+   "community": 62,
+   "norm_label": "validar_obsidian.py"
+  },
+  {
+   "label": "_nfc()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L38",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_nfc",
+   "community": 62,
+   "norm_label": "_nfc()"
+  },
+  {
+   "label": "separar_frontmatter()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L45",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_separar_frontmatter",
+   "community": 62,
+   "norm_label": "separar_frontmatter()"
+  },
+  {
+   "label": "_desaspar()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L82",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_desaspar",
+   "community": 62,
+   "norm_label": "_desaspar()"
+  },
+  {
+   "label": "sem_codigo()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L94",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_sem_codigo",
+   "community": 62,
+   "norm_label": "sem_codigo()"
+  },
+  {
+   "label": "alvos_de_link()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L114",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_alvos_de_link",
+   "community": 62,
+   "norm_label": "alvos_de_link()"
+  },
+  {
+   "label": "_valor_e_segredo()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L145",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_valor_e_segredo",
+   "community": 62,
+   "norm_label": "_valor_e_segredo()"
+  },
+  {
+   "label": "achar_segredos()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L161",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_achar_segredos",
+   "community": 62,
+   "norm_label": "achar_segredos()"
+  },
+  {
+   "label": "Nota",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L180",
+   "metadata": {
+    "language": "python",
+    "kind": "class"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_nota",
+   "community": 62,
+   "norm_label": "nota"
+  },
+  {
+   "label": ".__init__()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L181",
+   "metadata": {
+    "language": "python",
+    "kind": "method"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_nota_init",
+   "community": 62,
+   "norm_label": ".__init__()"
+  },
+  {
+   "label": "_lista()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L190",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_lista",
+   "community": 62,
+   "norm_label": "_lista()"
+  },
+  {
+   "label": "coletar_notas()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L196",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_coletar_notas",
+   "community": 62,
+   "norm_label": "coletar_notas()"
+  },
+  {
+   "label": "validar()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L208",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_validar",
+   "community": 62,
+   "norm_label": "validar()"
+  },
+  {
+   "label": "main()",
+   "file_type": "code",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L284",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_validar_obsidian_main",
+   "community": 62,
+   "norm_label": "main()"
+  },
+  {
+   "label": "COFRE OBSIDIAN (obsidian/): a camada de CONTEXTO HUMANO e operacional do projeto — decisoes, conceitos, estado atual, incidentes, runbooks, funcionalidades, marketplaces e integracoes, com uma secao IA/ de onboarding para agentes (Comece aqui, Fontes de verdade, Estado atual, Mapa de tarefas). NAO substitui o Graphify (base estrutural/semantica) nem a documentacao: cada fonte tem um papel, com prioridade em Fontes de verdade. Publico e versionado — nunca conter segredos.",
+   "file_type": "concept",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "obsidian_base_conhecimento",
+   "community": 0,
+   "norm_label": "cofre obsidian (obsidian/): a camada de contexto humano e operacional do projeto — decisoes, conceitos, estado atual, incidentes, runbooks, funcionalidades, marketplaces e integracoes, com uma secao ia/ de onboarding para agentes (comece aqui, fontes de verdade, estado atual, mapa de tarefas). nao substitui o graphify (base estrutural/semantica) nem a documentacao: cada fonte tem um papel, com prioridade em fontes de verdade. publico e versionado — nunca conter segredos.",
+   "_origin": "manual"
+  },
+  {
+   "label": "VALIDADOR DO COFRE (tools/validar_obsidian.py): so stdlib, deterministico, roda no CI (job obsidian) e via tests/test_validar_obsidian.py. Checa nos Markdown rastreados do obsidian/: links wiki resolvem ([[Nota]], |Alias, #Secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e SEGREDOS reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao NOME de um campo como vazamento.",
+   "file_type": "rationale",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "validar_obsidian_ci",
+   "community": 0,
+   "norm_label": "validador do cofre (tools/validar_obsidian.py): so stdlib, deterministico, roda no ci (job obsidian) e via tests/test_validar_obsidian.py. checa nos markdown rastreados do obsidian/: links wiki resolvem ([[nota]], |alias, #secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e segredos reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao nome de um campo como vazamento.",
+   "_origin": "manual"
   }
  ],
  "links": [
@@ -22652,6 +23184,656 @@
   {
    "relation": "calls",
    "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L93",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L91",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L93",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L89",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L101",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L98",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L102",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L97",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L85",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_embed",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L82",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_embed",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L85",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_embed",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L81",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_embed",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L166",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_faltando_type",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L166",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_faltando_type",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L165",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_faltando_type",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L161",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L158",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L161",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L157",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L77",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L74",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L77",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L73",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L176",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L175",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L176",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L175",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L69",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_por_alias",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L66",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_por_alias",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L69",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_por_alias",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L65",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_por_alias",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L59",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L56",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L60",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L55",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L147",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L146",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L147",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L146",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L122",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_referencias_de_fonte",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L121",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_referencias_de_fonte",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L123",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_referencias_de_fonte",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L153",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L152",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L153",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L152",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L139",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L138",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L139",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L138",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L132",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L129",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L132",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L128",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L171",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_status_invalido",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L170",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_status_invalido",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L171",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_status_invalido",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L170",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_status_invalido",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L112",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L109",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L112",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L108",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L51",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L48",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L47",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
    "source_location": "L613",
    "weight": 1.0,
@@ -22877,6 +24059,156 @@
    "weight": 1.0,
    "source": "tools_graph_sync_write_manifest",
    "target": "tools_graph_sync_versioned_set",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L165",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_achar_segredos",
+   "target": "tools_validar_obsidian_sem_codigo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L171",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_achar_segredos",
+   "target": "tools_validar_obsidian_valor_e_segredo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L121",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_alvos_de_link",
+   "target": "tools_validar_obsidian_nfc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L118",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_alvos_de_link",
+   "target": "tools_validar_obsidian_sem_codigo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L303",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_main",
+   "target": "tools_validar_obsidian_coletar_notas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L297",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_main",
+   "target": "tools_validar_obsidian_validar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L187",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_nota_init",
+   "target": "tools_validar_obsidian_lista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L184",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_nota_init",
+   "target": "tools_validar_obsidian_nfc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L186",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_nota_init",
+   "target": "tools_validar_obsidian_separar_frontmatter",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L62",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_separar_frontmatter",
+   "target": "tools_validar_obsidian_desaspar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L278",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_validar",
+   "target": "tools_validar_obsidian_achar_segredos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L266",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_validar",
+   "target": "tools_validar_obsidian_alvos_de_link",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L209",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_validar",
+   "target": "tools_validar_obsidian_coletar_notas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L260",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_validar",
+   "target": "tools_validar_obsidian_lista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L220",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_validar",
+   "target": "tools_validar_obsidian_nfc",
    "confidence_score": 1.0
   },
   {
@@ -23501,6 +24833,39 @@
    "weight": 1.0,
    "source": "nomes_amigaveis",
    "target": "separador_gui_editornomes"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "api_monitor_sistema",
+   "confidence_score": 1.0,
+   "context": "ambos sao infra de apoio versionada"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "graph_sync_processo",
+   "confidence_score": 1.0,
+   "context": "obsidian = contexto humano; graphify = estrutura/semantica"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "validar_obsidian_ci",
+   "confidence_score": 1.0,
+   "context": "o validador guarda o cofre"
   },
   {
    "relation": "conceptually_related_to",
@@ -30535,6 +31900,216 @@
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L38",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L16",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L42",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L88",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_arquivo_vazio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L96",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_colisao_por_caixa",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_embed",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L164",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_frontmatter_faltando_type",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L156",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_frontmatter_type_invalido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L72",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_link_com_secao_e_alias",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L174",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_link_para_mesma_nota_secao_ok",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L64",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_link_por_alias",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L54",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_link_valido_e_quebrado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L142",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_nome_de_campo_sensivel_sem_valor_nao_e_segredo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L115",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_referencias_de_fonte",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L150",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_segredo_em_bloco_de_codigo_com_placeholder_ok",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L135",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_segredo_jwt_flagrado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L127",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_segredo_valor_real_e_flagrado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L169",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_status_invalido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L105",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_unicode_normalizacao_no_link",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L46",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_validar_obsidian.py",
+   "source_location": "L29",
+   "weight": 1.0,
+   "source": "tests_test_validar_obsidian",
+   "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
    "source_location": "L592",
    "weight": 1.0,
@@ -30750,6 +32325,126 @@
    "weight": 1.0,
    "source": "tools_setup_gui_tests",
    "target": "tools_setup_gui_tests_sh__entry",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L161",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_achar_segredos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L114",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_alvos_de_link",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L196",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_coletar_notas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L82",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_desaspar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L190",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_lista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L284",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L38",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_nfc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L180",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_nota",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L94",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_sem_codigo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L45",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_separar_frontmatter",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L208",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_validar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L145",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian",
+   "target": "tools_validar_obsidian_valor_e_segredo",
    "confidence_score": 1.0
   },
   {
@@ -32652,6 +34347,16 @@
    "weight": 1.0,
    "source": "tests_test_shopee_resperro",
    "target": "tests_test_shopee_resperro_raise_for_status",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "method",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/validar_obsidian.py",
+   "source_location": "L181",
+   "weight": 1.0,
+   "source": "tools_validar_obsidian_nota",
+   "target": "tools_validar_obsidian_nota_init",
    "confidence_score": 1.0
   },
   {
@@ -35707,6 +37412,26 @@
   {
    "relation": "rationale_for",
    "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "validar_obsidian_ci",
+   "target": "tools_validar_obsidian",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "validar_obsidian_ci",
+   "target": "tools_validar_obsidian_validar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
    "source_file": "separador_etiquetas_ml.py",
    "source_location": null,
    "weight": 1.0,
@@ -37396,5 +39121,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "f1dd2d09131f1b509705144768149bc7b9974903"
+ "built_at_commit": "bcab879e557d2c6223c7e862e8ee4e69f9fa9c7a"
 }

@@ -1,7 +1,7 @@
 ---
 tags: [conceito, token, oauth, seguranca, concorrencia]
 aliases: [obter_token, renovar_token, refresh token, rotação de token]
-type: conceito
+type: concept
 ---
 
 # 🔑 Token e rotação do refresh

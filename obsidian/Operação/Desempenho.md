@@ -1,7 +1,7 @@
 ---
 tags: [operacao, desempenho, shopee, ml]
 aliases: [desempenho, performance, tempos]
-type: operacao
+type: reference
 ---
 
 # ⚡ Desempenho (medido, não teórico)

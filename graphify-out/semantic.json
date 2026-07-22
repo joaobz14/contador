@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 320,
- "edge_count": 517,
+ "node_count": 322,
+ "edge_count": 522,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3653,6 +3653,34 @@
    "community": 0,
    "norm_label": "manutencao do grafo (auditoria 2026-07): o graph.json tem duas camadas — ast (arquivos/classes/funcoes/metodos + contains/method/imports/calls, derivada do codigo) e semantica (rationale/concept mantidos a mao, espelhada em graphify-out/semantic.json). tools/graph_sync.py reconcilia por ids estaveis: regenera a estrutura, preserva calls/semantica, corrige numeros de linha, remove no de simbolo morto e reconecta ancora manual quebrada (nunca deixa aresta orfa). `--check` detecta defasagem (guarda no ci via tests/test_graphify_sync.py); `--update` aplica de forma atomica. nunca rodar `graphify hook install` — reconstruiria so o ast e apagaria a camada semantica.",
    "_origin": "manual"
+  },
+  {
+   "label": "COFRE OBSIDIAN (obsidian/): a camada de CONTEXTO HUMANO e operacional do projeto — decisoes, conceitos, estado atual, incidentes, runbooks, funcionalidades, marketplaces e integracoes, com uma secao IA/ de onboarding para agentes (Comece aqui, Fontes de verdade, Estado atual, Mapa de tarefas). NAO substitui o Graphify (base estrutural/semantica) nem a documentacao: cada fonte tem um papel, com prioridade em Fontes de verdade. Publico e versionado — nunca conter segredos.",
+   "file_type": "concept",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "obsidian_base_conhecimento",
+   "community": 0,
+   "norm_label": "cofre obsidian (obsidian/): a camada de contexto humano e operacional do projeto — decisoes, conceitos, estado atual, incidentes, runbooks, funcionalidades, marketplaces e integracoes, com uma secao ia/ de onboarding para agentes (comece aqui, fontes de verdade, estado atual, mapa de tarefas). nao substitui o graphify (base estrutural/semantica) nem a documentacao: cada fonte tem um papel, com prioridade em fontes de verdade. publico e versionado — nunca conter segredos.",
+   "_origin": "manual"
+  },
+  {
+   "label": "VALIDADOR DO COFRE (tools/validar_obsidian.py): so stdlib, deterministico, roda no CI (job obsidian) e via tests/test_validar_obsidian.py. Checa nos Markdown rastreados do obsidian/: links wiki resolvem ([[Nota]], |Alias, #Secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e SEGREDOS reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao NOME de um campo como vazamento.",
+   "file_type": "rationale",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "validar_obsidian_ci",
+   "community": 0,
+   "norm_label": "validador do cofre (tools/validar_obsidian.py): so stdlib, deterministico, roda no ci (job obsidian) e via tests/test_validar_obsidian.py. checa nos markdown rastreados do obsidian/: links wiki resolvem ([[nota]], |alias, #secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e segredos reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao nome de um campo como vazamento.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4648,6 +4676,39 @@
    "weight": 1.0,
    "source": "nomes_amigaveis",
    "target": "separador_gui_editornomes"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "api_monitor_sistema",
+   "confidence_score": 1.0,
+   "context": "ambos sao infra de apoio versionada"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "graph_sync_processo",
+   "confidence_score": 1.0,
+   "context": "obsidian = contexto humano; graphify = estrutura/semantica"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "obsidian_base_conhecimento",
+   "target": "validar_obsidian_ci",
+   "confidence_score": 1.0,
+   "context": "o validador guarda o cofre"
   },
   {
    "relation": "conceptually_related_to",
@@ -8167,6 +8228,26 @@
    "weight": 1.0,
    "source": "trava_impressao_ponta_a_ponta",
    "target": "separador_gui_separadorapp_imprimir_lotes",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "validar_obsidian_ci",
+   "target": "tools_validar_obsidian",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "obsidian/README.md",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "validar_obsidian_ci",
+   "target": "tools_validar_obsidian_validar",
    "confidence_score": 1.0
   },
   {

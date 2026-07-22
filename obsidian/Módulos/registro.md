@@ -1,7 +1,7 @@
 ---
 tags: [modulo, log, seguranca]
 aliases: [registro.py, log operacional]
-type: modulo
+type: module
 arquivo: registro.py
 ---
 

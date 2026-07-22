@@ -1,7 +1,7 @@
 ---
 tags: [modulo, bot, telegram]
 aliases: [bot_telegram.py, bot do Telegram]
-type: modulo
+type: module
 arquivo: bot_telegram.py
 ---
 

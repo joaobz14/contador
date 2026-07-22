@@ -1,7 +1,7 @@
 ---
 tags: [conceito, shopee, awb, gui]
 aliases: [rastreio Shopee, AWB na tela, preencher_rastreios]
-type: conceito
+type: concept
 ---
 
 # 🔎 Conferência na Shopee (rastreio)

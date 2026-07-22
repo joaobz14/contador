@@ -1,7 +1,8 @@
 ---
-tags: [moc, home]
+tags: [hub, home]
 aliases: [Início, Home, MOC, Mapa mental]
-type: moc
+type: hub
+status: current
 ---
 
 # 🏠 Contador — Segundo Cérebro
@@ -14,14 +15,21 @@ type: moc
 > O ganho: separar por **produto**, na **ordem pessoal** do operador, reduzindo erro.
 
 > [!tip] Como navegar este cofre
-> Use o **grafo do Obsidian** (ícone de grafo na barra lateral) para ver as conexões.
-> Cada nota linka para as vizinhas em **Relacionado**. Comece pelos hubs abaixo.
+> Cada nota linka para as vizinhas na seção **Relacionado**. O **grafo do Obsidian**
+> (ícone na barra lateral) mostra essas conexões. Comece pelos hubs abaixo — ou, se
+> você é um **agente de IA**, comece por **[[Comece aqui]]**.
+
+## 🤖 Para agentes de IA
+- [[Comece aqui]] — como investigar uma tarefa neste projeto, do zero
+- [[Fontes de verdade]] — em que confiar (código, ARQUITETURA, Graphify, este cofre)
+- [[Estado atual]] — o que está implementado, parcial, pendente ou pesquisa
+- [[Mapa de tarefas]] — "quero fazer X, começo por onde?"
 
 ## 🧭 Hubs de navegação
 - [[Mapa do repositório]] — todos os arquivos e o que cada um faz
 - [[Invariantes críticas]] — as 12 regras que **não** podem quebrar
 - [[Fluxos de operação]] — o passo a passo de cada caminho (impressão, GUI, Shopee, Ambas, Telegram)
-- [[Sistemas externos]] — ML API, Shopee API, Telegram, Zebra, Downloads
+- [[Sistemas externos]] — visão geral dos [[Mercado Livre|marketplaces]] e [[Telegram|integrações]]
 - [[Glossário]] — termos do domínio (SKU, AWB, DANFE, ZPL, dia de despacho…)
 
 ## 🧩 Módulos (código)
@@ -47,20 +55,21 @@ type: moc
 | [[Redação de segredos]] | [[Ponte com a Zebra]] | [[Dia de despacho]] |
 | [[Histórico e resumo do dia]] | [[Fuso de Brasília]] | |
 
-## 🛠️ Operação & qualidade
+## 🧱 Funcionalidades, decisões e operação
+- **Funcionalidades:** [[Resumo do dia]] · [[Impressão de etiquetas]]
+- **Marketplaces:** [[Mercado Livre]] · [[Shopee]] · [[Amazon (pesquisa)]]
+- **Integrações:** [[Telegram]] · [[Zebra e pasta Downloads]] · [[GitHub Actions (CI)]]
+- **Decisões:** [[Resumo do dia — soma por produto em PDF]] · [[Grafo em duas camadas]]
+- **Incidentes:** [[Impressão dupla na Shopee]] · [[Churn de git na máquina de operação]]
+- **Runbooks:** [[Setup de credenciais (OAuth)]] · [[Recuperar estado ou credencial]] · [[Validar o repositório]]
+
+## 🛠️ Qualidade
 - [[Desempenho]] — o que é caro (medido) e por quê
 - [[Testes como documentação]] — qual teste protege qual regra
 - [[Arquivos — locais vs versionados]] — o que sincroniza por Git e o que fica na máquina
 
-## 🕸️ Grafo completo (espelho do graphify)
-> [!tip] Duas camadas neste cofre
-> As notas acima são a **camada curada** (leitura humana). Além delas, a pasta
-> `Grafo/` tem o **espelho fiel** do `graphify-out/graph.json`: **937 nós** (código,
-> porquês, conceitos, documentos) e **1695 arestas** (`calls`, `imports`,
-> `rationale_for`, `references`, `conceptually_related_to`…) como wikilinks.
-> Entre por **[[📊 Índice do Grafo]]**.
-
 ---
-> [!info] Fontes de verdade (fora deste cofre)
-> Regras: `CLAUDE.md` e `docs/CHANGELOG.md`. Arquitetura: `docs/ARQUITETURA.md`.
-> Grafo de código: `graphify-out/`. Este cofre é a **camada navegável** desse conhecimento.
+> [!info] Onde está o grafo técnico
+> As relações estruturais e semânticas entre arquivos, símbolos e conceitos vivem em
+> **`graphify-out/`** (não neste cofre). Este cofre é a **camada de contexto humano**;
+> como as duas se dividem está em [[Fontes de verdade]].

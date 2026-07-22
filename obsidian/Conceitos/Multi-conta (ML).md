@@ -1,7 +1,7 @@
 ---
 tags: [conceito, ml, multiconta, token]
 aliases: [multi-conta, definir_conta, contas]
-type: conceito
+type: concept
 ---
 
 # 👥 Multi-conta (ML)

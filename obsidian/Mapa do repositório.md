@@ -1,7 +1,7 @@
 ---
 tags: [moc, mapa, repositorio]
 aliases: [Estrutura do projeto, Mapa do código]
-type: moc
+type: hub
 ---
 
 # 🗺️ Mapa do repositório

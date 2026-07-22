@@ -1,7 +1,7 @@
 ---
 tags: [conceito, sku, gui, ordenacao]
 aliases: [nomes_sku, aba Nomes, ordem de separação, EditorNomes]
-type: conceito
+type: concept
 ---
 
 # ✏️ Nomes amigáveis e ordem de separação

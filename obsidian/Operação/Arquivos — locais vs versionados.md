@@ -1,7 +1,7 @@
 ---
 tags: [operacao, seguranca, arquivos, invariante]
 aliases: [arquivos locais, versionados, gitignore, dois PCs]
-type: operacao
+type: reference
 ---
 
 # 🗂️ Arquivos — locais vs versionados

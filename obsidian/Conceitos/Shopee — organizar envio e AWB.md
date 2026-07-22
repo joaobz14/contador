@@ -1,7 +1,7 @@
 ---
 tags: [conceito, shopee, awb, impressao, invariante]
 aliases: [organizar envio, AWB, ship_order, drop-off, create_shipping_document]
-type: conceito
+type: concept
 ---
 
 # 🛍️ Shopee — organizar envio e AWB

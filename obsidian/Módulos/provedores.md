@@ -1,7 +1,7 @@
 ---
 tags: [modulo, provedor, arquitetura]
 aliases: [provedores.py, abstração de provedor]
-type: modulo
+type: module
 arquivo: provedores.py
 ---
 

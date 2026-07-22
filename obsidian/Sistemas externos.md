@@ -1,49 +1,30 @@
 ---
-tags: [moc, sistema-externo]
-aliases: [Sistemas externos, Integrações]
-type: sistema-externo
+tags: [hub, sistema-externo]
+aliases: [Sistemas externos, Integrações externas]
+type: hub
+status: current
 ---
 
 # 🌐 Sistemas externos
 
 > [!abstract]
-> Tudo que vive **fora do repositório** mas é essencial à operação. Nenhum é
-> versionado; o app depende do comportamento de cada um.
+> Tudo que vive **fora do repositório** mas é essencial à operação. Nenhum é versionado; o
+> app depende do comportamento de cada um. Esta é a página-índice — o detalhe está nas notas
+> de [[Mercado Livre|marketplace]] e [[Telegram|integração]].
 
-## Mercado Livre API
-Fonte dos pedidos, detalhes, envios e etiquetas ZPL do ML. Autenticação OAuth com
-`refresh_token` que **rotaciona** → [[Token e rotação do refresh]]. Consumida pelo
-[[separador_etiquetas_ml (núcleo)]].
+## Marketplaces (APIs)
+- **[[Mercado Livre]]** — pedidos, envios e etiquetas ZPL; OAuth com `refresh_token` que **rotaciona** → [[Token e rotação do refresh]].
+- **[[Shopee]]** — API v2; URL **assinada por HMAC** (leva `access_token`/`sign`); etiqueta só **após organizar o envio** → [[Shopee — organizar envio e AWB]].
 
-## Shopee Open Platform API (v2)
-Pedidos, organização de envio, AWB e documento térmico. URL **assinada por HMAC**
-que leva `access_token`/`sign` na query (→ cuidado de [[Redação de segredos]]). A
-etiqueta só existe **após organizar o envio** → [[Shopee — organizar envio e AWB]].
-Consumida por [[shopee_api]].
-> [!note] Pegadinhas validadas com loja real
-> - `get_shipping_parameter` e `get_tracking_number` são **GET** (POST → 404).
-> - `create_shipping_document` **exige `tracking_number`** no corpo.
-> - Organizar é **~14s fixos** (latência do AWB) — batch **não** acelera → [[Desempenho]].
+## Integrações (serviços e hardware)
+- **[[Telegram]]** — bot de consulta (ML+Shopee) e impressão só do ML.
+- **[[Zebra e pasta Downloads]]** — a impressora térmica e a **ponte** via pasta Downloads; um app externo (`impressora_zebra_usb.py`, de outro projeto) monitora e imprime → [[Ponte com a Zebra]].
+- **[[GitHub Actions (CI)]]** — testes (3.11/3.12), `ruff`, smoke da GUI e validação do cofre.
 
-## Telegram Bot API
-Canal do [[bot_telegram]]. Consulta em ambos os marketplaces; **impressão só do ML**.
-
-## Impressora térmica Zebra
-Hardware que imprime o ZPL. A etiqueta térmica da Shopee vem como **ZIP com ZPL
-(`~DGR/Z64`) dentro** — imprime direto, não reembrulhar.
-
-## App `impressora_zebra_usb.py` (externo)
-Programa de **outro projeto** que monitora a pasta Downloads e envia o ZIP à Zebra.
-O contrato dele (prefixos, extensões, detecção de duplicata) governa nossos nomes de
-arquivo → [[Ponte com a Zebra]].
-
-## Pasta Downloads
-A **ponte** entre este app e a Zebra. É **por máquina**. O ZIP cai aqui com um
-**prefixo** que o monitor reconhece → [[Ponte com a Zebra]].
-
-## GitHub Actions (CI)
-Roda `pytest` (3.11 e 3.12), `ruff` e o **smoke da GUI headless** (xvfb) nos dois
-marketplaces → [[Testes como documentação]].
+## Por que documentar aqui
+O **contrato** de cada externo governa decisões nossas: o prefixo do `.zip` (Zebra), a
+rotação do refresh (OAuth), o AWB antes da etiqueta (Shopee), a URL assinada (Redação de
+segredos). Mudar nosso lado sem respeitar o contrato **quebra a operação**.
 
 ## Relacionado
 - [[🏠 Home]] · [[Fluxos de operação]] · [[Arquivos — locais vs versionados]]

@@ -11,7 +11,8 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1177 nodes · 2105 edges · 10 hyperedges** (320 nós semânticos preservados).
+  **1215 nodes · 2224 edges · 10 hyperedges** (322 nós semânticos preservados) —
+  atualizadas ao incluir `tools/validar_obsidian.py` + testes e a semântica do cofre.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -38,6 +39,13 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-22 — Base de conhecimento `obsidian/` + validador:** reorganização do cofre
+  (camada de contexto humano; seção `IA/` de onboarding para agentes) e novo
+  `tools/validar_obsidian.py` (+ testes). O `graph_sync --update` incluiu os nós AST do
+  validador; adicionados à mão os nós semânticos `obsidian_base_conhecimento` (concept) e
+  `validar_obsidian_ci` (rationale), ligados a `graph_sync_processo`/`api_monitor_sistema`.
+  Contagens: **1215 nós, 2224 arestas, 0 órfãs**.
 
 - **2026-07-22 — Auditoria completa + re-sincronização do grafo (AST 125 commits
   defasada):** a camada AST estava congelada em `5233aef` (2026-07-08); de lá até

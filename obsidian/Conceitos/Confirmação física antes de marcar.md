@@ -1,7 +1,7 @@
 ---
 tags: [conceito, impressao, estado, invariante]
 aliases: [gera confirma marca, saíram certo, confirmação física]
-type: conceito
+type: concept
 ---
 
 # ✋ Confirmação física antes de marcar

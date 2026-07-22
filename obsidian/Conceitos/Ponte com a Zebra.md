@@ -1,7 +1,7 @@
 ---
 tags: [conceito, impressao, zebra, zpl, downloads]
 aliases: [pasta Downloads, nome_saida_unico, tmp_saida, monitor Zebra]
-type: conceito
+type: concept
 ---
 
 # 🖨️ Ponte com a Zebra (pasta Downloads)

@@ -1,7 +1,7 @@
 ---
 tags: [operacao, testes, ci, invariante]
 aliases: [testes, pytest, CI, testes como documentação]
-type: operacao
+type: reference
 ---
 
 # 🧪 Testes como documentação viva

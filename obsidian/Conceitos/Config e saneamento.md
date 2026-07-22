@@ -1,7 +1,7 @@
 ---
 tags: [conceito, config, gui, concorrencia]
 aliases: [aplicar_config, atualizar_config, _sanear_config, config.json]
-type: conceito
+type: concept
 ---
 
 # ⚙️ Config e saneamento
