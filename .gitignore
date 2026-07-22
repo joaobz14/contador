@@ -22,6 +22,7 @@ bot.log
 shopee_tempos.log
 ml_tempos.log
 separador.log
+historico_impressao.json
 *.tmp
 *.bak
 *.corrupto

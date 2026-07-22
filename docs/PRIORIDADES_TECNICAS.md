@@ -182,6 +182,17 @@ TTL** — o operador nao veria o pronto ate o TTL expirar. So implementar apos d
 TTL conservador e aceitar explicitamente o trade-off (ou dar um "forcar releitura" que
 ignora o cache curto). Nao mexer sem essa decisao.
 
+## 9. Resumo do dia: incluir reimpressao (decisao de v1)
+
+O "📋 Resumo do dia" (`historico.py`) conta o que foi impresso pela primeira vez
+— o gancho e o callback `registrar` de `estado.marcar_impresso`, que recebe so o
+delta de ids novos. **Reimpressao nao passa por `marcar_impresso`** (por design,
+para nao alterar o estado), entao **nao aparece no resumo**. Ficou assim de
+proposito na v1 (o caso comum e "o que preparei/despachei hoje", que a marcacao
+cobre). Se um dia o resumo precisar refletir tambem reimpressoes fisicas, o passo
+e chamar `historico.registrar` tambem no caminho de reimpressao (com um marcador
+`reimpressao=True` para distinguir na agregacao) — sem tocar no estado.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:

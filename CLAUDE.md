@@ -27,6 +27,7 @@ repo) monitora e imprime.
 |---|---|
 | `separador_etiquetas_ml.py` | Núcleo: API do ML, agrupamento, ZPL, carimbo, CLI. |
 | `estado.py` | Camada comum do estado "já impresso" (ML+Shopee) + IO JSON atômico. |
+| `historico.py` | Registro de impressão por **dia de ação** (carimbo de tempo) + resumo diário (`resumo_do_dia`/`formatar_resumo`). Separado do estado. |
 | `registro.py` | Log operacional (`separador.log`) + redação de segredos (`sem_segredos`). |
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
@@ -106,6 +107,24 @@ em 2º plano.
   sem limite) usa a mesma trava e **relê o disco** antes de gravar — senão um
   Atualizar apagaria uma marcação que o bot gravasse no meio-tempo (mesma corrida,
   por uma porta lateral).
+- **Histórico de impressão por dia de AÇÃO (`historico.py`):** o estado acima é por
+  **dia de despacho** e **não guarda quando** a etiqueta saiu — então NÃO responde
+  "o que imprimi hoje". Para isso há um **log separado** com carimbo de tempo
+  (Brasília), gravado no momento da marcação confirmada. O hook é único: o callback
+  **`registrar`** de `estado.marcar_impresso` recebe **só o delta** (ids realmente
+  novos daquela marcação) — reimpressão/re-marcação do mesmo id **não** gera evento
+  (nada de contagem dobrada). Os wrappers do núcleo (ML, com `conta_ativa()`) e do
+  Shopee (loja única, `conta=""`) passam esse callback, então **GUI, bot e CLI**
+  ficam cobertos de uma vez. A gravação é **best-effort** — roda **fora** da trava
+  do estado (arquivo próprio, trava própria) e **nunca levanta** (uma falha aqui
+  não pode derrubar uma marcação já gravada; filosofia do `_log_tempos`). Arquivo
+  **único por máquina** (`historico_impressao.json`, ML de todas as contas +
+  Shopee), gitignorado, podado por idade (`DIAS_HISTORICO=60`); **não** é trocado
+  por `definir_conta` (o resumo agrega tudo). A GUI mostra `resumo_do_dia` +
+  `formatar_resumo` no botão **📋 Resumo do dia** (`JanelaResumo`, só leitura —
+  não toca estado/grupos, fica habilitado durante a operação; "Salvar para
+  imprimir" gera um `.txt` e abre no app padrão). **Reimpressão não passa por
+  `marcar_impresso`, então não entra no resumo** (decisão de v1).
 - **Multi-conta (ML):** arquivos por conta em `contas/{nome}/`; `definir_conta()`
   troca os globais. Shopee é **uma loja só** (`credenciais_shopee.json`).
 - **Config sempre via `aplicar_config()`** — é o ponto único de **saneamento** do
@@ -245,8 +264,8 @@ em 2º plano.
   app Zebra v1.25.5+ (item B); teste-guardião
   `test_tmp_saida_nao_casa_o_que_o_monitor_vigia`.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
-  `config.json`, `bot_config.json`, logs (`bot.log`, `shopee_tempos.log`,
-  `ml_tempos.log`, `separador.log`).
+  `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
+  `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).
 - **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
   loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
   sem debugger. Duas regras: (1) log **nunca** atrapalha a operação (defensivo,

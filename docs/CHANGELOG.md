@@ -4,6 +4,18 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Interface
+- **Resumo do dia (o que você imprimiu hoje):** novo botão **📋 Resumo do dia** na
+  tela abre uma janela com tudo que saiu da impressora **hoje** (dia de ação, não
+  de despacho), separado por Mercado Livre (por conta) e Shopee, com totais de
+  etiquetas e unidades — e um botão **Salvar para imprimir (.txt)** para levar à
+  impressora comum ou arquivar. Por baixo, um registro novo (`historico.py`,
+  `historico_impressao.json`, local/gitignorado) grava cada impressão confirmada
+  com carimbo de tempo, no mesmo ponto em que o estado é marcado — então **GUI,
+  bot e CLI** entram no resumo. Conta só o que foi realmente impresso pela
+  primeira vez (o delta): reimpressão/dupla marcação não infla o número.
+  Reimpressão manual, que não passa pela marcação, fica de fora do resumo (v1).
+
 ### Desempenho
 - **"Atualizar" do ML mais rápido + cronometragem por fase:** a fase cara do
   Atualizar é o filtro de envios (uma chamada `GET /shipments/{id}` por pedido

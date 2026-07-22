@@ -9908,6 +9908,75 @@
       "file_type": "rationale",
       "id": "ml_atualizar_desempenho",
       "label": "DESEMPENHO (Atualizar ML ficou mais lento com o tempo): as 3 fases de coletar_grupos ja sao paralelas; a fase cara e o filtro (filtrar_para_imprimir), uma chamada GET /shipments/{id} por pedido nao-terminal. Causa raiz: envios_cache.json so guarda status TERMINAIS, entao pedido paid ainda nao ready_to_print e re-consultado a cada Atualizar e cresce com o volume da janela DIAS_JANELA=30 (nao e regressao de codigo, e volume x latencia). Feito (baixo risco): filtro subiu de 12->20 workers; coletar_grupos loga cada fase (com checados vs cache_hits, via stats opcional de filtrar_para_imprimir) em ml_tempos.log (via _log_tempos do nucleo, gitignorado, so contagens/segundos, espelha o shopee_tempos.log). Proximo passo adiado (area de risco, em PRIORIDADES_TECNICAS #8): cache de TTL curto para nao-terminais-e-nao-prontos, mas nao pode esconder um envio que virou ready_to_print dentro do TTL."
+    },
+    {
+      "label": "historico (modulo)",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L1",
+      "_origin": "manual",
+      "id": "historico",
+      "community": 8,
+      "norm_label": "historico"
+    },
+    {
+      "label": "registrar()",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L66",
+      "_origin": "manual",
+      "id": "historico_registrar",
+      "community": 8,
+      "norm_label": "registrar()"
+    },
+    {
+      "label": "resumo_do_dia()",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L98",
+      "_origin": "manual",
+      "id": "historico_resumo_do_dia",
+      "community": 8,
+      "norm_label": "resumo_do_dia()"
+    },
+    {
+      "label": "formatar_resumo()",
+      "file_type": "code",
+      "source_file": "historico.py",
+      "source_location": "L150",
+      "_origin": "manual",
+      "id": "historico_formatar_resumo",
+      "community": 8,
+      "norm_label": "formatar_resumo()"
+    },
+    {
+      "label": "SeparadorApp.abrir_resumo_dia()",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L1036",
+      "_origin": "manual",
+      "id": "separador_gui_separadorapp_abrir_resumo_dia",
+      "community": 4,
+      "norm_label": "abrir_resumo_dia()"
+    },
+    {
+      "label": "JanelaResumo",
+      "file_type": "code",
+      "source_file": "separador_gui.py",
+      "source_location": "L1050",
+      "_origin": "manual",
+      "id": "separador_gui_janelaresumo",
+      "community": 4,
+      "norm_label": "JanelaResumo"
+    },
+    {
+      "author": null,
+      "captured_at": null,
+      "community": 8,
+      "contributor": null,
+      "file_type": "rationale",
+      "id": "historico_dia_de_acao",
+      "label": "RESUMO DO DIA (o que imprimi hoje): o estado de \"ja impresso\" e por DIA DE DESPACHO e nao guarda QUANDO a etiqueta saiu, entao nao responde \"o que imprimi hoje\". historico.py e um log separado por DIA DE ACAO (carimbo de tempo Brasilia), gravado no momento da marcacao confirmada. Hook unico: o callback registrar de estado.marcar_impresso recebe SO O DELTA (ids realmente novos) \u2014 reimpressao/re-marcacao do mesmo id nao gera evento (sem contagem dobrada). Os wrappers do nucleo (ML, conta_ativa()) e Shopee (conta=\"\") passam o callback, cobrindo GUI, bot e CLI. Best-effort: roda FORA da trava do estado (arquivo/trava proprios) e NUNCA levanta (nao pode derrubar uma marcacao ja gravada; filosofia do _log_tempos). Arquivo unico por maquina (historico_impressao.json), gitignorado, podado por DIAS_HISTORICO=60, nao trocado por definir_conta. GUI: botao \"Resumo do dia\" (JanelaResumo, so leitura) com resumo_do_dia+formatar_resumo e \"Salvar para imprimir\" (.txt). Reimpressao manual nao passa por marcar_impresso, entao fica fora do resumo (v1)."
     }
   ],
   "links": [
@@ -27368,6 +27437,116 @@
       "weight": 1.0,
       "source": "separador_etiquetas_ml_coletar_grupos",
       "target": "separador_etiquetas_ml_log_tempos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico",
+      "target": "estado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_registrar",
+      "target": "estado_trava",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_registrar",
+      "target": "estado_gravar_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_etiquetas_ml.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_etiquetas_ml_marcar_impresso",
+      "target": "historico_registrar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "shopee_api.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "shopee_api_marcar_impresso",
+      "target": "historico_registrar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_abrir_resumo_dia",
+      "target": "historico_resumo_do_dia",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_abrir_resumo_dia",
+      "target": "historico_formatar_resumo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "MANUAL",
+      "source_file": "separador_gui.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "separador_gui_separadorapp_abrir_resumo_dia",
+      "target": "separador_gui_janelaresumo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_dia_de_acao",
+      "target": "estado_marcar_impresso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_dia_de_acao",
+      "target": "historico_registrar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "MANUAL",
+      "source_file": "historico.py",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "historico_dia_de_acao",
+      "target": "estado_chave_estado",
       "confidence_score": 1.0
     }
   ],

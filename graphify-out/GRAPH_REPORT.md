@@ -6,6 +6,17 @@
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do relatório abaixo refletem o build automático.
 
+- **2026-07-22 — Resumo do dia (histórico de impressão por dia de ação):** módulo
+  novo `historico.py` (registro com carimbo de tempo + `resumo_do_dia`/
+  `formatar_resumo`). O estado é por dia de despacho e não sabe QUANDO a etiqueta
+  saiu; o histórico responde "o que imprimi hoje". Hook único via callback
+  `registrar` de `estado.marcar_impresso`, que recebe **só o delta** (ids novos) —
+  reimpressão não conta em dobro; cobre GUI, bot e CLI. Best-effort (fora da trava
+  do estado, nunca levanta). GUI: botão 📋 Resumo do dia (`JanelaResumo`, só
+  leitura) + salvar `.txt`. Nós: `historico` (+`registrar`/`resumo_do_dia`/
+  `formatar_resumo`), `separador_gui_separadorapp_abrir_resumo_dia`,
+  `separador_gui_janelaresumo`, rationale `historico_dia_de_acao`.
+
 - **2026-07-21 — Desempenho do "Atualizar" ML (medir + acelerar sem risco):** a
   fase cara é o filtro de envios (`filtrar_para_imprimir`, uma chamada
   `GET /shipments/{id}` por pedido não-terminal); ficou mais lento com o tempo

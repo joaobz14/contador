@@ -35,6 +35,7 @@ from pathlib import Path
 import requests
 
 import estado as _estado
+import historico
 
 API = "https://api.mercadolibre.com"
 TIMEOUT = 30
@@ -69,6 +70,10 @@ ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
 # Diagnostico local para saber ONDE o tempo vai antes de otimizar (como o
 # shopee_tempos.log). Gitignorado; so contagens e segundos, nunca dados sensiveis.
 ARQUIVO_TEMPOS = PASTA_SCRIPT / "ml_tempos.log"
+# Historico de impressao (registro por dia-de-acao) — UNICO por maquina (ML de
+# todas as contas + Shopee), gitignorado. NAO e trocado por definir_conta (o
+# resumo do dia agrega tudo). Ver historico.py.
+ARQUIVO_HISTORICO = PASTA_SCRIPT / "historico_impressao.json"
 # Preferencias do app (ex.: carimbar o SKU), editaveis pela tela.
 ARQUIVO_CONFIG = PASTA_SCRIPT / "config.json"
 PASTA_CONTAS = PASTA_SCRIPT / "contas"
@@ -1351,7 +1356,12 @@ def marcar_impresso(estado: dict, grupo: Grupo, shipment_ids: list[int] | None =
     # e sobrescrito aqui, destruindo o recuperavel — ele e preservado (5.2).
     _estado.marcar_impresso(
         lambda: _estado.ler_estado(ARQUIVO_ESTADO), salvar_estado, estado, grupo, shipment_ids,
-        arquivo=ARQUIVO_ESTADO)
+        arquivo=ARQUIVO_ESTADO,
+        # Historico do dia: so os ids recem-marcados (delta), com a conta ATIVA
+        # (resolvida no momento da chamada — honra o roteamento do modo "Ambas").
+        registrar=lambda novos: historico.registrar(
+            ARQUIVO_HISTORICO, marketplace="Mercado Livre", conta=conta_ativa(),
+            grupo=grupo, ids=novos))
 
 
 def imprimir_pendentes(token: str, grupo: Grupo, estado: dict) -> list[int]:

@@ -35,6 +35,7 @@ from datetime import datetime
 import requests
 
 import estado as _estado
+import historico
 import separador_etiquetas_ml as core
 
 # Host global do Open Platform — validado com a loja real (BR) em producao.
@@ -797,7 +798,12 @@ def marcar_impresso(estado: dict, grupo: core.Grupo, order_sns: list | None = No
     # em silencio destruindo o recuperavel (auditoria 5.2).
     _estado.marcar_impresso(
         lambda: _estado.ler_estado(ARQUIVO_ESTADO), salvar_estado, estado, grupo, order_sns,
-        arquivo=ARQUIVO_ESTADO)
+        arquivo=ARQUIVO_ESTADO,
+        # Historico do dia: so os order_sns recem-marcados (delta). Shopee e loja
+        # unica, entao conta="" (o resumo mostra a secao "Shopee").
+        registrar=lambda novos: historico.registrar(
+            core.ARQUIVO_HISTORICO, marketplace="Shopee", conta="",
+            grupo=grupo, ids=novos))
 
 
 # ---------------------------------------------------------------------------
