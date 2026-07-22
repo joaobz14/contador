@@ -44,6 +44,11 @@ Thumbs.db
 .vscode/
 .claude/worktrees/
 
+# Obsidian: estado local da interface e cache da maquina
+obsidian/.obsidian/workspace.json
+obsidian/.obsidian/workspace-mobile.json
+obsidian/.obsidian/cache/
+
 # graphify: versiona artefatos compartilhaveis; ignora cache e arquivos da maquina
 graphify-out/cache/
 graphify-out/.graphify_python
