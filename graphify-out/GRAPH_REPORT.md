@@ -11,13 +11,14 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1287 nodes · 2362 edges · 10 hyperedges** (324 nós semânticos preservados) —
+  **1290 nodes · 2366 edges · 10 hyperedges** (324 nós semânticos preservados) —
   atualizadas ao incluir `tools/validar_obsidian.py` + testes, a semântica do cofre,
   o helper `_nome_sem_sku`, o `tools/diag_coleta.py`, o `tools/diag_ads.py`
   (validação só-leitura do Product Ads), o `ads-monitor/coletar.py` + testes
   (coletor determinístico do Product Ads, camada 1 e camada 2 — atribuição por
-  ad_group/item) e a resolução de SKU via `seller_sku` real (extensão do cache
-  `itens_cache.json` do núcleo, `_resolver_skus`).
+  ad_group/item), a resolução de SKU via `seller_sku` real (extensão do cache
+  `itens_cache.json` do núcleo, `_resolver_skus`) e o `tools/diag_seller_sku.py`
+  (diagnóstico exploratório: por que ad_groups tipo ITEM não resolveram SKU).
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são

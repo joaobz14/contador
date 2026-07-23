@@ -17131,6 +17131,48 @@
    "id": "tests_test_ads_monitor_coletar_test_coletar_conta_seller_sku_do_cache_tem_prioridade_sobre_adocao",
    "community": 66,
    "norm_label": "test_coletar_conta_seller_sku_do_cache_tem_prioridade_sobre_adocao()"
+  },
+  {
+   "label": "diag_seller_sku.py",
+   "file_type": "code",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_seller_sku",
+   "community": 67,
+   "norm_label": "diag_seller_sku.py"
+  },
+  {
+   "label": "_amostra()",
+   "file_type": "code",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L29",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_seller_sku_amostra",
+   "community": 67,
+   "norm_label": "_amostra()"
+  },
+  {
+   "label": "main()",
+   "file_type": "code",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L42",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_seller_sku_main",
+   "community": 67,
+   "norm_label": "main()"
   }
  ],
  "links": [
@@ -25417,6 +25459,16 @@
    "weight": 1.0,
    "source": "tools_diag_coleta_mostrar_um",
    "target": "tools_diag_coleta_mask",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L56",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku_main",
+   "target": "tools_diag_seller_sku_amostra",
    "confidence_score": 1.0
   },
   {
@@ -34391,6 +34443,26 @@
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L29",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku",
+   "target": "tools_diag_seller_sku_amostra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L42",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku",
+   "target": "tools_diag_seller_sku_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
    "source_location": "L592",
    "weight": 1.0,
@@ -35065,6 +35137,16 @@
    "source_location": "L1",
    "weight": 1.0,
    "source": "tools_diag_coleta",
+   "target": "separador_etiquetas_ml",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "imports",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L1",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku",
    "target": "separador_etiquetas_ml",
    "confidence_score": 1.0
   },
@@ -41512,5 +41594,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "124e1e54be70155e6e0db11f410fdd9af5e567b8"
+ "built_at_commit": "180385a2cea82e18d96dec82e35027c679174380"
 }
