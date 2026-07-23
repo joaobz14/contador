@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 322,
- "edge_count": 522,
+ "node_count": 323,
+ "edge_count": 527,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3681,6 +3681,20 @@
    "community": 0,
    "norm_label": "validador do cofre (tools/validar_obsidian.py): so stdlib, deterministico, roda no ci (job obsidian) e via tests/test_validar_obsidian.py. checa nos markdown rastreados do obsidian/: links wiki resolvem ([[nota]], |alias, #secao, ![[embed]], caminhos, aliases), frontmatter minimo (type/status/verified_at_commit validos), arquivos vazios, colisao de nome por caixa, referencias source_files/source_docs existentes e segredos reais (valores de alta entropia/formatos de credencial), sem tratar a mencao ao nome de um campo como vazamento.",
    "_origin": "manual"
+  },
+  {
+   "label": "ADS-MONITOR CAMADA 1 (coletor deterministico do Product Ads): grava snapshot diario de metricas de campanha por conta num SQLite local (historico_ads.sqlite3, gitignorado). SO GET, reusa obter_token/definir_conta do nucleo (token-safe, mesma trava entre processos), sem IA na coleta. Um dia por execucao (default ontem — dados fecham as 10:00 GMT-3), idempotente (INSERT OR REPLACE por data+conta+campaign_id), isola falha por conta. Endpoints confirmados na doc oficial Product Ads (conector MercadoLibre): GET /advertising/advertisers?product_id=PADS (descoberta), GET /advertising/{site}/advertisers/{id}/product_ads/campaigns/search (listagem+metricas do dia), GET /advertising/{site}/product_ads/campaigns/{campaign_id} (detalhe -- lost_impression_share_by_budget, o sinal OFICIAL de campanha limitada por orcamento). O campo budget da listagem e media diaria de um ciclo MENSAL com rollover -- comparar custo/dia vs orcamento ingenuamente e enganoso (confirmado com numeros reais); por isso o detalhe por campanha e obrigatorio para esse sinal, nao um calculo caseiro. Camada 1 de um monitor maior: SEM motor de recomendacao, SEM dado de margem, SEM agendamento automatico ainda — so a base historica.",
+   "file_type": "concept",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "ads_monitor_coletor_camada1",
+   "community": 0,
+   "norm_label": "ads-monitor camada 1 (coletor deterministico do product ads): grava snapshot diario de metricas de campanha por conta num sqlite local (historico_ads.sqlite3, gitignorado). so get, reusa obter_token/definir_conta do nucleo (token-safe, mesma trava entre processos), sem ia na coleta. um dia por execucao (default ontem — dados fecham as 10:00 gmt-3), idempotente (insert or replace por data+conta+campaign_id), isola falha por conta. endpoints confirmados na doc oficial product ads (conector mercadolibre): get /advertising/advertisers?product_id=pads (descoberta), get /advertising/{site}/advertisers/{id}/product_ads/campaigns/search (listagem+metricas do dia), get /advertising/{site}/product_ads/campaigns/{campaign_id} (detalhe -- lost_impression_share_by_budget, o sinal oficial de campanha limitada por orcamento). o campo budget da listagem e media diaria de um ciclo mensal com rollover -- comparar custo/dia vs orcamento ingenuamente e enganoso (confirmado com numeros reais); por isso o detalhe por campanha e obrigatorio para esse sinal, nao um calculo caseiro. camada 1 de um monitor maior: sem motor de recomendacao, sem dado de margem, sem agendamento automatico ainda — so a base historica.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4053,6 +4067,28 @@
    "source": "shopee_api_salvar_etiqueta",
    "target": "separador_etiquetas_ml_tmp_saida",
    "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_coletor_camada1",
+   "target": "api_monitor_sistema",
+   "confidence_score": 1.0,
+   "context": "subsistemas paralelos: monitor de docs (semanal) vs coletor de metricas (diario)"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_coletor_camada1",
+   "target": "graph_sync_processo",
+   "confidence_score": 1.0,
+   "context": "mesmo espirito de subsistema isolado que api_monitor_sistema"
   },
   {
    "relation": "conceptually_related_to",
@@ -5178,6 +5214,36 @@
    "weight": 1.0,
    "source": "historico",
    "target": "estado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_coletor_camada1",
+   "target": "ads_monitor_coletar_buscar_advertiser",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_coletor_camada1",
+   "target": "ads_monitor_coletar_coletar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_coletor_camada1",
+   "target": "ads_monitor_coletar_salvar_campanha",
    "confidence_score": 1.0
   },
   {

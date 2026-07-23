@@ -4,6 +4,22 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Ferramentas de desenvolvimento
+- **`ads-monitor/coletar.py` — coletor determinístico do Product Ads (Mercado
+  Ads):** primeira camada de um futuro monitor de campanhas. Grava, uma vez
+  por dia (default ontem — a plataforma fecha os dados às 10:00 GMT-3), o
+  snapshot de métricas de cada campanha das contas configuradas num SQLite
+  local (`historico_ads.sqlite3`, gitignorado). Reusa a autenticação do
+  núcleo (`obter_token`/`definir_conta`), então herda a trava entre processos
+  e nunca duplica lógica de refresh de token. Só leitura (GET) — não pausa,
+  edita nem muda orçamento de campanha. Idempotente (regrava o mesmo dia, não
+  duplica) e isola falha por conta. Endpoints confirmados na doc oficial
+  "Product Ads" (via conector MercadoLibre), incluindo o sinal oficial de
+  campanha limitada por orçamento (`lost_impression_share_by_budget`) —
+  evita o cálculo caseiro custo÷orçamento, que a doc revela ser enganoso (o
+  campo `budget` é média diária de um ciclo mensal com rollover). Ainda sem
+  motor de recomendação, dado de margem ou agendamento automático.
+
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada
   de **contexto humano e operacional** (decisões, conceitos, estado atual, incidentes,

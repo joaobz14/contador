@@ -30,19 +30,24 @@
   "semantic_hash": "aa1d8bdfd0bcd6c33e10f628c1f6fe7983004aa2"
  },
  "AGENTS.md": {
-  "mtime": 1784737401.3694458,
-  "ast_hash": "768320c36c88ff4c01ab910a800fc0836411797e",
-  "semantic_hash": "768320c36c88ff4c01ab910a800fc0836411797e"
+  "mtime": 1784813918.8165886,
+  "ast_hash": "46067739dbef4d2db116deecd0e2316bd874f09e",
+  "semantic_hash": "46067739dbef4d2db116deecd0e2316bd874f09e"
  },
  "CLAUDE.md": {
-  "mtime": 1784737396.5694458,
-  "ast_hash": "884f95680575aba7789cdcaea5922c8d8dd9b411",
-  "semantic_hash": "884f95680575aba7789cdcaea5922c8d8dd9b411"
+  "mtime": 1784813912.664589,
+  "ast_hash": "fff79d3421ab09c524f97d577180931049409e91",
+  "semantic_hash": "fff79d3421ab09c524f97d577180931049409e91"
  },
  "README.md": {
   "mtime": 1784202399.1568725,
   "ast_hash": "5a70ee6f8663b0041090e08061f604fa83dd7f71",
   "semantic_hash": "5a70ee6f8663b0041090e08061f604fa83dd7f71"
+ },
+ "ads-monitor/coletar.py": {
+  "mtime": 1784813775.636592,
+  "ast_hash": "3f67da306636d8494399697212105c566e075612",
+  "semantic_hash": "3f67da306636d8494399697212105c566e075612"
  },
  "api-monitor/README.md": {
   "mtime": 1784736107.7965755,
@@ -85,9 +90,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1784737424.7814453,
-  "ast_hash": "6c8b02637cbe4d3799d67f8ad05fba27debd9ba0",
-  "semantic_hash": "6c8b02637cbe4d3799d67f8ad05fba27debd9ba0"
+  "mtime": 1784813934.6965883,
+  "ast_hash": "c647c6e48fc18be2f8a269d9558c5ddaf990d139",
+  "semantic_hash": "c647c6e48fc18be2f8a269d9558c5ddaf990d139"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1784736107.7965755,
@@ -339,6 +344,11 @@
   "ast_hash": "d0e874f000f8d62b7494dfff2fd9cd33f445c118",
   "semantic_hash": "d0e874f000f8d62b7494dfff2fd9cd33f445c118"
  },
+ "tests/test_ads_monitor_coletar.py": {
+  "mtime": 1784813844.5685904,
+  "ast_hash": "d567c1bf1283e1e2901aa29079865db8bf8f11ba",
+  "semantic_hash": "d567c1bf1283e1e2901aa29079865db8bf8f11ba"
+ },
  "tests/test_agrupar.py": {
   "mtime": 1783442165.699696,
   "ast_hash": "acc4c2c9078dc5a40dfcc04874e72a43f0e04917",
@@ -490,7 +500,7 @@
   "semantic_hash": "a31fe4a4545f6edc2fb42ed8fb90cc70a7055b85"
  },
  "tools/diag_ads.py": {
-  "mtime": 1784812999.6966097,
+  "mtime": 1784813070.1486082,
   "ast_hash": "2d8e785dc784de696ebdacf0083e940da9df4f0b",
   "semantic_hash": "2d8e785dc784de696ebdacf0083e940da9df4f0b"
  },
