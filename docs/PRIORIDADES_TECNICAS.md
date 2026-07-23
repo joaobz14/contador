@@ -193,6 +193,43 @@ cobre). Se um dia o resumo precisar refletir tambem reimpressoes fisicas, o pass
 e chamar `historico.registrar` tambem no caminho de reimpressao (com um marcador
 `reimpressao=True` para distinguir na agregacao) — sem tocar no estado.
 
+## 10. Monitor de Product Ads: atribuicao por SKU dentro da campanha (bloqueado por margem)
+
+O `ads-monitor/coletar.py` (camada 1, grava snapshot diario por campanha) esta
+pronto, mas uma campanha do Product Ads normalmente anuncia **varias categorias
+juntas** (ex.: "Fogao/Bebedouro/Chapa/Gira 5%") — nao da pra aplicar margem por
+SKU direto na campanha inteira.
+
+Validado com chamada real de leitura (`tools/diag_ads.py`, passo 5) que a cadeia
+**campanha -> ad_group -> item_id -> SKU** e tecnicamente viavel, via o fluxo novo
+por `ad_group_id` (substituiu o antigo endpoint de metricas por item, descontinuado
+em 27/05/2026 — doc "Product Ads para Catalogo e User Products"):
+
+```
+GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/ad_groups/search
+    ?filters[campaign_id]=X&date_from&date_to&metrics=...   -- confirmado 200
+GET /advertising/{site}/product_ads/ad_groups/{ad_group_id}/ads
+    ?date_from&date_to                                       -- confirmado 200, devolve item_id
+```
+
+O `item_id` resolve pro SKU via `skus_por_anuncio.json`, que ja existe no projeto.
+
+Dois achados do dado real que faltam tratar antes de implementar:
+- **`ad_group` nao e 1:1 com item.** `ad_group_type` pode ser `FAMILY` (variacoes)
+  ou `CATALOG` (**varios vendedores concorrendo no mesmo anuncio** — visto 1 caso
+  com 7 `item_id` diferentes num so ad_group). O endpoint de itens dentro do
+  ad_group e obrigatorio pra granularidade real, nao um atalho.
+- **Paginacao nao confirmada.** A busca por advertiser+campanha devolveu
+  exatamente 50 ad_groups (o limite padrao) numa campanha — nao foi checado
+  `paging.total` pra saber se aquela campanha tem mais que isso. Falta paginar
+  (`offset`) antes de confiar no total.
+
+**Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
+organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
+constante). So faz sentido implementar a atribuicao acima quando essa fonte
+existir (formato ainda em aberto: arquivo local tipo `nomes_sku.json`, importador
+de planilha, ou outro). Ate la, o coletor continua so na camada 1 (sem margem).
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:
