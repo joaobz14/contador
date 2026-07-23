@@ -1,137 +1,191 @@
 #!/usr/bin/env python3
-"""Diagnostico SO-LEITURA: descobre se a API do Mercado Livre expoe dados de
-COLETA / MOTORISTA (para avaliar a ideia de ligar o modo "Ambas" automatico
-quando o mesmo motorista atende as duas contas).
+"""Diagnostico SO-LEITURA do cronograma de coleta do Mercado Livre.
 
-- Nao altera NADA (so requisicoes GET).
-- Imprime apenas a ESTRUTURA (nomes de chave + tipos), NUNCA os valores — assim
-  nao vaza endereco, nome de motorista, placa nem qualquer dado pessoal/segredo.
-- Usa o token da conta pela mesma via do app (obter_token).
+Confirma, na SUA conta, se a API entrega o MOTORISTA da coleta e permite
+comparar duas contas — para avaliar a ideia de ligar o modo "Ambas" automatico
+quando o mesmo motorista atende as duas contas.
+
+Endpoint (doc "Envios Coletas e Places"):
+    GET /users/{USER_ID}/shipping/schedule/{LOGISTIC_TYPE}
+Retorna, por dia da semana, `detail[]` com: from/to/cutoff (janela),
+carrier{id,name}, vehicle{license_plate,...}, driver{id,name}, sla, logistic_type.
+
+- SO requisicoes GET; nao altera NADA.
+- MASCARA o nome do motorista e a placa (dados pessoais). Imprime driver.id,
+  carrier e a janela — que e o que interessa para casar as contas — entao a
+  saida e SEGURA para colar aqui.
 
 Uso:
-    python tools/diag_coleta.py [conta] [shipment_id]
-
-    conta         nome da conta ML (default: a conta ativa). Ex.: cozilatti
-    shipment_id   inspeciona um envio especifico (default: pega um da busca).
-                  Dica: rode com um envio que tenha COLETA PROGRAMADA hoje.
+    python tools/diag_coleta.py [conta]                    # cronograma de 1 conta (hoje)
+    python tools/diag_coleta.py --comparar contaA contaB   # mesmo motorista hoje?
 """
 from __future__ import annotations
 
+import datetime
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import separador_etiquetas_ml as core  # noqa: E402
 
-# chaves cujo NOME sugere coleta/motorista/rota (busca so no nome, nao no valor)
-PALAVRAS = (
-    "driver", "motorista", "pickup", "coleta", "route", "rota", "carrier",
-    "plate", "placa", "authorization", "autoriza", "sender_real", "hub",
-    "agency", "agencia", "chofer", "conductor",
-)
+DIAS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+# tipos logisticos que tem coleta com motorista (drop_off/correio nao tem)
+LOGISTICAS = ["cross_docking", "xd_drop_off", "xd_same_day"]
 
 
-def esqueleto(obj, prof=0, maxprof=6):
-    """Estrutura recursiva com TIPOS no lugar dos valores (sem dado real)."""
-    if isinstance(obj, dict):
-        if prof >= maxprof:
-            return "{...}"
-        return {k: esqueleto(v, prof + 1, maxprof) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [esqueleto(obj[0], prof + 1, maxprof)] if obj else []
-    return type(obj).__name__
+def _hoje() -> str:
+    return DIAS[datetime.datetime.now(core.TZ_BR).weekday()]
 
 
-def achar_chaves(obj, caminho=""):
-    achados = []
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            cam = f"{caminho}.{k}" if caminho else k
-            if any(p in str(k).lower() for p in PALAVRAS):
-                achados.append(cam)
-            achados += achar_chaves(v, cam)
-    elif isinstance(obj, list) and obj:
-        achados += achar_chaves(obj[0], caminho + "[]")
-    return achados
+def _mask(v) -> str:
+    """Mascara um dado pessoal (nome/placa) — mostra so o tamanho."""
+    s = str(v or "")
+    return f"***({len(s)} chars)" if s else "(vazio)"
 
 
-def _get_seguro(path, token):
-    """GET cru que devolve (status, keys_de_topo). Nao levanta; nao ecoa valor.
-    As URLs do ML nao carregam token na query (Bearer no header), entao o path
-    e seguro de imprimir."""
-    import requests
+def _token_seller(conta: str):
+    if conta:
+        core.definir_conta(conta)
+    cred = core.carregar_credenciais()
+    return core.obter_token(cred), cred["seller_id"]
+
+
+def _logistica_do_envio(token, seller) -> str | None:
+    """Le o logistic_type de um envio real (dica de qual logistica consultar)."""
     try:
-        r = requests.get(core.API + path,
-                         headers={"Authorization": f"Bearer {token}",
-                                  "x-format-new": "true"},
+        pedidos = core.buscar_pedidos(token, seller)
+    except Exception:
+        return None
+    for p in pedidos:
+        sid = (p.get("shipping") or {}).get("id")
+        if not sid:
+            continue
+        env = core.buscar_envio(token, sid)
+        lt = env.get("logistic_type") or (env.get("logistic") or {}).get("type")
+        if lt:
+            return lt
+    return None
+
+
+def _schedule(token, seller, logistica):
+    """GET do cronograma. Devolve (status, json|None). Nao levanta; a URL do ML
+    nao carrega token na query, entao o path e seguro."""
+    import requests
+    url = f"{core.API}/users/{seller}/shipping/schedule/{logistica}"
+    try:
+        r = requests.get(url, headers={"Authorization": f"Bearer {token}"},
                          timeout=core.TIMEOUT)
     except requests.RequestException as e:
         return "ERRO", type(e).__name__
-    if r.status_code == 200:
-        try:
-            d = r.json()
-        except ValueError:
-            return 200, "(resposta nao-JSON)"
-        return 200, (list(d.keys())[:15] if isinstance(d, dict)
-                     else f"[lista de {len(d)}]")
-    return r.status_code, ""
+    if r.status_code != 200:
+        return r.status_code, None
+    try:
+        return 200, r.json()
+    except ValueError:
+        return 200, None
+
+
+def _detalhes_hoje(sched: dict) -> list:
+    dia = (sched.get("schedule") or {}).get(_hoje()) or {}
+    return dia.get("detail") or []
+
+
+def _driver_id_hoje(sched: dict):
+    for d in _detalhes_hoje(sched):
+        did = (d.get("driver") or {}).get("id")
+        if did:
+            return str(did)
+    return None
+
+
+def _coletar_conta(conta: str):
+    """Devolve (seller, logistica_usada, status, sched) para o 1o logistic_type
+    que responde 200 (tentando a do envio real primeiro)."""
+    token, seller = _token_seller(conta)
+    ordem = []
+    lt_env = _logistica_do_envio(token, seller)
+    if lt_env:
+        ordem.append(lt_env)
+    ordem += [x for x in LOGISTICAS if x not in ordem]
+    ultimo = (ordem[0], None)
+    for logistica in ordem:
+        status, sched = _schedule(token, seller, logistica)
+        if status == 200 and sched:
+            return seller, logistica, status, sched
+        ultimo = (logistica, status)
+    return seller, ultimo[0], ultimo[1], None
+
+
+def _mostrar_um(conta: str) -> int:
+    print(f"conta ativa: {core.conta_ativa() or '(padrao)'}  |  hoje = {_hoje()}\n")
+    seller, logistica, status, sched = _coletar_conta(conta)
+    print(f"seller_id: {seller}")
+    print(f"logistic_type consultado: {logistica}  ->  HTTP {status}")
+    if not sched:
+        print("\nNao veio cronograma (status != 200 ou vazio). Possiveis causas: a "
+              "conta nao e de coleta nessa logistica, ou o token nao tem permissao "
+              "pra esse recurso. Tente outra logistica ou confira as permissoes.")
+        return 1
+    detalhes = _detalhes_hoje(sched)
+    if not detalhes:
+        print(f"\nHoje ({_hoje()}) sem coleta programada no cronograma "
+              "(work=false ou detail vazio). Rode num dia com coleta.")
+        return 0
+    print(f"\n=== coleta de hoje ({_hoje()}) — {len(detalhes)} janela(s) ===")
+    for i, d in enumerate(detalhes, 1):
+        carrier = d.get("carrier") or {}
+        vehicle = d.get("vehicle") or {}
+        driver = d.get("driver") or {}
+        print(f"  [{i}] janela {d.get('from')}-{d.get('to')} (corte {d.get('cutoff')})"
+              f"  sla={d.get('sla')}  logistic_type={d.get('logistic_type')}")
+        print(f"      carrier: id={carrier.get('id')} name={carrier.get('name')}")
+        print(f"      driver : id={driver.get('id')}  name={_mask(driver.get('name'))}")
+        print(f"      veiculo: placa={_mask(vehicle.get('license_plate'))} "
+              f"tipo={vehicle.get('vehicle_type')} "
+              f"so_hoje={vehicle.get('only_for_today')} "
+              f"novo_motorista={vehicle.get('new_driver')}")
+    print("\nO que importa pra casar as contas: driver.id e carrier.id (imprimidos "
+          "acima). Nome e placa estao mascarados — a saida e segura pra colar aqui.")
+    return 0
+
+
+def _comparar(contaA: str, contaB: str) -> int:
+    print(f"comparando coleta de HOJE ({_hoje()}) entre '{contaA}' e '{contaB}'\n")
+    res = {}
+    for conta in (contaA, contaB):
+        seller, logistica, status, sched = _coletar_conta(conta)
+        did = _driver_id_hoje(sched) if sched else None
+        cid = None
+        if sched:
+            for d in _detalhes_hoje(sched):
+                cid = (d.get("carrier") or {}).get("id") or cid
+        res[conta] = {"seller": seller, "logistica": logistica, "status": status,
+                      "driver_id": did, "carrier_id": cid}
+        print(f"  {conta}: seller={seller} logistica={logistica} HTTP={status} "
+              f"driver.id={did} carrier.id={cid}")
+    a, b = res[contaA], res[contaB]
+    print()
+    if not a["driver_id"] or not b["driver_id"]:
+        print("Nao deu pra comparar: uma das contas nao trouxe driver.id hoje "
+              "(sem coleta programada, logistica diferente ou sem permissao).")
+        return 1
+    if a["driver_id"] == b["driver_id"]:
+        print(f"MESMO MOTORISTA hoje (driver.id {a['driver_id']}) -> o modo 'Ambas' "
+              "faria sentido automaticamente.")
+    else:
+        print(f"MOTORISTAS DIFERENTES ({a['driver_id']} != {b['driver_id']}) -> nao "
+              "sugerir 'Ambas' hoje.")
+    return 0
 
 
 def main() -> int:
-    conta = sys.argv[1] if len(sys.argv) > 1 else ""
-    sid_arg = sys.argv[2] if len(sys.argv) > 2 else ""
-    if conta:
-        core.definir_conta(conta)
-    print(f"conta ativa: {core.conta_ativa() or '(padrao)'}")
-
-    cred = core.carregar_credenciais()
-    token = core.obter_token(cred)
-    seller = cred["seller_id"]
-
-    if sid_arg:
-        sid = int(sid_arg)
-    else:
-        pedidos = core.buscar_pedidos(token, seller)
-        print(f"pedidos retornados: {len(pedidos)}")
-        sid = next((s for p in pedidos
-                    if (s := (p.get("shipping") or {}).get("id"))), None)
-        if not sid:
-            print("Nenhum envio para inspecionar. Passe um shipment_id manual.")
-            return 1
-    print(f"inspecionando shipment: {sid}\n")
-
-    env = core.buscar_envio(token, sid)
-    if not env:
-        print("Nao consegui obter o shipment (vazio). Tente outro id.")
-        return 1
-
-    print("=== chaves candidatas em /shipments/{id} (coleta/motorista/rota) ===")
-    cands = achar_chaves(env)
-    print("  " + "\n  ".join(cands) if cands
-          else "  (NENHUMA — o motorista/coleta provavelmente NAO esta no shipment)")
-
-    print("\n=== estrutura de /shipments/{id} (so tipos, sem valores) ===")
-    import json
-    print(json.dumps(esqueleto(env), ensure_ascii=True, indent=2)[:6000])
-
-    print("\n=== probe de endpoints candidatos de coleta (status + chaves) ===")
-    print("  (404 = nao existe nesse caminho; nomes sao PALPITES a confirmar na doc)")
-    candidatos = [
-        f"/shipments/{sid}/carrier",
-        f"/shipments/{sid}/history",
-        f"/shipments/{sid}/lead_time",
-        f"/shipments/{sid}/sla",
-        f"/users/{seller}/shipments/pickup",
-        f"/shipments/pickup/{sid}",
-    ]
-    for path in candidatos:
-        status, keys = _get_seguro(path, token)
-        print(f"  {status:>5} {path} -> {keys}")
-
-    print("\nResumo: se aparecerem chaves candidatas acima OU algum endpoint 200 "
-          "com chaves de coleta/motorista, da para ler o dado. Me mande ESTA saida "
-          "(sao so nomes de chave/tipos — sem dado pessoal) que eu avalio o proximo passo.")
-    return 0
+    args = sys.argv[1:]
+    if args and args[0] == "--comparar":
+        if len(args) < 3:
+            print("uso: python tools/diag_coleta.py --comparar contaA contaB")
+            return 2
+        return _comparar(args[1], args[2])
+    return _mostrar_um(args[0] if args else "")
 
 
 if __name__ == "__main__":
