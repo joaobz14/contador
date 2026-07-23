@@ -74,6 +74,56 @@ def test_buscar_detalhe_campanha_falha_devolve_vazio(monkeypatch):
     assert cm.buscar_detalhe_campanha("tok", "MLB", "1", DIA) == {}
 
 
+# --------------------------------------------------------------- ad_groups
+def test_buscar_ad_groups_da_campanha_ok(monkeypatch):
+    payload = {"paging": {"total": 1, "offset": 0, "limit": 50},
+              "results": [{"id": 10, "title": "X", "ad_group_type": "ITEM",
+                          "metrics": {"clicks": 3}}]}
+    _sequencia(monkeypatch, [FakeResp(200, json_data=payload)])
+    ags = cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA)
+    assert len(ags) == 1 and ags[0]["id"] == 10
+
+
+def test_buscar_ad_groups_da_campanha_pagina(monkeypatch):
+    # total=3, limit=2 -> precisa de 2 paginas (offset 0 e 2)
+    pag1 = {"paging": {"total": 3, "offset": 0, "limit": 2},
+           "results": [{"id": 1}, {"id": 2}]}
+    pag2 = {"paging": {"total": 3, "offset": 2, "limit": 2},
+           "results": [{"id": 3}]}
+    _sequencia(monkeypatch, [FakeResp(200, json_data=pag1), FakeResp(200, json_data=pag2)])
+    ags = cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA)
+    assert [a["id"] for a in ags] == [1, 2, 3]
+
+
+def test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia(monkeypatch):
+    _sequencia(monkeypatch, [FakeResp(400)])
+    assert cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA) == []
+
+
+def test_buscar_itens_do_ad_group_ok(monkeypatch):
+    payload = {"results": [{"item_id": "MLB1", "title": "Produto", "price": 10.0}]}
+    _sequencia(monkeypatch, [FakeResp(200, json_data=payload)])
+    itens = cm.buscar_itens_do_ad_group("tok", "MLB", "10", DIA)
+    assert itens == [{"item_id": "MLB1", "title": "Produto", "price": 10.0}]
+
+
+def test_buscar_itens_do_ad_group_falha_devolve_lista_vazia(monkeypatch):
+    _sequencia(monkeypatch, [FakeResp(404)])
+    assert cm.buscar_itens_do_ad_group("tok", "MLB", "10", DIA) == []
+
+
+def test_teve_atividade():
+    assert cm._teve_atividade({"clicks": 1, "cost": 0, "units_quantity": 0}) is True
+    assert cm._teve_atividade({"clicks": 0, "cost": 0.0, "units_quantity": 0}) is False
+    assert cm._teve_atividade({}) is False
+
+
+def test_resolver_sku_encontrado_e_ausente():
+    mapa = {"MLB123:0": "A01"}
+    assert cm._resolver_sku("MLB123", mapa) == "A01"
+    assert cm._resolver_sku("MLB999", mapa) is None
+
+
 # --------------------------------------------------------------- storage
 def test_salvar_campanha_e_idempotente(tmp_path):
     conn = cm.conectar_db(tmp_path / "t.sqlite3")
@@ -114,6 +164,38 @@ def test_conectar_db_cria_schema(tmp_path):
     assert caminho.exists()
     # tabela existe e aceita select vazio sem erro
     assert conn.execute("SELECT COUNT(*) FROM campanhas_diarias").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM ad_groups_diarios").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM ad_group_itens_diarios").fetchone()[0] == 0
+    conn.close()
+
+
+def test_salvar_ad_group_e_idempotente(tmp_path):
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    ag = {"id": 10, "title": "X", "ad_group_type": "ITEM", "metrics": {"clicks": 3}}
+    cm.salvar_ad_group(conn, dia=DIA, conta="cozilatti", site_id="MLB",
+                       advertiser_id="999", campaign_id="1", ad_group=ag)
+    conn.commit()
+    linhas = conn.execute("SELECT clicks FROM ad_groups_diarios").fetchall()
+    assert linhas == [(3,)]
+
+    ag2 = dict(ag, metrics={"clicks": 7})
+    cm.salvar_ad_group(conn, dia=DIA, conta="cozilatti", site_id="MLB",
+                       advertiser_id="999", campaign_id="1", ad_group=ag2)
+    conn.commit()
+    linhas = conn.execute("SELECT clicks FROM ad_groups_diarios").fetchall()
+    assert linhas == [(7,)]
+    conn.close()
+
+
+def test_salvar_item_ad_group_grava_sku_quando_resolvido(tmp_path):
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    item = {"item_id": "MLB1", "title": "Produto", "price": 10.0}
+    cm.salvar_item_ad_group(conn, dia=DIA, conta="cozilatti", ad_group_id="10",
+                            item=item, sku="A01")
+    conn.commit()
+    linhas = conn.execute(
+        "SELECT item_id, sku, titulo, preco FROM ad_group_itens_diarios").fetchall()
+    assert linhas == [("MLB1", "A01", "Produto", 10.0)]
     conn.close()
 
 
@@ -122,6 +204,7 @@ def test_coletar_conta_fim_a_fim(monkeypatch, tmp_path):
     monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
     monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
     monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {})
 
     respostas = [
         FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
@@ -130,17 +213,59 @@ def test_coletar_conta_fim_a_fim(monkeypatch, tmp_path):
             {"id": 2, "name": "B", "status": "paused", "metrics": {"clicks": 1}},
         ]}),
         FakeResp(200, json_data={"metrics": {"lost_impression_share_by_budget": 0.1}}),
+        FakeResp(200, json_data={"paging": {"total": 0}, "results": []}),  # ad_groups campanha 1
         FakeResp(200, json_data={"metrics": {"lost_impression_share_by_budget": 0.2}}),
+        FakeResp(200, json_data={"paging": {"total": 0}, "results": []}),  # ad_groups campanha 2
     ]
     _sequencia(monkeypatch, respostas)
 
     conn = cm.conectar_db(tmp_path / "t.sqlite3")
     r = cm.coletar_conta(conn, "cozilatti", DIA)
-    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 2, "erro": None}
+    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 2, "ad_groups": 0, "erro": None}
     linhas = conn.execute(
         "SELECT campaign_id, lost_impression_share_by_budget FROM campanhas_diarias "
         "ORDER BY campaign_id").fetchall()
     assert linhas == [("1", 0.1), ("2", 0.2)]
+    conn.close()
+
+
+def test_coletar_conta_ad_group_ativo_resolve_item_e_sku(monkeypatch, tmp_path):
+    """Ad_group com atividade -> busca os itens e resolve SKU pelo mapa local;
+    ad_group zerado NAO gera chamada extra (so 1 campanha, 2 ad_groups)."""
+    monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
+    monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {"MLB1:0": "A01"})
+
+    respostas = [
+        FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
+        FakeResp(200, json_data={"results": [
+            {"id": 1, "name": "A", "status": "active", "metrics": {"clicks": 5}}]}),
+        FakeResp(200, json_data={"metrics": {}}),  # detalhe da campanha
+        FakeResp(200, json_data={"paging": {"total": 2}, "results": [
+            {"id": 10, "title": "ativo", "ad_group_type": "ITEM",
+             "metrics": {"clicks": 3, "cost": 1.5, "units_quantity": 0}},
+            {"id": 11, "title": "zerado", "ad_group_type": "ITEM",
+             "metrics": {"clicks": 0, "cost": 0, "units_quantity": 0}},
+        ]}),  # ad_groups da campanha (so 1 chamada -- total=2, cobre tudo)
+        FakeResp(200, json_data={"results": [
+            {"item_id": "MLB1", "title": "Produto Ativo", "price": 99.9}]}),  # itens do ad_group 10
+        # NAO ha resposta pro ad_group 11 (zerado) -- se o codigo chamar, o
+        # _sequencia estoura IndexError e o teste falha, provando que pulou.
+    ]
+    _sequencia(monkeypatch, respostas)
+
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    r = cm.coletar_conta(conn, "cozilatti", DIA)
+    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 1, "ad_groups": 2, "erro": None}
+
+    ags = conn.execute(
+        "SELECT ad_group_id, clicks FROM ad_groups_diarios ORDER BY ad_group_id").fetchall()
+    assert ags == [("10", 3), ("11", 0)]
+
+    itens = conn.execute(
+        "SELECT ad_group_id, item_id, sku FROM ad_group_itens_diarios").fetchall()
+    assert itens == [("10", "MLB1", "A01")]
     conn.close()
 
 
@@ -182,7 +307,7 @@ def test_main_dia_default_e_ontem(monkeypatch, tmp_path):
 
     def fake_coletar_conta(conn, conta, dia):
         capturado["dia"] = dia
-        return {"conta": conta, "ok": True, "campanhas": 0, "erro": None}
+        return {"conta": conta, "ok": True, "campanhas": 0, "ad_groups": 0, "erro": None}
 
     monkeypatch.setattr(cm.core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(cm, "coletar_conta", fake_coletar_conta)

@@ -50,9 +50,9 @@
   "semantic_hash": "078e5968565dac01c28640d6585f32cca7fc25a6"
  },
  "ads-monitor/coletar.py": {
-  "mtime": 1784813775.636592,
-  "ast_hash": "3f67da306636d8494399697212105c566e075612",
-  "semantic_hash": "3f67da306636d8494399697212105c566e075612"
+  "mtime": 1784821576.8377419,
+  "ast_hash": "aca4190d9235cf153fc4ae3fbd89d642076f50c5",
+  "semantic_hash": "aca4190d9235cf153fc4ae3fbd89d642076f50c5"
  },
  "api-monitor/README.md": {
   "mtime": 1784736107.7965755,
@@ -100,9 +100,9 @@
   "semantic_hash": "c647c6e48fc18be2f8a269d9558c5ddaf990d139"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1784736107.7965755,
-  "ast_hash": "e7365ff4eb575f9c082c2e9128196822fa48d198",
-  "semantic_hash": "e7365ff4eb575f9c082c2e9128196822fa48d198"
+  "mtime": 1784820294.3145409,
+  "ast_hash": "9254f61430d131f0b62e1da70861717877218ced",
+  "semantic_hash": "9254f61430d131f0b62e1da70861717877218ced"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -350,9 +350,9 @@
   "semantic_hash": "d0e874f000f8d62b7494dfff2fd9cd33f445c118"
  },
  "tests/test_ads_monitor_coletar.py": {
-  "mtime": 1784813844.5685904,
-  "ast_hash": "d567c1bf1283e1e2901aa29079865db8bf8f11ba",
-  "semantic_hash": "d567c1bf1283e1e2901aa29079865db8bf8f11ba"
+  "mtime": 1784821563.485742,
+  "ast_hash": "1ad90e95eb6631a045990cd186e6c1329f1dc25e",
+  "semantic_hash": "1ad90e95eb6631a045990cd186e6c1329f1dc25e"
  },
  "tests/test_agrupar.py": {
   "mtime": 1783442165.699696,
@@ -505,7 +505,7 @@
   "semantic_hash": "a31fe4a4545f6edc2fb42ed8fb90cc70a7055b85"
  },
  "tools/diag_ads.py": {
-  "mtime": 1784818503.76847,
+  "mtime": 1784818589.172475,
   "ast_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798",
   "semantic_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798"
  },

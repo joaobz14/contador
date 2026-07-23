@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Coletor deterministico do Product Ads (Mercado Livre).
 
-Grava, uma vez por dia, o snapshot das metricas de cada campanha das contas
-configuradas (Cozilatti, Gastromaq...) num SQLite LOCAL — a base historica do
-futuro monitor. Camada 1 (coleta); motor de recomendacao e dado de margem
-ficam para uma proxima etapa.
+Grava, uma vez por dia, o snapshot das metricas de cada campanha (e, dentro
+dela, de cada ad_group/item anunciado) das contas configuradas (Cozilatti,
+Gastromaq...) num SQLite LOCAL — a base historica do futuro monitor. Motor de
+recomendacao e dado de margem por SKU ficam para uma proxima etapa (a
+atribuicao por ad_group/item ja fica gravada, pronta pra ser cruzada com
+margem quando essa fonte existir).
 
 - SO GET (leitura). Nunca pausa, edita ou muda orcamento de campanha.
 - Reusa a autenticacao do nucleo (obter_token/definir_conta): mesma trava
@@ -18,11 +20,24 @@ ficam para uma proxima etapa.
 - Isola falha por conta: uma conta sem Product Ads ou com token vencido nao
   derruba a coleta das demais.
 
-Endpoints usados (confirmados na doc oficial "Product Ads" do Mercado Livre
-Developers, via conector MercadoLibre):
+Endpoints usados (confirmados na doc oficial "Product Ads" e "Product Ads
+para Catalogo e User Products" do Mercado Livre Developers):
   GET /advertising/advertisers?product_id=PADS
   GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/campaigns/search
   GET /advertising/{site}/product_ads/campaigns/{campaign_id}
+  GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/ad_groups/search
+  GET /advertising/{site}/product_ads/ad_groups/{ad_group_id}/ads
+
+Os dois ultimos foram validados com chamada real (tools/diag_ads.py, passo 5,
+PR #167/#168): resolvem a cadeia campanha -> ad_group -> item_id, o que
+prepara terreno pra atribuicao por SKU. Duas ressalvas confirmadas com dado
+real: um ad_group NAO e 1:1 com item (tipo FAMILY/CATALOG pode agrupar varios
+item_id, sem quebra de metrica por item dentro do grupo -- a granularidade
+mais fina que a API da e o ad_group) e a resolucao pra SKU aqui e SO
+best-effort via skus_por_anuncio.json local (mesma chave que identidade() usa
+p/ item sem variacao, "{item_id}:0") -- SEM chamar a Items API, entao um
+anuncio com seller_sku cadastrado mas fora desse mapa fica sem SKU por
+enquanto (ver docs/PRIORIDADES_TECNICAS.md, item 10).
 
 Uso:
     python ads-monitor/coletar.py                    # ontem, todas as contas
@@ -62,6 +77,16 @@ METRICAS_DETALHE = [
     "lost_impression_share_by_budget", "lost_impression_share_by_ad_rank",
     "acos_benchmark",
 ]
+# Campos aceitos pelo endpoint de ad_groups (search/detalhe) — subconjunto do
+# de campanha (sem acos/roas/cvr/sov, que so existem a nivel de campanha).
+METRICAS_AD_GROUP = [
+    "clicks", "prints", "cost", "cpc", "ctr",
+    "direct_amount", "indirect_amount", "total_amount",
+    "direct_units_quantity", "indirect_units_quantity", "units_quantity",
+]
+# Limite padrao de paginacao da API (documentado) — buscar_ad_groups_da_campanha
+# pagina com offset ate cobrir o "total" da resposta.
+LIMITE_PAGINA_AD_GROUPS = 50
 
 # NOTA: sem paginacao — o limite padrao da API e 50 campanhas por advertiser
 # (documentado), acima do volume atual das duas contas (3 cada). Revisar se
@@ -92,12 +117,39 @@ CREATE TABLE IF NOT EXISTS campanhas_diarias (
     coletado_em TEXT NOT NULL,
     PRIMARY KEY (data, conta, campaign_id)
 );
+CREATE TABLE IF NOT EXISTS ad_groups_diarios (
+    data TEXT NOT NULL,
+    conta TEXT NOT NULL,
+    site_id TEXT NOT NULL,
+    advertiser_id TEXT NOT NULL,
+    campaign_id TEXT NOT NULL,
+    ad_group_id TEXT NOT NULL,
+    ad_group_title TEXT,
+    ad_group_type TEXT,
+    clicks INTEGER, prints INTEGER, cost REAL, cpc REAL, ctr REAL,
+    direct_amount REAL, indirect_amount REAL, total_amount REAL,
+    direct_units_quantity INTEGER, indirect_units_quantity INTEGER,
+    units_quantity INTEGER,
+    coletado_em TEXT NOT NULL,
+    PRIMARY KEY (data, conta, ad_group_id)
+);
+CREATE TABLE IF NOT EXISTS ad_group_itens_diarios (
+    data TEXT NOT NULL,
+    conta TEXT NOT NULL,
+    ad_group_id TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    sku TEXT,
+    titulo TEXT,
+    preco REAL,
+    coletado_em TEXT NOT NULL,
+    PRIMARY KEY (data, conta, ad_group_id, item_id)
+);
 """
 
 
 def conectar_db(caminho=ARQUIVO_DB) -> sqlite3.Connection:
     conn = sqlite3.connect(caminho)
-    conn.execute(SCHEMA_SQL)
+    conn.executescript(SCHEMA_SQL)
     conn.commit()
     return conn
 
@@ -175,6 +227,50 @@ def buscar_detalhe_campanha(token: str, site_id: str, campaign_id: str,
     return m if isinstance(m, dict) else {}
 
 
+def buscar_ad_groups_da_campanha(token: str, site_id: str, advertiser_id: str,
+                                 campaign_id: str, dia: datetime.date) -> list[dict]:
+    """Todos os ad_groups (item/familia/catalogo anunciado) de UMA campanha no
+    dia -- pagina com offset ate cobrir o total (a resposta vem limitada a
+    LIMITE_PAGINA_AD_GROUPS por chamada). [] se falhar -- nunca levanta."""
+    resultados: list[dict] = []
+    offset = 0
+    while True:
+        qs = urlencode({
+            "date_from": dia.isoformat(), "date_to": dia.isoformat(),
+            "metrics": ",".join(METRICAS_AD_GROUP),
+            "filters[campaign_id]": campaign_id, "offset": offset,
+        })
+        path = (f"/advertising/{site_id}/advertisers/{advertiser_id}"
+               f"/product_ads/ad_groups/search?{qs}")
+        st, data, _ = _get(path, token, {"Api-Version": "2"})
+        if st != 200 or not isinstance(data, dict):
+            break
+        pagina = data.get("results")
+        if not isinstance(pagina, list) or not pagina:
+            break
+        resultados.extend(pagina)
+        paging = data.get("paging") or {}
+        total = paging.get("total")
+        limite = paging.get("limit") or len(pagina)
+        offset += limite
+        if not isinstance(total, int) or offset >= total:
+            break
+    return resultados
+
+
+def buscar_itens_do_ad_group(token: str, site_id: str, ad_group_id: str,
+                             dia: datetime.date) -> list[dict]:
+    """Item_id(s) que compoe UM ad_group no dia (pode ser mais de 1 -- tipos
+    FAMILY/CATALOG agrupam variacoes/concorrentes). [] se falhar."""
+    qs = urlencode({"date_from": dia.isoformat(), "date_to": dia.isoformat()})
+    path = f"/advertising/{site_id}/product_ads/ad_groups/{ad_group_id}/ads?{qs}"
+    st, data, _ = _get(path, token, {"Api-Version": "2"})
+    if st != 200 or not isinstance(data, dict):
+        return []
+    itens = data.get("results")
+    return itens if isinstance(itens, list) else []
+
+
 def salvar_campanha(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
                     site_id: str, advertiser_id: str, campanha: dict,
                     detalhe: dict) -> None:
@@ -217,10 +313,95 @@ def salvar_campanha(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
                 f"VALUES ({marcas})", list(linha.values()))
 
 
+def salvar_ad_group(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
+                    site_id: str, advertiser_id: str, campaign_id: str,
+                    ad_group: dict) -> None:
+    """Grava (ou regrava) UMA linha de ad_group -- chave (data, conta,
+    ad_group_id), mesmo padrao idempotente de salvar_campanha."""
+    m = ad_group.get("metrics") or {}
+    agid = ad_group.get("id") or ad_group.get("ad_group_id")
+    linha = {
+        "data": dia.isoformat(), "conta": conta, "site_id": site_id,
+        "advertiser_id": advertiser_id, "campaign_id": str(campaign_id),
+        "ad_group_id": str(agid),
+        "ad_group_title": ad_group.get("title"),
+        "ad_group_type": ad_group.get("ad_group_type"),
+        "clicks": m.get("clicks"), "prints": m.get("prints"), "cost": m.get("cost"),
+        "cpc": m.get("cpc"), "ctr": m.get("ctr"),
+        "direct_amount": m.get("direct_amount"),
+        "indirect_amount": m.get("indirect_amount"),
+        "total_amount": m.get("total_amount"),
+        "direct_units_quantity": m.get("direct_units_quantity"),
+        "indirect_units_quantity": m.get("indirect_units_quantity"),
+        "units_quantity": m.get("units_quantity"),
+        "coletado_em": datetime.datetime.now(core.TZ_BR).isoformat(timespec="seconds"),
+    }
+    campos = ", ".join(linha.keys())
+    marcas = ", ".join("?" for _ in linha)
+    conn.execute(f"INSERT OR REPLACE INTO ad_groups_diarios ({campos}) "
+                f"VALUES ({marcas})", list(linha.values()))
+
+
+def _resolver_sku(item_id: str, skus_anuncio: dict) -> str | None:
+    """SKU best-effort a partir do de-para local skus_por_anuncio.json (mesma
+    chave que identidade() usa p/ anuncio sem variacao, '{item_id}:0'). SEM
+    chamar a Items API -- um anuncio com seller_sku cadastrado mas fora deste
+    mapa fica sem SKU por enquanto (ver docs/PRIORIDADES_TECNICAS.md, item 10)."""
+    return skus_anuncio.get(f"{item_id}:0")
+
+
+def salvar_item_ad_group(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
+                         ad_group_id: str, item: dict, sku: str | None) -> None:
+    """Grava (ou regrava) UM item dentro de um ad_group -- chave (data, conta,
+    ad_group_id, item_id)."""
+    item_id = item.get("item_id")
+    linha = {
+        "data": dia.isoformat(), "conta": conta, "ad_group_id": str(ad_group_id),
+        "item_id": str(item_id), "sku": sku, "titulo": item.get("title"),
+        "preco": item.get("price"),
+        "coletado_em": datetime.datetime.now(core.TZ_BR).isoformat(timespec="seconds"),
+    }
+    campos = ", ".join(linha.keys())
+    marcas = ", ".join("?" for _ in linha)
+    conn.execute(f"INSERT OR REPLACE INTO ad_group_itens_diarios ({campos}) "
+                f"VALUES ({marcas})", list(linha.values()))
+
+
+def _teve_atividade(metrics: dict) -> bool:
+    """Um ad_group so vale a pena resolver pro item_id (chamada extra) se
+    teve gasto/clique/venda no dia -- a maioria fica zerada (validado com
+    dado real: numa campanha de 3, so 1 tinha atividade no dia)."""
+    return any((metrics.get(k) or 0) for k in ("clicks", "cost", "units_quantity"))
+
+
+def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id: str,
+                                   advertiser_id: str, conta: str, campaign_id: str,
+                                   dia: datetime.date, skus_anuncio: dict) -> int:
+    """Ad_groups de UMA campanha + resolucao de item_id/SKU dos que tiveram
+    atividade no dia. Devolve quantos ad_groups foram gravados."""
+    ad_groups = buscar_ad_groups_da_campanha(token, site_id, advertiser_id,
+                                             campaign_id, dia)
+    for ag in ad_groups:
+        salvar_ad_group(conn, dia=dia, conta=conta, site_id=site_id,
+                        advertiser_id=advertiser_id, campaign_id=campaign_id,
+                        ad_group=ag)
+        agid = ag.get("id") or ag.get("ad_group_id")
+        if not agid or not _teve_atividade(ag.get("metrics") or {}):
+            continue
+        for item in buscar_itens_do_ad_group(token, site_id, agid, dia):
+            if not item.get("item_id"):
+                continue
+            sku = _resolver_sku(item["item_id"], skus_anuncio)
+            salvar_item_ad_group(conn, dia=dia, conta=conta, ad_group_id=agid,
+                                item=item, sku=sku)
+    return len(ad_groups)
+
+
 def coletar_conta(conn: sqlite3.Connection, conta: str, dia: datetime.date) -> dict:
     """Coleta 1 conta p/ 1 dia. Isola falha — nunca levanta (uma conta ruim
     nao pode derrubar a coleta das demais no mesmo run)."""
-    resultado = {"conta": conta, "ok": False, "campanhas": 0, "erro": None}
+    resultado = {"conta": conta, "ok": False, "campanhas": 0, "ad_groups": 0,
+                "erro": None}
     try:
         if conta:
             core.definir_conta(conta)
@@ -235,16 +416,22 @@ def coletar_conta(conn: sqlite3.Connection, conta: str, dia: datetime.date) -> d
         resultado["erro"] = "advertiser nao encontrado (conta sem Product Ads?)"
         return resultado
     advertiser_id, site_id = adv
+    skus_anuncio = core.carregar_skus_anuncio()
 
     campanhas = buscar_campanhas_do_dia(token, site_id, advertiser_id, dia)
+    total_ad_groups = 0
     for c in campanhas:
         cid = c.get("id") or c.get("campaign_id")
         detalhe = buscar_detalhe_campanha(token, site_id, cid, dia) if cid else {}
         salvar_campanha(conn, dia=dia, conta=conta, site_id=site_id,
                         advertiser_id=advertiser_id, campanha=c, detalhe=detalhe)
+        if cid:
+            total_ad_groups += _coletar_ad_groups_da_campanha(
+                conn, token, site_id, advertiser_id, conta, cid, dia, skus_anuncio)
     conn.commit()
     resultado["ok"] = True
     resultado["campanhas"] = len(campanhas)
+    resultado["ad_groups"] = total_ad_groups
     return resultado
 
 
@@ -269,7 +456,8 @@ def main(argv=None) -> int:
         for conta in contas:
             r = coletar_conta(conn, conta, dia)
             if r["ok"]:
-                print(f"  {conta}: {r['campanhas']} campanha(s) salvas para {dia}")
+                print(f"  {conta}: {r['campanhas']} campanha(s), "
+                     f"{r['ad_groups']} ad group(s) salvos para {dia}")
             else:
                 falhas += 1
                 print(f"  {conta}: FALHOU -- {r['erro']}")

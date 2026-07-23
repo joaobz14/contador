@@ -11,11 +11,12 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1262 nodes · 2314 edges · 10 hyperedges** (323 nós semânticos preservados) —
+  **1280 nodes · 2351 edges · 10 hyperedges** (324 nós semânticos preservados) —
   atualizadas ao incluir `tools/validar_obsidian.py` + testes, a semântica do cofre,
   o helper `_nome_sem_sku`, o `tools/diag_coleta.py`, o `tools/diag_ads.py`
-  (validação só-leitura do Product Ads) e o `ads-monitor/coletar.py` + testes
-  (coletor determinístico do Product Ads, camada 1 do monitor).
+  (validação só-leitura do Product Ads), o `ads-monitor/coletar.py` + testes
+  (coletor determinístico do Product Ads, camada 1) e a camada 2 do mesmo coletor
+  (atribuição por ad_group/item dentro da campanha, preparando terreno para margem).
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -42,6 +43,21 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-23 — Ads camada 2: atribuição por ad_group/item dentro da campanha:**
+  estende `ads-monitor/coletar.py` com a cadeia campanha -> ad_group -> item_id ->
+  SKU (2 tabelas novas: `ad_groups_diarios`, `ad_group_itens_diarios`), usando o
+  fluxo NOVO por `ad_group_id` (substituiu o endpoint de métricas por item,
+  descontinuado em 27/05/2026 — doc "Product Ads para Catálogo e User Products").
+  Validado antes com chamada real de leitura em `tools/diag_ads.py` (PR #167/#168).
+  Só resolve item_id dos ad_groups com atividade no dia (poupa chamada); SKU é
+  best-effort via `skus_por_anuncio.json` local, sem chamar a Items API. Construído
+  **antes** de existir fonte de margem por SKU (decisão explícita do dono — "podemos
+  construir a implementação mesmo sem as fontes, acrescentamos depois"; ver
+  `docs/PRIORIDADES_TECNICAS.md` item 10). Nó semântico novo
+  `ads_monitor_ad_group_atribuicao` (concept), ligado por `rationale_for` às 4
+  funções novas e por `conceptually_related_to` a `ads_monitor_coletor_camada1`.
+  Contagens: **1280 nós, 2351 arestas, 0 órfãs**.
 
 - **2026-07-23 — Coletor determinístico do Product Ads (`ads-monitor/coletar.py`):**
   camada 1 do futuro monitor de Mercado Ads — grava snapshot diário das métricas de

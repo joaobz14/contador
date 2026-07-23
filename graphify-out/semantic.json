@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 323,
- "edge_count": 527,
+ "node_count": 324,
+ "edge_count": 532,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3695,6 +3695,20 @@
    "community": 0,
    "norm_label": "ads-monitor camada 1 (coletor deterministico do product ads): grava snapshot diario de metricas de campanha por conta num sqlite local (historico_ads.sqlite3, gitignorado). so get, reusa obter_token/definir_conta do nucleo (token-safe, mesma trava entre processos), sem ia na coleta. um dia por execucao (default ontem — dados fecham as 10:00 gmt-3), idempotente (insert or replace por data+conta+campaign_id), isola falha por conta. endpoints confirmados na doc oficial product ads (conector mercadolibre): get /advertising/advertisers?product_id=pads (descoberta), get /advertising/{site}/advertisers/{id}/product_ads/campaigns/search (listagem+metricas do dia), get /advertising/{site}/product_ads/campaigns/{campaign_id} (detalhe -- lost_impression_share_by_budget, o sinal oficial de campanha limitada por orcamento). o campo budget da listagem e media diaria de um ciclo mensal com rollover -- comparar custo/dia vs orcamento ingenuamente e enganoso (confirmado com numeros reais); por isso o detalhe por campanha e obrigatorio para esse sinal, nao um calculo caseiro. camada 1 de um monitor maior: sem motor de recomendacao, sem dado de margem, sem agendamento automatico ainda — so a base historica.",
    "_origin": "manual"
+  },
+  {
+   "label": "ADS-MONITOR CAMADA 2 (atribuicao por ad_group/item dentro da campanha): estende o coletor com a cadeia campanha -> ad_group -> item_id -> SKU, preparando o terreno para margem por SKU sem ainda ter essa fonte (bloqueado, ver docs/PRIORIDADES_TECNICAS.md item 10). Usa o fluxo NOVO por ad_group_id da doc oficial 'Product Ads para Catalogo e User Products' (substituiu o endpoint de metricas por item, descontinuado em 27/05/2026) -- validado com chamada real de leitura em tools/diag_ads.py (PR #167/#168) antes de virar codigo de producao. GET .../product_ads/ad_groups/search?filters[campaign_id]=X grava todo ad_group da campanha no dia (paginado por offset/total -- confirmado que uma campanha pode ter mais que o limite padrao de 50); so os ad_groups com atividade no dia (clicks/cost/units_quantity > 0) disparam a chamada extra GET .../ad_groups/{id}/ads para resolver item_id (a maioria fica zerada -- validado com dado real, poupa chamadas). Resolucao de SKU e SO best-effort via skus_por_anuncio.json local (chave '{item_id}:0', mesmo formato de identidade() no nucleo) -- SEM chamar a Items API, entao um anuncio com seller_sku cadastrado mas fora desse mapa fica sem SKU por enquanto. Achado importante do dado real: um ad_group NAO e 1:1 com item -- tipos FAMILY (variacoes) e CATALOG (varios vendedores no mesmo anuncio, visto 1 caso com 7 item_id diferentes) agrupam varios item_id sem quebra de metrica por item dentro do grupo; a granularidade mais fina que a API da e o ad_group, nao o item.",
+   "file_type": "concept",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "ads_monitor_ad_group_atribuicao",
+   "community": 0,
+   "norm_label": "ads-monitor camada 2 (atribuicao por ad_group/item dentro da campanha): estende o coletor com a cadeia campanha -> ad_group -> item_id -> sku, preparando o terreno para margem por sku sem ainda ter essa fonte (bloqueado, ver docs/prioridades_tecnicas.md item 10). usa o fluxo novo por ad_group_id da doc oficial 'product ads para catalogo e user products' (substituiu o endpoint de metricas por item, descontinuado em 27/05/2026) -- validado com chamada real de leitura em tools/diag_ads.py (pr #167/#168) antes de virar codigo de producao. get .../product_ads/ad_groups/search?filters[campaign_id]=x grava todo ad_group da campanha no dia (paginado por offset/total -- confirmado que uma campanha pode ter mais que o limite padrao de 50); so os ad_groups com atividade no dia (clicks/cost/units_quantity > 0) disparam a chamada extra get .../ad_groups/{id}/ads para resolver item_id (a maioria fica zerada -- validado com dado real, poupa chamadas). resolucao de sku e so best-effort via skus_por_anuncio.json local (chave '{item_id}:0', mesmo formato de identidade() no nucleo) -- sem chamar a items api, entao um anuncio com seller_sku cadastrado mas fora desse mapa fica sem sku por enquanto. achado importante do dado real: um ad_group nao e 1:1 com item -- tipos family (variacoes) e catalog (varios vendedores no mesmo anuncio, visto 1 caso com 7 item_id diferentes) agrupam varios item_id sem quebra de metrica por item dentro do grupo; a granularidade mais fina que a api da e o ad_group, nao o item.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4067,6 +4081,17 @@
    "source": "shopee_api_salvar_etiqueta",
    "target": "separador_etiquetas_ml_tmp_saida",
    "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_ad_group_atribuicao",
+   "target": "ads_monitor_coletor_camada1",
+   "confidence_score": 1.0,
+   "context": "camada 2 estende a camada 1 do mesmo coletor"
   },
   {
    "relation": "conceptually_related_to",
@@ -5214,6 +5239,46 @@
    "weight": 1.0,
    "source": "historico",
    "target": "estado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_ad_group_atribuicao",
+   "target": "ads_monitor_coletar_buscar_ad_groups_da_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_ad_group_atribuicao",
+   "target": "ads_monitor_coletar_buscar_itens_do_ad_group",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_ad_group_atribuicao",
+   "target": "ads_monitor_coletar_coletar_ad_groups_da_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_ad_group_atribuicao",
+   "target": "ads_monitor_coletar_resolver_sku",
    "confidence_score": 1.0
   },
   {

@@ -193,42 +193,32 @@ cobre). Se um dia o resumo precisar refletir tambem reimpressoes fisicas, o pass
 e chamar `historico.registrar` tambem no caminho de reimpressao (com um marcador
 `reimpressao=True` para distinguir na agregacao) — sem tocar no estado.
 
-## 10. Monitor de Product Ads: atribuicao por SKU dentro da campanha (bloqueado por margem)
+## 10. Monitor de Product Ads: margem por SKU (bloqueado — atribuicao ja pronta)
 
-O `ads-monitor/coletar.py` (camada 1, grava snapshot diario por campanha) esta
-pronto, mas uma campanha do Product Ads normalmente anuncia **varias categorias
-juntas** (ex.: "Fogao/Bebedouro/Chapa/Gira 5%") — nao da pra aplicar margem por
-SKU direto na campanha inteira.
+**Atribuicao por ad_group/item — FEITO.** `ads-monitor/coletar.py` ja grava a
+cadeia **campanha -> ad_group -> item_id -> SKU** (tabelas `ad_groups_diarios` e
+`ad_group_itens_diarios`), via o fluxo por `ad_group_id` (substituiu o antigo
+endpoint de metricas por item, descontinuado em 27/05/2026 — doc "Product Ads
+para Catalogo e User Products"), validado antes com chamada real de leitura
+(`tools/diag_ads.py`, passo 5, PR #167/#168). Paginacao coberta (`offset`/`total`);
+resolucao de SKU e best-effort via `skus_por_anuncio.json` local (sem chamar a
+Items API). Construido **antes** de existir a fonte de margem, por decisao
+explicita do dono ("podemos construir a implementacao mesmo sem as fontes,
+acrescentamos depois").
 
-Validado com chamada real de leitura (`tools/diag_ads.py`, passo 5) que a cadeia
-**campanha -> ad_group -> item_id -> SKU** e tecnicamente viavel, via o fluxo novo
-por `ad_group_id` (substituiu o antigo endpoint de metricas por item, descontinuado
-em 27/05/2026 — doc "Product Ads para Catalogo e User Products"):
-
-```
-GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/ad_groups/search
-    ?filters[campaign_id]=X&date_from&date_to&metrics=...   -- confirmado 200
-GET /advertising/{site}/product_ads/ad_groups/{ad_group_id}/ads
-    ?date_from&date_to                                       -- confirmado 200, devolve item_id
-```
-
-O `item_id` resolve pro SKU via `skus_por_anuncio.json`, que ja existe no projeto.
-
-Dois achados do dado real que faltam tratar antes de implementar:
-- **`ad_group` nao e 1:1 com item.** `ad_group_type` pode ser `FAMILY` (variacoes)
-  ou `CATALOG` (**varios vendedores concorrendo no mesmo anuncio** — visto 1 caso
-  com 7 `item_id` diferentes num so ad_group). O endpoint de itens dentro do
-  ad_group e obrigatorio pra granularidade real, nao um atalho.
-- **Paginacao nao confirmada.** A busca por advertiser+campanha devolveu
-  exatamente 50 ad_groups (o limite padrao) numa campanha — nao foi checado
-  `paging.total` pra saber se aquela campanha tem mais que isso. Falta paginar
-  (`offset`) antes de confiar no total.
+Ressalva que continua valendo: **`ad_group` nao e 1:1 com item.** `ad_group_type`
+pode ser `FAMILY` (variacoes) ou `CATALOG` (**varios vendedores concorrendo no
+mesmo anuncio** — visto 1 caso com 7 `item_id` diferentes num so ad_group). A API
+nao quebra metrica por item dentro de um ad_group multi-item — a granularidade
+mais fina que ela da e o ad_group, entao um SKU que so aparece dentro de um
+ad_group multi-item nao tem gasto/venda exclusivo dele, so o do grupo inteiro.
 
 **Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
 organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
-constante). So faz sentido implementar a atribuicao acima quando essa fonte
-existir (formato ainda em aberto: arquivo local tipo `nomes_sku.json`, importador
-de planilha, ou outro). Ate la, o coletor continua so na camada 1 (sem margem).
+constante). O motor de recomendacao (que cruza margem com o que ja esta gravado
+e produz as sugestoes de acao) so faz sentido quando essa fonte existir (formato
+ainda em aberto: arquivo local tipo `nomes_sku.json`, importador de planilha, ou
+outro).
 
 ## O que evitar por enquanto
 
