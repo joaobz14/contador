@@ -100,7 +100,10 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, 
 - **Item com variações de SKU diferentes fica sem SKU** (limitação aceita, não
   perseguida por ora): `GET /ad_groups/{id}/ads` não informa `variation_id`,
   então mesmo achando onde o SKU mora por variação não dá pra saber qual
-  variação está sendo anunciada (Product Ads opera no nível do `item_id`).
+  variação está sendo anunciada. **Confirmado oficialmente** pelo assistente de
+  IA do Mercado Livre: a API de Product Ads não expõe SKU nem variação-SKU em
+  nenhuma resposta — o agrupamento por variante usa só
+  `family_id`/`catalog_product_id`/`parent_id`/`ad_group_external_id`.
 - Sem motor de recomendação nem dado de margem — a atribuição por SKU está
   pronta, mas ninguém ainda cruza com custo/margem (ver
   `docs/PRIORIDADES_TECNICAS.md`, item 10).

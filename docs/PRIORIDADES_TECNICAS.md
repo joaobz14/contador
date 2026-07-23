@@ -230,9 +230,14 @@ variacoes (a conta usa outro mecanismo pro SKU, possivelmente ligado a
 `inventory_id`/`user_product_id` — nao investigado a fundo) — E a resposta de
 `GET /ad_groups/{id}/ads` **nao tem `variation_id`**, entao mesmo achando o campo
 certo nao daria pra saber se o anuncio e da variacao 127V ou 220V (Product Ads
-opera no nivel do item_id, nao da variacao). Aceito como limitacao: esses itens
-ficam sem SKU no `ads-monitor`. Nao perseguir sem um motivo concreto (a margem
-por SKU nem existe ainda).
+opera no nivel do item_id, nao da variacao). **Confirmado oficialmente** (dono
+perguntou ao assistente de IA do Mercado Livre): a API de Product Ads nao expoe
+SKU nem variacao-SKU em nenhuma resposta; o agrupamento por variante usa so
+`family_id`/`catalog_product_id`/`parent_id`/`ad_group_external_id` — pra SKU e
+preciso relacionar `item_id` com "o recurso onde o SKU esteja disponivel" (fora
+do Product Ads). Nao e bug nem falta de campo escondido — e a API mesmo. Aceito
+como limitacao: esses itens ficam sem SKU no `ads-monitor`. Nao perseguir sem um
+motivo concreto (a margem por SKU nem existe ainda).
 
 **Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
 organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
