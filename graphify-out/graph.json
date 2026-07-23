@@ -16319,6 +16319,90 @@
    "id": "tools_diag_coleta_comparar",
    "community": 63,
    "norm_label": "_comparar()"
+  },
+  {
+   "label": "diag_ads.py",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads",
+   "community": 64,
+   "norm_label": "diag_ads.py"
+  },
+  {
+   "label": "_mask()",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L28",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads_mask",
+   "community": 64,
+   "norm_label": "_mask()"
+  },
+  {
+   "label": "_get()",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L35",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads_get",
+   "community": 64,
+   "norm_label": "_get()"
+  },
+  {
+   "label": "_categoria()",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L53",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads_categoria",
+   "community": 64,
+   "norm_label": "_categoria()"
+  },
+  {
+   "label": "_validar_conta()",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L63",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads_validar_conta",
+   "community": 64,
+   "norm_label": "_validar_conta()"
+  },
+  {
+   "label": "main()",
+   "file_type": "code",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L138",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_ads_main",
+   "community": 64,
+   "norm_label": "main()"
   }
  ],
  "links": [
@@ -24045,6 +24129,46 @@
    "weight": 1.0,
    "source": "tests_test_validar_obsidian_test_vault_valido_sem_erros",
    "target": "tests_test_validar_obsidian_vault",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L149",
+   "weight": 1.0,
+   "source": "tools_diag_ads_main",
+   "target": "tools_diag_ads_validar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "tools_diag_ads_validar_conta",
+   "target": "tools_diag_ads_categoria",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L73",
+   "weight": 1.0,
+   "source": "tools_diag_ads_validar_conta",
+   "target": "tools_diag_ads_get",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L130",
+   "weight": 1.0,
+   "source": "tools_diag_ads_validar_conta",
+   "target": "tools_diag_ads_mask",
    "confidence_score": 1.0
   },
   {
@@ -32506,6 +32630,56 @@
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L53",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "tools_diag_ads_categoria",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L35",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "tools_diag_ads_get",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L138",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "tools_diag_ads_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L28",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "tools_diag_ads_mask",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L63",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "tools_diag_ads_validar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
    "source_location": "L101",
    "weight": 1.0,
@@ -33261,6 +33435,16 @@
    "weight": 1.0,
    "source": "tests_test_shopee",
    "target": "shopee_api",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "imports",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_ads.py",
+   "source_location": "L1",
+   "weight": 1.0,
+   "source": "tools_diag_ads",
+   "target": "separador_etiquetas_ml",
    "confidence_score": 1.0
   },
   {
@@ -39637,5 +39821,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "88bde2aa51204c864c6f98769420f6599afef069"
+ "built_at_commit": "b4c9986760a7b01ee873b7e74555946db0ad425a"
 }
