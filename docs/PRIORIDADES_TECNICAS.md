@@ -239,6 +239,14 @@ do Product Ads). Nao e bug nem falta de campo escondido — e a API mesmo. Aceit
 como limitacao: esses itens ficam sem SKU no `ads-monitor`. Nao perseguir sem um
 motivo concreto (a margem por SKU nem existe ainda).
 
+**Agendamento diario — FEITO.** `ads-monitor/run-diario.ps1` +
+`ads-monitor/registrar-tarefa.ps1` (mesmo padrao do `api-monitor/`,
+`Register-ScheduledTask` nativo) registram uma tarefa diaria as 11:00 (depois
+das 10:00 GMT-3 de fechamento das metricas). Sem isso, so havia 1 dia de
+historico coletado manualmente — e o pedido original explicito e nunca
+recomendar em cima de 1 dia de dado, entao isso destravava qualquer proxima
+etapa (motor de recomendacao, com ou sem margem).
+
 **Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
 organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
 constante). O motor de recomendacao (que cruza margem com o que ja esta gravado

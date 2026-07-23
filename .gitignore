@@ -75,3 +75,4 @@ api-monitor/snapshots/*.md
 # Base historica local do coletor de Product Ads (dado de campanha, nao segredo,
 # mas local/por maquina como o historico_impressao.json) + sidecars do SQLite.
 ads-monitor/historico_ads.sqlite3*
+ads-monitor/logs/

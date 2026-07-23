@@ -3,7 +3,7 @@ tags: [integracao, mercado-ads, product-ads, monitor]
 type: integration
 status: current
 aliases: [Product Ads, Mercado Ads, ads-monitor, coletor de metricas de campanha]
-source_files: [ads-monitor/coletar.py, tools/diag_ads.py, tools/diag_coleta.py]
+source_files: [ads-monitor/coletar.py, ads-monitor/run-diario.ps1, ads-monitor/registrar-tarefa.ps1, tools/diag_ads.py, tools/diag_coleta.py]
 source_docs: [ads-monitor/README.md]
 verified_at_commit: 463f970
 ---
@@ -15,10 +15,10 @@ verified_at_commit: 463f970
 > contas Cozilatti e Gastromaq: um **coletor determinístico** (sem IA) que grava,
 > uma vez por dia, o snapshot das métricas de cada campanha — e, dentro dela, de
 > cada **ad_group/item anunciado** (atribuição por SKU, best-effort) — num SQLite
-> **local**. Só leitura — nunca muda campanha/orçamento/anúncio. **Ainda sem**
-> motor de recomendação nem agendamento automático; a atribuição por SKU está
-> pronta mas segue **bloqueada por margem** (nenhuma fonte de custo/margem por
-> SKU existe no projeto ainda).
+> **local**, com **agendamento diário automático** (Agendador do Windows). Só
+> leitura — nunca muda campanha/orçamento/anúncio. **Ainda sem** motor de
+> recomendação; a atribuição por SKU está pronta mas segue **bloqueada por
+> margem** (nenhuma fonte de custo/margem por SKU existe no projeto ainda).
 
 ## Por que existe
 Pedido original: um monitor que **sugira** ações de otimização de campanha (não
@@ -80,9 +80,18 @@ estourada). Por isso o coletor guarda também `lost_impression_share_by_budget` 
 - Resolução de SKU ainda é best-effort: itens de outros vendedores (dentro de
   um `ad_group` `CATALOG` compartilhado) ou sem `seller_sku`/adoção cadastrados
   ficam sem SKU.
+- Item com variações de SKU diferentes fica sem SKU (Product Ads não expõe
+  `variation_id` nem SKU — confirmado oficialmente pelo assistente de IA do
+  Mercado Livre; limitação aceita, não perseguida por ora).
 - Sem motor de recomendação — a atribuição por SKU está pronta, falta a fonte
   de margem para cruzar (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
-- Sem agendamento automático — roda manualmente por enquanto.
+
+## Agendamento
+`run-diario.ps1` + `registrar-tarefa.ps1` (mesmo padrão do `api-monitor/`,
+`Register-ScheduledTask` nativo) registram uma tarefa diária às 11:00 — depois
+das 10:00 GMT-3 de fechamento das métricas. Sem histórico de vários dias
+nenhum próximo passo (motor de recomendação, com ou sem margem) teria dado
+suficiente; o pedido original é explícito: nunca recomendar em cima de 1 dia.
 
 ## Relacionado
 - [[Token e rotação do refresh]] · [[Trava entre processos]] · [[Grafo em duas camadas]]
