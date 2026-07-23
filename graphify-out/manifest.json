@@ -489,6 +489,11 @@
   "ast_hash": "a31fe4a4545f6edc2fb42ed8fb90cc70a7055b85",
   "semantic_hash": "a31fe4a4545f6edc2fb42ed8fb90cc70a7055b85"
  },
+ "tools/diag_ads.py": {
+  "mtime": 1784790808.8087952,
+  "ast_hash": "fbc799552b3bde22fab6dc8264ea00223f253c69",
+  "semantic_hash": "fbc799552b3bde22fab6dc8264ea00223f253c69"
+ },
  "tools/diag_coleta.py": {
   "mtime": 1784773253.9997637,
   "ast_hash": "f61f0f9a9d8c256e89e600547304c3d33764463c",

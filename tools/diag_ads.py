@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""Validacao SO-LEITURA do acesso ao Product Ads do Mercado Livre.
+
+Confirma, na SUA conta, se o token do app acessa o Product Ads e descobre o
+`advertiser_id` — base para o futuro monitor de campanhas.
+
+- SO requisicoes GET; nao altera NADA (nao pausa/edita campanha, nao mexe em
+  orcamento). Nenhuma chamada de escrita.
+- NUNCA imprime token/secret/Authorization. Mascara `advertiser_id`, `user_id` e
+  nomes. A saida e segura para colar aqui.
+- Empirico: TESTA endpoints candidatos e reporta o status de cada um (nao presume
+  que os antigos continuam validos). Os caminhos exatos serao confirmados na doc
+  oficial; aqui o objetivo e ver o que a SUA conta realmente responde.
+
+Uso:
+    python tools/diag_ads.py [conta]     # valida uma conta (default: conta ativa)
+    python tools/diag_ads.py --todas     # valida todas as contas configuradas
+"""
+from __future__ import annotations
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import separador_etiquetas_ml as core  # noqa: E402
+
+
+def _mask(v) -> str:
+    s = str(v or "")
+    if not s:
+        return "(vazio)"
+    return f"{s[:2]}...{s[-2:]} ({len(s)} chars)" if len(s) > 5 else "***"
+
+
+def _get(path, token, headers=None):
+    """GET cru. Devolve (status, json|None, erro). A URL do ML nao leva token na
+    query (Bearer no header), entao o path e seguro de exibir."""
+    import requests
+    h = {"Authorization": f"Bearer {token}"}
+    if headers:
+        h.update(headers)
+    try:
+        r = requests.get(core.API + path, headers=h, timeout=core.TIMEOUT)
+    except requests.RequestException as e:
+        return "ERRO", None, type(e).__name__
+    try:
+        data = r.json()
+    except ValueError:
+        data = None
+    return r.status_code, data, None
+
+
+def _categoria(status) -> str:
+    return {
+        401: "token expirado/invalido",
+        403: "sem permissao (app/conta nao habilitado p/ Ads?)",
+        404: "endpoint/advertiser nao encontrado (path errado ou nao anunciante)",
+        406: "versao de API incorreta (header Api-Version)",
+        429: "rate limit",
+    }.get(status, "")
+
+
+def _validar_conta(conta: str) -> None:
+    if conta:
+        core.definir_conta(conta)
+    print("=" * 60)
+    print(f"CONTA: {core.conta_ativa() or '(padrao)'}")
+    cred = core.carregar_credenciais()
+    token = core.obter_token(cred)
+    seller_cred = str(cred.get("seller_id", ""))
+
+    # 1) identidade — o token aponta para a conta certa?
+    st, me, err = _get("/users/me", token)
+    if st == 200 and me:
+        uid = str(me.get("id", ""))
+        bate = "OK (bate com a credencial)" if uid == seller_cred else "DIVERGE!"
+        print(f"  identidade /users/me -> {st} | user_id {_mask(uid)} | "
+              f"seller_id credencial {_mask(seller_cred)} | {bate}")
+    else:
+        print(f"  identidade /users/me -> {st} {_categoria(st)} {err or ''}")
+        print("  (sem identidade valida, o resto nao vai funcionar — verifique o token)")
+        return
+
+    # 2) descoberta de advertiser (Product Ads = product_id PADS)
+    print("  --- descoberta de advertiser (candidatos; reporta o que responder) ---")
+    tentativas = [
+        ("/advertising/advertisers?product_id=PADS", {"Api-Version": "1"}),
+        ("/advertising/advertisers?product_id=PADS", {"Api-Version": "2"}),
+        ("/advertising/advertisers?product_id=PADS", None),
+    ]
+    advertiser_id = None
+    for path, hdr in tentativas:
+        st, data, err = _get(path, token, hdr)
+        vsn = (hdr or {}).get("Api-Version", "-")
+        n = None
+        if st == 200 and isinstance(data, dict):
+            advs = data.get("advertisers") or data.get("results") or []
+            n = len(advs) if isinstance(advs, list) else "?"
+            for a in (advs if isinstance(advs, list) else []):
+                aid = a.get("advertiser_id") or a.get("id")
+                site = a.get("site_id")
+                if aid and not advertiser_id:
+                    advertiser_id = str(aid)
+                print(f"      advertiser: id {_mask(aid)} site={site}")
+        print(f"    GET advertisers (Api-Version {vsn}) -> {st} "
+              f"{('| '+str(n)+' advertiser(s)') if n is not None else _categoria(st)} {err or ''}")
+        if advertiser_id:
+            break
+
+    if not advertiser_id:
+        print("  RESULTADO: nao encontrei advertiser_id de Product Ads nesta conta.")
+        print("  Causas possiveis: conta nao habilitada como anunciante, app sem o "
+              "produto Advertising, ou o endpoint mudou (confirmar na doc). Ver o "
+              "status/categoria acima para diferenciar.")
+        return
+
+    # 3) campanhas (candidatos) — so LISTAGEM, sem detalhe
+    print(f"  --- campanhas do advertiser {_mask(advertiser_id)} (candidatos) ---")
+    cand_campanhas = [
+        ("/advertising/product_ads/campaigns?product_id=PADS", {"Api-Version": "1"}),
+        (f"/advertising/advertisers/{advertiser_id}/product_ads/campaigns", {"Api-Version": "1"}),
+        (f"/advertising/product_ads/campaigns?advertiser_id={advertiser_id}", {"Api-Version": "2"}),
+    ]
+    for path, hdr in cand_campanhas:
+        st, data, err = _get(path, token, hdr)
+        n = None
+        if st == 200 and isinstance(data, dict):
+            camps = data.get("campaigns") or data.get("results") or []
+            n = len(camps) if isinstance(camps, list) else "?"
+        safe = path.split("?")[0].replace(advertiser_id, _mask(advertiser_id))
+        print(f"    GET {safe} -> {st} "
+              f"{('| '+str(n)+' campanha(s)') if n is not None else _categoria(st)} {err or ''}")
+
+    print("  RESULTADO: advertiser encontrado; veja acima qual endpoint de campanha "
+          "respondeu 200. Me mande esta saida (advertiser_id vem MASCARADO).")
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    if args and args[0] == "--todas":
+        contas = core.listar_contas()
+        if not contas:
+            print("Nenhuma conta configurada em contas/.")
+            return 1
+        for c in contas:
+            _validar_conta(c)
+            print()
+        return 0
+    _validar_conta(args[0] if args else "")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
