@@ -222,6 +222,18 @@ nao quebra metrica por item dentro de um ad_group multi-item — a granularidade
 mais fina que ela da e o ad_group, entao um SKU que so aparece dentro de um
 ad_group multi-item nao tem gasto/venda exclusivo dele, so o do grupo inteiro.
 
+**Limitacao aceita (nao vale a pena perseguir agora): item com variacoes de SKU
+diferentes fica sem SKU exato.** Investigado com dado real (`tools/diag_seller_sku.py
+--item`, PR #173): pra um item com 2 variacoes (127V=A01, 220V=A01F, confirmadas
+no painel do vendedor), o campo `seller_custom_field` vem **vazio** nas duas
+variacoes (a conta usa outro mecanismo pro SKU, possivelmente ligado a
+`inventory_id`/`user_product_id` — nao investigado a fundo) — E a resposta de
+`GET /ad_groups/{id}/ads` **nao tem `variation_id`**, entao mesmo achando o campo
+certo nao daria pra saber se o anuncio e da variacao 127V ou 220V (Product Ads
+opera no nivel do item_id, nao da variacao). Aceito como limitacao: esses itens
+ficam sem SKU no `ads-monitor`. Nao perseguir sem um motivo concreto (a margem
+por SKU nem existe ainda).
+
 **Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
 organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
 constante). O motor de recomendacao (que cruza margem com o que ja esta gravado
