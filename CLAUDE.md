@@ -37,6 +37,7 @@ repo) monitora e imprime.
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify) e `validar_obsidian.py` (validador do cofre `obsidian/`). |
 | `api-monitor/` | Rotina **semanal** que checa mudanças nas docs/políticas públicas das APIs (ML+Shopee), sem dados de conta (Playwright/Edge + `claude -p`; saídas gitignoradas). |
+| `ads-monitor/` | Coletor **determinístico** (sem IA) do Product Ads (Mercado Ads): grava snapshot diário de métricas de campanha por conta num SQLite local. Camada 1 de um monitor maior — ainda sem motor de recomendação/margem/agendamento (ver `ads-monitor/README.md`). |
 
 ## Comandos
 
