@@ -97,6 +97,10 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, 
   (vários vendedores concorrendo no mesmo anúncio — visto 1 caso com 7
   `item_id` diferentes) agrupam vários `item_id` sem quebra de métrica por
   item dentro do grupo; a granularidade mais fina que a API dá é o ad_group.
+- **Item com variações de SKU diferentes fica sem SKU** (limitação aceita, não
+  perseguida por ora): `GET /ad_groups/{id}/ads` não informa `variation_id`,
+  então mesmo achando onde o SKU mora por variação não dá pra saber qual
+  variação está sendo anunciada (Product Ads opera no nível do `item_id`).
 - Sem motor de recomendação nem dado de margem — a atribuição por SKU está
   pronta, mas ninguém ainda cruza com custo/margem (ver
   `docs/PRIORIDADES_TECNICAS.md`, item 10).
