@@ -16170,7 +16170,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L181",
+   "source_location": "L186",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16310,7 +16310,7 @@
    "label": "_comparar()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L152",
+   "source_location": "L157",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16380,7 +16380,7 @@
    "label": "_validar_conta()",
    "file_type": "code",
    "source_file": "tools/diag_ads.py",
-   "source_location": "L63",
+   "source_location": "L64",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16394,7 +16394,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_ads.py",
-   "source_location": "L138",
+   "source_location": "L163",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -32651,7 +32651,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_ads.py",
-   "source_location": "L138",
+   "source_location": "L163",
    "weight": 1.0,
    "source": "tools_diag_ads",
    "target": "tools_diag_ads_main",
@@ -32671,7 +32671,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_ads.py",
-   "source_location": "L63",
+   "source_location": "L64",
    "weight": 1.0,
    "source": "tools_diag_ads",
    "target": "tools_diag_ads_validar_conta",
@@ -32691,7 +32691,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L152",
+   "source_location": "L157",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_comparar",
@@ -32741,7 +32741,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L181",
+   "source_location": "L186",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_main",
@@ -39821,5 +39821,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "b4c9986760a7b01ee873b7e74555946db0ad425a"
+ "built_at_commit": "49cc91d23c2d073e37214e5c4c87593744a7b6e6"
 }

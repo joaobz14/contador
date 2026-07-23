@@ -55,16 +55,22 @@ def _categoria(status) -> str:
         401: "token expirado/invalido",
         403: "sem permissao (app/conta nao habilitado p/ Ads?)",
         404: "endpoint/advertiser nao encontrado (path errado ou nao anunciante)",
+        405: "endpoint existe mas GET nao e o metodo certo (talvez precise POST)",
         406: "versao de API incorreta (header Api-Version)",
         429: "rate limit",
     }.get(status, "")
 
 
 def _validar_conta(conta: str) -> None:
+    # rotulo ANTES de trocar de conta: definir_conta() so troca os arquivos
+    # (ARQUIVO_CRED etc.), nao o config.json — conta_ativa() apos o switch
+    # continuaria devolvendo a conta antiga da GUI (rotulo errado no --todas;
+    # os arquivos/token usados abaixo ja eram os certos, so o texto enganava).
+    rotulo = conta or core.conta_ativa() or "(padrao)"
     if conta:
         core.definir_conta(conta)
     print("=" * 60)
-    print(f"CONTA: {core.conta_ativa() or '(padrao)'}")
+    print(f"CONTA: {rotulo}")
     cred = core.carregar_credenciais()
     token = core.obter_token(cred)
     seller_cred = str(cred.get("seller_id", ""))
@@ -89,6 +95,7 @@ def _validar_conta(conta: str) -> None:
         ("/advertising/advertisers?product_id=PADS", None),
     ]
     advertiser_id = None
+    site_id = None
     for path, hdr in tentativas:
         st, data, err = _get(path, token, hdr)
         vsn = (hdr or {}).get("Api-Version", "-")
@@ -101,6 +108,7 @@ def _validar_conta(conta: str) -> None:
                 site = a.get("site_id")
                 if aid and not advertiser_id:
                     advertiser_id = str(aid)
+                    site_id = site
                 print(f"      advertiser: id {_mask(aid)} site={site}")
         print(f"    GET advertisers (Api-Version {vsn}) -> {st} "
               f"{('| '+str(n)+' advertiser(s)') if n is not None else _categoria(st)} {err or ''}")
@@ -114,12 +122,24 @@ def _validar_conta(conta: str) -> None:
               "status/categoria acima para diferenciar.")
         return
 
-    # 3) campanhas (candidatos) — so LISTAGEM, sem detalhe
-    print(f"  --- campanhas do advertiser {_mask(advertiser_id)} (candidatos) ---")
+    # 3) campanhas (candidatos) — so LISTAGEM, sem detalhe.
+    # IMPORTANTE (achado nesta rodada): os endpoints legados de Product Ads
+    # (product_id=PADS na URL de campanhas) foram DESATIVADOS em 26/02/2026 —
+    # ja passou. Os 404 anteriores eram esperados por esse motivo, nao erro de
+    # codigo. O padrao novo (fontes: busca web, nao confirmado na doc oficial
+    # ainda — conector MercadoLibre indisponivel) usa o site_id do advertiser
+    # no path. Ha 2 variantes conflitantes nas fontes; testamos as duas.
+    site_id = site_id or "MLB"  # fallback: unico site que este app opera
+    print(f"  --- campanhas do advertiser {_mask(advertiser_id)} "
+          f"(site_id={site_id}; candidatos) ---")
     cand_campanhas = [
-        ("/advertising/product_ads/campaigns?product_id=PADS", {"Api-Version": "1"}),
-        (f"/advertising/advertisers/{advertiser_id}/product_ads/campaigns", {"Api-Version": "1"}),
-        (f"/advertising/product_ads/campaigns?advertiser_id={advertiser_id}", {"Api-Version": "2"}),
+        (f"/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search",
+         {"Api-Version": "2"}),
+        (f"/marketplace/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns",
+         {"Api-Version": "2"}),
+        # legado: esperado 404 (desativado 26/02/2026) — mantido so p/ confirmar
+        (f"/advertising/advertisers/{advertiser_id}/product_ads/campaigns",
+         {"Api-Version": "1"}),
     ]
     for path, hdr in cand_campanhas:
         st, data, err = _get(path, token, hdr)
@@ -127,12 +147,17 @@ def _validar_conta(conta: str) -> None:
         if st == 200 and isinstance(data, dict):
             camps = data.get("campaigns") or data.get("results") or []
             n = len(camps) if isinstance(camps, list) else "?"
-        safe = path.split("?")[0].replace(advertiser_id, _mask(advertiser_id))
+        # mascara o advertiser_id SE ele aparecer no path, mas preserva o resto
+        # (inclusive a query string) — cortar a query fazia 2 candidatos
+        # diferentes imprimirem o mesmo texto (parecia bug de copia-e-cola).
+        safe = path.replace(advertiser_id, _mask(advertiser_id))
         print(f"    GET {safe} -> {st} "
               f"{('| '+str(n)+' campanha(s)') if n is not None else _categoria(st)} {err or ''}")
 
     print("  RESULTADO: advertiser encontrado; veja acima qual endpoint de campanha "
-          "respondeu 200. Me mande esta saida (advertiser_id vem MASCARADO).")
+          "respondeu 200. O candidato legado (3o) DEVE dar 404 (endpoints antigos de "
+          "Product Ads foram desativados em 26/02/2026) — isso e esperado, nao erro. "
+          "Me mande esta saida (advertiser_id vem MASCARADO).")
 
 
 def main() -> int:
