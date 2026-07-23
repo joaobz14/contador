@@ -31,7 +31,7 @@ verified_at_commit: bcab879
 ## 🟡 Parcialmente implementado
 - **Separação do núcleo em módulos** (backlog #1): `estado.py` e `historico.py` já extraídos; `zpl.py`/`ml_api.py`/`agrupamento.py` ainda não. Dívida técnica confirmada.
 - **`api-monitor/`** (rotina semanal de checagem das docs das APIs): infra pronta (scripts + `prompt-semanal.md`); a **cobertura das fontes** depende de rodar em máquina local (no ambiente de nuvem as fontes do ML/Shopee bloqueiam fetch automático). Não bloqueia o app.
-- **`ads-monitor/`** (monitor de campanhas Product Ads/Mercado Ads): coletor determinístico só-leitura grava snapshot diário de campanha **e de ad_group/item dentro dela** (atribuição por SKU, best-effort) num SQLite local, **com agendamento diário automático** (Agendador do Windows). Ainda **sem** motor de recomendação — a atribuição está pronta, mas segue bloqueada por não existir fonte de margem por SKU. [[Product Ads — coletor (ads-monitor)]].
+- **`ads-monitor/`** (monitor de campanhas Product Ads/Mercado Ads, 3 camadas): coleta (`coletar.py`) grava snapshot diário de campanha **e de ad_group/item dentro dela** (atribuição por SKU, best-effort) num SQLite local, **com agendamento diário automático** (Agendador do Windows); recomendação (`recomendar.py`) já gera ações pros sinais que **não** dependem de margem (orçamento/ranking/ROAS vs. alvo). Recomendações condicionadas a margem seguem bloqueadas por não existir fonte de custo/margem por SKU. [[Product Ads — coletor (ads-monitor)]].
 
 ## ⏳ Pendente (confirmado não feito)
 - **Cache de TTL curto** para envios ML não-terminais-e-não-prontos (backlog #8) — **área de risco** (não pode esconder um envio que virou `ready_to_print` dentro do TTL). [[Desempenho]].

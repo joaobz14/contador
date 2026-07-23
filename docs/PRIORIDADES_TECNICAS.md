@@ -247,12 +247,24 @@ historico coletado manualmente — e o pedido original explicito e nunca
 recomendar em cima de 1 dia de dado, entao isso destravava qualquer proxima
 etapa (motor de recomendacao, com ou sem margem).
 
+**Motor de recomendacao (sinais SEM margem) — FEITO.** `ads-monitor/recomendar.py`
+gera recomendacoes no formato do pedido original (problema/evidencia/acao/
+justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de
+verificacao) usando so os 3 sinais que a propria API ja calcula: orcamento
+insuficiente, ranking baixo e ROAS abaixo do `roas_target`. Recomendacao de
+aumentar investimento sai marcada "condicionada a validacao da margem"; ROAS
+abaixo do alvo nao (reducao de risco, nao aposta). Trava contra dado fraco:
+`MIN_DIAS=3` dias + `MIN_CLICKS=20` cliques na janela — campanha sem isso fica
+"monitorando", sem recomendacao (regra do pedido original: nunca recomendar em
+cima de 1 dia). Construido **depois** do agendamento diario (item acima) ficar
+pronto, senao `MIN_DIAS` nunca seria atingido organicamente.
+
 **Bloqueado por decisao do dono:** ainda nao existe fonte de custo/margem por SKU
 organizada (confirmado — nao ha nada no projeto hoje: nenhum arquivo, nenhuma
-constante). O motor de recomendacao (que cruza margem com o que ja esta gravado
-e produz as sugestoes de acao) so faz sentido quando essa fonte existir (formato
-ainda em aberto: arquivo local tipo `nomes_sku.json`, importador de planilha, ou
-outro).
+constante). As recomendacoes de AUMENTAR investimento (as unicas que dependem de
+margem) so podem sair de "condicionada a validacao" pra uma recomendacao plena
+quando essa fonte existir (formato ainda em aberto: arquivo local tipo
+`nomes_sku.json`, importador de planilha, ou outro).
 
 ## O que evitar por enquanto
 
