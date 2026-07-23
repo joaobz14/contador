@@ -45,12 +45,12 @@
   "semantic_hash": "5a70ee6f8663b0041090e08061f604fa83dd7f71"
  },
  "ads-monitor/README.md": {
-  "mtime": 1784821834.6597428,
-  "ast_hash": "b9a3bdb19eddf5b20cc7c229cb1a133e21893022",
-  "semantic_hash": "b9a3bdb19eddf5b20cc7c229cb1a133e21893022"
+  "mtime": 1784827818.4783335,
+  "ast_hash": "40e00b35a4045deb43631640fc53ab08a29fd4ad",
+  "semantic_hash": "40e00b35a4045deb43631640fc53ab08a29fd4ad"
  },
  "ads-monitor/coletar.py": {
-  "mtime": 1784827493.8741698,
+  "mtime": 1784827818.4783335,
   "ast_hash": "0f8fbaca9f192204c64f7f6f26c76118fd5c1fa7",
   "semantic_hash": "0f8fbaca9f192204c64f7f6f26c76118fd5c1fa7"
  },
@@ -95,14 +95,14 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1784823918.6782925,
-  "ast_hash": "f8187e0cb81c2e69e5fe8575b7cc7c442150abbb",
-  "semantic_hash": "f8187e0cb81c2e69e5fe8575b7cc7c442150abbb"
+  "mtime": 1784827818.4783335,
+  "ast_hash": "127085352a3f55a7762234c3e6c9dcb57371b619",
+  "semantic_hash": "127085352a3f55a7762234c3e6c9dcb57371b619"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1784821834.661736,
-  "ast_hash": "0dabe38162d9d253a0049c62d4ae27b390f61648",
-  "semantic_hash": "0dabe38162d9d253a0049c62d4ae27b390f61648"
+  "mtime": 1784827818.4783335,
+  "ast_hash": "fb560e98248b01540943d9b5d560981f105c8c96",
+  "semantic_hash": "fb560e98248b01540943d9b5d560981f105c8c96"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -325,7 +325,7 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1784826342.3469377,
+  "mtime": 1784827818.4821675,
   "ast_hash": "8139b16c4039e8a7879d6008b581a311c04d0d61",
   "semantic_hash": "8139b16c4039e8a7879d6008b581a311c04d0d61"
  },
@@ -350,7 +350,7 @@
   "semantic_hash": "d0e874f000f8d62b7494dfff2fd9cd33f445c118"
  },
  "tests/test_ads_monitor_coletar.py": {
-  "mtime": 1784827585.5821693,
+  "mtime": 1784827818.4821675,
   "ast_hash": "076ae2b8a43bf6717b3d9456afca4878425a4b4f",
   "semantic_hash": "076ae2b8a43bf6717b3d9456afca4878425a4b4f"
  },
@@ -513,6 +513,11 @@
   "mtime": 1784806092.1543498,
   "ast_hash": "4d7bca88dfe5170237a6c3b81fdcb0b6d010b524",
   "semantic_hash": "4d7bca88dfe5170237a6c3b81fdcb0b6d010b524"
+ },
+ "tools/diag_seller_sku.py": {
+  "mtime": 1784828722.6320722,
+  "ast_hash": "1ea4f99ecf8947a917ac1cb40d9fbe94e47097ab",
+  "semantic_hash": "1ea4f99ecf8947a917ac1cb40d9fbe94e47097ab"
  },
  "tools/graph_sync.py": {
   "mtime": 1784736107.8134754,
