@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """Validacao SO-LEITURA do acesso ao Product Ads do Mercado Livre.
 
-Confirma, na SUA conta, se o token do app acessa o Product Ads e descobre o
-`advertiser_id` — base para o futuro monitor de campanhas.
+Confirma, na SUA conta, se o token do app acessa o Product Ads, descobre o
+`advertiser_id` e traz uma janela curta de metricas — base para o futuro monitor
+de campanhas.
 
 - SO requisicoes GET; nao altera NADA (nao pausa/edita campanha, nao mexe em
   orcamento). Nenhuma chamada de escrita.
-- NUNCA imprime token/secret/Authorization. Mascara `advertiser_id`, `user_id` e
-  nomes. A saida e segura para colar aqui.
-- Empirico: TESTA endpoints candidatos e reporta o status de cada um (nao presume
-  que os antigos continuam validos). Os caminhos exatos serao confirmados na doc
-  oficial; aqui o objetivo e ver o que a SUA conta realmente responde.
+- NUNCA imprime token/secret/Authorization. Mascara `advertiser_id`/`user_id`.
+  Nomes e metricas de campanha NAO sao mascarados (sao dados do proprio usuario).
+- Endpoint de campanhas CONFIRMADO na doc oficial (via conector MercadoLibre,
+  pagina "Product Ads" — product-ads-leitura):
+      GET /advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search
+  header `Api-Version: 2` (nomes de header sao case-insensitive por HTTP).
+  Os endpoints legados testados como fallback (ex.:
+  /advertising/advertisers/{id}/product_ads/campaigns) estao na lista OFICIAL de
+  descontinuados em 26/02/2026 (ja passou) — 404 e o esperado, confirmado na doc.
 
 Uso:
     python tools/diag_ads.py [conta]     # valida uma conta (default: conta ativa)
@@ -18,8 +23,10 @@ Uso:
 """
 from __future__ import annotations
 
+import datetime
 import os
 import sys
+from urllib.parse import urlencode
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import separador_etiquetas_ml as core  # noqa: E402
@@ -52,6 +59,7 @@ def _get(path, token, headers=None):
 
 def _categoria(status) -> str:
     return {
+        400: "parametro invalido (data/metrics mal formatado?)",
         401: "token expirado/invalido",
         403: "sem permissao (app/conta nao habilitado p/ Ads?)",
         404: "endpoint/advertiser nao encontrado (path errado ou nao anunciante)",
@@ -122,26 +130,37 @@ def _validar_conta(conta: str) -> None:
               "status/categoria acima para diferenciar.")
         return
 
-    # 3) campanhas — so LISTAGEM, sem detalhe extra por campanha.
-    # CONFIRMADO empiricamente (conta Cozilatti, 200 + 3 campanhas):
+    # 3) campanhas + janela curta de metricas (7 dias, ate ONTEM — a doc oficial
+    # diz que os dados sao atualizados as 10:00 GMT-3, entao "hoje" viria
+    # incompleto; evita recomendacao em cima de dado provisorio).
+    # Endpoint CONFIRMADO na doc oficial "Product Ads" (product-ads-leitura, via
+    # conector MercadoLibre): o MESMO endpoint da listagem aceita
+    # date_from/date_to/metrics/metrics_summary — sem chamada extra p/ metricas.
     #   GET /advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search
-    # Os endpoints legados (product_id=PADS na URL de campanhas) foram
-    # DESATIVADOS em 26/02/2026 (ja passou) — por isso davam 404 antes; nao
-    # era erro de path digitado nem falta de permissao. Mantidos como
-    # fallback (ordem) caso uma conta se comporte diferente.
     site_id = site_id or "MLB"  # fallback: unico site que este app opera
-    print(f"  --- campanhas do advertiser {_mask(advertiser_id)} "
-          f"(site_id={site_id}) ---")
+    hoje = datetime.datetime.now(core.TZ_BR).date()
+    date_to = hoje - datetime.timedelta(days=1)
+    date_from = date_to - datetime.timedelta(days=6)
+    metricas = ["clicks", "prints", "ctr", "cost", "cpc", "acos", "cvr", "roas",
+                "units_quantity", "total_amount", "organic_units_quantity"]
+    qs = urlencode({
+        "date_from": date_from.isoformat(),
+        "date_to": date_to.isoformat(),
+        "metrics": ",".join(metricas),
+        "metrics_summary": "true",
+    })
+    print(f"  --- campanhas do advertiser {_mask(advertiser_id)} (site_id={site_id}) "
+          f"| janela {date_from.isoformat()} a {date_to.isoformat()} ---")
     cand_campanhas = [
-        (f"/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search",
-         {"Api-Version": "2"}),
-        (f"/marketplace/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns",
-         {"Api-Version": "2"}),
-        # legado (desativado 26/02/2026) — so fallback final, 404 esperado
+        (f"/advertising/{site_id}/advertisers/{advertiser_id}"
+         f"/product_ads/campaigns/search?{qs}", {"Api-Version": "2"}),
+        # legado, CONFIRMADO na doc oficial como descontinuado em 26/02/2026 —
+        # so fallback final; 404 e o esperado (sem sentido pedir metricas aqui).
         (f"/advertising/advertisers/{advertiser_id}/product_ads/campaigns",
          {"Api-Version": "1"}),
     ]
     campanhas = None       # None = nenhum endpoint OK ainda; [] = OK mas 0 campanhas
+    resumo_janela = None
     endpoint_ok = False
     for path, hdr in cand_campanhas:
         st, data, err = _get(path, token, hdr)
@@ -151,15 +170,15 @@ def _validar_conta(conta: str) -> None:
             if isinstance(camps, list):
                 n = len(camps)
                 campanhas = camps
+                resumo_janela = data.get("metrics_summary")
                 endpoint_ok = True
-        # mascara o advertiser_id SE ele aparecer no path, mas preserva o resto
-        # (inclusive a query string) — cortar a query fazia 2 candidatos
-        # diferentes imprimirem o mesmo texto (parecia bug de copia-e-cola).
+        # mascara o advertiser_id SE ele aparecer no path; a query de data/metrica
+        # nao carrega segredo (so datas e nomes de campo), fica visivel.
         safe = path.replace(advertiser_id, _mask(advertiser_id))
         print(f"    GET {safe} -> {st} "
               f"{('| '+str(n)+' campanha(s)') if n is not None else _categoria(st)} {err or ''}")
         if endpoint_ok:
-            break  # achou o endpoint certo; nao precisa testar os outros
+            break  # achou o endpoint certo; nao precisa testar o fallback
 
     if not endpoint_ok:
         print("  RESULTADO: nenhum endpoint de campanha respondeu 200 nesta conta. "
@@ -175,15 +194,24 @@ def _validar_conta(conta: str) -> None:
         cid = c.get("id") or c.get("campaign_id")
         nome = c.get("name") or c.get("campaign_name") or "(sem nome)"
         status = c.get("status")
-        orcamento = c.get("budget") or c.get("daily_budget")
+        orcamento = c.get("budget")
+        m = c.get("metrics") or {}
         print(f"      [{_mask(cid)}] '{nome}' status={status} "
-              f"orcamento={'definido' if orcamento else 'nao encontrado no payload'}")
+              f"orcamento={orcamento if orcamento is not None else '?'} "
+              f"strategy={c.get('strategy')} roas_target={c.get('roas_target')}")
+        if m:
+            print(f"          janela 7d: clicks={m.get('clicks')} prints={m.get('prints')} "
+                  f"cost={m.get('cost')} cpc={m.get('cpc')} ctr={m.get('ctr')} "
+                  f"acos={m.get('acos')} roas={m.get('roas')} cvr={m.get('cvr')} "
+                  f"vendas={m.get('units_quantity')} receita={m.get('total_amount')}")
 
     ativas = [c for c in campanhas if str(c.get("status", "")).lower() in
               ("active", "activo", "ativa", "ativo")]
     print(f"\n  RESUMO: {len(campanhas)} campanha(s) no total, "
           f"{len(ativas)} com status 'active/ativa'.")
-    print("  Me mande esta saida (ids MASCARADOS, nomes sao dados seus mesmo).")
+    if resumo_janela:
+        print(f"  metrics_summary da janela (soma de todas as campanhas): {resumo_janela}")
+    print("  Me mande esta saida (ids MASCARADOS; nomes/metricas sao dados seus mesmo).")
 
 
 def main() -> int:
