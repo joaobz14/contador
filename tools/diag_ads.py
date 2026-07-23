@@ -211,7 +211,45 @@ def _validar_conta(conta: str) -> None:
           f"{len(ativas)} com status 'active/ativa'.")
     if resumo_janela:
         print(f"  metrics_summary da janela (soma de todas as campanhas): {resumo_janela}")
-    print("  Me mande esta saida (ids MASCARADOS; nomes/metricas sao dados seus mesmo).")
+
+    # 4) detalhe por campanha: sinal OFICIAL de limitacao por orcamento
+    # (lost_impression_share_by_budget) — endpoint DIFERENTE do de listagem,
+    # confirmado na doc oficial (NAO fica sob /advertisers/{id}/):
+    #   GET /advertising/{site_id}/product_ads/campaigns/{campaign_id}
+    # Uma chamada por campanha ja conhecida (poucas — sem paginar nem varrer
+    # anuncios). O campo 'budget' e media diaria de um ciclo MENSAL com
+    # rollover (a doc explica); por isso o sinal certo de "limitado por
+    # orcamento" e este campo oficial, NAO um calculo caseiro custo/orcamento.
+    print("\n  --- detalhe por campanha: limitacao por orcamento/ranking "
+          "(mesma janela) ---")
+    metricas_detalhe = ["impression_share", "top_impression_share",
+                        "lost_impression_share_by_budget",
+                        "lost_impression_share_by_ad_rank", "acos_benchmark",
+                        "roas", "acos"]
+    qs_detalhe = urlencode({
+        "date_from": date_from.isoformat(),
+        "date_to": date_to.isoformat(),
+        "metrics": ",".join(metricas_detalhe),
+    })
+    for c in campanhas:
+        cid = c.get("id") or c.get("campaign_id")
+        nome = c.get("name") or c.get("campaign_name") or "(sem nome)"
+        if not cid:
+            continue
+        path = f"/advertising/{site_id}/product_ads/campaigns/{cid}?{qs_detalhe}"
+        st, data, err = _get(path, token, {"Api-Version": "2"})
+        safe_path = path.replace(str(cid), _mask(cid))
+        if st == 200 and isinstance(data, dict):
+            m = data.get("metrics") or {}
+            print(f"      GET {safe_path} -> {st}")
+            print(f"          '{nome}': impression_share={m.get('impression_share')} "
+                  f"perdido_por_orcamento={m.get('lost_impression_share_by_budget')} "
+                  f"perdido_por_ranking={m.get('lost_impression_share_by_ad_rank')} "
+                  f"acos_benchmark={m.get('acos_benchmark')}")
+        else:
+            print(f"      GET {safe_path} -> {st} {_categoria(st)} {err or ''}")
+
+    print("\n  Me mande esta saida (ids MASCARADOS; nomes/metricas sao dados seus mesmo).")
 
 
 def main() -> int:
