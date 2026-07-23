@@ -16,6 +16,13 @@ de campanhas.
   Os endpoints legados testados como fallback (ex.:
   /advertising/advertisers/{id}/product_ads/campaigns) estao na lista OFICIAL de
   descontinuados em 26/02/2026 (ja passou) — 404 e o esperado, confirmado na doc.
+- Passo 5 (exploratorio): valida o fluxo NOVO por `ad_group_id` (doc "Product
+  Ads para Catalogo e User Products", atualizada 06/07/2026) — o antigo
+  endpoint de metricas POR ITEM dentro da campanha foi descontinuado em
+  27/05/2026 (ja passou) e foi substituido por este. Objetivo: confirmar se da
+  pra atribuir gasto/venda por item (e por SKU, via skus_por_anuncio.json) DENTRO
+  de uma campanha mista. Varios candidatos de path testados (a doc tem exemplos
+  de curl truncados/OCR) — reporta o que responder 200, sem travar em nenhum.
 
 Uso:
     python tools/diag_ads.py [conta]     # valida uma conta (default: conta ativa)
@@ -248,6 +255,93 @@ def _validar_conta(conta: str) -> None:
                   f"acos_benchmark={m.get('acos_benchmark')}")
         else:
             print(f"      GET {safe_path} -> {st} {_categoria(st)} {err or ''}")
+
+    # 5) fluxo NOVO por ad_group (exploratorio) — testa numa UNICA campanha
+    # (a primeira ativa, senao a primeira da lista) pra minimizar chamadas.
+    # Varios candidatos de path porque a doc oficial ("Product Ads para
+    # Catalogo e User Products") tem os exemplos de curl truncados/OCR;
+    # reporta o que responder 200 em vez de assumir um path so.
+    print("\n  --- fluxo NOVO por ad_group (item dentro da campanha) — exploratorio ---")
+    alvo = next((c for c in campanhas if str(c.get("status", "")).lower() in
+                ("active", "activo", "ativa", "ativo")), campanhas[0] if campanhas else None)
+    if not alvo:
+        print("      (sem campanha para testar)")
+    else:
+        cid = alvo.get("id") or alvo.get("campaign_id")
+        print(f"      campanha alvo: [{_mask(cid)}] '{alvo.get('name')}'")
+        metricas_ag = ["clicks", "prints", "cost", "direct_amount",
+                       "indirect_amount", "total_amount", "units_quantity"]
+
+        # candidato A: busca de ad_groups por advertiser, filtrado por campanha
+        # (doc: mesmo endpoint de "Buscar Ad Groups por itens", sem filtro de
+        # item -- serve p/ "Detalhes e metricas de Ad Group por advertiser").
+        qs_a = urlencode({
+            "date_from": date_from.isoformat(), "date_to": date_to.isoformat(),
+            "metrics": ",".join(metricas_ag), "filters[campaign_id]": cid,
+        })
+        path_a = (f"/advertising/{site_id}/advertisers/{advertiser_id}"
+                 f"/product_ads/ad_groups/search?{qs_a}")
+        st_a, data_a, err_a = _get(path_a, token, {"Api-Version": "2"})
+        safe_a = (path_a.replace(str(advertiser_id), _mask(advertiser_id))
+                        .replace(str(cid), _mask(cid)))
+        ad_groups = data_a.get("results") if st_a == 200 and isinstance(data_a, dict) else None
+        print(f"    GET (A: busca ad_groups por advertiser+campanha) {safe_a}")
+        print(f"      -> {st_a} "
+              f"{('| '+str(len(ad_groups))+' ad group(s)') if ad_groups is not None else _categoria(st_a)} "
+              f"{err_a or ''}")
+
+        # candidato B: metricas de ad_groups de UMA campanha, 1 dia
+        # (doc: "Metricas de Ad Groups de uma campanha", date_to == date_from).
+        path_b = (f"/advertising/{site_id}/product_ads/campaigns/{cid}"
+                 f"/ad_groups/metrics?date={date_to.isoformat()}")
+        st_b, data_b, err_b = _get(path_b, token, {"Api-Version": "2"})
+        safe_b = path_b.replace(str(cid), _mask(cid))
+        print(f"    GET (B: metricas de ad_groups da campanha, 1 dia) {safe_b}")
+        res_b = data_b.get("results") if st_b == 200 and isinstance(data_b, dict) else None
+        print(f"      -> {st_b} "
+              f"{('| '+str(len(res_b))+' ad group(s) no dia') if res_b is not None else _categoria(st_b)} "
+              f"{err_b or ''}")
+        if res_b and not ad_groups:
+            ad_groups = [{"id": r.get("ad_group_id"), "metrics": r.get("metrics")}
+                        for r in res_b if r.get("ad_group_id")]
+
+        if ad_groups:
+            for ag in ad_groups[:3]:
+                print(f"      ad_group [{_mask(ag.get('id'))}] title={ag.get('title')} "
+                      f"type={ag.get('ad_group_type')} metrics={ag.get('metrics')}")
+
+        # candidato C+D: detalhe de 1 ad_group + os itens (item_id) dentro dele
+        # -- e o item_id que fecha a ponte pro SKU (skus_por_anuncio.json).
+        ag_id = ad_groups[0].get("id") if ad_groups else None
+        if not ag_id:
+            print("      (nenhum ad_group_id encontrado em A/B — sem como testar C/D "
+                  "nesta campanha)")
+        else:
+            qs_c = urlencode({
+                "date_from": date_from.isoformat(), "date_to": date_to.isoformat(),
+                "metrics": ",".join(metricas_ag),
+            })
+            path_c = f"/advertising/{site_id}/product_ads/ad_groups/{ag_id}?{qs_c}"
+            st_c, data_c, err_c = _get(path_c, token, {"Api-Version": "2"})
+            safe_c = path_c.replace(str(ag_id), _mask(ag_id))
+            print(f"    GET (C: detalhe do ad_group) {safe_c}")
+            print(f"      -> {st_c} {_categoria(st_c)} {err_c or ''}")
+            if st_c == 200 and isinstance(data_c, dict):
+                print(f"      title={data_c.get('title')} type={data_c.get('ad_group_type')} "
+                      f"metrics={data_c.get('metrics')}")
+
+            qs_d = urlencode({"date_from": date_from.isoformat(), "date_to": date_to.isoformat()})
+            path_d = f"/advertising/{site_id}/product_ads/ad_groups/{ag_id}/ads?{qs_d}"
+            st_d, data_d, err_d = _get(path_d, token, {"Api-Version": "2"})
+            safe_d = path_d.replace(str(ag_id), _mask(ag_id))
+            print(f"    GET (D: itens dentro do ad_group -> item_id/SKU) {safe_d}")
+            itens = data_d.get("results") if st_d == 200 and isinstance(data_d, dict) else None
+            print(f"      -> {st_d} "
+                  f"{('| '+str(len(itens))+' item(ns)') if itens is not None else _categoria(st_d)} "
+                  f"{err_d or ''}")
+            for it in (itens or [])[:5]:
+                print(f"        item [{_mask(it.get('item_id'))}] title={it.get('title')} "
+                      f"price={it.get('price')}")
 
     print("\n  Me mande esta saida (ids MASCARADOS; nomes/metricas sao dados seus mesmo).")
 
