@@ -17150,7 +17150,7 @@
    "label": "_amostra()",
    "file_type": "code",
    "source_file": "tools/diag_seller_sku.py",
-   "source_location": "L29",
+   "source_location": "L34",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17164,7 +17164,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_seller_sku.py",
-   "source_location": "L42",
+   "source_location": "L84",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17173,6 +17173,34 @@
    "id": "tools_diag_seller_sku_main",
    "community": 67,
    "norm_label": "main()"
+  },
+  {
+   "label": "_ad_group_do_item()",
+   "file_type": "code",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L47",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_seller_sku_ad_group_do_item",
+   "community": 67,
+   "norm_label": "_ad_group_do_item()"
+  },
+  {
+   "label": "_investigar_item()",
+   "file_type": "code",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L59",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_seller_sku_investigar_item",
+   "community": 67,
+   "norm_label": "_investigar_item()"
   }
  ],
  "links": [
@@ -25465,10 +25493,30 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L71",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku_investigar_item",
+   "target": "tools_diag_seller_sku_ad_group_do_item",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
    "source_location": "L56",
    "weight": 1.0,
    "source": "tools_diag_seller_sku_main",
    "target": "tools_diag_seller_sku_amostra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L104",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku_main",
+   "target": "tools_diag_seller_sku_investigar_item",
    "confidence_score": 1.0
   },
   {
@@ -34444,7 +34492,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_seller_sku.py",
-   "source_location": "L29",
+   "source_location": "L47",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku",
+   "target": "tools_diag_seller_sku_ad_group_do_item",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L34",
    "weight": 1.0,
    "source": "tools_diag_seller_sku",
    "target": "tools_diag_seller_sku_amostra",
@@ -34454,7 +34512,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_seller_sku.py",
-   "source_location": "L42",
+   "source_location": "L59",
+   "weight": 1.0,
+   "source": "tools_diag_seller_sku",
+   "target": "tools_diag_seller_sku_investigar_item",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_seller_sku.py",
+   "source_location": "L84",
    "weight": 1.0,
    "source": "tools_diag_seller_sku",
    "target": "tools_diag_seller_sku_main",
@@ -41594,5 +41662,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "180385a2cea82e18d96dec82e35027c679174380"
+ "built_at_commit": "9affa8e3630d485826ab9d69c2db32a87f3ce2c9"
 }
