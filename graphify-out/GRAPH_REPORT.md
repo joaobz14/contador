@@ -11,12 +11,13 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1280 nodes · 2351 edges · 10 hyperedges** (324 nós semânticos preservados) —
+  **1287 nodes · 2362 edges · 10 hyperedges** (324 nós semânticos preservados) —
   atualizadas ao incluir `tools/validar_obsidian.py` + testes, a semântica do cofre,
   o helper `_nome_sem_sku`, o `tools/diag_coleta.py`, o `tools/diag_ads.py`
   (validação só-leitura do Product Ads), o `ads-monitor/coletar.py` + testes
-  (coletor determinístico do Product Ads, camada 1) e a camada 2 do mesmo coletor
-  (atribuição por ad_group/item dentro da campanha, preparando terreno para margem).
+  (coletor determinístico do Product Ads, camada 1 e camada 2 — atribuição por
+  ad_group/item) e a resolução de SKU via `seller_sku` real (extensão do cache
+  `itens_cache.json` do núcleo, `_resolver_skus`).
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -43,6 +44,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-23 — Resolução de SKU via seller_sku real (não mais só best-effort):**
+  achado com dado real: a resolução de SKU do `ads-monitor` (camada 2) dava
+  **0/468 itens resolvidos** — `skus_por_anuncio.json` é um mapa manual pequeno
+  (só p/ anúncios sem SKU adotados na tela), não um resolvedor geral; a maioria
+  dos produtos tem `seller_sku` cadastrado direto no anúncio, sem cache local
+  pra isso. Corrigido estendendo `_detalhe_item`/`itens_cache.json` do núcleo
+  (`separador_etiquetas_ml.py`) com o campo `seller_custom_field` (mesma
+  chamada `GET /items/{id}` já feita, sem custo extra de rede) e nova função
+  `_resolver_skus` no coletor, que prioriza esse `seller_sku` real e só cai
+  pro mapa de adoção quando ausente — mesma prioridade de `identidade()` no
+  núcleo. Trata cache staleness (entrada antiga sem a chave `seller_sku` é
+  refeita, não assumida "sem SKU"). Nó semântico `ads_monitor_ad_group_atribuicao`
+  atualizado (texto + aresta `rationale_for` corrigida para
+  `ads_monitor_coletar_resolver_sku_adocao`, que ficou pendurada no módulo
+  após o rename `_resolver_sku` → `_resolver_sku_adocao`; nova aresta pra
+  `_resolver_skus`). Contagens: **1287 nós, 2362 arestas, 0 órfãs**.
 
 - **2026-07-23 — Ads camada 2: atribuição por ad_group/item dentro da campanha:**
   estende `ads-monitor/coletar.py` com a cadeia campanha -> ad_group -> item_id ->

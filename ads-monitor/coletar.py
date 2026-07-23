@@ -30,14 +30,20 @@ para Catalogo e User Products" do Mercado Livre Developers):
 
 Os dois ultimos foram validados com chamada real (tools/diag_ads.py, passo 5,
 PR #167/#168): resolvem a cadeia campanha -> ad_group -> item_id, o que
-prepara terreno pra atribuicao por SKU. Duas ressalvas confirmadas com dado
-real: um ad_group NAO e 1:1 com item (tipo FAMILY/CATALOG pode agrupar varios
-item_id, sem quebra de metrica por item dentro do grupo -- a granularidade
-mais fina que a API da e o ad_group) e a resolucao pra SKU aqui e SO
-best-effort via skus_por_anuncio.json local (mesma chave que identidade() usa
-p/ item sem variacao, "{item_id}:0") -- SEM chamar a Items API, entao um
-anuncio com seller_sku cadastrado mas fora desse mapa fica sem SKU por
-enquanto (ver docs/PRIORIDADES_TECNICAS.md, item 10).
+prepara terreno pra atribuicao por SKU. Ressalva confirmada com dado real: um
+ad_group NAO e 1:1 com item (tipo FAMILY/CATALOG pode agrupar varios item_id,
+sem quebra de metrica por item dentro do grupo -- a granularidade mais fina
+que a API da e o ad_group).
+
+Resolucao de SKU (_resolver_skus): prioriza o seller_sku REAL, buscado via
+core.buscar_detalhes (GET /items/{id}, o MESMO cache itens_cache.json que a
+impressao ja mantem — zero chamada de escrita, so estende um cache existente)
+e cai pro mapa de adocao skus_por_anuncio.json (anuncios sem seller_sku
+cadastrado) quando o item nao tiver seller_sku — mesma prioridade de
+identidade() no nucleo. Achado real (validado 2026-07-23): antes desta
+mudanca a cobertura era 0/468 itens porque skus_por_anuncio.json e um mapa
+manual pequeno, nao um resolvedor geral — a maioria dos produtos tem
+seller_sku cadastrado direto no anuncio, so nao havia cache local pra isso.
 
 Uso:
     python ads-monitor/coletar.py                    # ontem, todas as contas
@@ -342,12 +348,34 @@ def salvar_ad_group(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
                 f"VALUES ({marcas})", list(linha.values()))
 
 
-def _resolver_sku(item_id: str, skus_anuncio: dict) -> str | None:
-    """SKU best-effort a partir do de-para local skus_por_anuncio.json (mesma
-    chave que identidade() usa p/ anuncio sem variacao, '{item_id}:0'). SEM
-    chamar a Items API -- um anuncio com seller_sku cadastrado mas fora deste
-    mapa fica sem SKU por enquanto (ver docs/PRIORIDADES_TECNICAS.md, item 10)."""
+def _resolver_sku_adocao(item_id: str, skus_anuncio: dict) -> str | None:
+    """Fallback: SKU a partir do de-para local skus_por_anuncio.json (mesma
+    chave que identidade() usa p/ anuncio sem variacao, '{item_id}:0'). So usado
+    quando o item NAO tem seller_sku cadastrado (ver _resolver_skus) -- mesma
+    prioridade de identidade() no nucleo."""
     return skus_anuncio.get(f"{item_id}:0")
+
+
+def _resolver_skus(token: str, cache: dict, item_ids, skus_anuncio: dict) -> dict[str, str | None]:
+    """Resolve SKU de varios item_id de uma vez. Prioriza o seller_sku REAL
+    (GET /items/{id}, cacheado em itens_cache.json via core.buscar_detalhes --
+    mesmo cache que a impressao ja usa e mantem, sem chamada de escrita) e cai
+    pro mapa de adocao local quando o item nao tem seller_sku cadastrado.
+    Entradas do cache anteriores a esta funcionalidade nao tem a chave
+    'seller_sku' -- forca o refetch delas em vez de assumir 'sem SKU' por
+    engano (cache staleness)."""
+    ids = {str(i) for i in item_ids if i}
+    if not ids:
+        return {}
+    incompletos = [i for i in ids if i in cache and "seller_sku" not in cache[i]]
+    for i in incompletos:
+        del cache[i]
+    core.buscar_detalhes(token, ids, cache)
+    resultado: dict[str, str | None] = {}
+    for item_id in ids:
+        entrada = cache.get(item_id) or {}
+        resultado[item_id] = entrada.get("seller_sku") or _resolver_sku_adocao(item_id, skus_anuncio)
+    return resultado
 
 
 def salvar_item_ad_group(conn: sqlite3.Connection, *, dia: datetime.date, conta: str,
@@ -376,11 +404,14 @@ def _teve_atividade(metrics: dict) -> bool:
 
 def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id: str,
                                    advertiser_id: str, conta: str, campaign_id: str,
-                                   dia: datetime.date, skus_anuncio: dict) -> int:
+                                   dia: datetime.date, cache: dict, skus_anuncio: dict) -> int:
     """Ad_groups de UMA campanha + resolucao de item_id/SKU dos que tiveram
-    atividade no dia. Devolve quantos ad_groups foram gravados."""
+    atividade no dia. Devolve quantos ad_groups foram gravados. A resolucao de
+    SKU e feita numa unica leva (todos os itens da campanha), nao item a item
+    -- menos overhead de cache/thread-pool no core.buscar_detalhes."""
     ad_groups = buscar_ad_groups_da_campanha(token, site_id, advertiser_id,
                                              campaign_id, dia)
+    itens_por_ad_group: dict[str, list[dict]] = {}
     for ag in ad_groups:
         salvar_ad_group(conn, dia=dia, conta=conta, site_id=site_id,
                         advertiser_id=advertiser_id, campaign_id=campaign_id,
@@ -388,12 +419,17 @@ def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id
         agid = ag.get("id") or ag.get("ad_group_id")
         if not agid or not _teve_atividade(ag.get("metrics") or {}):
             continue
-        for item in buscar_itens_do_ad_group(token, site_id, agid, dia):
-            if not item.get("item_id"):
-                continue
-            sku = _resolver_sku(item["item_id"], skus_anuncio)
+        itens = [it for it in buscar_itens_do_ad_group(token, site_id, agid, dia)
+                if it.get("item_id")]
+        if itens:
+            itens_por_ad_group[agid] = itens
+
+    todos_item_ids = {it["item_id"] for itens in itens_por_ad_group.values() for it in itens}
+    skus = _resolver_skus(token, cache, todos_item_ids, skus_anuncio)
+    for agid, itens in itens_por_ad_group.items():
+        for item in itens:
             salvar_item_ad_group(conn, dia=dia, conta=conta, ad_group_id=agid,
-                                item=item, sku=sku)
+                                item=item, sku=skus.get(str(item["item_id"])))
     return len(ad_groups)
 
 
@@ -417,6 +453,7 @@ def coletar_conta(conn: sqlite3.Connection, conta: str, dia: datetime.date) -> d
         return resultado
     advertiser_id, site_id = adv
     skus_anuncio = core.carregar_skus_anuncio()
+    cache = core.carregar_cache()
 
     campanhas = buscar_campanhas_do_dia(token, site_id, advertiser_id, dia)
     total_ad_groups = 0
@@ -427,7 +464,7 @@ def coletar_conta(conn: sqlite3.Connection, conta: str, dia: datetime.date) -> d
                         advertiser_id=advertiser_id, campanha=c, detalhe=detalhe)
         if cid:
             total_ad_groups += _coletar_ad_groups_da_campanha(
-                conn, token, site_id, advertiser_id, conta, cid, dia, skus_anuncio)
+                conn, token, site_id, advertiser_id, conta, cid, dia, cache, skus_anuncio)
     conn.commit()
     resultado["ok"] = True
     resultado["campanhas"] = len(campanhas)

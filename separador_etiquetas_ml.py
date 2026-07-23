@@ -542,7 +542,7 @@ class Grupo:
 
 
 # ---------------------------------------------------------------------------
-# CACHE DE PRODUTOS (item_id -> {title, variations:{variation_id: gtin}})
+# CACHE DE PRODUTOS (item_id -> {title, variations:{variation_id: gtin}, seller_sku})
 # ---------------------------------------------------------------------------
 def carregar_cache() -> dict:
     return _ler_json(ARQUIVO_CACHE)
@@ -553,11 +553,14 @@ def salvar_cache(cache: dict) -> None:
 
 
 def _detalhe_item(token: str, item_id: str) -> tuple[str, dict]:
-    """Busca 1 item e extrai (titulo, {variacao: GTIN}). Falha vira entrada vazia."""
+    """Busca 1 item e extrai (titulo, {variacao: GTIN}, seller_sku). Falha vira
+    entrada vazia. seller_sku vem do mesmo GET (sem chamada extra) — usado pelo
+    ads-monitor pra resolver SKU de item_id anunciado (identidade() nao precisa
+    dele: quando ha pedido, o seller_sku ja vem embutido no order_item)."""
     try:
         det = _get(f"{API}/items/{item_id}", token, params={"include_attributes": "all"})
     except requests.HTTPError:
-        return item_id, {"title": "", "variations": {}}
+        return item_id, {"title": "", "variations": {}, "seller_sku": ""}
     variacoes: dict[str, str] = {}
     for v in det.get("variations", []):
         gtin = ""
@@ -565,7 +568,8 @@ def _detalhe_item(token: str, item_id: str) -> tuple[str, dict]:
             if a.get("id") == "GTIN":
                 gtin = a.get("value_name") or ""
         variacoes[str(v.get("id"))] = gtin
-    return item_id, {"title": det.get("title", ""), "variations": variacoes}
+    return item_id, {"title": det.get("title", ""), "variations": variacoes,
+                     "seller_sku": det.get("seller_custom_field") or ""}
 
 
 def buscar_detalhes(token: str, item_ids: set[str], cache: dict) -> None:

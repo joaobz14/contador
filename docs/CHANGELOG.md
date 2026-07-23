@@ -35,13 +35,25 @@ Histórico das principais mudanças do projeto.
   o fluxo por `ad_group_id` que substituiu o antigo endpoint de métricas por
   item (descontinuado em 27/05/2026 — doc "Product Ads para Catálogo e User
   Products"), validado antes com chamada real de leitura. Só resolve
-  item_id dos ad_groups com atividade no dia (poupa chamada); SKU é
-  best-effort via `skus_por_anuncio.json` local, sem chamar a Items API.
-  Achado confirmado com dado real: um ad_group não é 1:1 com item — tipos
+  item_id dos ad_groups com atividade no dia (poupa chamada). Achado
+  confirmado com dado real: um ad_group não é 1:1 com item — tipos
   `FAMILY`/`CATALOG` podem agrupar vários `item_id` sem quebra de métrica
   por item dentro do grupo. Construído **antes** de existir a fonte de
   margem por SKU (decisão do dono, para não esperar); o motor de
   recomendação que cruza margem continua bloqueado até essa fonte existir.
+- **`ads-monitor/coletar.py` — resolução de SKU via `seller_sku` real:**
+  achado com dado real, rodando contra as contas: a resolução de SKU dava
+  **0/468 itens resolvidos**, porque `skus_por_anuncio.json` é um mapa
+  manual pequeno (só p/ anúncios sem SKU adotados na tela), não um
+  resolvedor geral — a maioria dos produtos tem `seller_sku` cadastrado
+  direto no anúncio, sem cache local pra isso. Corrigido estendendo o cache
+  do núcleo (`itens_cache.json`, via `_detalhe_item`) com o campo
+  `seller_custom_field` — **mesma chamada** `GET /items/{id}` que a
+  impressão já faz, sem custo extra de rede. Nova função `_resolver_skus`
+  prioriza esse `seller_sku` real e só cai pro mapa de adoção quando
+  ausente, mesma prioridade de `identidade()` no núcleo; trata cache
+  staleness (entrada antiga sem a chave nova é refeita, não assumida "sem
+  SKU").
 
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada

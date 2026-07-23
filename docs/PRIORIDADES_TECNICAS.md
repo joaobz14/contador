@@ -200,11 +200,20 @@ cadeia **campanha -> ad_group -> item_id -> SKU** (tabelas `ad_groups_diarios` e
 `ad_group_itens_diarios`), via o fluxo por `ad_group_id` (substituiu o antigo
 endpoint de metricas por item, descontinuado em 27/05/2026 — doc "Product Ads
 para Catalogo e User Products"), validado antes com chamada real de leitura
-(`tools/diag_ads.py`, passo 5, PR #167/#168). Paginacao coberta (`offset`/`total`);
-resolucao de SKU e best-effort via `skus_por_anuncio.json` local (sem chamar a
-Items API). Construido **antes** de existir a fonte de margem, por decisao
-explicita do dono ("podemos construir a implementacao mesmo sem as fontes,
-acrescentamos depois").
+(`tools/diag_ads.py`, passo 5, PR #167/#168). Paginacao coberta (`offset`/`total`).
+Construido **antes** de existir a fonte de margem, por decisao explicita do dono
+("podemos construir a implementacao mesmo sem as fontes, acrescentamos depois").
+
+**Resolucao de SKU — corrigida com dado real.** A primeira versao so consultava
+`skus_por_anuncio.json` local e resolveu **0 de 468 itens** rodando contra as
+contas reais — esse mapa e manual e pequeno (so p/ anuncios sem SKU adotados na
+tela), nao um resolvedor geral; a maioria dos produtos tem `seller_sku`
+cadastrado direto no anuncio. Corrigido estendendo o cache do nucleo
+(`itens_cache.json`, via `_detalhe_item` em `separador_etiquetas_ml.py`) com o
+campo `seller_custom_field` — mesma chamada `GET /items/{id}` que a impressao ja
+faz, sem custo extra de rede. `_resolver_skus` (ads-monitor) prioriza esse
+`seller_sku` real e cai pro mapa de adocao so quando ausente, mesma prioridade
+de `identidade()` no nucleo.
 
 Ressalva que continua valendo: **`ad_group` nao e 1:1 com item.** `ad_group_type`
 pode ser `FAMILY` (variacoes) ou `CATALOG` (**varios vendedores concorrendo no

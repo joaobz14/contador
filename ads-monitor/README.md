@@ -48,6 +48,11 @@ da campanha no dia (paginado — o limite padrão da API é 50 por chamada); o 5
 (`ad_groups/{id}/ads`) só é chamado para ad_groups com atividade no dia
 (clicks/cost/vendas > 0) e resolve os `item_id` que compõem aquele ad_group.
 
+Pra resolver o **SKU** de cada `item_id`, o coletor reusa `GET /items/{id}`
+(a **mesma** chamada que o núcleo já faz para GTIN/título) via
+`core.buscar_detalhes` — sem chamada de API nova, só um campo a mais lido da
+mesma resposta.
+
 ## Uso
 
 ```powershell
@@ -81,11 +86,13 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, 
 - `campanhas_diarias` sem paginação (o limite padrão da API é 50 campanhas
   por advertiser — acima do volume atual das duas contas; revisar se
   crescer). `ad_groups_diarios` **já pagina**.
-- **Resolução de SKU é best-effort:** só usa o `skus_por_anuncio.json` local
-  (mesma chave que `identidade()` usa para anúncio sem variação,
-  `"{item_id}:0"`) — **não** chama a Items API para pegar `seller_sku`
-  diretamente. Um anúncio com SKU cadastrado mas fora desse mapa fica sem SKU
-  por enquanto.
+- **Resolução de SKU** prioriza o `seller_sku` real (via `GET /items/{id}`,
+  cacheado no mesmo `itens_cache.json` do núcleo — sem chamada extra de rede
+  além do que a impressão já faz) e cai pro `skus_por_anuncio.json` local
+  (mesma chave que `identidade()` usa, `"{item_id}:0"`) só quando o item não
+  tem `seller_sku` cadastrado. Antes desta extensão a cobertura era 0/468
+  itens (o mapa local sozinho não resolve a maioria — é um mapa manual pequeno,
+  não um resolvedor geral).
 - **Ad_group não é 1:1 com item.** Tipos `FAMILY` (variações) e `CATALOG`
   (vários vendedores concorrendo no mesmo anúncio — visto 1 caso com 7
   `item_id` diferentes) agrupam vários `item_id` sem quebra de métrica por
