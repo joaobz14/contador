@@ -122,42 +122,68 @@ def _validar_conta(conta: str) -> None:
               "status/categoria acima para diferenciar.")
         return
 
-    # 3) campanhas (candidatos) — so LISTAGEM, sem detalhe.
-    # IMPORTANTE (achado nesta rodada): os endpoints legados de Product Ads
-    # (product_id=PADS na URL de campanhas) foram DESATIVADOS em 26/02/2026 —
-    # ja passou. Os 404 anteriores eram esperados por esse motivo, nao erro de
-    # codigo. O padrao novo (fontes: busca web, nao confirmado na doc oficial
-    # ainda — conector MercadoLibre indisponivel) usa o site_id do advertiser
-    # no path. Ha 2 variantes conflitantes nas fontes; testamos as duas.
+    # 3) campanhas — so LISTAGEM, sem detalhe extra por campanha.
+    # CONFIRMADO empiricamente (conta Cozilatti, 200 + 3 campanhas):
+    #   GET /advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search
+    # Os endpoints legados (product_id=PADS na URL de campanhas) foram
+    # DESATIVADOS em 26/02/2026 (ja passou) — por isso davam 404 antes; nao
+    # era erro de path digitado nem falta de permissao. Mantidos como
+    # fallback (ordem) caso uma conta se comporte diferente.
     site_id = site_id or "MLB"  # fallback: unico site que este app opera
     print(f"  --- campanhas do advertiser {_mask(advertiser_id)} "
-          f"(site_id={site_id}; candidatos) ---")
+          f"(site_id={site_id}) ---")
     cand_campanhas = [
         (f"/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns/search",
          {"Api-Version": "2"}),
         (f"/marketplace/advertising/{site_id}/advertisers/{advertiser_id}/product_ads/campaigns",
          {"Api-Version": "2"}),
-        # legado: esperado 404 (desativado 26/02/2026) — mantido so p/ confirmar
+        # legado (desativado 26/02/2026) — so fallback final, 404 esperado
         (f"/advertising/advertisers/{advertiser_id}/product_ads/campaigns",
          {"Api-Version": "1"}),
     ]
+    campanhas = None       # None = nenhum endpoint OK ainda; [] = OK mas 0 campanhas
+    endpoint_ok = False
     for path, hdr in cand_campanhas:
         st, data, err = _get(path, token, hdr)
         n = None
         if st == 200 and isinstance(data, dict):
             camps = data.get("campaigns") or data.get("results") or []
-            n = len(camps) if isinstance(camps, list) else "?"
+            if isinstance(camps, list):
+                n = len(camps)
+                campanhas = camps
+                endpoint_ok = True
         # mascara o advertiser_id SE ele aparecer no path, mas preserva o resto
         # (inclusive a query string) — cortar a query fazia 2 candidatos
         # diferentes imprimirem o mesmo texto (parecia bug de copia-e-cola).
         safe = path.replace(advertiser_id, _mask(advertiser_id))
         print(f"    GET {safe} -> {st} "
               f"{('| '+str(n)+' campanha(s)') if n is not None else _categoria(st)} {err or ''}")
+        if endpoint_ok:
+            break  # achou o endpoint certo; nao precisa testar os outros
 
-    print("  RESULTADO: advertiser encontrado; veja acima qual endpoint de campanha "
-          "respondeu 200. O candidato legado (3o) DEVE dar 404 (endpoints antigos de "
-          "Product Ads foram desativados em 26/02/2026) — isso e esperado, nao erro. "
-          "Me mande esta saida (advertiser_id vem MASCARADO).")
+    if not endpoint_ok:
+        print("  RESULTADO: nenhum endpoint de campanha respondeu 200 nesta conta. "
+              "Me mande esta saida (advertiser_id MASCARADO) para eu revisar os candidatos.")
+        return
+    if not campanhas:
+        print("  RESULTADO: endpoint OK, mas 0 campanhas retornadas (conta sem "
+              "campanha de Product Ads criada, ou todas fora do filtro default).")
+        return
+
+    print(f"\n  --- {len(campanhas)} campanha(s) (dado do PROPRIO usuario, nao e segredo) ---")
+    for c in campanhas:
+        cid = c.get("id") or c.get("campaign_id")
+        nome = c.get("name") or c.get("campaign_name") or "(sem nome)"
+        status = c.get("status")
+        orcamento = c.get("budget") or c.get("daily_budget")
+        print(f"      [{_mask(cid)}] '{nome}' status={status} "
+              f"orcamento={'definido' if orcamento else 'nao encontrado no payload'}")
+
+    ativas = [c for c in campanhas if str(c.get("status", "")).lower() in
+              ("active", "activo", "ativa", "ativo")]
+    print(f"\n  RESUMO: {len(campanhas)} campanha(s) no total, "
+          f"{len(ativas)} com status 'active/ativa'.")
+    print("  Me mande esta saida (ids MASCARADOS, nomes sao dados seus mesmo).")
 
 
 def main() -> int:
