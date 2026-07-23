@@ -28,7 +28,7 @@ Histórico das principais mudanças do projeto.
   campanha limitada por orçamento (`lost_impression_share_by_budget`) —
   evita o cálculo caseiro custo÷orçamento, que a doc revela ser enganoso (o
   campo `budget` é média diária de um ciclo mensal com rollover). Ainda sem
-  motor de recomendação, dado de margem ou agendamento automático.
+  motor de recomendação nem dado de margem.
 - **`ads-monitor/coletar.py` — atribuição por ad_group/item dentro da
   campanha:** estende o coletor com a cadeia campanha → ad_group → item_id →
   SKU (tabelas novas `ad_groups_diarios` e `ad_group_itens_diarios`), usando
@@ -54,6 +54,13 @@ Histórico das principais mudanças do projeto.
   ausente, mesma prioridade de `identidade()` no núcleo; trata cache
   staleness (entrada antiga sem a chave nova é refeita, não assumida "sem
   SKU").
+- **`ads-monitor/` — agendamento diário automático:** `run-diario.ps1` +
+  `registrar-tarefa.ps1` (mesmo padrão do `api-monitor/`, `Register-
+  ScheduledTask` nativo, sem Git Bash) registram uma tarefa diária às 11:00
+  (depois das 10:00 GMT-3 de fechamento das métricas). Antes só havia 1 dia
+  de histórico coletado manualmente; sem isso, nenhum próximo passo (motor
+  de recomendação, com ou sem margem) teria dado suficiente — o pedido
+  original é explícito: nunca recomendar em cima de 1 dia.
 
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada

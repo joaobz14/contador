@@ -4,10 +4,10 @@ Base do futuro monitor de campanhas do Mercado Ads: um **coletor
 determinístico** (sem IA) que grava, uma vez por dia, o snapshot das métricas
 de cada campanha — e, dentro dela, de cada **ad_group/item anunciado** — das
 contas configuradas (Cozilatti, Gastromaq...) num SQLite **local**. Motor de
-recomendação e agendamento automático ficam para uma próxima etapa. A
-atribuição por ad_group/item já foi construída (para não esperar a fonte de
-margem por SKU, que ainda não existe — ver "Limitações" abaixo); quando a
-margem existir, é só cruzar com o que já está gravado.
+recomendação fica para uma próxima etapa. A atribuição por ad_group/item já
+foi construída (para não esperar a fonte de margem por SKU, que ainda não
+existe — ver "Limitações" abaixo); quando a margem existir, é só cruzar com o
+que já está gravado.
 
 ## O que faz (e o que não faz)
 
@@ -61,6 +61,38 @@ python ads-monitor\coletar.py --dia 2026-07-20    # um dia especifico
 python ads-monitor\coletar.py --conta cozilatti   # so uma conta
 ```
 
+## Agendamento automático (Windows)
+
+Sem histórico de vários dias não dá pra confiar em nenhuma recomendação
+futura — então vale rodar sozinho, todo dia, sem depender de lembrar.
+
+```
+ads-monitor/
+├─ run-diario.ps1           # roda coletar.py + grava log (chamado pela tarefa)
+├─ registrar-tarefa.ps1     # registra a tarefa diaria no Agendador do Windows (rode 1x)
+└─ logs/                    # saída de cada run (gitignorado)
+```
+
+Registrar (uma vez, no PowerShell da sua máquina):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ads-monitor\registrar-tarefa.ps1
+```
+
+Por padrão roda **todo dia às 11:00** (depois das 10:00 GMT-3 que a doc
+oficial cita como horário de fechamento das métricas do dia anterior — a
+margem de 1h evita coletar "ontem" ainda provisório). Ajuste a variável
+`$Hora` no topo do script se quiser outro horário. Mesmo padrão do
+`api-monitor/registrar-tarefa.ps1` — `Register-ScheduledTask` nativo (sem Git
+Bash), roda com o seu usuário só quando você está logado (não guarda senha).
+
+Comandos úteis depois:
+```powershell
+Start-ScheduledTask   -TaskName 'Contador - Monitor Ads (diario)'   # rodar agora
+Get-ScheduledTaskInfo -TaskName 'Contador - Monitor Ads (diario)'   # ver próxima execução / último resultado
+Unregister-ScheduledTask -TaskName 'Contador - Monitor Ads (diario)' -Confirm:$false  # remover
+```
+
 ## Armazenamento
 
 `historico_ads.sqlite3` (gitignorado, local — como o `historico_impressao.json`
@@ -107,4 +139,3 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, 
 - Sem motor de recomendação nem dado de margem — a atribuição por SKU está
   pronta, mas ninguém ainda cruza com custo/margem (ver
   `docs/PRIORIDADES_TECNICAS.md`, item 10).
-- Sem agendamento automático ainda — rode manualmente por enquanto.
