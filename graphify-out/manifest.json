@@ -44,6 +44,11 @@
   "ast_hash": "5a70ee6f8663b0041090e08061f604fa83dd7f71",
   "semantic_hash": "5a70ee6f8663b0041090e08061f604fa83dd7f71"
  },
+ "ads-monitor/README.md": {
+  "mtime": 1784813888.9405894,
+  "ast_hash": "078e5968565dac01c28640d6585f32cca7fc25a6",
+  "semantic_hash": "078e5968565dac01c28640d6585f32cca7fc25a6"
+ },
  "ads-monitor/coletar.py": {
   "mtime": 1784813775.636592,
   "ast_hash": "3f67da306636d8494399697212105c566e075612",
@@ -220,9 +225,9 @@
   "semantic_hash": "3205a24fb353953b415a0f2c6a203e9f08d6d775"
  },
  "obsidian/IA/Estado atual.md": {
-  "mtime": 1784736725.2574613,
-  "ast_hash": "a2323339a2fb66ef1a22b311f8c3085aac85f317",
-  "semantic_hash": "a2323339a2fb66ef1a22b311f8c3085aac85f317"
+  "mtime": 1784814307.7245798,
+  "ast_hash": "5f9a5d9e8b846ac7937664889f9bc05fec153831",
+  "semantic_hash": "5f9a5d9e8b846ac7937664889f9bc05fec153831"
  },
  "obsidian/IA/Fontes de verdade.md": {
   "mtime": 1784736682.269462,
@@ -500,9 +505,9 @@
   "semantic_hash": "a31fe4a4545f6edc2fb42ed8fb90cc70a7055b85"
  },
  "tools/diag_ads.py": {
-  "mtime": 1784813070.1486082,
-  "ast_hash": "2d8e785dc784de696ebdacf0083e940da9df4f0b",
-  "semantic_hash": "2d8e785dc784de696ebdacf0083e940da9df4f0b"
+  "mtime": 1784818503.76847,
+  "ast_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798",
+  "semantic_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798"
  },
  "tools/diag_coleta.py": {
   "mtime": 1784806092.1543498,
