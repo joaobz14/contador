@@ -11,15 +11,17 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1292 nodes · 2370 edges · 10 hyperedges** (324 nós semânticos preservados) —
+  **1319 nodes · 2415 edges · 10 hyperedges** (325 nós semânticos preservados) —
   atualizadas ao incluir `tools/validar_obsidian.py` + testes, a semântica do cofre,
   o helper `_nome_sem_sku`, o `tools/diag_coleta.py`, o `tools/diag_ads.py`
   (validação só-leitura do Product Ads), o `ads-monitor/coletar.py` + testes
   (coletor determinístico do Product Ads, camada 1 e camada 2 — atribuição por
   ad_group/item), a resolução de SKU via `seller_sku` real (extensão do cache
-  `itens_cache.json` do núcleo, `_resolver_skus`) e o `tools/diag_seller_sku.py`
+  `itens_cache.json` do núcleo, `_resolver_skus`), o `tools/diag_seller_sku.py`
   (diagnóstico exploratório: por que ad_groups tipo ITEM não resolveram SKU — e o
-  modo item específico que confirmou que o SKU mora por variação, não no item raiz).
+  modo item específico que confirmou que o SKU mora por variação, não no item raiz)
+  e o `ads-monitor/recomendar.py` + testes (camada 3 — motor de recomendação com
+  os sinais que não dependem de margem).
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -46,6 +48,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-23 — Ads camada 3: motor de recomendação (sinais sem margem):**
+  `ads-monitor/recomendar.py` lê `campanhas_diarias` numa janela de dias e gera
+  recomendações no formato do pedido original (problema/evidência/ação/
+  justificativa/impacto/risco/confiança/urgência/prazo de reavaliação/métrica
+  de verificação), usando só os 3 sinais que a própria API já calcula e não
+  dependem de margem (orçamento insuficiente, ranking baixo, ROAS abaixo do
+  `roas_target`). Recomendação de aumentar investimento sai marcada
+  "condicionada à validação da margem"; ROAS abaixo do alvo não (é redução de
+  risco, não aposta). Trava contra recomendar em dado fraco: `MIN_DIAS=3` +
+  `MIN_CLICKS=20` na janela — `avaliar_campanha()` é função pura, testada
+  isoladamente. Construído **depois** do agendamento diário (PR #176) ficar
+  pronto — sem coleta automática, `MIN_DIAS` nunca seria atingido
+  organicamente. Nó semântico novo `ads_monitor_motor_recomendacao_sem_margem`
+  (concept), ligado por `rationale_for` às 3 funções centrais e por
+  `conceptually_related_to` às camadas 1/2. Contagens: **1319 nós, 2415
+  arestas, 0 órfãs**.
 
 - **2026-07-23 — Resolução de SKU via seller_sku real (não mais só best-effort):**
   achado com dado real: a resolução de SKU do `ads-monitor` (camada 2) dava

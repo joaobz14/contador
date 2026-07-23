@@ -61,6 +61,19 @@ Histórico das principais mudanças do projeto.
   de histórico coletado manualmente; sem isso, nenhum próximo passo (motor
   de recomendação, com ou sem margem) teria dado suficiente — o pedido
   original é explícito: nunca recomendar em cima de 1 dia.
+- **`ads-monitor/recomendar.py` — motor de recomendação (sinais sem
+  margem):** gera recomendações no formato do pedido original (conta,
+  campanha, problema, evidência, ação exata, justificativa, impacto
+  esperado, risco, confiança, urgência, prazo de reavaliação, métrica de
+  verificação), usando só os 3 sinais que a própria API já calcula e não
+  dependem de margem — orçamento insuficiente, ranking baixo, ROAS abaixo
+  do `roas_target` da campanha. Recomendação de aumentar investimento sai
+  sempre marcada "Recomendação condicionada à validação da margem"; ROAS
+  abaixo do alvo não precisa dessa ressalva (redução de risco, não aposta
+  de investimento). Trava contra recomendar em dado fraco (regra do pedido
+  original): campanha com menos de 3 dias distintos ou 20 cliques na janela
+  fica "monitorando", sem recomendação — dado provisório já é impossível
+  por construção, já que o coletor só grava dias fechados.
 
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada

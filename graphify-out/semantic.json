@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 324,
- "edge_count": 533,
+ "node_count": 325,
+ "edge_count": 538,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3709,6 +3709,20 @@
    "community": 0,
    "norm_label": "ads-monitor camada 2 (atribuicao por ad_group/item dentro da campanha): estende o coletor com a cadeia campanha -> ad_group -> item_id -> sku, preparando o terreno para margem por sku sem ainda ter essa fonte (bloqueado, ver docs/prioridades_tecnicas.md item 10). usa o fluxo novo por ad_group_id da doc oficial 'product ads para catalogo e user products' (substituiu o endpoint de metricas por item, descontinuado em 27/05/2026) -- validado com chamada real de leitura em tools/diag_ads.py (pr #167/#168) antes de virar codigo de producao. get .../product_ads/ad_groups/search?filters[campaign_id]=x grava todo ad_group da campanha no dia (paginado por offset/total -- confirmado que uma campanha pode ter mais que o limite padrao de 50); so os ad_groups com atividade no dia (clicks/cost/units_quantity > 0) disparam a chamada extra get .../ad_groups/{id}/ads para resolver item_id (a maioria fica zerada -- validado com dado real, poupa chamadas). resolucao de sku (_resolver_skus) prioriza o seller_sku real, buscado via core.buscar_detalhes (get /items/{id}, mesmo cache itens_cache.json que a impressao ja mantem -- zero chamada de escrita, so estende um cache existente com o campo seller_custom_field) e cai pro mapa de adocao skus_por_anuncio.json (chave '{item_id}:0') so quando o item nao tem seller_sku cadastrado -- mesma prioridade de identidade() no nucleo. achado real (2026-07-23): antes desta extensao a cobertura era 0/468 itens, porque skus_por_anuncio.json e um mapa manual pequeno (so p/ anuncios adotados sem sku), nao um resolvedor geral -- a maioria dos produtos tem seller_sku cadastrado direto no anuncio, so nao havia cache local pra isso. cache staleness tratada: entrada antiga sem a chave 'seller_sku' e refeita, nao assumida 'sem sku'. achado importante do dado real: um ad_group nao e 1:1 com item -- tipos family (variacoes) e catalog (varios vendedores no mesmo anuncio, visto 1 caso com 7 item_id diferentes) agrupam varios item_id sem quebra de metrica por item dentro do grupo; a granularidade mais fina que a api da e o ad_group, nao o item.",
    "_origin": "manual"
+  },
+  {
+   "label": "ADS-MONITOR CAMADA 3 (motor de recomendacao, sinais SEM margem): recomendar.py le campanhas_diarias numa janela de dias e gera recomendacoes no formato pedido desde o inicio (conta/campanha/problema/evidencia/acao/justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de verificacao). So os 3 sinais que a propria API ja calcula e NAO dependem de margem: orcamento insuficiente (lost_impression_share_by_budget), ranking baixo (lost_impression_share_by_ad_rank) e ROAS abaixo do roas_target da propria campanha. Recomendacao de AUMENTAR investimento (orcamento/ranking) sai sempre marcada 'condicionada a validacao da margem' -- sem dado de margem por SKU, nao da pra saber se vale a pena gastar mais; ROAS abaixo do alvo NAO precisa da ressalva (e reducao de risco, nao aposta de investimento). Trava contra recomendar em dado fraco (regra do pedido original): MIN_DIAS=3 dias distintos + MIN_CLICKS=20 na janela -- campanha sem isso fica 'monitorando', sem recomendacao (avaliar_campanha() e funcao pura, testada isoladamente). Dado provisorio ja e impossivel por construcao (coletar.py so grava dias FECHADOS). NAO detecta 'campanha recem-criada' de verdade (precisaria date_created, fora do schema atual) -- MIN_DIAS e substituto aproximado (dias no NOSSO historico, nao idade real na ML). Construido depois do agendamento diario (ads_monitor_agendamento_diario) ficar pronto -- sem coleta automatica, MIN_DIAS nunca seria atingido organicamente.",
+   "file_type": "concept",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "ads_monitor_motor_recomendacao_sem_margem",
+   "community": 0,
+   "norm_label": "ads-monitor camada 3 (motor de recomendacao, sinais sem margem): recomendar.py le campanhas_diarias numa janela de dias e gera recomendacoes no formato pedido desde o inicio (conta/campanha/problema/evidencia/acao/justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de verificacao). so os 3 sinais que a propria api ja calcula e nao dependem de margem: orcamento insuficiente (lost_impression_share_by_budget), ranking baixo (lost_impression_share_by_ad_rank) e roas abaixo do roas_target da propria campanha. recomendacao de aumentar investimento (orcamento/ranking) sai sempre marcada 'condicionada a validacao da margem' -- sem dado de margem por sku, nao da pra saber se vale a pena gastar mais; roas abaixo do alvo nao precisa da ressalva (e reducao de risco, nao aposta de investimento). trava contra recomendar em dado fraco (regra do pedido original): min_dias=3 dias distintos + min_clicks=20 na janela -- campanha sem isso fica 'monitorando', sem recomendacao (avaliar_campanha() e funcao pura, testada isoladamente). dado provisorio ja e impossivel por construcao (coletar.py so grava dias fechados). nao detecta 'campanha recem-criada' de verdade (precisaria date_created, fora do schema atual) -- min_dias e substituto aproximado (dias no nosso historico, nao idade real na ml). construido depois do agendamento diario (ads_monitor_agendamento_diario) ficar pronto -- sem coleta automatica, min_dias nunca seria atingido organicamente.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4114,6 +4128,28 @@
    "target": "graph_sync_processo",
    "confidence_score": 1.0,
    "context": "mesmo espirito de subsistema isolado que api_monitor_sistema"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_ad_group_atribuicao",
+   "confidence_score": 1.0,
+   "context": "camada 3 le o que as camadas 1/2 gravam"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_coletor_camada1",
+   "confidence_score": 1.0,
+   "context": "camada 3 le o que as camadas 1/2 gravam"
   },
   {
    "relation": "conceptually_related_to",
@@ -5319,6 +5355,36 @@
    "weight": 1.0,
    "source": "ads_monitor_coletor_camada1",
    "target": "ads_monitor_coletar_salvar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_avaliar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_formatar_relatorio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_gerar_recomendacoes",
    "confidence_score": 1.0
   },
   {

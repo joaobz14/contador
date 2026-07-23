@@ -1,13 +1,18 @@
-# ads-monitor — coletor de métricas do Product Ads (Mercado Livre)
+# ads-monitor — monitor de campanhas do Product Ads (Mercado Livre)
 
-Base do futuro monitor de campanhas do Mercado Ads: um **coletor
-determinístico** (sem IA) que grava, uma vez por dia, o snapshot das métricas
-de cada campanha — e, dentro dela, de cada **ad_group/item anunciado** — das
-contas configuradas (Cozilatti, Gastromaq...) num SQLite **local**. Motor de
-recomendação fica para uma próxima etapa. A atribuição por ad_group/item já
-foi construída (para não esperar a fonte de margem por SKU, que ainda não
-existe — ver "Limitações" abaixo); quando a margem existir, é só cruzar com o
-que já está gravado.
+Monitor de campanhas do Mercado Ads (Product Ads) para as contas Cozilatti e
+Gastromaq, em três camadas:
+
+1. **Coleta** (`coletar.py`, agendada) — grava, uma vez por dia, o snapshot
+   das métricas de cada campanha — e, dentro dela, de cada **ad_group/item
+   anunciado** — num SQLite **local**.
+2. **Atribuição por SKU** (dentro do `coletar.py`) — já construída (para não
+   esperar a fonte de margem por SKU, que ainda não existe — ver "Limitações"
+   abaixo); quando a margem existir, é só cruzar com o que já está gravado.
+3. **Recomendação** (`recomendar.py`) — gera recomendações de ação a partir do
+   histórico, usando só os sinais que **não** dependem de margem (ver seção
+   própria abaixo). Recomendações condicionadas a margem ficam pra quando essa
+   fonte existir.
 
 ## O que faz (e o que não faz)
 
@@ -113,6 +118,38 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select data, campaign_name, roas, los
 sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, i.sku, ag.cost from ad_groups_diarios ag join ad_group_itens_diarios i using (data, conta, ad_group_id) order by ag.cost desc;"
 ```
 
+## Recomendações (`recomendar.py`)
+
+Lê `campanhas_diarias` numa janela de dias e gera recomendações no formato
+pedido desde o início do projeto: conta, campanha, problema, evidência, ação
+exata, justificativa, impacto esperado, risco, confiança, urgência, prazo de
+reavaliação e métrica de verificação.
+
+```powershell
+python ads-monitor\recomendar.py                    # janela padrao (7 dias), todas as contas
+python ads-monitor\recomendar.py --dias 14           # janela maior
+python ads-monitor\recomendar.py --conta cozilatti   # so uma conta
+```
+
+**Só os sinais que a própria API já calcula e não dependem de margem:**
+- **Orçamento insuficiente** (`lost_impression_share_by_budget` médio alto).
+- **Ranking baixo** (`lost_impression_share_by_ad_rank` médio alto).
+- **ROAS abaixo do objetivo** (`roas` médio < `roas_target` da campanha).
+
+Recomendação de **aumentar investimento** (orçamento ou ranking — ajustar
+ACOS/CPC também custa dinheiro) sai sempre marcada **"Recomendação
+condicionada à validação da margem"**. ROAS abaixo do alvo não precisa dessa
+ressalva — é redução de risco, não aposta de investimento.
+
+**Trava contra recomendar em cima de dado fraco** (regra do pedido original —
+nunca recomendar com base em 1 dia, poucos cliques ou dado provisório):
+campanha com menos de `MIN_DIAS` (3) dias distintos ou `MIN_CLICKS` (20)
+cliques na janela fica "monitorando", sem recomendação. Dado provisório já é
+impossível por construção — `coletar.py` só grava dias fechados, nunca "hoje".
+**Não detecta campanha recém-criada de verdade** (precisaria de
+`date_created`, fora do schema atual) — `MIN_DIAS` é um substituto aproximado
+(dias no *nosso* histórico, não a idade real na ML).
+
 ## Limitações conhecidas desta versão
 
 - `campanhas_diarias` sem paginação (o limite padrão da API é 50 campanhas
@@ -136,6 +173,9 @@ sqlite3 ads-monitor\historico_ads.sqlite3 "select ag.ad_group_title, i.item_id, 
   IA do Mercado Livre: a API de Product Ads não expõe SKU nem variação-SKU em
   nenhuma resposta — o agrupamento por variante usa só
   `family_id`/`catalog_product_id`/`parent_id`/`ad_group_external_id`.
-- Sem motor de recomendação nem dado de margem — a atribuição por SKU está
-  pronta, mas ninguém ainda cruza com custo/margem (ver
-  `docs/PRIORIDADES_TECNICAS.md`, item 10).
+- Sem dado de margem — `recomendar.py` só cobre sinais sem margem; a
+  atribuição por SKU está pronta, mas ninguém ainda cruza com custo/margem
+  (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
+- Sem tela/GUI própria — `recomendar.py` imprime relatório em texto (CLI).
+  Uma interface fica pra quando fizer sentido (subsistema isolado da tela de
+  etiquetas, mesma decisão de sempre).

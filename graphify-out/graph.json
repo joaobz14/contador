@@ -17201,6 +17201,384 @@
    "id": "tools_diag_seller_sku_investigar_item",
    "community": 67,
    "norm_label": "_investigar_item()"
+  },
+  {
+   "label": "recomendar.py",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar",
+   "community": 68,
+   "norm_label": "recomendar.py"
+  },
+  {
+   "label": "Recomendacao",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L62",
+   "metadata": {
+    "language": "python",
+    "kind": "class"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_recomendacao",
+   "community": 68,
+   "norm_label": "recomendacao"
+  },
+  {
+   "label": "conectar_db()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_conectar_db",
+   "community": 68,
+   "norm_label": "conectar_db()"
+  },
+  {
+   "label": "_agregar_campanhas()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L84",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_agregar_campanhas",
+   "community": 68,
+   "norm_label": "_agregar_campanhas()"
+  },
+  {
+   "label": "avaliar_campanha()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L108",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_avaliar_campanha",
+   "community": 68,
+   "norm_label": "avaliar_campanha()"
+  },
+  {
+   "label": "gerar_recomendacoes()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L200",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_gerar_recomendacoes",
+   "community": 68,
+   "norm_label": "gerar_recomendacoes()"
+  },
+  {
+   "label": "formatar_relatorio()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L210",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_formatar_relatorio",
+   "community": 68,
+   "norm_label": "formatar_relatorio()"
+  },
+  {
+   "label": "main()",
+   "file_type": "code",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L234",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_recomendar_main",
+   "community": 68,
+   "norm_label": "main()"
+  },
+  {
+   "label": "test_ads_monitor_recomendar.py",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar",
+   "community": 69,
+   "norm_label": "test_ads_monitor_recomendar.py"
+  },
+  {
+   "label": "_campanha()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L28",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_campanha",
+   "community": 69,
+   "norm_label": "_campanha()"
+  },
+  {
+   "label": "_popular()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L42",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_popular",
+   "community": 69,
+   "norm_label": "_popular()"
+  },
+  {
+   "label": "_janela()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L48",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_janela",
+   "community": 69,
+   "norm_label": "_janela()"
+  },
+  {
+   "label": "test_avaliar_campanha_sem_dado_suficiente_nao_recomenda()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L53",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_sem_dado_suficiente_nao_recomenda",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_sem_dado_suficiente_nao_recomenda()"
+  },
+  {
+   "label": "test_avaliar_campanha_saudavel_nao_recomenda()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L60",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_saudavel_nao_recomenda",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_saudavel_nao_recomenda()"
+  },
+  {
+   "label": "test_avaliar_campanha_orcamento_insuficiente()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L67",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_orcamento_insuficiente",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_orcamento_insuficiente()"
+  },
+  {
+   "label": "test_avaliar_campanha_ranking_baixo()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L79",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_ranking_baixo",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_ranking_baixo()"
+  },
+  {
+   "label": "test_avaliar_campanha_roas_abaixo_do_alvo_nao_e_condicionada_margem()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L90",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_roas_abaixo_do_alvo_nao_e_condicionada_margem",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_roas_abaixo_do_alvo_nao_e_condicionada_margem()"
+  },
+  {
+   "label": "test_avaliar_campanha_varios_sinais_juntos()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L100",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_varios_sinais_juntos",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_varios_sinais_juntos()"
+  },
+  {
+   "label": "test_avaliar_campanha_sem_roas_target_nao_quebra()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L109",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_sem_roas_target_nao_quebra",
+   "community": 69,
+   "norm_label": "test_avaliar_campanha_sem_roas_target_nao_quebra()"
+  },
+  {
+   "label": "test_gerar_recomendacoes_fim_a_fim()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L117",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_fim_a_fim",
+   "community": 69,
+   "norm_label": "test_gerar_recomendacoes_fim_a_fim()"
+  },
+  {
+   "label": "test_gerar_recomendacoes_campanha_pausada_e_ignorada()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L129",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_campanha_pausada_e_ignorada",
+   "community": 69,
+   "norm_label": "test_gerar_recomendacoes_campanha_pausada_e_ignorada()"
+  },
+  {
+   "label": "test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L139",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda",
+   "community": 69,
+   "norm_label": "test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda()"
+  },
+  {
+   "label": "test_formatar_relatorio_vazio_explica_o_motivo()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L148",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_vazio_explica_o_motivo",
+   "community": 69,
+   "norm_label": "test_formatar_relatorio_vazio_explica_o_motivo()"
+  },
+  {
+   "label": "test_formatar_relatorio_marca_condicionada_margem()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L153",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_marca_condicionada_margem",
+   "community": 69,
+   "norm_label": "test_formatar_relatorio_marca_condicionada_margem()"
+  },
+  {
+   "label": "test_main_sem_historico()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L164",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_main_sem_historico",
+   "community": 69,
+   "norm_label": "test_main_sem_historico()"
+  },
+  {
+   "label": "test_main_roda_para_todas_as_contas()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L172",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_recomendar_test_main_roda_para_todas_as_contas",
+   "community": 69,
+   "norm_label": "test_main_roda_para_todas_as_contas()"
+  },
+  {
+   "label": "ADS-MONITOR CAMADA 3 (motor de recomendacao, sinais SEM margem): recomendar.py le campanhas_diarias numa janela de dias e gera recomendacoes no formato pedido desde o inicio (conta/campanha/problema/evidencia/acao/justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de verificacao). So os 3 sinais que a propria API ja calcula e NAO dependem de margem: orcamento insuficiente (lost_impression_share_by_budget), ranking baixo (lost_impression_share_by_ad_rank) e ROAS abaixo do roas_target da propria campanha. Recomendacao de AUMENTAR investimento (orcamento/ranking) sai sempre marcada 'condicionada a validacao da margem' -- sem dado de margem por SKU, nao da pra saber se vale a pena gastar mais; ROAS abaixo do alvo NAO precisa da ressalva (e reducao de risco, nao aposta de investimento). Trava contra recomendar em dado fraco (regra do pedido original): MIN_DIAS=3 dias distintos + MIN_CLICKS=20 na janela -- campanha sem isso fica 'monitorando', sem recomendacao (avaliar_campanha() e funcao pura, testada isoladamente). Dado provisorio ja e impossivel por construcao (coletar.py so grava dias FECHADOS). NAO detecta 'campanha recem-criada' de verdade (precisaria date_created, fora do schema atual) -- MIN_DIAS e substituto aproximado (dias no NOSSO historico, nao idade real na ML). Construido depois do agendamento diario (ads_monitor_agendamento_diario) ficar pronto -- sem coleta automatica, MIN_DIAS nunca seria atingido organicamente.",
+   "file_type": "concept",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "ads_monitor_motor_recomendacao_sem_margem",
+   "community": 0,
+   "norm_label": "ads-monitor camada 3 (motor de recomendacao, sinais sem margem): recomendar.py le campanhas_diarias numa janela de dias e gera recomendacoes no formato pedido desde o inicio (conta/campanha/problema/evidencia/acao/justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de verificacao). so os 3 sinais que a propria api ja calcula e nao dependem de margem: orcamento insuficiente (lost_impression_share_by_budget), ranking baixo (lost_impression_share_by_ad_rank) e roas abaixo do roas_target da propria campanha. recomendacao de aumentar investimento (orcamento/ranking) sai sempre marcada 'condicionada a validacao da margem' -- sem dado de margem por sku, nao da pra saber se vale a pena gastar mais; roas abaixo do alvo nao precisa da ressalva (e reducao de risco, nao aposta de investimento). trava contra recomendar em dado fraco (regra do pedido original): min_dias=3 dias distintos + min_clicks=20 na janela -- campanha sem isso fica 'monitorando', sem recomendacao (avaliar_campanha() e funcao pura, testada isoladamente). dado provisorio ja e impossivel por construcao (coletar.py so grava dias fechados). nao detecta 'campanha recem-criada' de verdade (precisaria date_created, fora do schema atual) -- min_dias e substituto aproximado (dias no nosso historico, nao idade real na ml). construido depois do agendamento diario (ads_monitor_agendamento_diario) ficar pronto -- sem coleta automatica, min_dias nunca seria atingido organicamente.",
+   "_origin": "manual"
   }
  ],
  "links": [
@@ -17402,6 +17780,56 @@
    "weight": 1.0,
    "source": "ads_monitor_coletar_resolver_skus",
    "target": "ads_monitor_coletar_resolver_sku_adocao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L203",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar_gerar_recomendacoes",
+   "target": "ads_monitor_recomendar_agregar_campanhas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L206",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar_gerar_recomendacoes",
+   "target": "ads_monitor_recomendar_avaliar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L244",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar_main",
+   "target": "ads_monitor_recomendar_conectar_db",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L266",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar_main",
+   "target": "ads_monitor_recomendar_formatar_relatorio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L264",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar_main",
+   "target": "ads_monitor_recomendar_gerar_recomendacoes",
    "confidence_score": 1.0
   },
   {
@@ -22176,6 +22604,116 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L44",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_popular",
+   "target": "tests_test_ads_monitor_recomendar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L155",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_marca_condicionada_margem",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L156",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_marca_condicionada_margem",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L131",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_campanha_pausada_e_ignorada",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L132",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_campanha_pausada_e_ignorada",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L119",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_fim_a_fim",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L120",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_fim_a_fim",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L141",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L142",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L174",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_main_roda_para_todas_as_contas",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L175",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar_test_main_roda_para_todas_as_contas",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_agrupar.py",
@@ -25935,6 +26473,28 @@
   {
    "relation": "conceptually_related_to",
    "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_ad_group_atribuicao",
+   "confidence_score": 1.0,
+   "context": "camada 3 le o que as camadas 1/2 gravam"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_coletor_camada1",
+   "confidence_score": 1.0,
+   "context": "camada 3 le o que as camadas 1/2 gravam"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
    "source_file": "docs/AMAZON_SP_API.md",
    "source_location": null,
    "weight": 1.0,
@@ -27176,6 +27736,76 @@
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_teve_atividade",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L84",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_agregar_campanhas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L108",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_avaliar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_conectar_db",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L210",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_formatar_relatorio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L200",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_gerar_recomendacoes",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L234",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": "L62",
+   "weight": 1.0,
+   "source": "ads_monitor_recomendar",
+   "target": "ads_monitor_recomendar_recomendacao",
    "confidence_score": 1.0
   },
   {
@@ -30076,6 +30706,176 @@
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_teve_atividade",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L28",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L48",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L42",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_popular",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L67",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_orcamento_insuficiente",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L79",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_ranking_baixo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L90",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_roas_abaixo_do_alvo_nao_e_condicionada_margem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L60",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_saudavel_nao_recomenda",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L53",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_sem_dado_suficiente_nao_recomenda",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L109",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_sem_roas_target_nao_quebra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L100",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_avaliar_campanha_varios_sinais_juntos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L153",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_marca_condicionada_margem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L148",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_formatar_relatorio_vazio_explica_o_motivo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L129",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_campanha_pausada_e_ignorada",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L117",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_fim_a_fim",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L139",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_gerar_recomendacoes_poucos_dias_ainda_nao_recomenda",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L172",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_main_roda_para_todas_as_contas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_recomendar.py",
+   "source_location": "L164",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_recomendar",
+   "target": "tests_test_ads_monitor_recomendar_test_main_sem_historico",
    "confidence_score": 1.0
   },
   {
@@ -36903,6 +37703,36 @@
   {
    "relation": "rationale_for",
    "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_avaliar_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_formatar_relatorio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/recomendar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_motor_recomendacao_sem_margem",
+   "target": "ads_monitor_recomendar_gerar_recomendacoes",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
    "source_file": "docs/AMAZON_SP_API.md",
    "source_location": null,
    "weight": 1.0,
@@ -41662,5 +42492,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "9affa8e3630d485826ab9d69c2db32a87f3ce2c9"
+ "built_at_commit": "4a3f5d79d466b94075fd9adc2c7a709977dc9c5a"
 }

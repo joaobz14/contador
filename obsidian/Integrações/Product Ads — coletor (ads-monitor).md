@@ -3,22 +3,23 @@ tags: [integracao, mercado-ads, product-ads, monitor]
 type: integration
 status: current
 aliases: [Product Ads, Mercado Ads, ads-monitor, coletor de metricas de campanha]
-source_files: [ads-monitor/coletar.py, ads-monitor/run-diario.ps1, ads-monitor/registrar-tarefa.ps1, tools/diag_ads.py, tools/diag_coleta.py]
+source_files: [ads-monitor/coletar.py, ads-monitor/recomendar.py, ads-monitor/run-diario.ps1, ads-monitor/registrar-tarefa.ps1, tools/diag_ads.py, tools/diag_coleta.py]
 source_docs: [ads-monitor/README.md]
 verified_at_commit: 463f970
 ---
 
-# 📣 Integração: Product Ads — coletor (`ads-monitor/`)
+# 📣 Integração: Product Ads — monitor de campanhas (`ads-monitor/`)
 
 > [!abstract]
-> Base de um futuro monitor de campanhas de Mercado Ads (Product Ads) para as
-> contas Cozilatti e Gastromaq: um **coletor determinístico** (sem IA) que grava,
-> uma vez por dia, o snapshot das métricas de cada campanha — e, dentro dela, de
-> cada **ad_group/item anunciado** (atribuição por SKU, best-effort) — num SQLite
-> **local**, com **agendamento diário automático** (Agendador do Windows). Só
-> leitura — nunca muda campanha/orçamento/anúncio. **Ainda sem** motor de
-> recomendação; a atribuição por SKU está pronta mas segue **bloqueada por
-> margem** (nenhuma fonte de custo/margem por SKU existe no projeto ainda).
+> Monitor de campanhas de Mercado Ads (Product Ads) para as contas Cozilatti e
+> Gastromaq, em 3 camadas: **coleta** (`coletar.py`, sem IA, agendada
+> diariamente) grava o snapshot das métricas de cada campanha — e, dentro dela,
+> de cada **ad_group/item anunciado** (atribuição por SKU, best-effort) — num
+> SQLite **local**; **recomendação** (`recomendar.py`) gera ações a partir do
+> histórico usando só os sinais que **não** dependem de margem (orçamento,
+> ranking, ROAS vs. alvo). Só leitura — nunca muda campanha/orçamento/anúncio.
+> Recomendações condicionadas a margem ficam **bloqueadas** (nenhuma fonte de
+> custo/margem por SKU existe no projeto ainda).
 
 ## Por que existe
 Pedido original: um monitor que **sugira** ações de otimização de campanha (não
@@ -83,8 +84,12 @@ estourada). Por isso o coletor guarda também `lost_impression_share_by_budget` 
 - Item com variações de SKU diferentes fica sem SKU (Product Ads não expõe
   `variation_id` nem SKU — confirmado oficialmente pelo assistente de IA do
   Mercado Livre; limitação aceita, não perseguida por ora).
-- Sem motor de recomendação — a atribuição por SKU está pronta, falta a fonte
-  de margem para cruzar (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
+- `recomendar.py` só cobre sinais sem margem — recomendações condicionadas
+  (aumentar investimento) ficam bloqueadas até existir a fonte de margem
+  (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
+- Sem tela/GUI — `recomendar.py` imprime relatório em texto (CLI). Uma
+  interface fica pra quando fizer sentido, sempre como subsistema isolado
+  (nunca dentro da tela de etiquetas).
 
 ## Agendamento
 `run-diario.ps1` + `registrar-tarefa.ps1` (mesmo padrão do `api-monitor/`,
@@ -92,6 +97,25 @@ estourada). Por isso o coletor guarda também `lost_impression_share_by_budget` 
 das 10:00 GMT-3 de fechamento das métricas. Sem histórico de vários dias
 nenhum próximo passo (motor de recomendação, com ou sem margem) teria dado
 suficiente; o pedido original é explícito: nunca recomendar em cima de 1 dia.
+
+## Recomendações (`recomendar.py`)
+Lê `campanhas_diarias` numa janela de dias (default 7) e gera recomendações no
+formato do pedido original: conta/campanha/problema/evidência/ação/
+justificativa/impacto/risco/confiança/urgência/prazo de reavaliação/métrica de
+verificação. Só os 3 sinais que a própria API já calcula e não dependem de
+margem: orçamento insuficiente, ranking baixo, ROAS abaixo do `roas_target`.
+Recomendação de **aumentar investimento** (orçamento ou ranking) sai sempre
+marcada **"Recomendação condicionada à validação da margem"**; ROAS abaixo do
+alvo não precisa da ressalva (redução de risco, não aposta de investimento).
+
+**Trava contra dado fraco** (regra do pedido original — nunca recomendar em
+cima de 1 dia, poucos cliques ou dado provisório): campanha com menos de
+`MIN_DIAS=3` dias distintos ou `MIN_CLICKS=20` cliques na janela fica
+"monitorando", sem recomendação (`avaliar_campanha()` é função pura, testada
+isoladamente). Dado provisório já é impossível por construção — o coletor só
+grava dias fechados. **Não** detecta campanha recém-criada de verdade
+(precisaria de `date_created`, fora do schema); `MIN_DIAS` é um substituto
+aproximado (dias no *nosso* histórico, não a idade real na ML).
 
 ## Relacionado
 - [[Token e rotação do refresh]] · [[Trava entre processos]] · [[Grafo em duas camadas]]
