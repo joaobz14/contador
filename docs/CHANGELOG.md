@@ -19,6 +19,19 @@ Histórico das principais mudanças do projeto.
   evita o cálculo caseiro custo÷orçamento, que a doc revela ser enganoso (o
   campo `budget` é média diária de um ciclo mensal com rollover). Ainda sem
   motor de recomendação, dado de margem ou agendamento automático.
+- **`ads-monitor/coletar.py` — atribuição por ad_group/item dentro da
+  campanha:** estende o coletor com a cadeia campanha → ad_group → item_id →
+  SKU (tabelas novas `ad_groups_diarios` e `ad_group_itens_diarios`), usando
+  o fluxo por `ad_group_id` que substituiu o antigo endpoint de métricas por
+  item (descontinuado em 27/05/2026 — doc "Product Ads para Catálogo e User
+  Products"), validado antes com chamada real de leitura. Só resolve
+  item_id dos ad_groups com atividade no dia (poupa chamada); SKU é
+  best-effort via `skus_por_anuncio.json` local, sem chamar a Items API.
+  Achado confirmado com dado real: um ad_group não é 1:1 com item — tipos
+  `FAMILY`/`CATALOG` podem agrupar vários `item_id` sem quebra de métrica
+  por item dentro do grupo. Construído **antes** de existir a fonte de
+  margem por SKU (decisão do dono, para não esperar); o motor de
+  recomendação que cruza margem continua bloqueado até essa fonte existir.
 
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada

@@ -11,29 +11,47 @@ verified_at_commit: 463f970
 # 📣 Integração: Product Ads — coletor (`ads-monitor/`)
 
 > [!abstract]
-> Camada 1 de um futuro monitor de campanhas de Mercado Ads (Product Ads) para as
+> Base de um futuro monitor de campanhas de Mercado Ads (Product Ads) para as
 > contas Cozilatti e Gastromaq: um **coletor determinístico** (sem IA) que grava,
-> uma vez por dia, o snapshot das métricas de cada campanha num SQLite **local**.
-> Só leitura — nunca muda campanha/orçamento/anúncio. **Ainda sem** motor de
-> recomendação, dado de margem ou agendamento automático.
+> uma vez por dia, o snapshot das métricas de cada campanha — e, dentro dela, de
+> cada **ad_group/item anunciado** (atribuição por SKU, best-effort) — num SQLite
+> **local**. Só leitura — nunca muda campanha/orçamento/anúncio. **Ainda sem**
+> motor de recomendação nem agendamento automático; a atribuição por SKU está
+> pronta mas segue **bloqueada por margem** (nenhuma fonte de custo/margem por
+> SKU existe no projeto ainda).
 
 ## Por que existe
 Pedido original: um monitor que **sugira** ações de otimização de campanha (não
 que as execute) — orçamento, ACOS/ROAS, limitação por rank vs. orçamento. Antes de
 construir o motor de recomendação era preciso validar a integração (a conta já usa
 Product Ads? quais endpoints funcionam? qual sinal é confiável?) e ter uma base
-histórica — daí esta primeira camada.
+histórica — daí a primeira camada. Depois, o dono pediu para já construir a
+**atribuição por SKU dentro da campanha** mesmo sem a fonte de margem pronta
+("acrescentamos depois") — para não esperar essa decisão de negócio para ter a
+base de dados no lugar.
 
-## Endpoints confirmados (doc oficial, via conector MercadoLibre)
+## Endpoints confirmados (doc oficial)
 ```
 GET /advertising/advertisers?product_id=PADS
 GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/campaigns/search
 GET /advertising/{site}/product_ads/campaigns/{campaign_id}
+GET /advertising/{site}/advertisers/{advertiser_id}/product_ads/ad_groups/search
+GET /advertising/{site}/product_ads/ad_groups/{ad_group_id}/ads
 ```
 O terceiro (detalhe por campanha) traz `lost_impression_share_by_budget` — o sinal
 **oficial** de campanha limitada por orçamento. Endpoints legados (ex.:
 `/advertising/advertisers/{id}/product_ads/campaigns`) são **descontinuados em
 26/02/2026**; um 404 neles é esperado, não bug.
+
+Os dois últimos (fluxo por `ad_group_id`) resolvem a cadeia campanha → ad_group →
+item_id, substituindo o antigo endpoint de métricas **por item** dentro da
+campanha, descontinuado em **27/05/2026** (doc "Product Ads para Catálogo e User
+Products"). Achado confirmado com dado real: um **ad_group não é 1:1 com item** —
+tipos `FAMILY` (variações) e `CATALOG` (vários vendedores concorrendo no mesmo
+anúncio — visto 1 caso com 7 `item_id` diferentes) agrupam vários `item_id` sem
+quebra de métrica por item dentro do grupo; a granularidade mais fina que a API dá
+é o ad_group. O `item_id` resolve pro SKU via `skus_por_anuncio.json` local
+(best-effort, sem chamar a Items API).
 
 ## Armadilha de negócio validada
 O campo `budget` da API é a **média diária de um ciclo mensal com rollover** — um
@@ -53,8 +71,12 @@ estourada). Por isso o coletor guarda também `lost_impression_share_by_budget` 
   demais no mesmo run) — nunca levanta exceção para fora de `coletar_conta`.
 
 ## Limitações desta versão
-- Sem paginação (limite padrão da API: 50 campanhas — acima do volume atual).
-- Sem motor de recomendação nem margem — só a base histórica.
+- `campanhas_diarias` sem paginação (limite padrão da API: 50 campanhas — acima
+  do volume atual). `ad_groups_diarios` já pagina.
+- Resolução de SKU é best-effort (só `skus_por_anuncio.json` local); um anúncio
+  com SKU cadastrado mas fora desse mapa fica sem SKU por enquanto.
+- Sem motor de recomendação — a atribuição por SKU está pronta, falta a fonte
+  de margem para cruzar (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
 - Sem agendamento automático — roda manualmente por enquanto.
 
 ## Relacionado
