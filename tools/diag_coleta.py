@@ -117,7 +117,12 @@ def _coletar_conta(conta: str):
 
 
 def _mostrar_um(conta: str) -> int:
-    print(f"conta ativa: {core.conta_ativa() or '(padrao)'}  |  hoje = {_hoje()}\n")
+    # rotulo ANTES de trocar de conta: definir_conta() so troca os arquivos
+    # (ARQUIVO_CRED etc.), nao o config.json — conta_ativa() apos o switch
+    # continuaria devolvendo a conta antiga da GUI (rotulo errado, nao mistura
+    # de dado: os arquivos usados abaixo sao os certos).
+    rotulo = conta or core.conta_ativa() or "(padrao)"
+    print(f"conta: {rotulo}  |  hoje = {_hoje()}\n")
     seller, logistica, status, sched = _coletar_conta(conta)
     print(f"seller_id: {seller}")
     print(f"logistic_type consultado: {logistica}  ->  HTTP {status}")

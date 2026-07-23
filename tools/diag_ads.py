@@ -61,10 +61,15 @@ def _categoria(status) -> str:
 
 
 def _validar_conta(conta: str) -> None:
+    # rotulo ANTES de trocar de conta: definir_conta() so troca os arquivos
+    # (ARQUIVO_CRED etc.), nao o config.json — conta_ativa() apos o switch
+    # continuaria devolvendo a conta antiga da GUI (rotulo errado no --todas;
+    # os arquivos/token usados abaixo ja eram os certos, so o texto enganava).
+    rotulo = conta or core.conta_ativa() or "(padrao)"
     if conta:
         core.definir_conta(conta)
     print("=" * 60)
-    print(f"CONTA: {core.conta_ativa() or '(padrao)'}")
+    print(f"CONTA: {rotulo}")
     cred = core.carregar_credenciais()
     token = core.obter_token(cred)
     seller_cred = str(cred.get("seller_id", ""))
@@ -127,7 +132,10 @@ def _validar_conta(conta: str) -> None:
         if st == 200 and isinstance(data, dict):
             camps = data.get("campaigns") or data.get("results") or []
             n = len(camps) if isinstance(camps, list) else "?"
-        safe = path.split("?")[0].replace(advertiser_id, _mask(advertiser_id))
+        # mascara o advertiser_id SE ele aparecer no path, mas preserva o resto
+        # (inclusive a query string) — cortar a query fazia 2 candidatos
+        # diferentes imprimirem o mesmo texto (parecia bug de copia-e-cola).
+        safe = path.replace(advertiser_id, _mask(advertiser_id))
         print(f"    GET {safe} -> {st} "
               f"{('| '+str(n)+' campanha(s)') if n is not None else _categoria(st)} {err or ''}")
 
