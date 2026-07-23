@@ -118,10 +118,54 @@ def test_teve_atividade():
     assert cm._teve_atividade({}) is False
 
 
-def test_resolver_sku_encontrado_e_ausente():
+def test_resolver_sku_adocao_encontrado_e_ausente():
     mapa = {"MLB123:0": "A01"}
-    assert cm._resolver_sku("MLB123", mapa) == "A01"
-    assert cm._resolver_sku("MLB999", mapa) is None
+    assert cm._resolver_sku_adocao("MLB123", mapa) == "A01"
+    assert cm._resolver_sku_adocao("MLB999", mapa) is None
+
+
+# ------------------------------------------------------ resolucao de SKU
+def test_resolver_skus_usa_seller_sku_do_cache(monkeypatch):
+    cache = {"MLB1": {"title": "x", "variations": {}, "seller_sku": "A01"}}
+    monkeypatch.setattr(cm.core, "buscar_detalhes", lambda token, ids, c: None)
+    assert cm._resolver_skus("tok", cache, ["MLB1"], {}) == {"MLB1": "A01"}
+
+
+def test_resolver_skus_cai_para_adocao_quando_sem_seller_sku(monkeypatch):
+    cache = {"MLB1": {"title": "x", "variations": {}, "seller_sku": ""}}
+    monkeypatch.setattr(cm.core, "buscar_detalhes", lambda token, ids, c: None)
+    r = cm._resolver_skus("tok", cache, ["MLB1"], {"MLB1:0": "A01"})
+    assert r == {"MLB1": "A01"}
+
+
+def test_resolver_skus_busca_item_ausente_do_cache(monkeypatch):
+    def fake_buscar_detalhes(token, ids, c):
+        for i in ids:
+            c[i] = {"title": "novo", "variations": {}, "seller_sku": "B02"}
+    monkeypatch.setattr(cm.core, "buscar_detalhes", fake_buscar_detalhes)
+    assert cm._resolver_skus("tok", {}, ["MLB2"], {}) == {"MLB2": "B02"}
+
+
+def test_resolver_skus_refaz_entrada_antiga_sem_chave_seller_sku(monkeypatch):
+    # entrada do cache de ANTES desta funcionalidade -- sem a chave seller_sku
+    cache = {"MLB3": {"title": "velho", "variations": {}}}
+
+    def fake_buscar_detalhes(token, ids, c):
+        assert ids == {"MLB3"}  # prova que forcou o refetch (senao viria vazio)
+        for i in ids:
+            c[i] = {"title": "velho", "variations": {}, "seller_sku": "C03"}
+    monkeypatch.setattr(cm.core, "buscar_detalhes", fake_buscar_detalhes)
+    assert cm._resolver_skus("tok", cache, ["MLB3"], {}) == {"MLB3": "C03"}
+
+
+def test_resolver_skus_sem_ids_nao_chama_nada(monkeypatch):
+    chamado = {"n": 0}
+
+    def fake_buscar_detalhes(token, ids, c):
+        chamado["n"] += 1
+    monkeypatch.setattr(cm.core, "buscar_detalhes", fake_buscar_detalhes)
+    assert cm._resolver_skus("tok", {}, [], {}) == {}
+    assert chamado["n"] == 0
 
 
 # --------------------------------------------------------------- storage
@@ -205,6 +249,7 @@ def test_coletar_conta_fim_a_fim(monkeypatch, tmp_path):
     monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
     monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
     monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
 
     respostas = [
         FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
@@ -236,6 +281,9 @@ def test_coletar_conta_ad_group_ativo_resolve_item_e_sku(monkeypatch, tmp_path):
     monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
     monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
     monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {"MLB1:0": "A01"})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
+    # sem seller_sku no cache (nao populamos nada) -> cai pro mapa de adocao
+    monkeypatch.setattr(cm.core, "buscar_detalhes", lambda token, ids, cache: None)
 
     respostas = [
         FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
@@ -266,6 +314,41 @@ def test_coletar_conta_ad_group_ativo_resolve_item_e_sku(monkeypatch, tmp_path):
     itens = conn.execute(
         "SELECT ad_group_id, item_id, sku FROM ad_group_itens_diarios").fetchall()
     assert itens == [("10", "MLB1", "A01")]
+    conn.close()
+
+
+def test_coletar_conta_seller_sku_do_cache_tem_prioridade_sobre_adocao(monkeypatch, tmp_path):
+    """seller_sku real (via core.buscar_detalhes) vence o mapa de adocao --
+    mesma prioridade de identidade() no nucleo."""
+    monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
+    monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {"MLB1:0": "MAPA-ERRADO"})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
+
+    def fake_buscar_detalhes(token, ids, cache):
+        for i in ids:
+            cache[i] = {"title": "x", "variations": {}, "seller_sku": "SKU-REAL"}
+    monkeypatch.setattr(cm.core, "buscar_detalhes", fake_buscar_detalhes)
+
+    respostas = [
+        FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
+        FakeResp(200, json_data={"results": [
+            {"id": 1, "name": "A", "status": "active", "metrics": {"clicks": 5}}]}),
+        FakeResp(200, json_data={"metrics": {}}),
+        FakeResp(200, json_data={"paging": {"total": 1}, "results": [
+            {"id": 10, "title": "ativo", "ad_group_type": "ITEM",
+             "metrics": {"clicks": 3, "cost": 1.5, "units_quantity": 0}}]}),
+        FakeResp(200, json_data={"results": [
+            {"item_id": "MLB1", "title": "Produto Ativo", "price": 99.9}]}),
+    ]
+    _sequencia(monkeypatch, respostas)
+
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    cm.coletar_conta(conn, "cozilatti", DIA)
+    sku = conn.execute(
+        "SELECT sku FROM ad_group_itens_diarios WHERE item_id='MLB1'").fetchone()[0]
+    assert sku == "SKU-REAL"
     conn.close()
 
 

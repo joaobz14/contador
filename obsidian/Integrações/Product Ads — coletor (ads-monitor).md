@@ -50,8 +50,12 @@ Products"). Achado confirmado com dado real: um **ad_group não é 1:1 com item*
 tipos `FAMILY` (variações) e `CATALOG` (vários vendedores concorrendo no mesmo
 anúncio — visto 1 caso com 7 `item_id` diferentes) agrupam vários `item_id` sem
 quebra de métrica por item dentro do grupo; a granularidade mais fina que a API dá
-é o ad_group. O `item_id` resolve pro SKU via `skus_por_anuncio.json` local
-(best-effort, sem chamar a Items API).
+é o ad_group. O `item_id` resolve pro SKU priorizando o `seller_sku` real
+(`GET /items/{id}`, **mesma** chamada que o núcleo já faz pra GTIN/título,
+cacheada no `itens_cache.json` compartilhado) e caindo pro `skus_por_anuncio.json`
+local só quando o item não tem `seller_sku` cadastrado — achado real: a versão
+inicial que só usava o mapa local resolvia **0 de 468 itens** (o mapa é manual e
+pequeno, não um resolvedor geral).
 
 ## Armadilha de negócio validada
 O campo `budget` da API é a **média diária de um ciclo mensal com rollover** — um
@@ -73,8 +77,9 @@ estourada). Por isso o coletor guarda também `lost_impression_share_by_budget` 
 ## Limitações desta versão
 - `campanhas_diarias` sem paginação (limite padrão da API: 50 campanhas — acima
   do volume atual). `ad_groups_diarios` já pagina.
-- Resolução de SKU é best-effort (só `skus_por_anuncio.json` local); um anúncio
-  com SKU cadastrado mas fora desse mapa fica sem SKU por enquanto.
+- Resolução de SKU ainda é best-effort: itens de outros vendedores (dentro de
+  um `ad_group` `CATALOG` compartilhado) ou sem `seller_sku`/adoção cadastrados
+  ficam sem SKU.
 - Sem motor de recomendação — a atribuição por SKU está pronta, falta a fonte
   de margem para cruzar (ver `docs/PRIORIDADES_TECNICAS.md`, item 10).
 - Sem agendamento automático — roda manualmente por enquanto.
