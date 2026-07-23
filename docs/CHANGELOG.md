@@ -4,6 +4,16 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### CI
+- **`gui-smoke` travava (às vezes) instalando dependências, sem nunca dar
+  erro:** o `apt-get install` do `imagemagick` aciona o `needrestart`, que em
+  runners `ubuntu-latest` recentes abre um prompt interativo (lista de
+  serviços a reiniciar) mesmo com `-y` — sem terminal na CI, o job ficava
+  preso até o timeout padrão de 6h, enquanto os outros jobs do mesmo run
+  terminavam em segundos. Corrigido com `DEBIAN_FRONTEND=noninteractive` +
+  `NEEDRESTART_MODE=a` no passo de instalação; adicionado também
+  `timeout-minutes: 10` no job como rede de segurança contra travas futuras.
+
 ### Ferramentas de desenvolvimento
 - **`ads-monitor/coletar.py` — coletor determinístico do Product Ads (Mercado
   Ads):** primeira camada de um futuro monitor de campanhas. Grava, uma vez

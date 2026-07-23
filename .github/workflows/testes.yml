@@ -84,6 +84,7 @@ jobs:
     # erro de montagem/renderizacao do Tkinter na inicializacao. Os PNGs ficam
     # disponiveis como artefato do run (bom para conferir o layout num PR).
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Baixar o codigo
         uses: actions/checkout@v4
@@ -95,6 +96,15 @@ jobs:
           cache: pip
 
       - name: Instalar dependencias (xvfb + imagemagick para o screenshot)
+        # DEBIAN_FRONTEND/NEEDRESTART_MODE evitam o apt-get travar esperando
+        # input: o imagemagick aciona o needrestart, que em runners recentes
+        # abre um prompt interativo (lista de servicos a reiniciar) mesmo com
+        # -y — sem terminal na CI, o job fica preso ate estourar o timeout
+        # (6h) sem nunca dar erro (visto na pratica: todos os outros jobs do
+        # mesmo run terminam em segundos, so este trava).
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          NEEDRESTART_MODE: a
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q xvfb imagemagick
