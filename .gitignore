@@ -76,3 +76,8 @@ api-monitor/snapshots/*.md
 # mas local/por maquina como o historico_impressao.json) + sidecars do SQLite.
 ads-monitor/historico_ads.sqlite3*
 ads-monitor/logs/
+
+# Saidas geradas da camada de narrativa (narrar.py) - locais, recriadas a cada
+# run (mesmo padrao do api-monitor/relatorios/).
+ads-monitor/relatorios/*
+!ads-monitor/relatorios/.gitkeep

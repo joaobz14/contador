@@ -49,6 +49,28 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-24 — Ads camada 4: narrativa opcional via IA (`narrar.py`):**
+  motivada por um monitor irmão do mesmo Product Ads construído em paralelo
+  pelo dono em n8n + DeepSeek (narrativa por IA + entrega automática de
+  relatório); ao comparar os dois, decisão explícita foi manter papéis
+  diferentes (n8n = narrativa/apresentação/entrega; `ads-monitor/` =
+  histórico canônico + regras + SKU), mas trazer a narrativa também pra este
+  lado, por cima do motor já existente (camada 3). `narrar.py` é aditivo e
+  opcional: nunca altera `recomendar.py`, só narra em português o que ele já
+  calculou (recomendações + campanhas "monitorando"), via `claude -p`
+  (subprocess, mesmo padrão do `api-monitor/run-semanal.ps1` — sem
+  credencial de LLM nova). Prompt com regras equivalentes ao motor: nunca
+  concluir margem/lucratividade, nunca sugerir mudança automática, preservar
+  "condicionada à validação da margem" tal como veio calculado. Se `claude`
+  faltar/travar/falhar, devolve vazio e sai com aviso — nunca finge sucesso,
+  e as camadas 1-3 continuam funcionando sozinhas. Nó semântico novo
+  `ads_monitor_narrar_camada4` (concept), ligado por `rationale_for` ao
+  módulo e às 4 funções centrais (`montar_dados`, `montar_prompt`,
+  `chamar_claude`, `main`) e por `conceptually_related_to` à camada 3
+  (`ads_monitor_motor_recomendacao_sem_margem`) e ao `api_monitor_sistema`
+  (mesmo padrão de uso do `claude -p`). Contagens: **1344 nós, 2462 arestas,
+  0 órfãs**.
+
 - **2026-07-23 — Ads camada 3: motor de recomendação (sinais sem margem):**
   `ads-monitor/recomendar.py` lê `campanhas_diarias` numa janela de dias e gera
   recomendações no formato do pedido original (problema/evidência/ação/

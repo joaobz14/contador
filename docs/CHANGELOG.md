@@ -74,6 +74,21 @@ Histórico das principais mudanças do projeto.
   original): campanha com menos de 3 dias distintos ou 20 cliques na janela
   fica "monitorando", sem recomendação — dado provisório já é impossível
   por construção, já que o coletor só grava dias fechados.
+- **`ads-monitor/narrar.py` — camada de narrativa opcional (IA) sobre o
+  motor de regras:** `ads-monitor/` continua propositalmente determinístico
+  (`coletar.py` só grava fatos, `recomendar.py` só aplica regras fixas); este
+  script novo é **aditivo e opcional**, narra em português o que
+  `recomendar.py` já calculou (recomendações + campanhas "monitorando" sem
+  dado suficiente) sem inventar nenhuma conclusão nova. Usa `claude -p`
+  (mesmo padrão do `api-monitor/run-semanal.ps1`) em vez de uma API de LLM
+  externa — sem credencial nova pra gerenciar. O prompt tem regras
+  obrigatórias equivalentes às do motor: nunca concluir sobre margem/
+  lucratividade, nunca sugerir mudança automática, preservar o aviso
+  "condicionada à validação da margem" tal como veio calculado. Se `claude`
+  não estiver instalado, travar ou falhar, devolve vazio e não derruba nada
+  — `recomendar.py` continua funcionando sozinho normalmente. Saída salva em
+  `ads-monitor/relatorios/` (gitignorado, mesmo padrão do `api-monitor/`).
+  `--dry-run` mostra o prompt montado sem chamar a IA nem gravar arquivo.
 
 ### Documentação
 - **Base de conhecimento `obsidian/` reorganizada e validada:** o cofre virou a camada

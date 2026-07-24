@@ -266,6 +266,16 @@ margem) so podem sair de "condicionada a validacao" pra uma recomendacao plena
 quando essa fonte existir (formato ainda em aberto: arquivo local tipo
 `nomes_sku.json`, importador de planilha, ou outro).
 
+**Camada de narrativa opcional (`narrar.py`) — FEITO.** Motivada por um monitor
+irmao do mesmo Product Ads construido em paralelo (n8n + DeepSeek): ao comparar
+os dois, decisao explicita foi manter ambos com papeis diferentes (n8n =
+narrativa/apresentacao/entrega; `ads-monitor/` = historico canonico + regras +
+SKU), mas trazer a narrativa em IA tambem pra este lado, por cima do motor ja
+existente. `narrar.py` e aditivo/opcional (usa `claude -p`, mesmo padrao do
+`api-monitor/`) — narra o que `recomendar.py` ja calculou sem inventar
+conclusao nova; se falhar ou nao rodar, `recomendar.py` continua funcionando
+sozinho, determinístico, como antes.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:
