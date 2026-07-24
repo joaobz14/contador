@@ -278,7 +278,10 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
   assim que surge uma venda nova já pronta para despachar **hoje** (`ready_to_print`) —
   ajuda a não perder o prazo de repor com o fornecedor quando a venda cai depois que
   você já parou de checar a tela. Não precisa configurar nada além do bot já estar
-  rodando; roda sozinho, independente do botão "Atualizar" da tela.
+  rodando; roda sozinho, independente do botão "Atualizar" da tela. Pra testar sem
+  esperar os 5 minutos nem uma venda nova: `atalhos\Testar Alerta Pos-Horario.bat`
+  (ou `python bot_telegram.py testar-alerta`) — checa agora com dados reais e manda
+  a mensagem de verdade se achar algo novo.
 - **Iniciar:** manualmente, `atalhos\Iniciar Bot.bat` ou `atalhos\Iniciar Bot
   (auto).bat` (reinicia sozinho se cair — recomendado, é o que o alerta pós-horário
   precisa pra funcionar sem interrupção). Atividade/erros em `bot.log`.

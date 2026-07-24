@@ -214,3 +214,47 @@ def test_job_alerta_sem_contas_nao_quebra(monkeypatch):
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
     ctx = _ctx([10], lambda cid, txt: None)
     asyncio.run(bot.job_alerta_pos_horario(ctx))  # nao deve levantar
+
+
+# ------------------------------------------------ _testar_alerta_pos_horario_agora
+def test_testar_alerta_cli_chama_job_uma_vez_com_contexto_real(monkeypatch):
+    """CLI 'python bot_telegram.py testar-alerta': monta um Application de
+    verdade (aqui, fake) e chama job_alerta_pos_horario uma unica vez, fora
+    do agendamento -- sem reimplementar a logica do alerta."""
+    chamadas = []
+
+    async def _job_fake(ctx):
+        chamadas.append(ctx)
+
+    class _FakeBot:
+        pass
+
+    class _FakeApp:
+        def __init__(self):
+            self.bot = _FakeBot()
+            self.bot_data = {}
+
+        async def initialize(self):
+            pass
+
+        async def shutdown(self):
+            pass
+
+    class _FakeBuilder:
+        def token(self, tok):
+            return self
+
+        def build(self):
+            return _FakeApp()
+
+    monkeypatch.setattr(bot, "ApplicationBuilder", lambda: _FakeBuilder())
+    monkeypatch.setattr(bot, "job_alerta_pos_horario", _job_fake)
+    monkeypatch.setattr(core, "aplicar_config", lambda: {})
+    monkeypatch.setattr(bot, "_garantir_conta_ativa", lambda: "")
+    monkeypatch.setattr(bot, "carregar_config",
+                        lambda: {"token": "123:ABC", "chat_ids": [1]})
+
+    bot._testar_alerta_pos_horario_agora()
+
+    assert len(chamadas) == 1
+    assert chamadas[0].bot_data["cfg"]["chat_ids"] == [1]
