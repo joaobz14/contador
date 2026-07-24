@@ -311,16 +311,23 @@ def aplicar_config() -> dict:
 # ---------------------------------------------------------------------------
 def _pid_vivo(pid: int) -> bool:
     """Verifica (Windows) se um PID ainda esta rodando, via `tasklist` — sem
-    dependencia extra (psutil). Em duvida (comando falhou/ausente), assume
-    vivo: melhor deixar de subir um 2o bot por engano do que duplicar por um
-    falso-negativo."""
+    dependencia extra (psutil). `stdin=DEVNULL` de proposito: a tela roda via
+    `pythonw` (sem console — ver 'Abrir Separador.bat'), que tem os handles
+    padrao invalidos; sem redirecionar o stdin, `subprocess.run` tenta herdar
+    esse handle quebrado e falha com `WinError 6` (achado testando na maquina
+    real — o `tasklist` nunca chegava a rodar, sempre caia no except). Em
+    duvida (comando falhou mesmo assim/ausente), assume MORTO: o Telegram ja
+    rejeita duas instancias do mesmo bot fazendo polling ao mesmo tempo (erro
+    409, autolimitado) — duplicar por engano e bem menos grave do que travar
+    pra sempre achando que um bot morto ainda esta vivo (lock travado nunca
+    mais deixaria o bot subir sozinho de novo)."""
     try:
         saida = subprocess.run(
             ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True, text=True, timeout=5, stdin=subprocess.DEVNULL,
         )
     except (OSError, subprocess.SubprocessError):
-        return True
+        return False
     return str(pid) in saida.stdout
 
 
@@ -339,27 +346,36 @@ def bot_ja_rodando() -> bool:
     return _pid_vivo(pid)
 
 
-def iniciar_bot_em_segundo_plano() -> None:
+def iniciar_bot_em_segundo_plano() -> str:
     """Sobe o bot do Telegram sem janela visivel, SE ainda nao estiver
     rodando (ver bot_ja_rodando) — evita esquecer de ligar o bot manualmente
     (o alerta de venda pronta pra hoje depende dele estar de pe). Reusa o
     lancador com reinicio automatico (atalhos/'Iniciar Bot (auto).bat') em
     vez de reimplementar a logica de retry aqui. So faz sentido no Windows.
 
+    Devolve uma string curta dizendo o que aconteceu ('subiu', 'ja_rodando',
+    'nao_windows', 'bat_ausente') — sem isso, um "nao subiu" silencioso (ex.:
+    lock travado apontando por engano pra um PID vivo de outro processo) fica
+    impossivel de diagnosticar a distancia; so uma excecao aparecia no log.
     NAO engole excecao aqui de proposito — quem chama (a tela, que ja tem
     logging) decide como tratar/registrar uma falha ao subir o bot."""
     if os.name != "nt":
-        return
+        return "nao_windows"
     if bot_ja_rodando():
-        return
+        return "ja_rodando"
     bat = PASTA_SCRIPT / "atalhos" / "Iniciar Bot (auto).bat"
     if not bat.exists():
-        return
+        return "bat_ausente"
+    # stdin=DEVNULL pelo mesmo motivo de _pid_vivo: a tela roda via pythonw
+    # (sem console/handles padrao validos) e Popen tentaria herdar o stdin
+    # quebrado sem essa redirecao.
     subprocess.Popen(
         ["cmd", "/c", str(bat)],
         creationflags=subprocess.CREATE_NO_WINDOW,
         cwd=str(PASTA_SCRIPT),
+        stdin=subprocess.DEVNULL,
     )
+    return "subiu"
 
 
 # ---------------------------------------------------------------------------

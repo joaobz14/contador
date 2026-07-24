@@ -36,13 +36,29 @@ def test_pid_nao_vivo_quando_tasklist_nao_lista(monkeypatch):
     assert core._pid_vivo(9999) is False
 
 
-def test_pid_vivo_assume_vivo_quando_comando_falha(monkeypatch):
+def test_pid_vivo_assume_morto_quando_comando_falha(monkeypatch):
     def _fake_run(cmd, **kw):
         raise OSError("tasklist ausente")
 
     monkeypatch.setattr(core.subprocess, "run", _fake_run)
-    # Em duvida, assume vivo -- nao arrisca subir um 2o bot por falso-negativo.
-    assert core._pid_vivo(1) is True
+    # Em duvida, assume MORTO -- travar pra sempre com um lock preso e pior
+    # que arriscar duplicar (o Telegram ja rejeita 2 pollings, erro 409).
+    assert core._pid_vivo(1) is False
+
+
+def test_pid_vivo_redireciona_stdin_para_nao_herdar_handle_invalido(monkeypatch):
+    """Achado testando na maquina real: a tela roda via pythonw (sem console),
+    que tem stdin invalido -- sem stdin=DEVNULL, o subprocess.run do tasklist
+    falhava com WinError 6 e o PID sempre caia no "em duvida"."""
+    chamadas = []
+
+    def _fake_run(cmd, **kw):
+        chamadas.append(kw)
+        return subprocess.CompletedProcess(cmd, 0, stdout="")
+
+    monkeypatch.setattr(core.subprocess, "run", _fake_run)
+    core._pid_vivo(1)
+    assert chamadas[0]["stdin"] is subprocess.DEVNULL
 
 
 # -------------------------------------------------------------- bot_ja_rodando
@@ -75,7 +91,7 @@ def test_iniciar_bot_nao_faz_nada_fora_do_windows(monkeypatch):
     monkeypatch.setattr(core.os, "name", "posix")
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "nao_windows"
     assert chamado == []
 
 
@@ -84,7 +100,7 @@ def test_iniciar_bot_nao_duplica_se_ja_rodando(monkeypatch):
     monkeypatch.setattr(core, "bot_ja_rodando", lambda: True)
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "ja_rodando"
     assert chamado == []
 
 
@@ -94,7 +110,7 @@ def test_iniciar_bot_nao_sobe_se_bat_nao_existe(monkeypatch, tmp_path):
     monkeypatch.setattr(core, "PASTA_SCRIPT", tmp_path)  # sem atalhos/ aqui
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "bat_ausente"
     assert chamado == []
 
 
@@ -112,7 +128,7 @@ def test_iniciar_bot_sobe_o_bat_sem_janela(monkeypatch, tmp_path):
     # CREATE_NO_WINDOW so existe no Windows de verdade; simulamos aqui.
     monkeypatch.setattr(core.subprocess, "CREATE_NO_WINDOW", 0x08000000, raising=False)
 
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "subiu"
 
     assert len(chamadas) == 1
     cmd, kw = chamadas[0]
@@ -120,3 +136,4 @@ def test_iniciar_bot_sobe_o_bat_sem_janela(monkeypatch, tmp_path):
     assert str(bat) in cmd
     assert kw["creationflags"] == 0x08000000
     assert kw["cwd"] == str(tmp_path)
+    assert kw["stdin"] is subprocess.DEVNULL

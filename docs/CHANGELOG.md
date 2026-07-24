@@ -303,6 +303,23 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Correção real (achada testando na máquina do dono): auto-start do bot
+  travava para sempre.** O bot funcionava manual (`Iniciar Bot.bat`) mas
+  nunca subia sozinho pela tela, sem nenhum erro no log. Causa: a tela roda
+  via `pythonw` (sem console/handles padrão válidos) — sem
+  `stdin=subprocess.DEVNULL`, o `subprocess.run` do `tasklist` em
+  `_pid_vivo` falhava sempre com `WinError 6`, e o default antigo "em dúvida
+  assume vivo" fazia um `bot.lock` travado (de um teste manual anterior)
+  bloquear o auto-start **permanentemente** — `bot_ja_rodando()` sempre
+  devolvia `True` mesmo com o PID confirmado morto no Gerenciador de
+  Tarefas. Corrigido: `stdin=subprocess.DEVNULL` no `tasklist` e no `Popen`
+  do `.bat`; default invertido para "em dúvida assume MORTO" (o Telegram já
+  rejeita duas instâncias do mesmo bot pollando ao mesmo tempo — erro 409,
+  autolimitado — bem menos grave que travar pra sempre).
+  `iniciar_bot_em_segundo_plano()` também passou a devolver uma string curta
+  (`subiu`/`ja_rodando`/`nao_windows`/`bat_ausente`) que a tela sempre loga
+  — antes, um "decidi não subir" sem exceção ficava mudo no log, o que
+  atrasou o próprio diagnóstico deste bug.
 - **Alerta pós-horário de venda nova pronta pra hoje:** motivado por um
   problema real do dono — venda que cai depois das 8:30 (quando ele já parou
   de checar a tela manualmente) só é vista tarde demais, e o fornecedor já
