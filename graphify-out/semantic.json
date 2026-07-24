@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 330,
- "edge_count": 558,
+ "node_count": 331,
+ "edge_count": 563,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3753,6 +3753,20 @@
    "norm_label": "alerta pos-horario (bot_telegram.py): motivado por um problema real do dono — vendas que caem depois das 8:30 (quando ele ja parou de checar a tela manualmente) e so sao vistas tarde demais, quando o fornecedor ja nao tem mais o produto pra reposicao no mesmo dia. job_alerta_pos_horario roda a cada intervalo_alerta_segundos (5 min, jobqueue.run_repeating), independente do botao atualizar da tela e de qualquer comando manual do bot: percorre todas as contas configuradas (core.listar_contas(), ou [''] em setup legado sem contas/) e avisa via telegram quando surge um envio novo ja ready_to_print com expected_date == hoje. dedup por shipment_id num estado proprio (alertas_pos_horario.json, {dia, avisados: {conta: [sid,...]}}) que reseta sozinho quando o dia muda — mesma filosofia do estado de impressao, nao precisa limpar na mao. isola falha por conta (mesmo espirito do ads-monitor/coletar.py): uma conta com erro de rede nao impede o aviso das demais. _dados_alerta_da_conta faz todo o trabalho de rede de uma conta (prontos + extrair_itens) num unico bloco de troca de conta — separar em duas chamadas arriscaria a 2a rodar ja com a conta original restaurada pela 1a (bug sutil de conta errada, porque definir_conta mexe em globais do nucleo compartilhadas com o resto do bot). reusa 100% a logica ja validada do nucleo (ready_to_print + expected_date, buscar_pedidos/filtrar_para_imprimir/extrair_itens) em vez de reimplementar filtro nenhum da api do ml."
   },
   {
+   "label": "ALERTA POS-HORARIO: FORMATO ENXUTO + RESUMO AGREGADO (/vendasapos): pedido do dono depois de testar o alerta pos-horario na maquina real. Duas mudancas: 1) relatorio.texto_alerta_pos_horario(conta, itens) parou de mostrar o numero do envio (era 'envio 123456789: 1x A01') -- agora e so 'A01 - 2L 110 - 1' por SKU, SOMADO quando o mesmo SKU aparece em mais de um envio no mesmo disparo (o dono so precisa saber O QUE repor com o fornecedor, nao qual pedido especifico). 2) cada disparo de job_alerta_pos_horario passou a persistir tambem os itens (chave+quantidade) em alertas_pos_horario.json, junto do dedup de shipment_id ja existente ({'itens': {conta: [{chave, quantidade}, ...]}}) -- motivado por: se varias vendas caem em sequencia depois das 8:30, cada uma vira um alerta separado e polui o chat. O novo comando/botao /vendasapos (bot_telegram.cmd_vendas_apos, botao '🔔 Vendas apos' no /menu) le esse estado persistido e junta TUDO que ja foi avisado hoje numa mensagem so, por conta, com um TOTAL por SKU no final (relatorio.texto_resumo_vendas_apos) -- SOH RELE o que ja foi gravado, nao refaz nenhuma chamada de API (rapido, sem risco de duplicar rede). cmd_vendas_apos nao usa o helper _responder (usado por /resumo etc.) porque esse helper manda 'Consultando a {loja}...' -- irrelevante aqui, este comando nao depende de ML/Shopee.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "bot_vendas_apos_resumo",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "alerta pos-horario: formato enxuto + resumo agregado (/vendasapos): pedido do dono depois de testar o alerta pos-horario na maquina real. duas mudancas: 1) relatorio.texto_alerta_pos_horario(conta, itens) parou de mostrar o numero do envio (era 'envio 123456789: 1x a01') -- agora e so 'a01 - 2l 110 - 1' por sku, somado quando o mesmo sku aparece em mais de um envio no mesmo disparo (o dono so precisa saber o que repor com o fornecedor, nao qual pedido especifico). 2) cada disparo de job_alerta_pos_horario passou a persistir tambem os itens (chave+quantidade) em alertas_pos_horario.json, junto do dedup de shipment_id ja existente ({'itens': {conta: [{chave, quantidade}, ...]}}) -- motivado por: se varias vendas caem em sequencia depois das 8:30, cada uma vira um alerta separado e polui o chat. o novo comando/botao /vendasapos (bot_telegram.cmd_vendas_apos, botao '🔔 vendas apos' no /menu) le esse estado persistido e junta tudo que ja foi avisado hoje numa mensagem so, por conta, com um total por sku no final (relatorio.texto_resumo_vendas_apos) -- soh rele o que ja foi gravado, nao refaz nenhuma chamada de api (rapido, sem risco de duplicar rede). cmd_vendas_apos nao usa o helper _responder (usado por /resumo etc.) porque esse helper manda 'consultando a {loja}...' -- irrelevante aqui, este comando nao depende de ml/shopee."
+  },
+  {
    "label": "BOT EM SEGUNDO PLANO JUNTO COM A TELA (HISTORICO, ABANDONADO -- ver bot_agendador_tarefas_logon pro mecanismo atual): a 1a versao fazia separador_gui.py subir o bot sozinho ao abrir (core.iniciar_bot_em_segundo_plano(), lock de PID em bot.lock checado via tasklist). Dois bugs reais de MESMA CAUSA-RAIZ apareceram testando na maquina do dono: a tela roda via pythonw (sem console) -- qualquer subprocess disparado dali herda handles de stdin/stdout/stderr invalidos. Achado 1: sem stdin=subprocess.DEVNULL, o tasklist que checava o PID falhava sempre com WinError 6, e o default antigo 'em duvida assume vivo' fazia um bot.lock travado bloquear o auto-start PARA SEMPRE. Corrigido com stdin=DEVNULL + default invertido pra 'em duvida assume morto'. Achado 2 (mesma causa-raiz, achado depois de corrigir o 1o): faltava redirecionar stdout/stderr tambem -- um print() em bot_telegram.py fora do try/finally que limpava o lock derrubava o processo ao herdar um stdout invalido, deixando o lock preso de novo e fazendo a tela subir outro bot por cima em loop, sem nenhum chegar a app.run_polling(). Corrigir cada sintoma nao resolvia a causa -- qualquer processo nascido de pythonw nasce nesse terreno minado de handles quebrados. Solucao: abandonar o auto-start pela tela e trocar de mecanismo (Agendador de Tarefas do Windows, processo criado do zero, sem herdar nada quebrado). TODO o codigo do lock de PID (core.bot_ja_rodando, _pid_vivo, core.iniciar_bot_em_segundo_plano, bot_telegram._escrever_lock_bot/_limpar_lock_bot, ARQUIVO_LOCK_BOT) foi REMOVIDO -- nao tinha mais consumidor. Preservado aqui soh como registro do que ja foi tentado e por que nao funcionou, pra ninguem reinventar a roda.",
    "file_type": "concept",
    "source_file": "separador_etiquetas_ml.py",
@@ -4515,6 +4529,26 @@
    "weight": 1.0,
    "source": "bot_testar_alerta_cli",
    "target": "bot_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_vendas_apos_resumo",
+   "target": "bot_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_vendas_apos_resumo",
+   "target": "bot_testar_alerta_cli",
    "confidence_score": 1.0
   },
   {
@@ -6009,6 +6043,36 @@
    "weight": 1.0,
    "source": "bot_testar_alerta_cli",
    "target": "bot_telegram_testar_alerta_pos_horario_agora",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_vendas_apos_resumo",
+   "target": "bot_telegram_cmd_vendas_apos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "relatorio.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_vendas_apos_resumo",
+   "target": "relatorio_texto_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "relatorio.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_vendas_apos_resumo",
+   "target": "relatorio_texto_resumo_vendas_apos",
    "confidence_score": 1.0
   },
   {

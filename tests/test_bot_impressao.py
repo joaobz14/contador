@@ -216,6 +216,12 @@ def test_teclado_tem_botao_de_loja():
     assert "Shopee" in linhas[-1][0].text
 
 
+def test_teclado_tem_botao_de_vendas_apos():
+    linhas = bot._teclado().inline_keyboard
+    callbacks = [b.callback_data for linha in linhas for b in linha]
+    assert "vendas_apos" in callbacks
+
+
 def test_teclado_lojas_marca_a_ativa():
     linhas = bot._teclado_lojas("Shopee").inline_keyboard
     assert [l[0].callback_data for l in linhas] == ["loja:Mercado Livre", "loja:Shopee"]

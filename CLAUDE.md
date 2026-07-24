@@ -325,7 +325,16 @@ em 2º plano.
   em duas chamadas arriscaria a 2ª rodar já com a conta ORIGINAL restaurada
   pela 1ª (bug sutil de conta errada: `definir_conta` troca globais do núcleo
   compartilhadas com o resto do bot; ver "Áreas de risco" em
-  `docs/ARQUITETURA.md`).
+  `docs/ARQUITETURA.md`). Cada alerta mostra SKU + quantidade **somada por
+  SKU** (`relatorio.texto_alerta_pos_horario`, ex.: `A01 - 2L 110 - 1`), sem
+  número de envio — pedido explícito do dono, que só precisa saber O QUE
+  repor. Cada disparo também persiste os itens em `alertas_pos_horario.json`
+  (junto do dedup de `shipment_id`); **`/vendasapos`** (comando e botão "🔔
+  Vendas após" no `/menu`) junta **tudo que já foi avisado hoje**, por conta
+  + um TOTAL por SKU no final (`relatorio.texto_resumo_vendas_apos`) — sem
+  isso, várias vendas caindo em sequência depois das 8:30 poluiriam o chat
+  com um alerta cada. Só relê o estado já persistido, não refaz chamada de
+  API nenhuma.
 - **O bot sobe sozinho no login do Windows (Agendador de Tarefas), não pela
   tela:** o alerta acima só funciona com o bot rodando. A 1ª versão fazia a
   tela (`separador_gui.py`) subir o bot sozinha ao abrir — **abandonada**

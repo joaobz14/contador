@@ -11,10 +11,11 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1376 nodes · 2521 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1388 nodes · 2545 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
-  Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), mais o
-  CLI de teste do alerta pós-horário (`bot_telegram.py testar-alerta`). Ver
+  Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
+  de teste do alerta pós-horário (`bot_telegram.py testar-alerta`) e o
+  formato enxuto + resumo agregado do alerta (`/vendasapos`). Ver
   "Atualizações manuais" abaixo pro histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
@@ -42,6 +43,18 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-24 — Alerta pós-horário: formato enxuto + resumo agregado
+  (`/vendasapos`):** pedido do dono depois de testar na máquina real. O
+  alerta parou de mostrar o número do envio — agora é só `SKU - quantidade`
+  (`relatorio.texto_alerta_pos_horario`, somado quando o mesmo SKU aparece
+  em mais de um envio). Cada disparo também passou a persistir os itens em
+  `alertas_pos_horario.json` (junto do dedup); o novo comando/botão
+  `/vendasapos` (`bot_telegram.cmd_vendas_apos`) junta tudo que já foi
+  avisado hoje, por conta, com um TOTAL por SKU no final
+  (`relatorio.texto_resumo_vendas_apos`) — evita poluir o chat quando várias
+  vendas caem em sequência depois das 8:30. Só relê o estado persistido, sem
+  chamada de API. Novo nó `bot_vendas_apos_resumo`.
 
 - **2026-07-24 — CLI pra testar o alerta pós-horário na hora:**
   `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta

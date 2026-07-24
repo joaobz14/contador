@@ -27,8 +27,8 @@ verified_at_commit: bcab879
 - **Não imprime grupos antigos** se a conta/loja ativa mudou (invariante 11).
 
 ## Comandos
-`/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/detalhar <SKU>` · `/conta` · `/loja` ·
-`/id` · `/start` (=`/menu`,`/ajuda`, com botões).
+`/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/vendasapos` · `/detalhar <SKU>` ·
+`/conta` · `/loja` · `/id` · `/start` (=`/menu`,`/ajuda`, com botões).
 
 ## Jobs automáticos (`JobQueue`)
 - **Aviso da manhã** (`job_bom_dia`, 1x/dia, `aviso_horario` no `bot_config.json`).
@@ -37,7 +37,21 @@ verified_at_commit: bcab879
   fornecedor. Percorre **todas** as contas e avisa — uma vez por envio — quando surge
   um envio novo já `ready_to_print` com despacho **hoje**. Independente do botão
   Atualizar da tela; dedup por `shipment_id` em `alertas_pos_horario.json` (reseta
-  sozinho no dia seguinte). Isola falha por conta.
+  sozinho no dia seguinte). Isola falha por conta. Mostra SKU + quantidade **somada
+  por SKU** (`A01 - 2L 110 - 1`), sem número de envio — pedido do dono, só precisa
+  saber O QUE repor. Cada disparo também persiste os itens no mesmo arquivo
+  (junto do dedup), que alimenta o `/vendasapos` abaixo.
+- **Testar na hora** (sem esperar os 5 min nem uma venda nova):
+  `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta
+  Pos-Horario.bat'`) — monta um `Application` de verdade e chama o job uma
+  única vez, fora do agendamento.
+
+## Resumo agregado (`/vendasapos`)
+Se várias vendas caírem em sequência depois das 8:30, cada uma vira um alerta
+separado — poluindo o chat. `/vendasapos` (comando e botão "🔔 Vendas após" no
+`/menu`) junta **tudo que já foi avisado hoje**, por conta, com um TOTAL por SKU
+no final. Só relê `alertas_pos_horario.json` (os itens que o alerta já persistiu),
+não refaz nenhuma chamada de API.
 
 ## Sobe sozinho no login do Windows
 O alerta pós-horário só funciona com o bot de pé, e é fácil esquecer de ligá-lo

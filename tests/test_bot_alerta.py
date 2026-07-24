@@ -30,21 +30,24 @@ def _envio(sid, dia, item_id=1):
 def test_carregar_alertas_comeca_vazio_sem_arquivo(monkeypatch):
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}}
 
 
 def test_carregar_alertas_preserva_mesmo_dia(monkeypatch):
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    bot._salvar_alertas({"dia": "2026-07-24", "avisados": {"cozilatti": [1, 2]}})
+    bot._salvar_alertas({"dia": "2026-07-24", "avisados": {"cozilatti": [1, 2]},
+                        "itens": {"cozilatti": [{"chave": "A02", "quantidade": 1}]}})
     dados = bot._carregar_alertas()
     assert dados["avisados"] == {"cozilatti": [1, 2]}
+    assert dados["itens"] == {"cozilatti": [{"chave": "A02", "quantidade": 1}]}
 
 
 def test_carregar_alertas_reseta_quando_dia_muda(monkeypatch):
-    bot._salvar_alertas({"dia": "2026-07-23", "avisados": {"cozilatti": [1, 2]}})
+    bot._salvar_alertas({"dia": "2026-07-23", "avisados": {"cozilatti": [1, 2]},
+                        "itens": {"cozilatti": [{"chave": "A02", "quantidade": 1}]}})
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}}
 
 
 # ------------------------------------------------------------ _dados_alerta_da_conta
@@ -132,6 +135,7 @@ def test_job_alerta_avisa_e_marca_dedup(monkeypatch):
     assert "A02" in enviados[0][1]
     dados = bot._carregar_alertas()
     assert dados["avisados"]["cozilatti"] == [1]
+    assert dados["itens"]["cozilatti"] == [{"chave": "A02", "quantidade": 1}]
 
 
 def test_job_alerta_sem_novidade_nao_envia_nada(monkeypatch):
@@ -258,3 +262,53 @@ def test_testar_alerta_cli_chama_job_uma_vez_com_contexto_real(monkeypatch):
 
     assert len(chamadas) == 1
     assert chamadas[0].bot_data["cfg"]["chat_ids"] == [1]
+
+
+# ------------------------------------------------------------------ cmd_vendas_apos
+def _update(chat_id):
+    class _Chat:
+        id = chat_id
+
+    class _Update:
+        effective_chat = _Chat()
+
+    return _Update()
+
+
+def test_cmd_vendas_apos_junta_tudo_que_ja_foi_avisado(monkeypatch):
+    monkeypatch.setattr(bot, "_carregar_alertas", lambda: {
+        "dia": "2026-07-24",
+        "avisados": {"Cozilatti": [1]},
+        "itens": {"Cozilatti": [{"chave": "A01", "quantidade": 1}]},
+    })
+    enviados = []
+    ctx = _ctx([1], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.cmd_vendas_apos(_update(1), ctx))
+
+    assert len(enviados) == 1
+    assert "RESUMO VENDAS APOS 8:30" in enviados[0][1]
+    assert "A01 - 1" in enviados[0][1]
+
+
+def test_cmd_vendas_apos_sem_nada_avisado(monkeypatch):
+    monkeypatch.setattr(bot, "_carregar_alertas",
+                        lambda: {"dia": "2026-07-24", "avisados": {}, "itens": {}})
+    enviados = []
+    ctx = _ctx([1], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.cmd_vendas_apos(_update(1), ctx))
+
+    assert enviados == [(1, "Nenhuma venda avisada hoje ainda.")]
+
+
+def test_cmd_vendas_apos_nao_autorizado(monkeypatch):
+    monkeypatch.setattr(bot, "_carregar_alertas",
+                        lambda: {"dia": "2026-07-24", "avisados": {}, "itens": {}})
+    enviados = []
+    ctx = _ctx([999], lambda cid, txt: enviados.append((cid, txt)))  # 1 nao esta liberado
+
+    asyncio.run(bot.cmd_vendas_apos(_update(1), ctx))
+
+    assert len(enviados) == 1
+    assert "Nao autorizado" in enviados[0][1]

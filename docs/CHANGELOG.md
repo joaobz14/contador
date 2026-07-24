@@ -303,6 +303,23 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Alerta pós-horário: formato mais enxuto + resumo agregado (`/vendasapos`).**
+  Pedido do dono depois de testar na máquina real: o alerta não mostra mais o
+  número do envio (`envio 123456789: ...`) — agora é só `SKU - quantidade`
+  (somado quando o mesmo SKU aparece em mais de um envio no mesmo disparo),
+  com um cabeçalho curto (`🔔 Venda {conta}`). Além disso, cada disparo passou
+  a persistir os itens em `alertas_pos_horario.json` (junto do dedup já
+  existente); o novo comando/botão **`/vendasapos`** (🔔 "Vendas após" no
+  `/menu`) junta **tudo que já foi avisado hoje**, por conta, com um TOTAL
+  por SKU no final — evita que várias vendas caindo em sequência depois das
+  8:30 poluam o chat com um alerta cada. Só relê o estado já persistido, não
+  refaz nenhuma chamada de API.
+- **CLI pra testar o alerta na hora (`bot_telegram.py testar-alerta`):**
+  `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta
+  Pos-Horario.bat'`) monta um `Application` de verdade e chama
+  `job_alerta_pos_horario()` uma única vez, fora do agendamento de 5 min —
+  reusa 100% a lógica já validada. Motivado por confirmar que o envio
+  funciona sem precisar esperar o próximo ciclo E uma venda real cair.
 - **Auto-start pela tela abandonado; bot agora sobe no login do Windows.**
   As duas "correções reais" abaixo tratavam sintomas de uma mesma causa-raiz
   (a tela roda via `pythonw`, sem console — qualquer `subprocess` disparado

@@ -23,7 +23,8 @@ arquivo: bot_telegram.py
 - Redige o texto antes de mandar ao chat → [[Redação de segredos]].
 
 ## Comandos
-`/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/detalhar <SKU>` · `/conta` · `/loja` · `/id` · `/menu`.
+`/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/vendasapos` · `/detalhar <SKU>` ·
+`/conta` · `/loja` · `/id` · `/menu`.
 
 ## Alerta pós-horário (`job_alerta_pos_horario`)
 A cada 5 min, percorre **todas** as contas (`core.listar_contas()`) e avisa — uma vez
@@ -32,10 +33,17 @@ Independente do botão Atualizar da tela. `_dados_alerta_da_conta` faz a checage
 detalhe dos itens **num só bloco de troca de conta** (`definir_conta` mexe em globais
 compartilhadas com o resto do bot — separar em duas chamadas arriscaria a 2ª rodar já
 com a conta original restaurada pela 1ª). Dedup por `shipment_id` em
-`alertas_pos_horario.json` (gitignorado, reseta sozinho na virada do dia). O bot sobe
-sozinho no login do Windows (Agendador de Tarefas, `atalhos/registrar-tarefa-bot.ps1`)
-— o alerta só funciona com o bot rodando. → [[Telegram]] pro histórico de por que não
-é mais a tela quem sobe o bot.
+`alertas_pos_horario.json` (gitignorado, reseta sozinho na virada do dia); o mesmo
+arquivo também guarda os itens (`chave`+`quantidade`) de cada aviso, usados pelo
+`/vendasapos`. Mensagem por SKU somado (`A01 - 2L 110 - 1`), sem número de envio. O
+bot sobe sozinho no login do Windows (Agendador de Tarefas,
+`atalhos/registrar-tarefa-bot.ps1`) — o alerta só funciona com o bot rodando. →
+[[Telegram]] pro histórico de por que não é mais a tela quem sobe o bot.
+
+## Resumo agregado (`/vendasapos`)
+Junta tudo que o alerta já avisou hoje (todas as contas) numa mensagem só, com um
+TOTAL por SKU no final — evita poluir o chat quando várias vendas caem em sequência
+depois das 8:30. Só relê `alertas_pos_horario.json`, não refaz chamada de API.
 
 ## Relacionado
 - [[relatorio]] · [[Estado já impresso]] · [[Fluxos de operação]] · [[Redação de segredos]] · [[Telegram]]

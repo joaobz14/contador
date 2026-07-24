@@ -55,8 +55,14 @@ Além dos comandos, dois jobs do `JobQueue` rodam sozinhos: o aviso da manhã
 cada 5 min) — percorre todas as contas e avisa, uma vez por envio, quando surge
 um envio novo já `ready_to_print` com despacho **hoje** (motivado por vendas
 que caem depois das 8:30 e passam despercebidas até ser tarde demais pra
-repor com o fornecedor) — o alerta só funciona com o bot de pé. O bot sobe
-sozinho no **login do Windows** via Agendador de Tarefas (`atalhos/
+repor com o fornecedor) — o alerta só funciona com o bot de pé. Cada alerta
+mostra SKU + quantidade **somada por SKU** (sem número de envio — o dono
+precisa saber O QUE repor, não qual pedido). Cada disparo também persiste os
+itens em `alertas_pos_horario.json` (junto do dedup); `/vendasapos` (comando
+e botão "🔔 Vendas após" no `/menu`) junta **tudo que já foi avisado hoje**
+numa mensagem só, por conta + um TOTAL por SKU no final — evita que várias
+vendas caindo em sequência depois das 8:30 poluam o chat com um alerta cada.
+O bot sobe sozinho no **login do Windows** via Agendador de Tarefas (`atalhos/
 registrar-tarefa-bot.ps1`, registrado uma vez), independente da tela estar
 aberta — ver "Áreas de risco" para o histórico de por que não é mais a tela
 quem sobe o bot.
@@ -105,7 +111,7 @@ quem sobe o bot.
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | `shopee_tempos.log` / `ml_tempos.log` | cronometragem por fase (`_log_tempos`) — diagnóstico | Não | por máquina | ❌ Não |
 | `historico_impressao.json` | registro de impressão por dia de ação (`historico.py`) — alimenta o "📋 Resumo do dia" | Não | por máquina | ❌ Não |
-| `alertas_pos_horario.json` | dedup do alerta pós-horário (`bot_telegram._carregar_alertas`) — envios já avisados hoje, por conta | Não | por máquina | ❌ Não |
+| `alertas_pos_horario.json` | dedup do alerta pós-horário + itens já avisados hoje (`bot_telegram._carregar_alertas`), por conta — alimenta `/vendasapos` | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |

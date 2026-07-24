@@ -131,14 +131,18 @@ INTERVALO_ALERTA_SEGUNDOS = 5 * 60
 
 def _carregar_alertas() -> dict:
     """Estado de dedup do alerta pos-horario: shipment_ids ja avisados HOJE,
-    por conta ({"dia": "...", "avisados": {conta: [sid, ...]}}). Reseta
-    sozinho quando o dia muda (mesma filosofia do estado de impressao — nao
-    precisa "limpar" nada na mao; um dia novo comeca com "hoje" vazio)."""
+    por conta ({"dia": "...", "avisados": {conta: [sid, ...]}}), MAIS os
+    itens (chave+quantidade) de cada aviso ja disparado hoje ({"itens":
+    {conta: [{chave, quantidade}, ...]}}) — usados pelo /vendasapos pra
+    juntar tudo sem refazer nenhuma chamada de API. Reseta sozinho quando o
+    dia muda (mesma filosofia do estado de impressao — nao precisa "limpar"
+    nada na mao; um dia novo comeca com "hoje" vazio)."""
     dados = core._ler_json(ARQUIVO_ALERTAS)
     hoje = core._hoje_br()
     if dados.get("dia") != hoje:
-        return {"dia": hoje, "avisados": {}}
+        return {"dia": hoje, "avisados": {}, "itens": {}}
     dados.setdefault("avisados", {})
+    dados.setdefault("itens", {})
     return dados
 
 
@@ -199,7 +203,7 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
         if not novos_pedidos:
             continue
 
-        texto = relatorio.texto_alerta_pos_horario(conta, itens, len(novos_pedidos))
+        texto = relatorio.texto_alerta_pos_horario(conta, itens)
         for chat_id in cfg["chat_ids"]:
             try:
                 for bloco in relatorio.dividir_mensagem(texto):
@@ -209,6 +213,9 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         dados["avisados"].setdefault(conta, [])
         dados["avisados"][conta].extend(p["_envio"]["shipment_id"] for p in novos_pedidos)
+        dados["itens"].setdefault(conta, [])
+        dados["itens"][conta].extend(
+            {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
         mudou = True
 
     if mudou:
@@ -323,6 +330,7 @@ def _teclado(loja: str = LOJA_ML) -> InlineKeyboardMarkup:
          InlineKeyboardButton("📅 Amanhã", callback_data="amanha")],
         [InlineKeyboardButton("📊 Resumo", callback_data="resumo"),
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
+        [InlineKeyboardButton("🔔 Vendas após", callback_data="vendas_apos")],
         [InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")],
     ])
 
@@ -608,6 +616,27 @@ async def cmd_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _responder(update, context, "resumo", lambda: _exec_resumo(context))
 
 
+async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Junta TUDO que o alerta pos-horario ja avisou hoje (todas as contas)
+    numa mensagem so, com o TOTAL por SKU no final — pedido do dono: varias
+    vendas caindo depois das 8:30 no mesmo dia poluem o chat com um alerta
+    por venda. So le o estado ja persistido (nao refaz nenhuma chamada de
+    API), entao nao usa `_responder` (que mostra "Consultando a loja..." —
+    irrelevante aqui, isto nao depende de ML/Shopee)."""
+    cfg = context.bot_data["cfg"]
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if not _autorizado(update, cfg):
+        log.warning("Acao /vendasapos negada para chat %s", chat_id)
+        if chat_id:
+            await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    log.info("Acao /vendasapos de chat %s", chat_id)
+    dados = await asyncio.to_thread(_carregar_alertas)
+    texto = relatorio.texto_resumo_vendas_apos(dados["itens"])
+    for bloco in relatorio.dividir_mensagem(texto):
+        await context.bot.send_message(chat_id, bloco)
+
+
 async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Mostra a loja ativa e botoes para trocar (Mercado Livre / Shopee)."""
     cfg = context.bot_data["cfg"]
@@ -691,6 +720,9 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "resumo":
         await _responder(update, context, "resumo", lambda: _exec_resumo(context))
         return
+    if data == "vendas_apos":
+        await cmd_vendas_apos(update, context)
+        return
     if _params_listagem(data):
         await _listar_acao(update, context, data)
 
@@ -759,6 +791,7 @@ def main() -> None:
     app.add_handler(CommandHandler("amanha", cmd_amanha))
     app.add_handler(CommandHandler("todos", cmd_todos))
     app.add_handler(CommandHandler("resumo", cmd_resumo))
+    app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
     app.add_handler(CommandHandler("dia", cmd_dia))
     app.add_handler(CommandHandler("detalhar", cmd_detalhar))
     app.add_handler(CallbackQueryHandler(cb_botao))

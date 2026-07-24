@@ -66,20 +66,57 @@ def texto_bom_dia(prontos: list, hoje: str, amanha: str) -> str:
     return f"{cabecalho}\n\n{texto_resumo(prontos, hoje, amanha)}"
 
 
-def texto_alerta_pos_horario(conta: str, itens: list, total_envios: int) -> str:
+def texto_alerta_pos_horario(conta: str, itens: list) -> str:
     """Alerta de venda nova ja pronta (ready_to_print) com despacho HOJE,
     detectada pelo poll automatico do bot — fora do fluxo normal de
-    'Atualizar' da tela. Mostra SKU + quantidade de cada envio novo (nao so a
-    contagem), para decidir na hora se precisa correr no fornecedor."""
-    rotulo = f" — {conta}" if conta else ""
-    linhas = [f"🔔 Venda nova pronta pra despachar HOJE{rotulo}! "
-             f"{total_envios} envio(s) novo(s):\n"]
-    por_envio: dict[int, list] = defaultdict(list)
+    'Atualizar' da tela. Mostra SKU + quantidade total (somada por SKU, sem o
+    numero do envio — o dono precisa saber O QUE repor com o fornecedor, nao
+    qual pedido especifico)."""
+    cabecalho = f"🔔 Venda {conta}" if conta else "🔔 Venda nova"
+    por_sku: dict[str, int] = defaultdict(int)
+    ordem: list[str] = []
     for it in itens:
-        por_envio[it.shipment_id].append(it)
-    for sid, do_envio in por_envio.items():
-        partes = ", ".join(f"{i.quantidade}x {i.chave}" for i in do_envio)
-        linhas.append(f"  envio {sid}: {partes}")
+        if it.chave not in por_sku:
+            ordem.append(it.chave)
+        por_sku[it.chave] += it.quantidade
+    linhas = [cabecalho] + [f"{chave} - {por_sku[chave]}" for chave in ordem]
+    return "\n".join(linhas)
+
+
+def texto_resumo_vendas_apos(itens_por_conta: dict) -> str:
+    """Junta TUDO que o alerta pos-horario ja avisou HOJE (todas as contas)
+    numa mensagem so, com o TOTAL por SKU no final. Motivado por: varias
+    vendas caindo depois das 8:30 no mesmo dia viram um alerta separado cada
+    uma, poluindo o chat — este resumo agrega sob pedido, sob demanda.
+    `itens_por_conta` vem do estado persistido pelo alerta (`{conta: [{chave,
+    quantidade}, ...]}`, ja acumulado a cada disparo) — nao refaz nenhuma
+    chamada de API, so relê o que ja foi avisado."""
+    contas_com_venda = [c for c, itens in itens_por_conta.items() if itens]
+    if not contas_com_venda:
+        return "Nenhuma venda avisada hoje ainda."
+
+    linhas = ["RESUMO VENDAS APOS 8:30"]
+    total: dict[str, int] = defaultdict(int)
+    ordem_total: list[str] = []
+    for conta in contas_com_venda:
+        linhas.append("")
+        if conta:
+            linhas.append(conta.upper())
+        por_sku: dict[str, int] = defaultdict(int)
+        ordem: list[str] = []
+        for it in itens_por_conta[conta]:
+            chave, qtd = it["chave"], it["quantidade"]
+            if chave not in por_sku:
+                ordem.append(chave)
+            por_sku[chave] += qtd
+            if chave not in total:
+                ordem_total.append(chave)
+            total[chave] += qtd
+        linhas.extend(f"{chave} - {por_sku[chave]}" for chave in ordem)
+
+    linhas.append("")
+    linhas.append("TOTAL:")
+    linhas.extend(f"{chave} - {total[chave]}" for chave in ordem_total)
     return "\n".join(linhas)
 
 
