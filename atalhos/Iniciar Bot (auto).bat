@@ -11,8 +11,9 @@ REM  DEIXE esta janela ABERTA. Para PARAR de vez:
 REM    - feche a janela; ou
 REM    - pressione Ctrl+C e responda "S" (Sim) ao "Terminar tarefa?".
 REM
-REM  Para iniciar junto com o Windows, veja o README ("Ligar junto
-REM  com o Windows"): crie um atalho deste arquivo na pasta shell:startup.
+REM  Para o bot subir sozinho no login do Windows (sem precisar abrir isto
+REM  na mao), rode UMA VEZ atalhos\registrar-tarefa-bot.ps1 -- ver README
+REM  ("Ligar sozinho no login do Windows").
 REM
 REM  Precisa do bot_config.json (token) e das contas configuradas.
 REM ============================================================

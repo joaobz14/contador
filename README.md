@@ -279,12 +279,15 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
   ajuda a não perder o prazo de repor com o fornecedor quando a venda cai depois que
   você já parou de checar a tela. Não precisa configurar nada além do bot já estar
   rodando; roda sozinho, independente do botão "Atualizar" da tela.
-- **Iniciar:** a tela (`separador_gui.py`) já sobe o bot sozinha, sem janela visível,
-  quando você a abre (se ele ainda não estiver rodando) — é assim que o alerta
-  pós-horário funciona sem precisar lembrar de ligar o bot à parte. Para rodar o bot
-  manualmente (ex.: numa máquina sem a tela aberta): `atalhos\Iniciar Bot.bat` ou
-  `atalhos\Iniciar Bot (auto).bat` (reinicia sozinho se cair — recomendado). Atividade/
-  erros em `bot.log`.
+- **Iniciar:** manualmente, `atalhos\Iniciar Bot.bat` ou `atalhos\Iniciar Bot
+  (auto).bat` (reinicia sozinho se cair — recomendado, é o que o alerta pós-horário
+  precisa pra funcionar sem interrupção). Atividade/erros em `bot.log`.
+- **Ligar sozinho no login do Windows:** rode **uma vez**
+  `powershell -NoProfile -ExecutionPolicy Bypass -File atalhos\registrar-tarefa-bot.ps1`
+  — registra uma tarefa no Agendador de Tarefas que sobe o bot (via `Iniciar Bot
+  (auto).bat`, sem janela visível) toda vez que você faz login. Assim não precisa
+  lembrar de abrir o bot à parte, e ele não depende da tela (`separador_gui.py`)
+  estar aberta.
 
 ---
 

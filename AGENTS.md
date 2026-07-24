@@ -326,19 +326,20 @@ em 2º plano.
   pela 1ª (bug sutil de conta errada: `definir_conta` troca globais do núcleo
   compartilhadas com o resto do bot; ver "Áreas de risco" em
   `docs/ARQUITETURA.md`).
-- **A tela sobe o bot sozinha, sem janela, ao abrir:** o alerta acima só
-  funciona com o bot rodando, e é fácil esquecer de ligá-lo à parte — então
-  `separador_gui.py`, no fim do `__init__`, chama
-  `core.iniciar_bot_em_segundo_plano()`. Essa função (i) só age no Windows,
-  (ii) usa `core.bot_ja_rodando()` (lock de PID em `bot.lock`, checado contra
-  o processo de verdade via `tasklist` — nunca duplica um bot já rodando) e
-  (iii) sobe `atalhos/'Iniciar Bot (auto).bat'` (reusa o lançador com
-  reinício automático já existente, sem reimplementar retry) com
-  `subprocess.CREATE_NO_WINDOW`. `bot_telegram.py` grava o próprio PID ao
-  subir e remove ao encerrar (só se o PID no lock ainda for o dele). Decisão
-  explícita do dono: atrelar à abertura da tela (ele a deixa aberta o dia
-  todo, só fecha pontualmente pra `git pull`) em vez de sempre-ligado via
-  Agendador de Tarefas.
+- **O bot sobe sozinho no login do Windows (Agendador de Tarefas), não pela
+  tela:** o alerta acima só funciona com o bot rodando. A 1ª versão fazia a
+  tela (`separador_gui.py`) subir o bot sozinha ao abrir — **abandonada**
+  depois de 2 bugs reais de mesma causa-raiz (a tela roda via `pythonw`, sem
+  console, e qualquer `subprocess` disparado dali herda handles de
+  stdin/stdout/stderr inválidos — ver "Áreas de risco" em
+  `docs/ARQUITETURA.md` pro histórico completo). Corrigir cada sintoma não
+  resolvia a causa, então a solução foi trocar de mecanismo: rode **uma vez**
+  `atalhos/registrar-tarefa-bot.ps1` (gatilho `AtLogOn` do Agendador de
+  Tarefas) — sobe `atalhos/'Iniciar Bot (auto).bat'` (reusa o lançador com
+  reinício automático já existente) sem janela visível, num processo criado
+  do zero pelo Windows (sem herdar nada quebrado), independente da tela
+  estar aberta. Sem lock de PID: uma duplicata eventual é autolimitada pelo
+  próprio Telegram (erro 409 ao pollar duas instâncias do mesmo bot).
 
 ## Pegadinhas de domínio (Shopee) — validadas com loja real
 
