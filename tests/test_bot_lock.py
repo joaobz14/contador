@@ -75,7 +75,7 @@ def test_iniciar_bot_nao_faz_nada_fora_do_windows(monkeypatch):
     monkeypatch.setattr(core.os, "name", "posix")
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "nao_windows"
     assert chamado == []
 
 
@@ -84,7 +84,7 @@ def test_iniciar_bot_nao_duplica_se_ja_rodando(monkeypatch):
     monkeypatch.setattr(core, "bot_ja_rodando", lambda: True)
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "ja_rodando"
     assert chamado == []
 
 
@@ -94,7 +94,7 @@ def test_iniciar_bot_nao_sobe_se_bat_nao_existe(monkeypatch, tmp_path):
     monkeypatch.setattr(core, "PASTA_SCRIPT", tmp_path)  # sem atalhos/ aqui
     chamado = []
     monkeypatch.setattr(core.subprocess, "Popen", lambda *a, **kw: chamado.append(1))
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "bat_ausente"
     assert chamado == []
 
 
@@ -112,7 +112,7 @@ def test_iniciar_bot_sobe_o_bat_sem_janela(monkeypatch, tmp_path):
     # CREATE_NO_WINDOW so existe no Windows de verdade; simulamos aqui.
     monkeypatch.setattr(core.subprocess, "CREATE_NO_WINDOW", 0x08000000, raising=False)
 
-    core.iniciar_bot_em_segundo_plano()
+    assert core.iniciar_bot_em_segundo_plano() == "subiu"
 
     assert len(chamadas) == 1
     cmd, kw = chamadas[0]

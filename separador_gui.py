@@ -59,9 +59,12 @@ class SeparadorApp:
         """Sobe o bot do Telegram junto com a tela (alerta de venda pronta pra
         hoje), sem janela visivel, SE ainda nao estiver rodando — evita
         esquecer de ligar o bot manualmente. Best-effort: uma falha aqui
-        nunca pode impedir a tela de abrir."""
+        nunca pode impedir a tela de abrir. Loga o RESULTADO (nao so a
+        excecao) — um "nao subiu" sem estourar nada (ex.: lock travado
+        apontando pra um PID vivo por engano) ficaria mudo no log senao."""
         try:
-            core.iniciar_bot_em_segundo_plano()
+            resultado = core.iniciar_bot_em_segundo_plano()
+            log.info("Bot em segundo plano: %s", resultado)
         except Exception:
             log.exception("Falha ao tentar iniciar o bot em segundo plano")
 
