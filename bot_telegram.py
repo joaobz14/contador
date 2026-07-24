@@ -122,6 +122,130 @@ def _prontos():
     return core.filtrar_para_imprimir(token, pedidos)
 
 
+# ---------------------------------------------------------- alerta pos-horario
+ARQUIVO_ALERTAS = core.PASTA_SCRIPT / "alertas_pos_horario.json"
+INTERVALO_ALERTA_SEGUNDOS = 5 * 60
+
+
+def _carregar_alertas() -> dict:
+    """Estado de dedup do alerta pos-horario: shipment_ids ja avisados HOJE,
+    por conta ({"dia": "...", "avisados": {conta: [sid, ...]}}). Reseta
+    sozinho quando o dia muda (mesma filosofia do estado de impressao — nao
+    precisa "limpar" nada na mao; um dia novo comeca com "hoje" vazio)."""
+    dados = core._ler_json(ARQUIVO_ALERTAS)
+    hoje = core._hoje_br()
+    if dados.get("dia") != hoje:
+        return {"dia": hoje, "avisados": {}}
+    dados.setdefault("avisados", {})
+    return dados
+
+
+def _salvar_alertas(dados: dict) -> None:
+    core._gravar_json(ARQUIVO_ALERTAS, dados)
+
+
+def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
+    """Todo o trabalho de rede de UMA conta (prontos + detalhe dos itens
+    novos) num unico bloco de troca de conta. Junto numa funcao so: a troca de
+    conta mexe em globais do nucleo compartilhadas com o resto do bot — fazer
+    prontos() e extrair_itens() em dois blocos separados arriscaria a 2a
+    chamada rodar ja com a conta ORIGINAL restaurada pelo primeiro bloco
+    (bug sutil de conta errada). Roda em thread (rede) — ver job_alerta_pos_horario.
+    """
+    original = core.conta_ativa()
+    try:
+        if conta and conta != original:
+            core.definir_conta(conta)
+        prontos = _prontos()
+        novos_pedidos = [
+            p for p in prontos
+            if (p.get("_envio") or {}).get("expected_date") == hoje
+            and p["_envio"]["shipment_id"] not in avisados
+        ]
+        if not novos_pedidos:
+            return [], []
+        cred = core.carregar_credenciais()
+        token = core.obter_token(cred)
+        itens = core.extrair_itens(token, novos_pedidos)
+        return novos_pedidos, itens
+    finally:
+        if conta and conta != original and original:
+            core.definir_conta(original)
+
+
+async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Roda a cada INTERVALO_ALERTA_SEGUNDOS, independente do botao Atualizar
+    da tela e de qualquer comando manual: percorre TODAS as contas
+    configuradas (ou a unica, em setup legado sem contas/) e avisa — uma vez
+    so, por envio — quando surge um envio novo ja pronto (ready_to_print) com
+    despacho HOJE. Isola falha por conta: uma conta com erro nao impede o
+    aviso das demais (mesma filosofia do ads-monitor/coletar.py)."""
+    cfg = context.bot_data["cfg"]
+    contas = core.listar_contas() or [""]
+    hoje = core._hoje_br()
+    dados = await asyncio.to_thread(_carregar_alertas)
+    mudou = False
+
+    for conta in contas:
+        avisados = set(dados["avisados"].get(conta, []))
+        try:
+            novos_pedidos, itens = await asyncio.to_thread(
+                _dados_alerta_da_conta, conta, avisados, hoje)
+        except Exception:
+            log.exception("Falha ao checar alerta pos-horario da conta %r", conta)
+            continue
+        if not novos_pedidos:
+            continue
+
+        texto = relatorio.texto_alerta_pos_horario(conta, itens, len(novos_pedidos))
+        for chat_id in cfg["chat_ids"]:
+            try:
+                for bloco in relatorio.dividir_mensagem(texto):
+                    await context.bot.send_message(chat_id, bloco)
+            except Exception:
+                log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
+
+        dados["avisados"].setdefault(conta, [])
+        dados["avisados"][conta].extend(p["_envio"]["shipment_id"] for p in novos_pedidos)
+        mudou = True
+
+    if mudou:
+        await asyncio.to_thread(_salvar_alertas, dados)
+
+
+def _agendar_alerta_pos_horario(app, cfg: dict) -> None:
+    if app.job_queue is None:
+        log.warning("Alerta de venda pronta pra hoje NAO agendado: JobQueue "
+                    "indisponivel. Rode: pip install -r requirements-bot.txt")
+        return
+    app.job_queue.run_repeating(job_alerta_pos_horario,
+                                interval=INTERVALO_ALERTA_SEGUNDOS, first=10)
+    log.info("Alerta de venda pronta pra hoje agendado a cada %d min.",
+             INTERVALO_ALERTA_SEGUNDOS // 60)
+
+
+def _escrever_lock_bot() -> None:
+    """Best-effort: grava o PID deste processo em ARQUIVO_LOCK_BOT, para a
+    tela saber que o bot ja esta rodando e nao subir um 2o em segundo plano
+    (ver core.bot_ja_rodando). Falhar ao gravar o lock nunca impede o bot de
+    subir — so faz a tela nao ter como detectar que ele ja esta de pe."""
+    try:
+        core.ARQUIVO_LOCK_BOT.write_text(str(os.getpid()), encoding="utf-8")
+    except OSError:
+        log.warning("Nao consegui gravar o lock do bot (%s).", core.ARQUIVO_LOCK_BOT)
+
+
+def _limpar_lock_bot() -> None:
+    """Remove o lock SO se ainda apontar para este processo (evita apagar o
+    lock de um bot novo, no caso raro de dois encerramentos quase
+    simultaneos — ex.: o '.bat (auto)' reiniciando bem na hora do Ctrl+C)."""
+    try:
+        if core.ARQUIVO_LOCK_BOT.read_text(encoding="utf-8").strip() == str(os.getpid()):
+            core.ARQUIVO_LOCK_BOT.unlink()
+    except (OSError, ValueError):
+        pass
+
+
 # ---------------------------------------------------------------- contas
 def _garantir_conta_ativa() -> str:
     """Garante que aponte para uma conta valida (mesma logica da tela).
@@ -661,9 +785,14 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, cmd_desconhecido))
 
     _agendar_aviso(app, cfg)
+    _agendar_alerta_pos_horario(app, cfg)
+    _escrever_lock_bot()
     log.info("Bot iniciado (%d chat(s) autorizado(s)).", len(cfg["chat_ids"]))
     print("Bot rodando... Ctrl+C para parar.")
-    app.run_polling()
+    try:
+        app.run_polling()
+    finally:
+        _limpar_lock_bot()
 
 
 def _pausar() -> None:

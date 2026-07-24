@@ -49,6 +49,26 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-24 — Alerta pós-horário do bot + tela sobe o bot sozinha:**
+  motivado por um problema real do dono — venda que cai depois das 8:30
+  (quando ele já parou de checar a tela) só é vista tarde demais pra repor
+  com o fornecedor no mesmo dia. `job_alerta_pos_horario` (`bot_telegram.py`,
+  `JobQueue.run_repeating` a cada 5 min) percorre todas as contas e avisa —
+  uma vez por envio — quando surge um envio novo já `ready_to_print` com
+  despacho hoje; independente do botão Atualizar da tela. Dedup por
+  `shipment_id` em `alertas_pos_horario.json` (reseta sozinho na virada do
+  dia); isola falha por conta. `_dados_alerta_da_conta` faz a checagem e o
+  detalhe dos itens NUM SÓ bloco de troca de conta (evita bug sutil de conta
+  errada — `definir_conta` mexe em globais compartilhadas com o resto do
+  bot). `separador_gui.py`, ao abrir, sobe o bot sozinha sem janela visível
+  (`core.iniciar_bot_em_segundo_plano`, lock de PID em `bot.lock` checado
+  contra o processo de verdade via `tasklist`) se ainda não estiver rodando
+  — decisão do dono, que deixa a tela sempre aberta. Nós semânticos novos
+  `bot_alerta_pos_horario` e `bot_segundo_plano_junto_com_tela` (concept),
+  ligados por `rationale_for` às funções centrais e por
+  `conceptually_related_to` entre si e ao `job_bom_dia` (mesmo padrão de
+  `JobQueue`). Contagens: **1393 nós, 2537 arestas, 0 órfãs**.
+
 - **2026-07-24 — Ads camada 4: narrativa opcional via IA (`narrar.py`):**
   motivada por um monitor irmão do mesmo Product Ads construído em paralelo
   pelo dono em n8n + DeepSeek (narrativa por IA + entrega automática de

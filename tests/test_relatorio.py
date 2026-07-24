@@ -69,6 +69,36 @@ def test_texto_detalhe_sem_resultado(core):
     assert "Nada encontrado" in relatorio.texto_detalhe([], "XYZ")
 
 
+def test_texto_alerta_pos_horario(core):
+    itens = [
+        core.ItemPedido(order_id=1, shipment_id=100, chave="A02", nome="A02", quantidade=2),
+        core.ItemPedido(order_id=2, shipment_id=101, chave="A06F", nome="A06F", quantidade=1),
+    ]
+    txt = relatorio.texto_alerta_pos_horario("cozilatti", itens, 2)
+    assert "🔔" in txt
+    assert "HOJE" in txt
+    assert "— cozilatti" in txt
+    assert "2 envio(s) novo(s)" in txt
+    assert "envio 100: 2x A02" in txt
+    assert "envio 101: 1x A06F" in txt
+
+
+def test_texto_alerta_pos_horario_agrupa_por_envio(core):
+    # Um envio combo (2 SKUs) deve aparecer numa linha so, nao duas.
+    itens = [
+        core.ItemPedido(order_id=1, shipment_id=200, chave="A02", nome="A02", quantidade=1),
+        core.ItemPedido(order_id=1, shipment_id=200, chave="A06F", nome="A06F", quantidade=1),
+    ]
+    txt = relatorio.texto_alerta_pos_horario("", itens, 1)
+    assert txt.count("envio 200") == 1
+    assert "1x A02" in txt and "1x A06F" in txt
+
+
+def test_texto_alerta_pos_horario_sem_conta_nao_mostra_rotulo(core):
+    txt = relatorio.texto_alerta_pos_horario("", [], 0)
+    assert "—" not in txt.split("\n")[0]
+
+
 def test_dividir_mensagem_curta_nao_divide(core):
     assert relatorio.dividir_mensagem("linha1\nlinha2") == ["linha1\nlinha2"]
 

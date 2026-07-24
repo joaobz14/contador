@@ -25,5 +25,16 @@ arquivo: bot_telegram.py
 ## Comandos
 `/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/detalhar <SKU>` · `/conta` · `/loja` · `/id` · `/menu`.
 
+## Alerta pós-horário (`job_alerta_pos_horario`)
+A cada 5 min, percorre **todas** as contas (`core.listar_contas()`) e avisa — uma vez
+por envio — quando surge um envio novo já `ready_to_print` com despacho **hoje**.
+Independente do botão Atualizar da tela. `_dados_alerta_da_conta` faz a checagem e o
+detalhe dos itens **num só bloco de troca de conta** (`definir_conta` mexe em globais
+compartilhadas com o resto do bot — separar em duas chamadas arriscaria a 2ª rodar já
+com a conta original restaurada pela 1ª). Dedup por `shipment_id` em
+`alertas_pos_horario.json` (gitignorado, reseta sozinho na virada do dia). A tela
+(`separador_gui.py`) sobe este bot sozinha ao abrir, via `core.iniciar_bot_em_segundo_plano`
++ lock de PID (`bot.lock`) — o alerta só funciona com o bot rodando.
+
 ## Relacionado
-- [[relatorio]] · [[Estado já impresso]] · [[Fluxos de operação]] · [[Redação de segredos]]
+- [[relatorio]] · [[Estado já impresso]] · [[Fluxos de operação]] · [[Redação de segredos]] · [[Telegram]]

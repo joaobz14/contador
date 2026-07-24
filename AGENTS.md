@@ -32,7 +32,7 @@ repo) monitora e imprime.
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
-| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). |
+| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify) e `validar_obsidian.py` (validador do cofre `obsidian/`). |
@@ -310,6 +310,35 @@ em 2º plano.
   meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
   pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
   libera a trava; o `finally` libera mesmo se a confirmação estourar.
+- **Alerta pós-horário do bot (venda nova pronta pra hoje):** motivado por um
+  problema real do dono — venda que cai depois das 8:30 (quando ele já parou
+  de checar a tela) só é vista tarde demais, e o fornecedor já não tem mais o
+  produto pra repor no mesmo dia. `job_alerta_pos_horario` (`bot_telegram.py`,
+  `JobQueue.run_repeating` a cada 5 min) percorre **todas** as contas
+  (`core.listar_contas()`) e avisa — uma vez por envio — quando surge um envio
+  novo já `ready_to_print` com `expected_date == hoje`. Roda sozinho,
+  **independente** do botão Atualizar da tela e de qualquer comando manual.
+  Dedup por `shipment_id` num estado próprio (`alertas_pos_horario.json`,
+  gitignorado) que reseta sozinho na virada do dia. Isola falha por conta
+  (mesmo espírito do `ads-monitor/coletar.py`). **`_dados_alerta_da_conta` faz
+  a checagem + o detalhe dos itens NUM SÓ bloco de troca de conta** — separar
+  em duas chamadas arriscaria a 2ª rodar já com a conta ORIGINAL restaurada
+  pela 1ª (bug sutil de conta errada: `definir_conta` troca globais do núcleo
+  compartilhadas com o resto do bot; ver "Áreas de risco" em
+  `docs/ARQUITETURA.md`).
+- **A tela sobe o bot sozinha, sem janela, ao abrir:** o alerta acima só
+  funciona com o bot rodando, e é fácil esquecer de ligá-lo à parte — então
+  `separador_gui.py`, no fim do `__init__`, chama
+  `core.iniciar_bot_em_segundo_plano()`. Essa função (i) só age no Windows,
+  (ii) usa `core.bot_ja_rodando()` (lock de PID em `bot.lock`, checado contra
+  o processo de verdade via `tasklist` — nunca duplica um bot já rodando) e
+  (iii) sobe `atalhos/'Iniciar Bot (auto).bat'` (reusa o lançador com
+  reinício automático já existente, sem reimplementar retry) com
+  `subprocess.CREATE_NO_WINDOW`. `bot_telegram.py` grava o próprio PID ao
+  subir e remove ao encerrar (só se o PID no lock ainda for o dele). Decisão
+  explícita do dono: atrelar à abertura da tela (ele a deixa aberta o dia
+  todo, só fecha pontualmente pra `git pull`) em vez de sempre-ligado via
+  Agendador de Tarefas.
 
 ## Pegadinhas de domínio (Shopee) — validadas com loja real
 

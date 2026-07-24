@@ -303,6 +303,29 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Alerta pós-horário de venda nova pronta pra hoje:** motivado por um
+  problema real do dono — venda que cai depois das 8:30 (quando ele já parou
+  de checar a tela manualmente) só é vista tarde demais, e o fornecedor já
+  não tem mais o produto pra repor no mesmo dia. Novo job
+  `job_alerta_pos_horario` (`JobQueue.run_repeating`, a cada 5 min) percorre
+  **todas** as contas configuradas e avisa — uma vez por envio — quando surge
+  um envio novo já `ready_to_print` com despacho **hoje**; roda sozinho,
+  independente do botão Atualizar da tela e de qualquer comando manual.
+  Dedup por `shipment_id` num estado próprio (`alertas_pos_horario.json`,
+  gitignorado, reseta sozinho na virada do dia) e isola falha por conta
+  (mesmo espírito do `ads-monitor/coletar.py`). Reusa 100% a lógica já
+  validada do núcleo (`ready_to_print` + `expected_date`,
+  `buscar_pedidos`/`filtrar_para_imprimir`/`extrair_itens`) — sem
+  reimplementar filtro nenhum da API do ML.
+- **A tela sobe o bot sozinha, sem janela, ao abrir:** o alerta acima só
+  funciona com o bot rodando, e era fácil esquecer de ligá-lo à parte.
+  `separador_gui.py` agora chama `core.iniciar_bot_em_segundo_plano()` na
+  abertura — sobe `atalhos/'Iniciar Bot (auto).bat'` (reusa o lançador com
+  reinício automático já existente) **sem janela visível**
+  (`subprocess.CREATE_NO_WINDOW`), só se o bot ainda não estiver rodando
+  (novo lock de PID em `bot.lock`, checado contra o processo de verdade via
+  `tasklist` no Windows — nunca duplica). `bot_telegram.py` grava o próprio
+  PID ao subir e remove ao encerrar.
 - **Teclado de impressão fatiado no limite do Telegram** (achado da auditoria):
   num dia com muitos grupos, o teclado de botões "Imprimir" passava de ~100
   botões e o Telegram recusava o envio — o teclado simplesmente não aparecia.

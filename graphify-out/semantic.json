@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 326,
- "edge_count": 545,
+ "node_count": 328,
+ "edge_count": 555,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3737,6 +3737,34 @@
    "community": 0,
    "_origin": "manual",
    "norm_label": "ads-monitor camada 4 (narrativa opcional via ia, narrar.py): motivada por um monitor irmao do mesmo product ads construido em paralelo pelo dono em n8n + deepseek, com narrativa por ia e entrega automatica de relatorio. ao comparar os dois sistemas, decisao explicita foi manter papeis diferentes -- n8n para narrativa/apresentacao/entrega, ads-monitor/ para o historico canonico + regras + sku -- mas trazer a narrativa em ia tambem pra este lado, por cima do motor ja existente (camada 3), sem duplicar historico nem regras. narrar.py e aditivo e opcional: nunca altera recomendar.py, so pega a saida dele (recomendacoes ja geradas + _agregar_campanhas para achar as campanhas 'monitorando' sem dado suficiente) e pede pro claude code (claude -p via subprocess, mesmo padrao do api-monitor/run-semanal.ps1) reescrever isso em prosa -- sem credencial de llm externa nova. o prompt (regras) instrui explicitamente 'narre, nao invente': nunca concluir margem/lucratividade, nunca sugerir mudanca automatica, preservar o aviso 'condicionada a validacao da margem' tal como veio calculado, nunca adicionar recomendacao nova alem das que o motor de regras ja gerou. chamar_claude nunca levanta -- se 'claude' nao estiver instalado/autorizado, travar ou devolver codigo != 0, devolve string vazia e main() sai com aviso, sem fingir sucesso; o motor determinístico (camadas 1-3) continua funcionando sozinho independente desta camada falhar ou nao rodar. saida salva em ads-monitor/relatorios/*.md (gitignorado, mesmo padrao do api-monitor/relatorios/). --dry-run mostra o prompt montado sem chamar a ia nem gravar arquivo (usado para testar/depurar sem custo)."
+  },
+  {
+   "label": "ALERTA POS-HORARIO (bot_telegram.py): motivado por um problema real do dono — vendas que caem depois das 8:30 (quando ele ja parou de checar a tela manualmente) e so sao vistas tarde demais, quando o fornecedor ja nao tem mais o produto pra reposicao no mesmo dia. job_alerta_pos_horario roda a cada INTERVALO_ALERTA_SEGUNDOS (5 min, JobQueue.run_repeating), INDEPENDENTE do botao Atualizar da tela e de qualquer comando manual do bot: percorre TODAS as contas configuradas (core.listar_contas(), ou [''] em setup legado sem contas/) e avisa via Telegram quando surge um envio novo ja ready_to_print com expected_date == hoje. Dedup por shipment_id num estado proprio (alertas_pos_horario.json, {dia, avisados: {conta: [sid,...]}}) que reseta sozinho quando o dia muda — mesma filosofia do estado de impressao, nao precisa limpar na mao. Isola falha por conta (mesmo espirito do ads-monitor/coletar.py): uma conta com erro de rede nao impede o aviso das demais. _dados_alerta_da_conta faz TODO o trabalho de rede de uma conta (prontos + extrair_itens) num unico bloco de troca de conta — separar em duas chamadas arriscaria a 2a rodar ja com a conta ORIGINAL restaurada pela 1a (bug sutil de conta errada, porque definir_conta mexe em globais do nucleo compartilhadas com o resto do bot). Reusa 100% a logica ja validada do nucleo (ready_to_print + expected_date, buscar_pedidos/filtrar_para_imprimir/extrair_itens) em vez de reimplementar filtro nenhum da API do ML.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "bot_alerta_pos_horario",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "alerta pos-horario (bot_telegram.py): motivado por um problema real do dono — vendas que caem depois das 8:30 (quando ele ja parou de checar a tela manualmente) e so sao vistas tarde demais, quando o fornecedor ja nao tem mais o produto pra reposicao no mesmo dia. job_alerta_pos_horario roda a cada intervalo_alerta_segundos (5 min, jobqueue.run_repeating), independente do botao atualizar da tela e de qualquer comando manual do bot: percorre todas as contas configuradas (core.listar_contas(), ou [''] em setup legado sem contas/) e avisa via telegram quando surge um envio novo ja ready_to_print com expected_date == hoje. dedup por shipment_id num estado proprio (alertas_pos_horario.json, {dia, avisados: {conta: [sid,...]}}) que reseta sozinho quando o dia muda — mesma filosofia do estado de impressao, nao precisa limpar na mao. isola falha por conta (mesmo espirito do ads-monitor/coletar.py): uma conta com erro de rede nao impede o aviso das demais. _dados_alerta_da_conta faz todo o trabalho de rede de uma conta (prontos + extrair_itens) num unico bloco de troca de conta — separar em duas chamadas arriscaria a 2a rodar ja com a conta original restaurada pela 1a (bug sutil de conta errada, porque definir_conta mexe em globais do nucleo compartilhadas com o resto do bot). reusa 100% a logica ja validada do nucleo (ready_to_print + expected_date, buscar_pedidos/filtrar_para_imprimir/extrair_itens) em vez de reimplementar filtro nenhum da api do ml."
+  },
+  {
+   "label": "BOT EM SEGUNDO PLANO JUNTO COM A TELA (separador_etiquetas_ml.py + separador_gui.py): o alerta pos-horario so funciona se o bot estiver rodando, e o dono relatou esquecer de liga-lo manualmente. A tela (separador_gui.py), ao abrir, chama core.iniciar_bot_em_segundo_plano() — que sobe atalhos/'Iniciar Bot (auto).bat' (reusa o lancador com reinicio automatico ja existente, sem reimplementar retry) SEM janela visivel (subprocess.CREATE_NO_WINDOW), SE ainda nao estiver rodando. Deduplicacao via lock de PID (core.ARQUIVO_LOCK_BOT = bot.lock, texto simples com o PID): bot_telegram.py grava o proprio PID ao subir (_escrever_lock_bot) e remove ao encerrar (_limpar_lock_bot, so remove se o PID no lock ainda for o dele — evita apagar o lock de um bot novo em shutdowns quase simultaneos). core.bot_ja_rodando() le o lock e confirma que o PID ainda esta vivo via `tasklist` (_pid_vivo — sem dependencia extra tipo psutil; em duvida assume vivo, pra nunca duplicar por falso-negativo). Lock travado (processo morreu sem limpar — queda de energia, kill forcado) e detectado pelo PID morto e tratado como 'nao esta rodando' — degrada suave, mesmo espirito de estado.trava. Decisao explicita do dono: atrelar ao abrir a tela (nao Task Scheduler sempre-ligado) porque ele deixa a tela aberta o dia inteiro, so fechando pontualmente pra git pull.",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "bot_segundo_plano_junto_com_tela",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "bot em segundo plano junto com a tela (separador_etiquetas_ml.py + separador_gui.py): o alerta pos-horario so funciona se o bot estiver rodando, e o dono relatou esquecer de liga-lo manualmente. a tela (separador_gui.py), ao abrir, chama core.iniciar_bot_em_segundo_plano() — que sobe atalhos/'iniciar bot (auto).bat' (reusa o lancador com reinicio automatico ja existente, sem reimplementar retry) sem janela visivel (subprocess.create_no_window), se ainda nao estiver rodando. deduplicacao via lock de pid (core.arquivo_lock_bot = bot.lock, texto simples com o pid): bot_telegram.py grava o proprio pid ao subir (_escrever_lock_bot) e remove ao encerrar (_limpar_lock_bot, so remove se o pid no lock ainda for o dele — evita apagar o lock de um bot novo em shutdowns quase simultaneos). core.bot_ja_rodando() le o lock e confirma que o pid ainda esta vivo via `tasklist` (_pid_vivo — sem dependencia extra tipo psutil; em duvida assume vivo, pra nunca duplicar por falso-negativo). lock travado (processo morreu sem limpar — queda de energia, kill forcado) e detectado pelo pid morto e tratado como 'nao esta rodando' — degrada suave, mesmo espirito de estado.trava. decisao explicita do dono: atrelar ao abrir a tela (nao task scheduler sempre-ligado) porque ele deixa a tela aberta o dia inteiro, so fechando pontualmente pra git pull."
   }
  ],
  "edges": [
@@ -4395,9 +4423,31 @@
    "source_file": "bot_telegram.py",
    "source_location": null,
    "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "bot_telegram_job_bom_dia",
+   "confidence_score": 1.0,
+   "context": "mesmo padrao de JobQueue.run_repeating/run_daily do aviso da manha, mas por-conta e disparado por evento (envio novo), nao so por horario fixo"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
    "source": "bot_resumo_por_loja",
    "target": "relatorio",
    "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_segundo_plano_junto_com_tela",
+   "target": "bot_alerta_pos_horario",
+   "confidence_score": 1.0,
+   "context": "o alerta so funciona com o bot rodando -- por isso a tela agora sobe o bot sozinha"
   },
   {
    "relation": "conceptually_related_to",
@@ -5589,6 +5639,56 @@
    "source_file": "bot_telegram.py",
    "source_location": null,
    "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "bot_telegram_agendar_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "bot_telegram_carregar_alertas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "bot_telegram_dados_alerta_da_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "relatorio.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_alerta_pos_horario",
+   "target": "relatorio_texto_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
    "source": "bot_aviso_blindado",
    "target": "bot_telegram_job_bom_dia",
    "confidence_score": 1.0
@@ -5611,6 +5711,36 @@
    "weight": 1.0,
    "source": "bot_resumo_por_loja",
    "target": "bot_telegram_exec_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_segundo_plano_junto_com_tela",
+   "target": "separador_etiquetas_ml_bot_ja_rodando",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_segundo_plano_junto_com_tela",
+   "target": "separador_etiquetas_ml_iniciar_bot_em_segundo_plano",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_segundo_plano_junto_com_tela",
+   "target": "separador_etiquetas_ml_pid_vivo",
    "confidence_score": 1.0
   },
   {

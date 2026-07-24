@@ -66,6 +66,23 @@ def texto_bom_dia(prontos: list, hoje: str, amanha: str) -> str:
     return f"{cabecalho}\n\n{texto_resumo(prontos, hoje, amanha)}"
 
 
+def texto_alerta_pos_horario(conta: str, itens: list, total_envios: int) -> str:
+    """Alerta de venda nova ja pronta (ready_to_print) com despacho HOJE,
+    detectada pelo poll automatico do bot — fora do fluxo normal de
+    'Atualizar' da tela. Mostra SKU + quantidade de cada envio novo (nao so a
+    contagem), para decidir na hora se precisa correr no fornecedor."""
+    rotulo = f" — {conta}" if conta else ""
+    linhas = [f"🔔 Venda nova pronta pra despachar HOJE{rotulo}! "
+             f"{total_envios} envio(s) novo(s):\n"]
+    por_envio: dict[int, list] = defaultdict(list)
+    for it in itens:
+        por_envio[it.shipment_id].append(it)
+    for sid, do_envio in por_envio.items():
+        partes = ", ".join(f"{i.quantidade}x {i.chave}" for i in do_envio)
+        linhas.append(f"  envio {sid}: {partes}")
+    return "\n".join(linhas)
+
+
 def texto_detalhe(itens: list, chave: str) -> str:
     """Composicao de um SKU: quais produtos/variacoes/voltagens o formam e
     quantos envios de cada. Casa a chave sem diferenciar maiusculas/minusculas."""

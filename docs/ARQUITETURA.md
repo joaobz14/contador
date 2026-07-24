@@ -50,6 +50,14 @@ bot carrega config local → valida `chat_id` → usuário escolhe loja → **ML
 impressão** / **Shopee: só consulta** → bot guarda a lista de grupos em `chat_data` →
 antes de imprimir, valida que loja/conta ainda são as mesmas → imprime na **máquina
 onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log`.
+Além dos comandos, dois jobs do `JobQueue` rodam sozinhos: o aviso da manhã
+(`job_bom_dia`, 1x/dia) e o **alerta pós-horário** (`job_alerta_pos_horario`, a
+cada 5 min) — percorre todas as contas e avisa, uma vez por envio, quando surge
+um envio novo já `ready_to_print` com despacho **hoje** (motivado por vendas
+que caem depois das 8:30 e passam despercebidas até ser tarde demais pra
+repor com o fornecedor). A tela (`separador_gui.py`), ao abrir, sobe o bot
+sozinha em segundo plano (sem janela, via `core.iniciar_bot_em_segundo_plano`)
+se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
 
 ## Invariantes críticas (não podem ser quebradas)
 
@@ -95,6 +103,8 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | `shopee_tempos.log` / `ml_tempos.log` | cronometragem por fase (`_log_tempos`) — diagnóstico | Não | por máquina | ❌ Não |
 | `historico_impressao.json` | registro de impressão por dia de ação (`historico.py`) — alimenta o "📋 Resumo do dia" | Não | por máquina | ❌ Não |
+| `bot.lock` | PID do bot rodando (`core.bot_ja_rodando`) — a tela usa pra não subir um 2º bot em segundo plano | Não | por máquina | ❌ Não |
+| `alertas_pos_horario.json` | dedup do alerta pós-horário (`bot_telegram._carregar_alertas`) — envios já avisados hoje, por conta | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
 | temporários `.tmp` | gravação atômica de JSON | varia | efêmero | ❌ Não |
@@ -123,6 +133,8 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
 | `tests/test_shopee.py` | assinatura HMAC, AWB, documento térmico, READY, ZIP/ZPL, falha parcial, organização (inv. 8, 9) |
 | `tests/test_ambas.py` | fusão de grupos, multi-conta, marcação no estado da conta correta (inv. contexto Ambas) |
 | `tests/test_bot_impressao.py` | botões, troca de conta/loja, impedir imprimir Shopee pelo bot (inv. 10, 11) |
+| `tests/test_bot_alerta.py` | alerta pós-horário: filtro hoje+dedup, isolamento de falha por conta, troca/restauração de conta, lock de PID |
+| `tests/test_bot_lock.py` | `bot_ja_rodando`/`iniciar_bot_em_segundo_plano` — lock de PID, PID travado, no-op fora do Windows |
 | `tests/test_rede.py` | retry/backoff em chamadas de rede |
 | `tests/test_datas.py` | datas no fuso de Brasília |
 | `tests/test_agrupar.py` + `tests/test_identidade.py` | identidade do produto (SKU→GTIN+voltagem→variação) e agrupamento por envio |
@@ -181,6 +193,26 @@ onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log
   reabilitar o botão nesse meio deixa o mesmo lote sair em dobro num 2º clique.
 - **Botões de impressão do Telegram (`cb_botao`)**: deixar imprimir Shopee, ou imprimir
   um grupo antigo após troca de conta/loja (inv. 10, 11).
+- **`job_alerta_pos_horario` / `_dados_alerta_da_conta` (alerta pós-horário)**:
+  `definir_conta` troca **globais do núcleo compartilhadas com o resto do
+  bot** (`ARQUIVO_CRED`, `ARQUIVO_ESTADO`, etc.) — o job percorre várias
+  contas por ciclo, então há uma janela estreita (a checagem de 1 conta,
+  ~1-2s) em que um comando manual do usuário concorrente veria a conta
+  ERRADA. Risco aceito conscientemente (mesma categoria dos outros usos de
+  `definir_conta` no bot — `_trocar_conta`/`_garantir_conta_ativa` já mexem
+  nessas mesmas globais): só leitura (nada é marcado/gravado no caminho do
+  alerta), janela curta, e o job sempre restaura a conta original no
+  `finally` antes de sair. **`_dados_alerta_da_conta` faz prontos + detalhe
+  dos itens NUM SÓ bloco de troca de conta** — separar em duas chamadas
+  arriscaria a 2ª rodar já com a conta original restaurada pela 1ª (bug
+  sutil de conta errada). Não estenda esse job para operações de escrita sem
+  reconsiderar essa janela.
+- **`core.bot_ja_rodando` / `iniciar_bot_em_segundo_plano`**: o lock é só um
+  PID em texto (`bot.lock`), sem trava de arquivo (`estado.trava`) — não
+  precisa, o pior caso de uma corrida rara (duas telas abrindo no mesmíssimo
+  instante) é subir 2 bots, não corromper dado. `_pid_vivo` assume **vivo**
+  quando o `tasklist` falha/está ausente — em dúvida, prefere não duplicar a
+  arriscar um falso-negativo.
 - **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a
   detecção pelo app externo — o papel não sai. O **restante** do nome, ao
   contrário, precisa ser **único** por trabalho (`nome_saida_unico`): nome
