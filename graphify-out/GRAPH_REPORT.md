@@ -49,6 +49,21 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-24 — Correção real 2 (mesma causa-raiz): "subiu" duas vezes, bot
+  nunca respondia no Telegram:** mesmo com o `stdin` já corrigido (achado
+  abaixo), o log da tela mostrava `Bot em segundo plano: subiu` em duas
+  aberturas seguidas e o bot nunca respondia às mensagens. Causa: o `Popen`
+  que sobe o `.bat` só redirecionava `stdin`, não `stdout`/`stderr` — o
+  `print("Bot rodando... Ctrl+C para parar.")` em `bot_telegram.py`, **fora**
+  do `try/finally` que limpa `bot.lock`, derrubava o processo com exceção
+  não tratada ao herdar um stdout inválido do `pythonw`, logo após gravar o
+  lock. O lock ficava preso num PID já morto; a tela seguinte via
+  `bot_ja_rodando()==False` e subia outro bot por cima, em loop, sem nunca
+  chegar a `app.run_polling()`. Corrigido com
+  `stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL` no mesmo `Popen` (o
+  log de verdade já vai pro arquivo via `FileHandler`). Nó
+  `bot_segundo_plano_junto_com_tela` atualizado com o 2º achado.
+
 - **2026-07-24 — Correção real: auto-start do bot travava pra sempre com
   `pythonw`:** testando na máquina do dono, o bot funcionava manual
   (`Iniciar Bot.bat`) mas nunca subia sozinho pela tela — e sem log nenhum.

@@ -366,14 +366,26 @@ def iniciar_bot_em_segundo_plano() -> str:
     bat = PASTA_SCRIPT / "atalhos" / "Iniciar Bot (auto).bat"
     if not bat.exists():
         return "bat_ausente"
-    # stdin=DEVNULL pelo mesmo motivo de _pid_vivo: a tela roda via pythonw
-    # (sem console/handles padrao validos) e Popen tentaria herdar o stdin
-    # quebrado sem essa redirecao.
+    # stdin/stdout/stderr=DEVNULL pelo mesmo motivo de _pid_vivo: a tela roda
+    # via pythonw (sem console/handles padrao validos) e o processo filho
+    # (cmd -> bot_telegram.py) herdaria esses handles quebrados sem essa
+    # redirecao. So redirecionar o stdin nao bastava: o bot tem varios
+    # print() fora de try/except (ex.: "Bot rodando... Ctrl+C para parar.")
+    # que, ao escrever num stdout invalido herdado, derrubavam o processo
+    # com excecao nao tratada logo apos gravar o lock — o lock ficava preso
+    # apontando pra um PID ja morto, e a proxima abertura da tela via
+    # bot_ja_rodando() == False subia OUTRO bot por cima (achado testando na
+    # maquina real: "subiu" duas vezes seguidas, bot nunca respondia no
+    # Telegram). O log de verdade do bot ja vai pro arquivo (ARQUIVO_LOG via
+    # FileHandler em bot_telegram.py) — descartar o console aqui nao perde
+    # diagnostico nenhum.
     subprocess.Popen(
         ["cmd", "/c", str(bat)],
         creationflags=subprocess.CREATE_NO_WINDOW,
         cwd=str(PASTA_SCRIPT),
         stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     return "subiu"
 

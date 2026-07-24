@@ -56,6 +56,17 @@ sempre-ligado via Agendador de Tarefas.
 > "em dúvida assume morto" (duplicar é autolimitado pelo próprio Telegram, erro 409;
 > travar pra sempre é pior). `iniciar_bot_em_segundo_plano()` agora devolve o motivo
 > (`subiu`/`ja_rodando`/`nao_windows`/`bat_ausente`), sempre logado pela tela.
+>
+> **Achado 2 (mesma causa-raiz):** mesmo com o `stdin` corrigido, o log mostrava
+> "subiu" duas vezes seguidas (a tela aberta de novo achava que o bot não estava
+> rodando) e o bot nunca respondia no Telegram. Causa: o `Popen` que sobe o `.bat`
+> só redirecionava `stdin`, não `stdout`/`stderr` — o `print("Bot rodando...")` em
+> `bot_telegram.py`, fora do `try/finally` que limpa o lock, derrubava o processo
+> ao escrever num stdout inválido herdado do `pythonw`, logo após gravar
+> `bot.lock`. O lock ficava preso num PID já morto; a tela seguinte via
+> `bot_ja_rodando()==False` e subia outro bot por cima, em loop, sem nunca chegar
+> a `app.run_polling()`. Corrigido com `stdout=DEVNULL, stderr=DEVNULL` no mesmo
+> `Popen` (o log de verdade já vai pro arquivo).
 
 ## Onde rodar
 No PC do escritório com a Zebra — a impressão sai na Downloads **dessa** máquina.

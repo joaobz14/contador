@@ -137,3 +137,5 @@ def test_iniciar_bot_sobe_o_bat_sem_janela(monkeypatch, tmp_path):
     assert kw["creationflags"] == 0x08000000
     assert kw["cwd"] == str(tmp_path)
     assert kw["stdin"] is subprocess.DEVNULL
+    assert kw["stdout"] is subprocess.DEVNULL
+    assert kw["stderr"] is subprocess.DEVNULL
