@@ -95,9 +95,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1784919061.1840615,
-  "ast_hash": "4d1cae743060b991c191a3f91f96e7543276a5da",
-  "semantic_hash": "4d1cae743060b991c191a3f91f96e7543276a5da"
+  "mtime": 1784922289.3741784,
+  "ast_hash": "35907ed315024c52998eaea9c5543d9f37534c48",
+  "semantic_hash": "35907ed315024c52998eaea9c5543d9f37534c48"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -335,9 +335,9 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1784921527.170133,
-  "ast_hash": "166ce69214865a21292a6194d46bed080f4c48f0",
-  "semantic_hash": "166ce69214865a21292a6194d46bed080f4c48f0"
+  "mtime": 1784922221.1941743,
+  "ast_hash": "d908a299e29bffee5c0611a8752a0b9194c86c63",
+  "semantic_hash": "d908a299e29bffee5c0611a8752a0b9194c86c63"
  },
  "separador_gui.py": {
   "mtime": 1784921535.1461334,
@@ -400,9 +400,9 @@
   "semantic_hash": "06f4236c83c40245a8093fbddf09eacec4b02787"
  },
  "tests/test_bot_lock.py": {
-  "mtime": 1784921566.8341355,
-  "ast_hash": "9f07aa53339f17f8e80501655d6c795c0836bba7",
-  "semantic_hash": "9f07aa53339f17f8e80501655d6c795c0836bba7"
+  "mtime": 1784922252.1941762,
+  "ast_hash": "606e5f0f34ed1960e4278c9a6af5bff81561bd93",
+  "semantic_hash": "606e5f0f34ed1960e4278c9a6af5bff81561bd93"
  },
  "tests/test_busca_pedidos.py": {
   "mtime": 1783442165.699696,

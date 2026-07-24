@@ -49,6 +49,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-24 — Correção real: auto-start do bot travava pra sempre com
+  `pythonw`:** testando na máquina do dono, o bot funcionava manual
+  (`Iniciar Bot.bat`) mas nunca subia sozinho pela tela — e sem log nenhum.
+  Causa raiz: a tela roda via `pythonw` (sem console/handles padrão
+  válidos); sem `stdin=subprocess.DEVNULL`, o `subprocess.run` do `tasklist`
+  em `_pid_vivo` falhava sempre com `WinError 6`, e o default antigo "em
+  dúvida assume vivo" fazia um `bot.lock` travado (de um teste manual
+  anterior) bloquear o auto-start **para sempre** (PID confirmado morto no
+  Gerenciador de Tarefas, mas `bot_ja_rodando()` sempre devolvia `True`).
+  Corrigido: `stdin=subprocess.DEVNULL` no `tasklist` e no `Popen` do `.bat`
+  (evita herdar o handle quebrado do `pythonw`); default invertido pra "em
+  dúvida assume MORTO" (o Telegram já rejeita 2 instâncias do mesmo bot
+  pollando ao mesmo tempo — erro 409, autolimitado — bem menos grave que
+  travar pra sempre); `iniciar_bot_em_segundo_plano()` passou a devolver uma
+  string curta (`subiu`/`ja_rodando`/`nao_windows`/`bat_ausente`) que a tela
+  sempre loga, não só a exceção — sem isso, o diagnóstico deste mesmo bug
+  ficou mais lento (nada aparecia no log). Nó `bot_segundo_plano_junto_com_tela`
+  atualizado com o achado. Contagens: **1394 nós, 2538 arestas, 0 órfãs**.
+
 - **2026-07-24 — Alerta pós-horário do bot + tela sobe o bot sozinha:**
   motivado por um problema real do dono — venda que cai depois das 8:30
   (quando ele já parou de checar a tela) só é vista tarde demais pra repor
