@@ -32,9 +32,10 @@ Independente do botão Atualizar da tela. `_dados_alerta_da_conta` faz a checage
 detalhe dos itens **num só bloco de troca de conta** (`definir_conta` mexe em globais
 compartilhadas com o resto do bot — separar em duas chamadas arriscaria a 2ª rodar já
 com a conta original restaurada pela 1ª). Dedup por `shipment_id` em
-`alertas_pos_horario.json` (gitignorado, reseta sozinho na virada do dia). A tela
-(`separador_gui.py`) sobe este bot sozinha ao abrir, via `core.iniciar_bot_em_segundo_plano`
-+ lock de PID (`bot.lock`) — o alerta só funciona com o bot rodando.
+`alertas_pos_horario.json` (gitignorado, reseta sozinho na virada do dia). O bot sobe
+sozinho no login do Windows (Agendador de Tarefas, `atalhos/registrar-tarefa-bot.ps1`)
+— o alerta só funciona com o bot rodando. → [[Telegram]] pro histórico de por que não
+é mais a tela quem sobe o bot.
 
 ## Relacionado
 - [[relatorio]] · [[Estado já impresso]] · [[Fluxos de operação]] · [[Redação de segredos]] · [[Telegram]]

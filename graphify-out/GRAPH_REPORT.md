@@ -49,8 +49,30 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
-- **2026-07-24 — Correção real 2 (mesma causa-raiz): "subiu" duas vezes, bot
-  nunca respondia no Telegram:** mesmo com o `stdin` já corrigido (achado
+- **2026-07-24 — Auto-start pela tela abandonado; bot agora sobe no login do
+  Windows:** os dois achados abaixo tratavam sintomas de uma mesma
+  causa-raiz (qualquer `subprocess` disparado a partir de `pythonw` herda
+  handles de stdin/stdout/stderr inválidos) que continuava reaparecendo de
+  formas novas. Em vez de seguir caçando o próximo achado, todo o mecanismo
+  de auto-start pela tela foi **removido**:
+  `core.bot_ja_rodando`/`_pid_vivo`/`core.iniciar_bot_em_segundo_plano`,
+  `bot_telegram._escrever_lock_bot`/`_limpar_lock_bot`, `ARQUIVO_LOCK_BOT`
+  e `tests/test_bot_lock.py`. No lugar: `atalhos/registrar-tarefa-bot.ps1`
+  (rodado uma vez) registra uma tarefa no Agendador de Tarefas do Windows
+  (gatilho `AtLogOn`, mesmo padrão do `ads-monitor/registrar-tarefa.ps1`)
+  que sobe `atalhos/'Iniciar Bot (auto).bat'` sem janela visível via
+  `atalhos/rodar-bot-oculto.ps1` (`Start-Process -WindowStyle Hidden`) a
+  cada login — um processo criado do zero pelo Windows, sem herdar nada
+  quebrado do `pythonw`, independente da tela estar aberta. Nó
+  `bot_segundo_plano_junto_com_tela` reescrito como registro histórico (o
+  que foi tentado e por que não funcionou); novo nó
+  `bot_agendador_tarefas_logon` documenta o mecanismo atual. Contagens:
+  **1373 nós, 2513 arestas, 0 órfãs** (3 arestas manuais pra código removido
+  descartadas; 6 arestas de `calls` para símbolos removidos reancoradas nos
+  nós de arquivo pelo sincronizador).
+
+- **2026-07-24 — Correção real 2 (mesma causa-raiz, código desde removido
+  acima): "subiu" duas vezes, bot nunca respondia no Telegram:** mesmo com o `stdin` já corrigido (achado
   abaixo), o log da tela mostrava `Bot em segundo plano: subiu` em duas
   aberturas seguidas e o bot nunca respondia às mensagens. Causa: o `Popen`
   que sobe o `.bat` só redirecionava `stdin`, não `stdout`/`stderr` — o

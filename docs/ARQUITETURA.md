@@ -55,9 +55,11 @@ Além dos comandos, dois jobs do `JobQueue` rodam sozinhos: o aviso da manhã
 cada 5 min) — percorre todas as contas e avisa, uma vez por envio, quando surge
 um envio novo já `ready_to_print` com despacho **hoje** (motivado por vendas
 que caem depois das 8:30 e passam despercebidas até ser tarde demais pra
-repor com o fornecedor). A tela (`separador_gui.py`), ao abrir, sobe o bot
-sozinha em segundo plano (sem janela, via `core.iniciar_bot_em_segundo_plano`)
-se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
+repor com o fornecedor) — o alerta só funciona com o bot de pé. O bot sobe
+sozinho no **login do Windows** via Agendador de Tarefas (`atalhos/
+registrar-tarefa-bot.ps1`, registrado uma vez), independente da tela estar
+aberta — ver "Áreas de risco" para o histórico de por que não é mais a tela
+quem sobe o bot.
 
 ## Invariantes críticas (não podem ser quebradas)
 
@@ -103,7 +105,6 @@ se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
 | `bot.log` | atividade/erros do bot | Não | por máquina | ❌ Não |
 | `shopee_tempos.log` / `ml_tempos.log` | cronometragem por fase (`_log_tempos`) — diagnóstico | Não | por máquina | ❌ Não |
 | `historico_impressao.json` | registro de impressão por dia de ação (`historico.py`) — alimenta o "📋 Resumo do dia" | Não | por máquina | ❌ Não |
-| `bot.lock` | PID do bot rodando (`core.bot_ja_rodando`) — a tela usa pra não subir um 2º bot em segundo plano | Não | por máquina | ❌ Não |
 | `alertas_pos_horario.json` | dedup do alerta pós-horário (`bot_telegram._carregar_alertas`) — envios já avisados hoje, por conta | Não | por máquina | ❌ Não |
 | backups `.bak` | auto-recuperação de credenciais | **Sim** | por conta | ❌ Não |
 | | ⚠ O `.bak` só vale **ao lado do principal que ele espelha** (a migração de conta o leva junto e remove órfãos da raiz). Um `.bak` desgarrado guarda um refresh_token **já rotacionado** (morto) — **nunca** restaurá-lo manualmente para outra pasta: o refresh falharia e, na pior hipótese, invalidaria a conta boa. | | | |
@@ -133,8 +134,7 @@ se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
 | `tests/test_shopee.py` | assinatura HMAC, AWB, documento térmico, READY, ZIP/ZPL, falha parcial, organização (inv. 8, 9) |
 | `tests/test_ambas.py` | fusão de grupos, multi-conta, marcação no estado da conta correta (inv. contexto Ambas) |
 | `tests/test_bot_impressao.py` | botões, troca de conta/loja, impedir imprimir Shopee pelo bot (inv. 10, 11) |
-| `tests/test_bot_alerta.py` | alerta pós-horário: filtro hoje+dedup, isolamento de falha por conta, troca/restauração de conta, lock de PID |
-| `tests/test_bot_lock.py` | `bot_ja_rodando`/`iniciar_bot_em_segundo_plano` — lock de PID, PID travado, no-op fora do Windows |
+| `tests/test_bot_alerta.py` | alerta pós-horário: filtro hoje+dedup, isolamento de falha por conta, troca/restauração de conta |
 | `tests/test_rede.py` | retry/backoff em chamadas de rede |
 | `tests/test_datas.py` | datas no fuso de Brasília |
 | `tests/test_agrupar.py` + `tests/test_identidade.py` | identidade do produto (SKU→GTIN+voltagem→variação) e agrupamento por envio |
@@ -207,28 +207,31 @@ se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
   arriscaria a 2ª rodar já com a conta original restaurada pela 1ª (bug
   sutil de conta errada). Não estenda esse job para operações de escrita sem
   reconsiderar essa janela.
-- **`core.bot_ja_rodando` / `iniciar_bot_em_segundo_plano`**: o lock é só um
-  PID em texto (`bot.lock`), sem trava de arquivo (`estado.trava`) — não
-  precisa, o pior caso de uma corrida rara (duas telas abrindo no mesmíssimo
-  instante) é subir 2 bots, autolimitado pelo próprio Telegram (rejeita duas
-  instâncias do mesmo bot fazendo polling ao mesmo tempo, erro 409) — bem
-  menos grave que travar pra sempre. `_pid_vivo` assume **morto** quando o
-  `tasklist` falha/está ausente (achado testando na máquina real: a tela roda
-  via `pythonw`, sem console — os handles padrão são inválidos, e sem
-  `stdin=DEVNULL` o `subprocess.run` do `tasklist` falhava com `WinError 6`
-  toda vez, fazendo o lock travado nunca mais deixar o bot subir sozinho).
-  Em dúvida, prefere arriscar duplicar (autolimitado) a travar pra sempre.
-  **Mesma causa-raiz, achado 2 (posterior):** o `Popen` que sobe o
-  `.bat` também herdava stdout/stderr inválidos do `pythonw` — o `print()` de
-  `bot_telegram.py` (`"Bot rodando... Ctrl+C para parar."`, **fora** do
-  `try/finally` que limpa o lock) derrubava o processo com exceção não
-  tratada logo após gravar `bot.lock`, deixando-o preso apontando pra um PID
-  já morto; a tela via `bot_ja_rodando()==False` e subia outro bot por cima —
-  em loop, nunca chegava a `app.run_polling()` (bot nunca respondia no
-  Telegram, mesmo com "subiu" no log). Corrigido com
-  `stdout=DEVNULL, stderr=DEVNULL` no mesmo `Popen` (o log de verdade já vai
-  pro arquivo via `FileHandler`; descartar o console aqui não perde
-  diagnóstico).
+- **Auto-start do bot: abandonada a tentativa de subir pela tela (histórico).**
+  A 1ª versão fazia `separador_gui.py` subir o bot sozinho ao abrir (lock de
+  PID em `bot.lock`, checado via `tasklist`) — a ideia era não depender de
+  lembrar de ligar o bot à parte. Dois bugs reais de mesma causa-raiz
+  apareceram testando na máquina do dono (a tela roda via `pythonw`, sem
+  console — handles padrão de stdin/stdout/stderr inválidos, herdados por
+  qualquer `subprocess` disparado dali): 1) `tasklist` falhava sempre com
+  `WinError 6` sem `stdin=DEVNULL`; 2) mesmo corrigido, um `print()` em
+  `bot_telegram.py` fora do `try/finally` que limpava o lock derrubava o
+  processo ao herdar um stdout inválido, deixando o lock preso e fazendo a
+  tela subir outro bot por cima repetidamente, sem nenhum nunca chegar a
+  `app.run_polling()`. Cada correção resolvia o sintoma anterior mas não a
+  causa: **qualquer** processo disparado a partir de `pythonw` nasce nesse
+  terreno minado de handles quebrados. Em vez de continuar caçando o próximo
+  achado, a solução foi trocar de mecanismo: o bot agora sobe via
+  **Agendador de Tarefas do Windows** no login (`atalhos/
+  registrar-tarefa-bot.ps1`, gatilho `AtLogOn`) — um processo criado do zero
+  pelo Windows, com handles padrão válidos, independente da tela estar
+  aberta ou não. Todo o código do lock de PID (`core.bot_ja_rodando`,
+  `_pid_vivo`, `core.iniciar_bot_em_segundo_plano`,
+  `bot_telegram._escrever_lock_bot`/`_limpar_lock_bot`) foi removido — não
+  tinha mais consumidor. Se uma duplicata acontecer (ex.: tarefa do login E
+  um clique manual no `.bat` ao mesmo tempo), o próprio Telegram rejeita a
+  2ª instância fazendo polling (erro 409) — autolimitado, não precisa de
+  lock.
 - **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a
   detecção pelo app externo — o papel não sai. O **restante** do nome, ao
   contrário, precisa ser **único** por trabalho (`nome_saida_unico`): nome

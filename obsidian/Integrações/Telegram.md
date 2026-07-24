@@ -39,34 +39,33 @@ verified_at_commit: bcab879
   Atualizar da tela; dedup por `shipment_id` em `alertas_pos_horario.json` (reseta
   sozinho no dia seguinte). Isola falha por conta.
 
-## Sobe sozinho com a tela
-`separador_gui.py`, ao abrir, chama `core.iniciar_bot_em_segundo_plano()` — sobe o
-bot sem janela visível (via `atalhos/'Iniciar Bot (auto).bat'`) **se ainda não
-estiver rodando** (lock de PID em `bot.lock`, checado contra o processo de verdade).
-O alerta pós-horário só funciona com o bot de pé; isso evita esquecer de ligá-lo à
-parte. Decisão do dono: atrelado à abertura da tela (fica aberta o dia todo), não
-sempre-ligado via Agendador de Tarefas.
+## Sobe sozinho no login do Windows
+O alerta pós-horário só funciona com o bot de pé, e é fácil esquecer de ligá-lo
+à parte. Rode **uma vez** `atalhos\registrar-tarefa-bot.ps1` — registra uma
+tarefa no Agendador de Tarefas do Windows (gatilho `AtLogOn` do usuário atual)
+que sobe `atalhos\'Iniciar Bot (auto).bat'` sem janela visível a cada login,
+independente da tela (`separador_gui.py`) estar aberta. Sem lock de PID: uma
+duplicata eventual (ex.: tarefa do login + clique manual no `.bat`) é
+autolimitada pelo próprio Telegram (erro 409 ao pollar duas instâncias do
+mesmo bot).
 
-> [!bug] Achado real: auto-start travava pra sempre
-> Testando na máquina do dono, o bot funcionava manual mas nunca subia sozinho, sem
-> erro no log. Causa: a tela roda via `pythonw` (sem console) — sem
-> `stdin=subprocess.DEVNULL`, o `tasklist` que checa o PID falhava com `WinError 6`,
-> e o default antigo "em dúvida assume vivo" fazia um `bot.lock` travado bloquear o
-> auto-start **para sempre**. Corrigido com `stdin=DEVNULL` + default invertido pra
-> "em dúvida assume morto" (duplicar é autolimitado pelo próprio Telegram, erro 409;
-> travar pra sempre é pior). `iniciar_bot_em_segundo_plano()` agora devolve o motivo
-> (`subiu`/`ja_rodando`/`nao_windows`/`bat_ausente`), sempre logado pela tela.
->
-> **Achado 2 (mesma causa-raiz):** mesmo com o `stdin` corrigido, o log mostrava
-> "subiu" duas vezes seguidas (a tela aberta de novo achava que o bot não estava
-> rodando) e o bot nunca respondia no Telegram. Causa: o `Popen` que sobe o `.bat`
-> só redirecionava `stdin`, não `stdout`/`stderr` — o `print("Bot rodando...")` em
-> `bot_telegram.py`, fora do `try/finally` que limpa o lock, derrubava o processo
-> ao escrever num stdout inválido herdado do `pythonw`, logo após gravar
-> `bot.lock`. O lock ficava preso num PID já morto; a tela seguinte via
-> `bot_ja_rodando()==False` e subia outro bot por cima, em loop, sem nunca chegar
-> a `app.run_polling()`. Corrigido com `stdout=DEVNULL, stderr=DEVNULL` no mesmo
-> `Popen` (o log de verdade já vai pro arquivo).
+> [!bug] Histórico: por que não é mais a tela quem sobe o bot
+> A 1ª versão fazia `separador_gui.py` subir o bot sozinho ao abrir (lock de
+> PID em `bot.lock`, checado via `tasklist`). Dois bugs reais de **mesma
+> causa-raiz** apareceram testando na máquina do dono: a tela roda via
+> `pythonw` (sem console) — qualquer `subprocess` disparado dali herda
+> handles de stdin/stdout/stderr inválidos. Achado 1: sem
+> `stdin=subprocess.DEVNULL`, o `tasklist` que checava o PID falhava sempre
+> com `WinError 6`, travando o auto-start pra sempre com um lock preso.
+> Achado 2 (corrigido o 1º): faltava redirecionar `stdout`/`stderr` também —
+> um `print()` em `bot_telegram.py`, fora do `try/finally` que limpava o
+> lock, derrubava o processo ao herdar um stdout inválido, deixando o lock
+> preso de novo e fazendo a tela subir outro bot por cima em loop, sem
+> nenhum chegar a `app.run_polling()`. Corrigir cada sintoma não resolvia a
+> causa — qualquer processo nascido de `pythonw` nasce nesse terreno
+> minado. Solução: trocar de mecanismo (Agendador de Tarefas, processo
+> criado do zero pelo Windows) em vez de seguir caçando o próximo achado.
+> Todo o código do lock de PID foi removido.
 
 ## Onde rodar
 No PC do escritório com a Zebra — a impressão sai na Downloads **dessa** máquina.

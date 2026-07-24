@@ -224,28 +224,6 @@ def _agendar_alerta_pos_horario(app, cfg: dict) -> None:
              INTERVALO_ALERTA_SEGUNDOS // 60)
 
 
-def _escrever_lock_bot() -> None:
-    """Best-effort: grava o PID deste processo em ARQUIVO_LOCK_BOT, para a
-    tela saber que o bot ja esta rodando e nao subir um 2o em segundo plano
-    (ver core.bot_ja_rodando). Falhar ao gravar o lock nunca impede o bot de
-    subir — so faz a tela nao ter como detectar que ele ja esta de pe."""
-    try:
-        core.ARQUIVO_LOCK_BOT.write_text(str(os.getpid()), encoding="utf-8")
-    except OSError:
-        log.warning("Nao consegui gravar o lock do bot (%s).", core.ARQUIVO_LOCK_BOT)
-
-
-def _limpar_lock_bot() -> None:
-    """Remove o lock SO se ainda apontar para este processo (evita apagar o
-    lock de um bot novo, no caso raro de dois encerramentos quase
-    simultaneos — ex.: o '.bat (auto)' reiniciando bem na hora do Ctrl+C)."""
-    try:
-        if core.ARQUIVO_LOCK_BOT.read_text(encoding="utf-8").strip() == str(os.getpid()):
-            core.ARQUIVO_LOCK_BOT.unlink()
-    except (OSError, ValueError):
-        pass
-
-
 # ---------------------------------------------------------------- contas
 def _garantir_conta_ativa() -> str:
     """Garante que aponte para uma conta valida (mesma logica da tela).
@@ -786,13 +764,9 @@ def main() -> None:
 
     _agendar_aviso(app, cfg)
     _agendar_alerta_pos_horario(app, cfg)
-    _escrever_lock_bot()
     log.info("Bot iniciado (%d chat(s) autorizado(s)).", len(cfg["chat_ids"]))
     print("Bot rodando... Ctrl+C para parar.")
-    try:
-        app.run_polling()
-    finally:
-        _limpar_lock_bot()
+    app.run_polling()
 
 
 def _pausar() -> None:

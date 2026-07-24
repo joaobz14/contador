@@ -303,8 +303,22 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
-- **Correção real 2 (mesma causa-raiz da anterior): "subiu" duas vezes, bot
-  nunca respondia no Telegram.** Mesmo com o `stdin` já corrigido, o `Popen`
+- **Auto-start pela tela abandonado; bot agora sobe no login do Windows.**
+  As duas "correções reais" abaixo tratavam sintomas de uma mesma causa-raiz
+  (a tela roda via `pythonw`, sem console — qualquer `subprocess` disparado
+  dali herda handles de stdin/stdout/stderr inválidos) que continuava
+  reaparecendo de formas novas. Em vez de seguir caçando o próximo achado, o
+  mecanismo de auto-start pela tela (`separador_gui.py` chamando
+  `core.iniciar_bot_em_segundo_plano()`, lock de PID em `bot.lock`) foi
+  **removido**. No lugar: rode **uma vez**
+  `atalhos\registrar-tarefa-bot.ps1` — registra uma tarefa no Agendador de
+  Tarefas do Windows (gatilho `AtLogOn`) que sobe `atalhos\'Iniciar Bot
+  (auto).bat'` sem janela visível a cada login, num processo criado do zero
+  pelo Windows (sem herdar nada quebrado), independente da tela estar
+  aberta. Sem lock de PID: uma duplicata eventual é autolimitada pelo
+  próprio Telegram (erro 409).
+- **Correção real 2 (mesma causa-raiz da anterior, código desde removido):
+  "subiu" duas vezes, bot nunca respondia no Telegram.** Mesmo com o `stdin` já corrigido, o `Popen`
   que sobe o `.bat` não redirecionava `stdout`/`stderr` — o `print("Bot
   rodando... Ctrl+C para parar.")` em `bot_telegram.py` (fora do
   `try/finally` que limpa `bot.lock`) derrubava o processo ao herdar um

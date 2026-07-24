@@ -20,10 +20,8 @@ Comandos:
 from __future__ import annotations
 
 import io
-import os
 import random
 import re
-import subprocess
 import sys
 import threading
 import time
@@ -68,11 +66,6 @@ ARQUIVO_SKUS_ANUNCIO = PASTA_SCRIPT / "skus_por_anuncio.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
-# Lock (PID em texto) do bot do Telegram: a tela le este arquivo para saber se
-# o bot ja esta rodando antes de subir um em segundo plano (ver
-# bot_ja_rodando/iniciar_bot_em_segundo_plano). Quem grava e limpa o PID e o
-# proprio bot_telegram.py.
-ARQUIVO_LOCK_BOT = PASTA_SCRIPT / "bot.lock"
 # Cronometragem por fase do "Atualizar" do ML (busca x filtro de envios x extrair).
 # Diagnostico local para saber ONDE o tempo vai antes de otimizar (como o
 # shopee_tempos.log). Gitignorado; so contagens e segundos, nunca dados sensiveis.
@@ -304,90 +297,6 @@ def aplicar_config() -> dict:
         migrar_conta_legado(cfg["conta_ativa"])  # so age se necessario
         definir_conta(cfg["conta_ativa"])
     return cfg
-
-
-# ---------------------------------------------------------------------------
-# BOT EM SEGUNDO PLANO (a tela sobe o bot do Telegram junto, sem duplicar)
-# ---------------------------------------------------------------------------
-def _pid_vivo(pid: int) -> bool:
-    """Verifica (Windows) se um PID ainda esta rodando, via `tasklist` — sem
-    dependencia extra (psutil). `stdin=DEVNULL` de proposito: a tela roda via
-    `pythonw` (sem console — ver 'Abrir Separador.bat'), que tem os handles
-    padrao invalidos; sem redirecionar o stdin, `subprocess.run` tenta herdar
-    esse handle quebrado e falha com `WinError 6` (achado testando na maquina
-    real — o `tasklist` nunca chegava a rodar, sempre caia no except). Em
-    duvida (comando falhou mesmo assim/ausente), assume MORTO: o Telegram ja
-    rejeita duas instancias do mesmo bot fazendo polling ao mesmo tempo (erro
-    409, autolimitado) — duplicar por engano e bem menos grave do que travar
-    pra sempre achando que um bot morto ainda esta vivo (lock travado nunca
-    mais deixaria o bot subir sozinho de novo)."""
-    try:
-        saida = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-            capture_output=True, text=True, timeout=5, stdin=subprocess.DEVNULL,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return False
-    return str(pid) in saida.stdout
-
-
-def bot_ja_rodando() -> bool:
-    """True se ARQUIVO_LOCK_BOT existe e o PID nele aponta pra um processo
-    vivo. Quem grava/limpa o lock e o proprio bot_telegram.py (grava o PID ao
-    subir, remove ao encerrar). Lock travado (processo morreu sem limpar —
-    queda de energia, kill forcado) e detectado pelo PID morto e tratado como
-    'nao esta rodando' — degrada suave, mesmo espirito de estado.trava."""
-    if not ARQUIVO_LOCK_BOT.exists():
-        return False
-    try:
-        pid = int(ARQUIVO_LOCK_BOT.read_text(encoding="utf-8").strip())
-    except (ValueError, OSError):
-        return False
-    return _pid_vivo(pid)
-
-
-def iniciar_bot_em_segundo_plano() -> str:
-    """Sobe o bot do Telegram sem janela visivel, SE ainda nao estiver
-    rodando (ver bot_ja_rodando) — evita esquecer de ligar o bot manualmente
-    (o alerta de venda pronta pra hoje depende dele estar de pe). Reusa o
-    lancador com reinicio automatico (atalhos/'Iniciar Bot (auto).bat') em
-    vez de reimplementar a logica de retry aqui. So faz sentido no Windows.
-
-    Devolve uma string curta dizendo o que aconteceu ('subiu', 'ja_rodando',
-    'nao_windows', 'bat_ausente') — sem isso, um "nao subiu" silencioso (ex.:
-    lock travado apontando por engano pra um PID vivo de outro processo) fica
-    impossivel de diagnosticar a distancia; so uma excecao aparecia no log.
-    NAO engole excecao aqui de proposito — quem chama (a tela, que ja tem
-    logging) decide como tratar/registrar uma falha ao subir o bot."""
-    if os.name != "nt":
-        return "nao_windows"
-    if bot_ja_rodando():
-        return "ja_rodando"
-    bat = PASTA_SCRIPT / "atalhos" / "Iniciar Bot (auto).bat"
-    if not bat.exists():
-        return "bat_ausente"
-    # stdin/stdout/stderr=DEVNULL pelo mesmo motivo de _pid_vivo: a tela roda
-    # via pythonw (sem console/handles padrao validos) e o processo filho
-    # (cmd -> bot_telegram.py) herdaria esses handles quebrados sem essa
-    # redirecao. So redirecionar o stdin nao bastava: o bot tem varios
-    # print() fora de try/except (ex.: "Bot rodando... Ctrl+C para parar.")
-    # que, ao escrever num stdout invalido herdado, derrubavam o processo
-    # com excecao nao tratada logo apos gravar o lock — o lock ficava preso
-    # apontando pra um PID ja morto, e a proxima abertura da tela via
-    # bot_ja_rodando() == False subia OUTRO bot por cima (achado testando na
-    # maquina real: "subiu" duas vezes seguidas, bot nunca respondia no
-    # Telegram). O log de verdade do bot ja vai pro arquivo (ARQUIVO_LOG via
-    # FileHandler em bot_telegram.py) — descartar o console aqui nao perde
-    # diagnostico nenhum.
-    subprocess.Popen(
-        ["cmd", "/c", str(bat)],
-        creationflags=subprocess.CREATE_NO_WINDOW,
-        cwd=str(PASTA_SCRIPT),
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return "subiu"
 
 
 # ---------------------------------------------------------------------------

@@ -26,7 +26,7 @@ verified_at_commit: bcab879
 - **Cache de AWB** (`awb_cache_shopee.json`) para conferência confiável. [[Conferência na Shopee (rastreio)]].
 - **Bot do Telegram** (consulta ML+Shopee; imprime só ML; `/resumo`) + **alerta pós-horário**
   (a cada 5 min, todas as contas, avisa venda nova `ready_to_print` com despacho hoje) +
-  a tela sobe o bot sozinha ao abrir (sem janela, lock de PID). [[Telegram]].
+  sobe sozinho no login do Windows (Agendador de Tarefas, sem janela). [[Telegram]].
 - **Grafo com sincronizador seguro** `tools/graph_sync.py` + `semantic.json` + `tests/test_graphify_sync.py`. [[Grafo em duas camadas]].
 - **Base de conhecimento Obsidian** (este cofre) + validador `tools/validar_obsidian.py`.
 

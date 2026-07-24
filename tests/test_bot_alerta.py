@@ -214,19 +214,3 @@ def test_job_alerta_sem_contas_nao_quebra(monkeypatch):
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
     ctx = _ctx([10], lambda cid, txt: None)
     asyncio.run(bot.job_alerta_pos_horario(ctx))  # nao deve levantar
-
-
-# ---------------------------------------------------------------- lock de PID
-def test_escrever_e_limpar_lock_bot(tmp_path, monkeypatch):
-    monkeypatch.setattr(core, "ARQUIVO_LOCK_BOT", tmp_path / "bot.lock")
-    bot._escrever_lock_bot()
-    assert core.ARQUIVO_LOCK_BOT.read_text(encoding="utf-8").strip() == str(bot.os.getpid())
-    bot._limpar_lock_bot()
-    assert not core.ARQUIVO_LOCK_BOT.exists()
-
-
-def test_limpar_lock_bot_nao_apaga_lock_de_outro_processo(tmp_path, monkeypatch):
-    monkeypatch.setattr(core, "ARQUIVO_LOCK_BOT", tmp_path / "bot.lock")
-    core.ARQUIVO_LOCK_BOT.write_text("999999", encoding="utf-8")
-    bot._limpar_lock_bot()
-    assert core.ARQUIVO_LOCK_BOT.exists()  # PID nao bate com o deste processo -- nao mexe
