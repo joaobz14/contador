@@ -3,7 +3,7 @@ tags: [integracao, mercado-ads, product-ads, monitor]
 type: integration
 status: current
 aliases: [Product Ads, Mercado Ads, ads-monitor, coletor de metricas de campanha]
-source_files: [ads-monitor/coletar.py, ads-monitor/recomendar.py, ads-monitor/run-diario.ps1, ads-monitor/registrar-tarefa.ps1, tools/diag_ads.py, tools/diag_coleta.py]
+source_files: [ads-monitor/coletar.py, ads-monitor/recomendar.py, ads-monitor/narrar.py, ads-monitor/run-diario.ps1, ads-monitor/registrar-tarefa.ps1, tools/diag_ads.py, tools/diag_coleta.py]
 source_docs: [ads-monitor/README.md]
 verified_at_commit: 463f970
 ---
@@ -12,12 +12,15 @@ verified_at_commit: 463f970
 
 > [!abstract]
 > Monitor de campanhas de Mercado Ads (Product Ads) para as contas Cozilatti e
-> Gastromaq, em 3 camadas: **coleta** (`coletar.py`, sem IA, agendada
-> diariamente) grava o snapshot das métricas de cada campanha — e, dentro dela,
-> de cada **ad_group/item anunciado** (atribuição por SKU, best-effort) — num
-> SQLite **local**; **recomendação** (`recomendar.py`) gera ações a partir do
-> histórico usando só os sinais que **não** dependem de margem (orçamento,
-> ranking, ROAS vs. alvo). Só leitura — nunca muda campanha/orçamento/anúncio.
+> Gastromaq, em 3 camadas determinísticas + 1 camada opcional de narrativa:
+> **coleta** (`coletar.py`, sem IA, agendada diariamente) grava o snapshot das
+> métricas de cada campanha — e, dentro dela, de cada **ad_group/item
+> anunciado** (atribuição por SKU, best-effort) — num SQLite **local**;
+> **recomendação** (`recomendar.py`) gera ações a partir do histórico usando só
+> os sinais que **não** dependem de margem (orçamento, ranking, ROAS vs. alvo);
+> **narrativa** (`narrar.py`, opcional) usa `claude -p` só para narrar em
+> português o que as duas camadas anteriores já calcularam, sem inventar
+> conclusão nova. Só leitura — nunca muda campanha/orçamento/anúncio.
 > Recomendações condicionadas a margem ficam **bloqueadas** (nenhuma fonte de
 > custo/margem por SKU existe no projeto ainda).
 
@@ -116,6 +119,28 @@ isoladamente). Dado provisório já é impossível por construção — o coleto
 grava dias fechados. **Não** detecta campanha recém-criada de verdade
 (precisaria de `date_created`, fora do schema); `MIN_DIAS` é um substituto
 aproximado (dias no *nosso* histórico, não a idade real na ML).
+
+## Narrativa opcional (`narrar.py`)
+
+Por que existe: o dono também montou, em paralelo (n8n + DeepSeek), um monitor
+do mesmo Product Ads com uma camada de narrativa em IA e entrega automática de
+relatório — ao comparar os dois, ficou explícito que o papel de cada um devia
+ser diferente (n8n para narrativa/apresentação/entrega, `ads-monitor/` para o
+histórico canônico + regras + SKU), mas que a camada de narrativa do n8n valia
+a pena trazer também pra cá, sobre o motor já existente.
+
+`narrar.py` é uma camada **aditiva e opcional** — nunca troca nem altera
+`recomendar.py`; só pega a saída dele (recomendações já geradas +
+`_agregar_campanhas` para achar as campanhas "monitorando") e pede pro Claude
+Code (`claude -p`, mesmo padrão do `api-monitor/run-semanal.ps1` — nenhuma
+credencial de LLM nova) reescrever isso em prosa. O prompt instrui
+explicitamente "narre, não invente": nunca concluir margem/lucratividade,
+nunca sugerir mudança automática, preservar o aviso "condicionada à validação
+da margem" tal como veio calculado, nunca adicionar recomendação nova. Se
+`claude` não estiver instalado/autorizado ou travar, `chamar_claude` devolve
+`""` e o script sai com aviso — nunca finge sucesso, e o motor de regras
+determinístico continua funcionando sozinho independente disso. Saída em
+`ads-monitor/relatorios/*.md` (gitignorado, mesmo padrão do `api-monitor/`).
 
 ## Relacionado
 - [[Token e rotação do refresh]] · [[Trava entre processos]] · [[Grafo em duas camadas]]

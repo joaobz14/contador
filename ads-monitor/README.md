@@ -1,7 +1,7 @@
 # ads-monitor — monitor de campanhas do Product Ads (Mercado Livre)
 
 Monitor de campanhas do Mercado Ads (Product Ads) para as contas Cozilatti e
-Gastromaq, em três camadas:
+Gastromaq, em três camadas determinísticas + uma camada opcional de narrativa:
 
 1. **Coleta** (`coletar.py`, agendada) — grava, uma vez por dia, o snapshot
    das métricas de cada campanha — e, dentro dela, de cada **ad_group/item
@@ -13,6 +13,10 @@ Gastromaq, em três camadas:
    histórico, usando só os sinais que **não** dependem de margem (ver seção
    própria abaixo). Recomendações condicionadas a margem ficam pra quando essa
    fonte existir.
+4. **Narrativa** (`narrar.py`, opcional) — camada de IA **por cima** das três
+   anteriores, que só narra em português o que `recomendar.py` já calculou
+   (ver seção própria abaixo). As três primeiras camadas continuam 100%
+   determinísticas e funcionam sozinhas sem essa camada.
 
 ## O que faz (e o que não faz)
 
@@ -149,6 +153,37 @@ impossível por construção — `coletar.py` só grava dias fechados, nunca "ho
 **Não detecta campanha recém-criada de verdade** (precisaria de
 `date_created`, fora do schema atual) — `MIN_DIAS` é um substituto aproximado
 (dias no *nosso* histórico, não a idade real na ML).
+
+## Narrativa opcional (`narrar.py`)
+
+Camada **aditiva e opcional** sobre `recomendar.py` — narra em português
+natural o que o motor de regras já calculou (recomendações + campanhas
+"monitorando" sem dado suficiente), sem inventar nenhuma conclusão nova. Se
+esta camada falhar ou não rodar, `recomendar.py` continua funcionando sozinho
+exatamente como antes — nada aqui muda o motor determinístico.
+
+Usa `claude -p` (Claude Code, já instalado/autenticado na máquina do dono —
+mesmo padrão do `api-monitor/run-semanal.ps1`) em vez de uma API de LLM
+externa: sem credencial nova pra gerenciar, sem custo por token de terceiro.
+
+```powershell
+python ads-monitor\narrar.py                    # janela padrao, todas as contas
+python ads-monitor\narrar.py --dias 14
+python ads-monitor\narrar.py --conta cozilatti
+python ads-monitor\narrar.py --dry-run           # so mostra o prompt, nao chama a IA
+```
+
+O prompt embute as mesmas guardas do motor de regras: nunca concluir sobre
+margem/lucratividade, nunca sugerir mudança automática (pausar, editar lance,
+mudar orçamento), preservar o aviso "condicionada à validação da margem" tal
+como veio calculado, e nunca inventar recomendação além das que
+`recomendar.py` já gerou. Campanhas "monitorando" são narradas como "em
+observação", nunca como problema ou oportunidade.
+
+Saída salva em `ads-monitor/relatorios/` (gitignorado, mesmo padrão do
+`api-monitor/relatorios/`). Se `claude` não estiver instalado, travar ou
+falhar, o script devolve aviso e sai com código de erro — nunca quebra
+silenciosamente nem inventa relatório.
 
 ## Limitações conhecidas desta versão
 

@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 325,
- "edge_count": 538,
+ "node_count": 326,
+ "edge_count": 545,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3723,6 +3723,20 @@
    "community": 0,
    "norm_label": "ads-monitor camada 3 (motor de recomendacao, sinais sem margem): recomendar.py le campanhas_diarias numa janela de dias e gera recomendacoes no formato pedido desde o inicio (conta/campanha/problema/evidencia/acao/justificativa/impacto/risco/confianca/urgencia/prazo de reavaliacao/metrica de verificacao). so os 3 sinais que a propria api ja calcula e nao dependem de margem: orcamento insuficiente (lost_impression_share_by_budget), ranking baixo (lost_impression_share_by_ad_rank) e roas abaixo do roas_target da propria campanha. recomendacao de aumentar investimento (orcamento/ranking) sai sempre marcada 'condicionada a validacao da margem' -- sem dado de margem por sku, nao da pra saber se vale a pena gastar mais; roas abaixo do alvo nao precisa da ressalva (e reducao de risco, nao aposta de investimento). trava contra recomendar em dado fraco (regra do pedido original): min_dias=3 dias distintos + min_clicks=20 na janela -- campanha sem isso fica 'monitorando', sem recomendacao (avaliar_campanha() e funcao pura, testada isoladamente). dado provisorio ja e impossivel por construcao (coletar.py so grava dias fechados). nao detecta 'campanha recem-criada' de verdade (precisaria date_created, fora do schema atual) -- min_dias e substituto aproximado (dias no nosso historico, nao idade real na ml). construido depois do agendamento diario (ads_monitor_agendamento_diario) ficar pronto -- sem coleta automatica, min_dias nunca seria atingido organicamente.",
    "_origin": "manual"
+  },
+  {
+   "label": "ADS-MONITOR CAMADA 4 (narrativa opcional via IA, narrar.py): motivada por um monitor irmao do mesmo Product Ads construido em paralelo pelo dono em n8n + DeepSeek, com narrativa por IA e entrega automatica de relatorio. Ao comparar os dois sistemas, decisao explicita foi manter papeis diferentes -- n8n para narrativa/apresentacao/entrega, ads-monitor/ para o historico canonico + regras + SKU -- mas trazer a narrativa em IA tambem pra este lado, por cima do motor ja existente (camada 3), sem duplicar historico nem regras. narrar.py e ADITIVO e OPCIONAL: nunca altera recomendar.py, so pega a saida dele (recomendacoes ja geradas + _agregar_campanhas para achar as campanhas 'monitorando' sem dado suficiente) e pede pro Claude Code (claude -p via subprocess, mesmo padrao do api-monitor/run-semanal.ps1) reescrever isso em prosa -- sem credencial de LLM externa nova. O prompt (REGRAS) instrui explicitamente 'narre, nao invente': nunca concluir margem/lucratividade, nunca sugerir mudanca automatica, preservar o aviso 'condicionada a validacao da margem' tal como veio calculado, nunca adicionar recomendacao nova alem das que o motor de regras ja gerou. chamar_claude nunca levanta -- se 'claude' nao estiver instalado/autorizado, travar ou devolver codigo != 0, devolve string vazia e main() sai com aviso, sem fingir sucesso; o motor determinístico (camadas 1-3) continua funcionando sozinho independente desta camada falhar ou nao rodar. Saida salva em ads-monitor/relatorios/*.md (gitignorado, mesmo padrao do api-monitor/relatorios/). --dry-run mostra o prompt montado sem chamar a IA nem gravar arquivo (usado para testar/depurar sem custo).",
+   "file_type": "concept",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "ads_monitor_narrar_camada4",
+   "community": 0,
+   "_origin": "manual",
+   "norm_label": "ads-monitor camada 4 (narrativa opcional via ia, narrar.py): motivada por um monitor irmao do mesmo product ads construido em paralelo pelo dono em n8n + deepseek, com narrativa por ia e entrega automatica de relatorio. ao comparar os dois sistemas, decisao explicita foi manter papeis diferentes -- n8n para narrativa/apresentacao/entrega, ads-monitor/ para o historico canonico + regras + sku -- mas trazer a narrativa em ia tambem pra este lado, por cima do motor ja existente (camada 3), sem duplicar historico nem regras. narrar.py e aditivo e opcional: nunca altera recomendar.py, so pega a saida dele (recomendacoes ja geradas + _agregar_campanhas para achar as campanhas 'monitorando' sem dado suficiente) e pede pro claude code (claude -p via subprocess, mesmo padrao do api-monitor/run-semanal.ps1) reescrever isso em prosa -- sem credencial de llm externa nova. o prompt (regras) instrui explicitamente 'narre, nao invente': nunca concluir margem/lucratividade, nunca sugerir mudanca automatica, preservar o aviso 'condicionada a validacao da margem' tal como veio calculado, nunca adicionar recomendacao nova alem das que o motor de regras ja gerou. chamar_claude nunca levanta -- se 'claude' nao estiver instalado/autorizado, travar ou devolver codigo != 0, devolve string vazia e main() sai com aviso, sem fingir sucesso; o motor determinístico (camadas 1-3) continua funcionando sozinho independente desta camada falhar ou nao rodar. saida salva em ads-monitor/relatorios/*.md (gitignorado, mesmo padrao do api-monitor/relatorios/). --dry-run mostra o prompt montado sem chamar a ia nem gravar arquivo (usado para testar/depurar sem custo)."
   }
  ],
  "edges": [
@@ -4150,6 +4164,28 @@
    "target": "ads_monitor_coletor_camada1",
    "confidence_score": 1.0,
    "context": "camada 3 le o que as camadas 1/2 gravam"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_motor_recomendacao_sem_margem",
+   "confidence_score": 1.0,
+   "context": "camada 4 narra o que a camada 3 (motor de regras) ja calculou, sem inventar conclusao nova"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "api_monitor_sistema",
+   "confidence_score": 1.0,
+   "context": "mesmo padrao de uso do claude -p (subprocess, sem credencial de LLM nova) que o api-monitor/run-semanal.ps1 ja usa"
   },
   {
    "relation": "conceptually_related_to",
@@ -5385,6 +5421,56 @@
    "weight": 1.0,
    "source": "ads_monitor_motor_recomendacao_sem_margem",
    "target": "ads_monitor_recomendar_gerar_recomendacoes",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_narrar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_narrar_chamar_claude",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_narrar_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_narrar_montar_dados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/narrar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "ads_monitor_narrar_camada4",
+   "target": "ads_monitor_narrar_montar_prompt",
    "confidence_score": 1.0
   },
   {
