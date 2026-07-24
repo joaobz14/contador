@@ -303,6 +303,16 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Correção real 2 (mesma causa-raiz da anterior): "subiu" duas vezes, bot
+  nunca respondia no Telegram.** Mesmo com o `stdin` já corrigido, o `Popen`
+  que sobe o `.bat` não redirecionava `stdout`/`stderr` — o `print("Bot
+  rodando... Ctrl+C para parar.")` em `bot_telegram.py` (fora do
+  `try/finally` que limpa `bot.lock`) derrubava o processo ao herdar um
+  stdout inválido do `pythonw`, logo após gravar o lock. O lock ficava preso
+  num PID já morto; a tela seguinte via `bot_ja_rodando()==False` e subia
+  outro bot por cima, em loop, sem nunca chegar a `app.run_polling()`.
+  Corrigido com `stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL` no
+  mesmo `Popen` (o log de verdade já vai pro arquivo via `FileHandler`).
 - **Correção real (achada testando na máquina do dono): auto-start do bot
   travava para sempre.** O bot funcionava manual (`Iniciar Bot.bat`) mas
   nunca subia sozinho pela tela, sem nenhum erro no log. Causa: a tela roda

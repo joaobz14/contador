@@ -218,6 +218,17 @@ se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
   `stdin=DEVNULL` o `subprocess.run` do `tasklist` falhava com `WinError 6`
   toda vez, fazendo o lock travado nunca mais deixar o bot subir sozinho).
   Em dúvida, prefere arriscar duplicar (autolimitado) a travar pra sempre.
+  **Mesma causa-raiz, achado 2 (posterior):** o `Popen` que sobe o
+  `.bat` também herdava stdout/stderr inválidos do `pythonw` — o `print()` de
+  `bot_telegram.py` (`"Bot rodando... Ctrl+C para parar."`, **fora** do
+  `try/finally` que limpa o lock) derrubava o processo com exceção não
+  tratada logo após gravar `bot.lock`, deixando-o preso apontando pra um PID
+  já morto; a tela via `bot_ja_rodando()==False` e subia outro bot por cima —
+  em loop, nunca chegava a `app.run_polling()` (bot nunca respondia no
+  Telegram, mesmo com "subiu" no log). Corrigido com
+  `stdout=DEVNULL, stderr=DEVNULL` no mesmo `Popen` (o log de verdade já vai
+  pro arquivo via `FileHandler`; descartar o console aqui não perde
+  diagnóstico).
 - **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a
   detecção pelo app externo — o papel não sai. O **restante** do nome, ao
   contrário, precisa ser **único** por trabalho (`nome_saida_unico`): nome
