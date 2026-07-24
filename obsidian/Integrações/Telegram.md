@@ -47,6 +47,16 @@ O alerta pós-horário só funciona com o bot de pé; isso evita esquecer de lig
 parte. Decisão do dono: atrelado à abertura da tela (fica aberta o dia todo), não
 sempre-ligado via Agendador de Tarefas.
 
+> [!bug] Achado real: auto-start travava pra sempre
+> Testando na máquina do dono, o bot funcionava manual mas nunca subia sozinho, sem
+> erro no log. Causa: a tela roda via `pythonw` (sem console) — sem
+> `stdin=subprocess.DEVNULL`, o `tasklist` que checa o PID falhava com `WinError 6`,
+> e o default antigo "em dúvida assume vivo" fazia um `bot.lock` travado bloquear o
+> auto-start **para sempre**. Corrigido com `stdin=DEVNULL` + default invertido pra
+> "em dúvida assume morto" (duplicar é autolimitado pelo próprio Telegram, erro 409;
+> travar pra sempre é pior). `iniciar_bot_em_segundo_plano()` agora devolve o motivo
+> (`subiu`/`ja_rodando`/`nao_windows`/`bat_ausente`), sempre logado pela tela.
+
 ## Onde rodar
 No PC do escritório com a Zebra — a impressão sai na Downloads **dessa** máquina.
 

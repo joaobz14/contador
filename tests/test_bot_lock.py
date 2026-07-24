@@ -36,13 +36,29 @@ def test_pid_nao_vivo_quando_tasklist_nao_lista(monkeypatch):
     assert core._pid_vivo(9999) is False
 
 
-def test_pid_vivo_assume_vivo_quando_comando_falha(monkeypatch):
+def test_pid_vivo_assume_morto_quando_comando_falha(monkeypatch):
     def _fake_run(cmd, **kw):
         raise OSError("tasklist ausente")
 
     monkeypatch.setattr(core.subprocess, "run", _fake_run)
-    # Em duvida, assume vivo -- nao arrisca subir um 2o bot por falso-negativo.
-    assert core._pid_vivo(1) is True
+    # Em duvida, assume MORTO -- travar pra sempre com um lock preso e pior
+    # que arriscar duplicar (o Telegram ja rejeita 2 pollings, erro 409).
+    assert core._pid_vivo(1) is False
+
+
+def test_pid_vivo_redireciona_stdin_para_nao_herdar_handle_invalido(monkeypatch):
+    """Achado testando na maquina real: a tela roda via pythonw (sem console),
+    que tem stdin invalido -- sem stdin=DEVNULL, o subprocess.run do tasklist
+    falhava com WinError 6 e o PID sempre caia no "em duvida"."""
+    chamadas = []
+
+    def _fake_run(cmd, **kw):
+        chamadas.append(kw)
+        return subprocess.CompletedProcess(cmd, 0, stdout="")
+
+    monkeypatch.setattr(core.subprocess, "run", _fake_run)
+    core._pid_vivo(1)
+    assert chamadas[0]["stdin"] is subprocess.DEVNULL
 
 
 # -------------------------------------------------------------- bot_ja_rodando
@@ -120,3 +136,4 @@ def test_iniciar_bot_sobe_o_bat_sem_janela(monkeypatch, tmp_path):
     assert str(bat) in cmd
     assert kw["creationflags"] == 0x08000000
     assert kw["cwd"] == str(tmp_path)
+    assert kw["stdin"] is subprocess.DEVNULL

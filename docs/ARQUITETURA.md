@@ -210,9 +210,14 @@ se ele ainda não estiver rodando — o alerta só funciona com o bot de pé.
 - **`core.bot_ja_rodando` / `iniciar_bot_em_segundo_plano`**: o lock é só um
   PID em texto (`bot.lock`), sem trava de arquivo (`estado.trava`) — não
   precisa, o pior caso de uma corrida rara (duas telas abrindo no mesmíssimo
-  instante) é subir 2 bots, não corromper dado. `_pid_vivo` assume **vivo**
-  quando o `tasklist` falha/está ausente — em dúvida, prefere não duplicar a
-  arriscar um falso-negativo.
+  instante) é subir 2 bots, autolimitado pelo próprio Telegram (rejeita duas
+  instâncias do mesmo bot fazendo polling ao mesmo tempo, erro 409) — bem
+  menos grave que travar pra sempre. `_pid_vivo` assume **morto** quando o
+  `tasklist` falha/está ausente (achado testando na máquina real: a tela roda
+  via `pythonw`, sem console — os handles padrão são inválidos, e sem
+  `stdin=DEVNULL` o `subprocess.run` do `tasklist` falhava com `WinError 6`
+  toda vez, fazendo o lock travado nunca mais deixar o bot subir sozinho).
+  Em dúvida, prefere arriscar duplicar (autolimitado) a travar pra sempre.
 - **Pasta Downloads / app Zebra**: mudar o **prefixo** do nome do ZIP quebra a
   detecção pelo app externo — o papel não sai. O **restante** do nome, ao
   contrário, precisa ser **único** por trabalho (`nome_saida_unico`): nome
