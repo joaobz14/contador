@@ -274,8 +274,17 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
 - **Segurança:** responde só aos `chat_ids` autorizados; token do `bot_config.json`
   (não versionado) ou da variável `TELEGRAM_BOT_TOKEN`. Envie `/id` para descobrir o seu.
 - **Aviso da manhã:** `"aviso_horario": "08:00"` no `bot_config.json` (fuso de Brasília).
-- **Iniciar:** `atalhos\Iniciar Bot.bat` ou `atalhos\Iniciar Bot (auto).bat`
-  (reinicia sozinho se cair — recomendado). Atividade/erros em `bot.log`.
+- **Alerta pós-horário:** a cada 5 minutos, o bot checa **todas as contas** e avisa
+  assim que surge uma venda nova já pronta para despachar **hoje** (`ready_to_print`) —
+  ajuda a não perder o prazo de repor com o fornecedor quando a venda cai depois que
+  você já parou de checar a tela. Não precisa configurar nada além do bot já estar
+  rodando; roda sozinho, independente do botão "Atualizar" da tela.
+- **Iniciar:** a tela (`separador_gui.py`) já sobe o bot sozinha, sem janela visível,
+  quando você a abre (se ele ainda não estiver rodando) — é assim que o alerta
+  pós-horário funciona sem precisar lembrar de ligar o bot à parte. Para rodar o bot
+  manualmente (ex.: numa máquina sem a tela aberta): `atalhos\Iniciar Bot.bat` ou
+  `atalhos\Iniciar Bot (auto).bat` (reinicia sozinho se cair — recomendado). Atividade/
+  erros em `bot.log`.
 
 ---
 

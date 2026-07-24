@@ -23,6 +23,8 @@ shopee_tempos.log
 ml_tempos.log
 separador.log
 historico_impressao.json
+bot.lock
+alertas_pos_horario.json
 *.tmp
 *.bak
 *.corrupto

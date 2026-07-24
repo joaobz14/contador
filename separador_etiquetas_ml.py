@@ -20,8 +20,10 @@ Comandos:
 from __future__ import annotations
 
 import io
+import os
 import random
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -66,6 +68,11 @@ ARQUIVO_SKUS_ANUNCIO = PASTA_SCRIPT / "skus_por_anuncio.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
 ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
+# Lock (PID em texto) do bot do Telegram: a tela le este arquivo para saber se
+# o bot ja esta rodando antes de subir um em segundo plano (ver
+# bot_ja_rodando/iniciar_bot_em_segundo_plano). Quem grava e limpa o PID e o
+# proprio bot_telegram.py.
+ARQUIVO_LOCK_BOT = PASTA_SCRIPT / "bot.lock"
 # Cronometragem por fase do "Atualizar" do ML (busca x filtro de envios x extrair).
 # Diagnostico local para saber ONDE o tempo vai antes de otimizar (como o
 # shopee_tempos.log). Gitignorado; so contagens e segundos, nunca dados sensiveis.
@@ -297,6 +304,62 @@ def aplicar_config() -> dict:
         migrar_conta_legado(cfg["conta_ativa"])  # so age se necessario
         definir_conta(cfg["conta_ativa"])
     return cfg
+
+
+# ---------------------------------------------------------------------------
+# BOT EM SEGUNDO PLANO (a tela sobe o bot do Telegram junto, sem duplicar)
+# ---------------------------------------------------------------------------
+def _pid_vivo(pid: int) -> bool:
+    """Verifica (Windows) se um PID ainda esta rodando, via `tasklist` — sem
+    dependencia extra (psutil). Em duvida (comando falhou/ausente), assume
+    vivo: melhor deixar de subir um 2o bot por engano do que duplicar por um
+    falso-negativo."""
+    try:
+        saida = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+            capture_output=True, text=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return True
+    return str(pid) in saida.stdout
+
+
+def bot_ja_rodando() -> bool:
+    """True se ARQUIVO_LOCK_BOT existe e o PID nele aponta pra um processo
+    vivo. Quem grava/limpa o lock e o proprio bot_telegram.py (grava o PID ao
+    subir, remove ao encerrar). Lock travado (processo morreu sem limpar —
+    queda de energia, kill forcado) e detectado pelo PID morto e tratado como
+    'nao esta rodando' — degrada suave, mesmo espirito de estado.trava."""
+    if not ARQUIVO_LOCK_BOT.exists():
+        return False
+    try:
+        pid = int(ARQUIVO_LOCK_BOT.read_text(encoding="utf-8").strip())
+    except (ValueError, OSError):
+        return False
+    return _pid_vivo(pid)
+
+
+def iniciar_bot_em_segundo_plano() -> None:
+    """Sobe o bot do Telegram sem janela visivel, SE ainda nao estiver
+    rodando (ver bot_ja_rodando) — evita esquecer de ligar o bot manualmente
+    (o alerta de venda pronta pra hoje depende dele estar de pe). Reusa o
+    lancador com reinicio automatico (atalhos/'Iniciar Bot (auto).bat') em
+    vez de reimplementar a logica de retry aqui. So faz sentido no Windows.
+
+    NAO engole excecao aqui de proposito — quem chama (a tela, que ja tem
+    logging) decide como tratar/registrar uma falha ao subir o bot."""
+    if os.name != "nt":
+        return
+    if bot_ja_rodando():
+        return
+    bat = PASTA_SCRIPT / "atalhos" / "Iniciar Bot (auto).bat"
+    if not bat.exists():
+        return
+    subprocess.Popen(
+        ["cmd", "/c", str(bat)],
+        creationflags=subprocess.CREATE_NO_WINDOW,
+        cwd=str(PASTA_SCRIPT),
+    )
 
 
 # ---------------------------------------------------------------------------

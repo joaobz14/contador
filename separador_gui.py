@@ -53,6 +53,17 @@ class SeparadorApp:
         # Salva o tamanho/posicao da janela ao fechar, para reabrir igual.
         self.root.protocol("WM_DELETE_WINDOW", self._ao_fechar)
         log.info("Separador iniciado (%s)", self._ctx_log())
+        self._iniciar_bot_em_segundo_plano()
+
+    def _iniciar_bot_em_segundo_plano(self) -> None:
+        """Sobe o bot do Telegram junto com a tela (alerta de venda pronta pra
+        hoje), sem janela visivel, SE ainda nao estiver rodando — evita
+        esquecer de ligar o bot manualmente. Best-effort: uma falha aqui
+        nunca pode impedir a tela de abrir."""
+        try:
+            core.iniciar_bot_em_segundo_plano()
+        except Exception:
+            log.exception("Falha ao tentar iniciar o bot em segundo plano")
 
     def _ctx_log(self) -> str:
         """Contexto para o log operacional (loja e, no ML, a conta ativa). Le so
