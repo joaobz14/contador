@@ -339,27 +339,32 @@ def bot_ja_rodando() -> bool:
     return _pid_vivo(pid)
 
 
-def iniciar_bot_em_segundo_plano() -> None:
+def iniciar_bot_em_segundo_plano() -> str:
     """Sobe o bot do Telegram sem janela visivel, SE ainda nao estiver
     rodando (ver bot_ja_rodando) — evita esquecer de ligar o bot manualmente
     (o alerta de venda pronta pra hoje depende dele estar de pe). Reusa o
     lancador com reinicio automatico (atalhos/'Iniciar Bot (auto).bat') em
     vez de reimplementar a logica de retry aqui. So faz sentido no Windows.
 
+    Devolve uma string curta dizendo o que aconteceu ('subiu', 'ja_rodando',
+    'nao_windows', 'bat_ausente') — sem isso, um "nao subiu" silencioso (ex.:
+    lock travado apontando por engano pra um PID vivo de outro processo) fica
+    impossivel de diagnosticar a distancia; so uma excecao aparecia no log.
     NAO engole excecao aqui de proposito — quem chama (a tela, que ja tem
     logging) decide como tratar/registrar uma falha ao subir o bot."""
     if os.name != "nt":
-        return
+        return "nao_windows"
     if bot_ja_rodando():
-        return
+        return "ja_rodando"
     bat = PASTA_SCRIPT / "atalhos" / "Iniciar Bot (auto).bat"
     if not bat.exists():
-        return
+        return "bat_ausente"
     subprocess.Popen(
         ["cmd", "/c", str(bat)],
         creationflags=subprocess.CREATE_NO_WINDOW,
         cwd=str(PASTA_SCRIPT),
     )
+    return "subiu"
 
 
 # ---------------------------------------------------------------------------
