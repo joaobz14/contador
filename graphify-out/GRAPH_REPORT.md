@@ -9,19 +9,13 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 | **AST + estrutura** | nós de arquivos/classes/funções/métodos + `contains`/`method`/`imports`/`calls` | **último build completo do CLI:** commit `5233aef` (2026-07-08). **Re-sincronizada** com o código por `tools/graph_sync.py` no commit `f1dd2d0` (2026-07-22). | reflete o código atual |
 | **Semântica** | `rationale`/`concept`/`document` + `rationale_for`/`conceptually_related_to`/`shares_data_with` | mantida **à mão**, contínua (ver "Atualizações manuais" abaixo). Espelhada em `graphify-out/semantic.json`. | preservada 100% |
 
-- **`built_at_commit` do `graph.json` = `f1dd2d0`** (HEAD analisado nesta sincronização).
+- **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1319 nodes · 2415 edges · 10 hyperedges** (325 nós semânticos preservados) —
-  atualizadas ao incluir `tools/validar_obsidian.py` + testes, a semântica do cofre,
-  o helper `_nome_sem_sku`, o `tools/diag_coleta.py`, o `tools/diag_ads.py`
-  (validação só-leitura do Product Ads), o `ads-monitor/coletar.py` + testes
-  (coletor determinístico do Product Ads, camada 1 e camada 2 — atribuição por
-  ad_group/item), a resolução de SKU via `seller_sku` real (extensão do cache
-  `itens_cache.json` do núcleo, `_resolver_skus`), o `tools/diag_seller_sku.py`
-  (diagnóstico exploratório: por que ad_groups tipo ITEM não resolveram SKU — e o
-  modo item específico que confirmou que o SKU mora por variação, não no item raiz)
-  e o `ads-monitor/recomendar.py` + testes (camada 3 — motor de recomendação com
-  os sinais que não dependem de margem).
+  **1376 nodes · 2521 edges · 10 hyperedges** — inclui a remoção do auto-start
+  do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
+  Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), mais o
+  CLI de teste do alerta pós-horário (`bot_telegram.py testar-alerta`). Ver
+  "Atualizações manuais" abaixo pro histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -48,6 +42,15 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-24 — CLI pra testar o alerta pós-horário na hora:**
+  `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta
+  Pos-Horario.bat'`) monta um `Application` de verdade e chama
+  `job_alerta_pos_horario()` uma única vez, fora do agendamento de 5 min —
+  reusa 100% a lógica já validada, sem reimplementar filtro nem envio.
+  Motivado por confirmar que o envio funciona depois de trocar o mecanismo
+  de auto-start (nó abaixo) sem precisar esperar o próximo ciclo E uma
+  venda real cair. Novo nó `bot_testar_alerta_cli`.
 
 - **2026-07-24 — Auto-start pela tela abandonado; bot agora sobe no login do
   Windows:** os dois achados abaixo tratavam sintomas de uma mesma

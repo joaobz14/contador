@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 329,
- "edge_count": 555,
+ "node_count": 330,
+ "edge_count": 558,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3779,6 +3779,20 @@
    "community": 4,
    "_origin": "manual",
    "norm_label": "bot sobe sozinho no login do windows (atalhos/registrar-tarefa-bot.ps1 + atalhos/rodar-bot-oculto.ps1): mecanismo atual pra o bot subir sem precisar lembrar de ligar na mao (o alerta pos-horario so funciona com ele de pe) -- substitui o auto-start pela tela (ver bot_segundo_plano_junto_com_tela, abandonado por 2 bugs reais de mesma causa-raiz nos handles do pythonw). registrar-tarefa-bot.ps1 roda uma vez na maquina do dono e registra uma tarefa no agendador de tarefas do windows (register-scheduledtask, gatilho atlogon do usuario atual, mesmo padrao do ads-monitor/registrar-tarefa.ps1) que chama rodar-bot-oculto.ps1 a cada login -- esse wrapper soh faz start-process -windowstyle hidden no atalhos/'iniciar bot (auto).bat' ja existente (reusa o lancador com reinicio automatico, sem reimplementar retry aqui). executiontimelimit zerado de proposito ([timespan]::zero) -- o limite padrao do agendador mataria o bot depois de algumas horas, o que o derrubaria sem motivo (o bot fica de pe o dia inteiro). vantagem sobre o mecanismo anterior: o processo nasce do zero pelo windows (task scheduler engine), com handles padrao validos -- nao herda nada quebrado do pythonw, entao nao repete a classe de bug que derrubou a tentativa anterior. sem lock de pid: uma duplicata eventual (ex.: tarefa do login rodando junto com um clique manual no .bat) e autolimitada pelo proprio telegram (rejeita duas instancias do mesmo bot fazendo polling ao mesmo tempo, erro 409)."
+  },
+  {
+   "label": "TESTAR ALERTA POS-HORARIO NA HORA (bot_telegram.py testar-alerta -> _testar_alerta_pos_horario_agora, atalhos/'Testar Alerta Pos-Horario.bat'): o alerta so roda a cada 5 min (JobQueue.run_repeating) e so manda mensagem quando ha uma venda nova de fato -- sem isso, confirmar que o envio funciona depois de mudar o mecanismo de auto-start (ver bot_agendador_tarefas_logon) exigia esperar ate 5 min E uma venda real cair, dificil de forcar sob demanda. O comando de CLI monta um Application de verdade (token/config reais) e chama job_alerta_pos_horario() uma unica vez, FORA do agendamento -- reusa 100% a logica ja validada (nao reimplementa filtro nem envio), so chama antes da hora. Usa dados/API/Telegram reais: se houver um envio ready_to_print de hoje ainda nao avisado, manda a mensagem de verdade; senao, so avisa que nao achou nada (nao manda mensagem a toa so por rodar o teste).",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "bot_testar_alerta_cli",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "testar alerta pos-horario na hora (bot_telegram.py testar-alerta -> _testar_alerta_pos_horario_agora, atalhos/'testar alerta pos-horario.bat'): o alerta so roda a cada 5 min (jobqueue.run_repeating) e so manda mensagem quando ha uma venda nova de fato -- sem isso, confirmar que o envio funciona depois de mudar o mecanismo de auto-start (ver bot_agendador_tarefas_logon) exigia esperar ate 5 min e uma venda real cair, dificil de forcar sob demanda. o comando de cli monta um application de verdade (token/config reais) e chama job_alerta_pos_horario() uma unica vez, fora do agendamento -- reusa 100% a logica ja validada (nao reimplementa filtro nem envio), so chama antes da hora. usa dados/api/telegram reais: se houver um envio ready_to_print de hoje ainda nao avisado, manda a mensagem de verdade; senao, so avisa que nao achou nada (nao manda mensagem a toa so por rodar o teste)."
   }
  ],
  "edges": [
@@ -4482,6 +4496,26 @@
    "target": "bot_alerta_pos_horario",
    "confidence_score": 1.0,
    "context": "o alerta so funciona com o bot rodando -- por isso a tela agora sobe o bot sozinha"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_testar_alerta_cli",
+   "target": "bot_agendador_tarefas_logon",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_testar_alerta_cli",
+   "target": "bot_alerta_pos_horario",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -5965,6 +5999,16 @@
    "weight": 1.0,
    "source": "bot_telegram_rationale_627",
    "target": "bot_telegram_pausar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "bot_testar_alerta_cli",
+   "target": "bot_telegram_testar_alerta_pos_horario_agora",
    "confidence_score": 1.0
   },
   {
