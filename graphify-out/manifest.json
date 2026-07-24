@@ -40,9 +40,9 @@
   "semantic_hash": "57eff6eeb1e714d13ef16cab3bf311f130a36f3a"
  },
  "README.md": {
-  "mtime": 1784926213.9020474,
-  "ast_hash": "1a0dcc8a1a7420b43656725589b92b115a25484c",
-  "semantic_hash": "1a0dcc8a1a7420b43656725589b92b115a25484c"
+  "mtime": 1784934063.0493343,
+  "ast_hash": "cb217771997869ea27fae7243c99803853fa5ad5",
+  "semantic_hash": "cb217771997869ea27fae7243c99803853fa5ad5"
  },
  "ads-monitor/README.md": {
   "mtime": 1784916367.2070236,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1784926128.6980424,
-  "ast_hash": "7f6cf956fe6db4dd2a51e7606a1e2eecf4efbb9c",
-  "semantic_hash": "7f6cf956fe6db4dd2a51e7606a1e2eecf4efbb9c"
+  "mtime": 1784934020.837335,
+  "ast_hash": "34fc744c355b5559ff3dec08c2a5498ee9202b31",
+  "semantic_hash": "34fc744c355b5559ff3dec08c2a5498ee9202b31"
  },
  "docs/AMAZON_SP_API.md": {
   "mtime": 1784160592.696835,
@@ -390,9 +390,9 @@
   "semantic_hash": "7049a2a84210d329ef35abbe4c04c5f53fdc056c"
  },
  "tests/test_bot_alerta.py": {
-  "mtime": 1784926138.2780428,
-  "ast_hash": "547283691999cbe0e1e8050ee7b97fd232ec4d18",
-  "semantic_hash": "547283691999cbe0e1e8050ee7b97fd232ec4d18"
+  "mtime": 1784934055.4773345,
+  "ast_hash": "83842fd96d25eaa6ade159afc98514395cf1f8d9",
+  "semantic_hash": "83842fd96d25eaa6ade159afc98514395cf1f8d9"
  },
  "tests/test_bot_impressao.py": {
   "mtime": 1784204131.3728328,

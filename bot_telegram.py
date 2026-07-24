@@ -39,7 +39,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import sys
 from datetime import datetime, time
+from types import SimpleNamespace
 
 try:
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -769,6 +771,36 @@ def main() -> None:
     app.run_polling()
 
 
+def _testar_alerta_pos_horario_agora() -> None:
+    """Forca uma rodada do alerta pos-horario AGORA, sem esperar os 5 min do
+    JobQueue. Usa a config/contas/token REAIS e manda mensagem de verdade
+    pro Telegram se achar algum envio ready_to_print de hoje ainda nao
+    avisado -- reusa 100% job_alerta_pos_horario (nao reimplementa nada),
+    so chama ela uma vez fora do agendamento. Util pra confirmar que o
+    envio funciona sem precisar esperar uma venda nova cair ou o proximo
+    ciclo de 5 min. Rode: python bot_telegram.py testar-alerta"""
+    core.aplicar_config()
+    _garantir_conta_ativa()
+    cfg = carregar_config()
+
+    async def _rodar() -> None:
+        app = ApplicationBuilder().token(cfg["token"]).build()
+        app.bot_data["cfg"] = cfg
+        await app.initialize()
+        try:
+            ctx = SimpleNamespace(bot=app.bot, bot_data=app.bot_data)
+            await job_alerta_pos_horario(ctx)
+        finally:
+            await app.shutdown()
+
+    print("Checando alerta pos-horario agora (sem esperar os 5 min)...")
+    asyncio.run(_rodar())
+    print("Pronto. Se havia algum envio novo ready_to_print para hoje ainda "
+          "nao avisado, a mensagem foi enviada agora no Telegram. Se nao "
+          "avisou nada, e porque nao ha nenhum envio novo hoje (ou ja foi "
+          "avisado antes). Detalhes em bot.log.")
+
+
 def _pausar() -> None:
     """Segura a janela aberta para a mensagem ser lida (cmd fecha rapido senao).
 
@@ -784,6 +816,15 @@ def _pausar() -> None:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "testar-alerta":
+        try:
+            _testar_alerta_pos_horario_agora()
+        except core.SeparadorError as e:
+            print(f"\nNAO CONSEGUI TESTAR O ALERTA:\n  {e}")
+            _pausar()
+            raise SystemExit(1)
+        _pausar()
+        raise SystemExit(0)
     try:
         main()
     except KeyboardInterrupt:
