@@ -275,19 +275,21 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
 - **Segurança:** responde só aos `chat_ids` autorizados; token do `bot_config.json`
   (não versionado) ou da variável `TELEGRAM_BOT_TOKEN`. Envie `/id` para descobrir o seu.
 - **Aviso da manhã:** `"aviso_horario": "08:00"` no `bot_config.json` (fuso de Brasília).
-- **Alerta pós-horário:** a cada 5 minutos, o bot checa **todas as contas** e avisa
-  assim que surge uma venda nova já pronta para despachar **hoje** (`ready_to_print`) —
-  ajuda a não perder o prazo de repor com o fornecedor quando a venda cai depois que
-  você já parou de checar a tela. Não precisa configurar nada além do bot já estar
-  rodando; roda sozinho, independente do botão "Atualizar" da tela. Cada alerta mostra
-  SKU + quantidade (ex.: `A01 - 2L 110 - 1`), sem número de envio. Pra testar sem
-  esperar os 5 minutos nem uma venda nova: `atalhos\Testar Alerta Pos-Horario.bat`
-  (ou `python bot_telegram.py testar-alerta`) — checa agora com dados reais e manda
-  a mensagem de verdade se achar algo novo.
+- **Alerta pós-horário:** a cada 5 minutos, o bot checa **todas as contas ML e também
+  a Shopee** e avisa assim que surge uma venda nova já pronta para despachar **hoje**
+  (`ready_to_print` no ML, `READY_TO_SHIP` na Shopee) — ajuda a não perder o prazo de
+  repor com o fornecedor quando a venda cai depois que você já parou de checar a tela.
+  A checagem da Shopee é pulada em silêncio se você não tiver `credenciais_shopee.json`
+  (setup só-ML funciona normalmente). Não precisa configurar mais nada além do bot já
+  estar rodando; roda sozinho, independente do botão "Atualizar" da tela. Cada alerta
+  mostra SKU + quantidade (ex.: `A01 - 2L 110 - 1`), sem número de envio/pedido. Pra
+  testar sem esperar os 5 minutos nem uma venda nova: `atalhos\Testar Alerta
+  Pos-Horario.bat` (ou `python bot_telegram.py testar-alerta`) — checa agora com dados
+  reais e manda a mensagem de verdade se achar algo novo.
 - **Resumo das vendas pós-horário (`/vendasapos`):** se várias vendas caírem em
   sequência depois das 8:30, cada uma vira um alerta — pra não poluir o chat, `/vendasapos`
   (ou o botão "🔔 Vendas após" no `/menu`) junta **tudo que já foi avisado hoje**, por
-  conta, com um TOTAL por SKU no final. Só relê o que já foi avisado — não refaz
+  conta/loja (ML e Shopee), com um TOTAL por SKU no final. Só relê o que já foi avisado — não refaz
   nenhuma chamada de API.
 - **Iniciar:** manualmente, `atalhos\Iniciar Bot.bat` ou `atalhos\Iniciar Bot
   (auto).bat` (reinicia sozinho se cair — recomendado, é o que o alerta pós-horário

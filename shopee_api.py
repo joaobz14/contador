@@ -307,9 +307,10 @@ def _data_envio(ship_by_date) -> str:
     return datetime.fromtimestamp(int(ship_by_date), core.TZ_BR).date().isoformat()
 
 
-def grupos_de_detalhes(detalhes: list[dict], nomes: dict, dia: str | None) -> list[core.Grupo]:
-    """Converte os detalhes em ItemPedido, filtra pelo dia de envio e agrupa
-    por SKU + quantidade (reaproveitando o nucleo). Funcao pura: testavel sem rede."""
+def _itens_de_detalhes(detalhes: list[dict], dia: str | None) -> list[core.ItemPedido]:
+    """Extrai ItemPedido de cada pedido, filtrando pelo dia de envio (None =
+    sem filtro). Funcao pura, reaproveitada por grupos_de_detalhes (agrupado,
+    pra tela/CLI) e pedidos_prontos_novos (flat, pro alerta pos-horario)."""
     itens: list[core.ItemPedido] = []
     for ped in detalhes:
         if dia is not None and _data_envio(ped.get("ship_by_date")) != dia:
@@ -323,9 +324,35 @@ def grupos_de_detalhes(detalhes: list[dict], nomes: dict, dia: str | None) -> li
                 order_id=sn, shipment_id=sn, chave=chave, nome=nome,
                 quantidade=int(it.get("model_quantity_purchased", 1)),
             ))
-    grupos = core.agrupar(itens)
+    return itens
+
+
+def grupos_de_detalhes(detalhes: list[dict], nomes: dict, dia: str | None) -> list[core.Grupo]:
+    """Converte os detalhes em ItemPedido, filtra pelo dia de envio e agrupa
+    por SKU + quantidade (reaproveitando o nucleo). Funcao pura: testavel sem rede."""
+    grupos = core.agrupar(_itens_de_detalhes(detalhes, dia))
     core.aplicar_nomes(grupos, nomes)
     return grupos
+
+
+def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str):
+    """Equivalente Shopee do filtro do alerta pos-horario do ML: pedidos
+    READY_TO_SHIP (listar_order_sns ja filtra isso) com despacho HOJE
+    (ship_by_date) que ainda NAO estao em `avisados` (dedup por order_sn,
+    string — a Shopee nao tem shipment_id numerico separado do pedido).
+    Devolve (pedidos_novos, itens) — mesma forma de
+    core.filtrar_para_imprimir + core.extrair_itens do ML, pra
+    bot_telegram.py reusar sem reimplementar o filtro nem a extracao."""
+    order_sns = listar_order_sns(cred, token)
+    if not order_sns:
+        return [], []
+    detalhes = buscar_detalhes(cred, token, order_sns)
+    novos = [d for d in detalhes
+             if _data_envio(d.get("ship_by_date")) == hoje
+             and d.get("order_sn") not in avisados]
+    if not novos:
+        return [], []
+    return novos, _itens_de_detalhes(novos, None)
 
 
 def contagem_por_dia(detalhes: list[dict]) -> dict[str, int]:

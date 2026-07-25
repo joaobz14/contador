@@ -15,11 +15,16 @@ except BaseException as e:  # noqa: BLE001 - pyo3 PanicException herda de BaseEx
     pytest.skip(f"bot_telegram indisponivel: {e}", allow_module_level=True)
 
 import separador_etiquetas_ml as core  # noqa: E402
+import shopee_api as shopee  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def _arquivo_alertas_isolado(tmp_path, monkeypatch):
     monkeypatch.setattr(bot, "ARQUIVO_ALERTAS", tmp_path / "alertas.json")
+    # Por padrao, sem credencial Shopee (isola do estado real do repo/maquina
+    # e faz o job pular a checagem Shopee em silencio, como um setup so-ML).
+    # Testes especificos da Shopee apontam pra um arquivo que EXISTE.
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "sem_credencial_shopee.json")
 
 
 def _envio(sid, dia, item_id=1):
@@ -102,6 +107,21 @@ def test_dados_alerta_nao_troca_se_ja_e_a_conta_ativa(monkeypatch):
     bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-24")
 
     assert trocas == []
+
+
+# ---------------------------------------------------------------- _dados_alerta_shopee
+def test_dados_alerta_shopee_delega_pro_shopee_api(monkeypatch):
+    chamadas = []
+    monkeypatch.setattr(shopee, "carregar_credenciais", lambda: {"cred": 1})
+    monkeypatch.setattr(shopee, "obter_token", lambda cred: "TOK")
+    monkeypatch.setattr(shopee, "pedidos_prontos_novos",
+                        lambda cred, token, avisados, hoje: chamadas.append(
+                            (cred, token, avisados, hoje)) or (["novo"], ["item"]))
+
+    novos, itens = bot._dados_alerta_shopee(avisados={"SN0"}, hoje="2026-07-24")
+
+    assert novos == ["novo"] and itens == ["item"]
+    assert chamadas == [({"cred": 1}, "TOK", {"SN0"}, "2026-07-24")]
 
 
 # ------------------------------------------------------------------- job_alerta
@@ -218,6 +238,90 @@ def test_job_alerta_sem_contas_nao_quebra(monkeypatch):
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
     ctx = _ctx([10], lambda cid, txt: None)
     asyncio.run(bot.job_alerta_pos_horario(ctx))  # nao deve levantar
+
+
+# --------------------------------------------------------------- Shopee no alerta
+def _pedido_shopee(order_sn):
+    return {"order_sn": order_sn}
+
+
+def test_job_alerta_pula_shopee_sem_credencial(monkeypatch):
+    """Setup so-ML (sem credenciais_shopee.json): nao chama a Shopee, nao
+    loga erro a cada ciclo."""
+    monkeypatch.setattr(core, "listar_contas", lambda: [])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    chamou = []
+    monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda *a, **k: chamou.append(1))
+    ctx = _ctx([10], lambda cid, txt: None)
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert chamou == []
+
+
+def test_job_alerta_avisa_shopee_quando_configurada(monkeypatch, tmp_path):
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "credenciais_shopee.json")
+    shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(core, "listar_contas", lambda: [])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_shopee",
+                        lambda avisados, hoje: (
+                            [_pedido_shopee("SN1")],
+                            [core.ItemPedido(order_id="SN1", shipment_id="SN1", chave="A02",
+                                            nome="A02", quantidade=2)],
+                        ))
+    enviados = []
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1
+    assert "🔔 Venda Shopee" in enviados[0][1]
+    assert "A02 - 2" in enviados[0][1]
+    dados = bot._carregar_alertas()
+    assert dados["avisados"]["Shopee"] == ["SN1"]
+    assert dados["itens"]["Shopee"] == [{"chave": "A02", "quantidade": 2}]
+
+
+def test_job_alerta_shopee_isola_falha_sem_impedir_ml(monkeypatch, tmp_path):
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "credenciais_shopee.json")
+    shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta",
+                        lambda conta, avisados, hoje: (
+                            [_envio(1, hoje)],
+                            [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
+                                            nome="A02", quantidade=1)],
+                        ))
+
+    def _shopee_com_erro(avisados, hoje):
+        raise RuntimeError("falha de rede shopee")
+
+    monkeypatch.setattr(bot, "_dados_alerta_shopee", _shopee_com_erro)
+    enviados = []
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1  # ML ainda avisou, mesmo com a Shopee falhando
+
+
+def test_job_alerta_shopee_sem_novidade_nao_envia(monkeypatch, tmp_path):
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "credenciais_shopee.json")
+    shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(core, "listar_contas", lambda: [])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda avisados, hoje: ([], []))
+    enviados = []
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert enviados == []
 
 
 # ------------------------------------------------ _testar_alerta_pos_horario_agora

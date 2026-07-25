@@ -34,13 +34,20 @@ verified_at_commit: bcab879
 - **Aviso da manhã** (`job_bom_dia`, 1x/dia, `aviso_horario` no `bot_config.json`).
 - **Alerta pós-horário** (`job_alerta_pos_horario`, a cada 5 min): motivado por venda
   que cai depois das 8:30 e passa despercebida até ser tarde pra repor com o
-  fornecedor. Percorre **todas** as contas e avisa — uma vez por envio — quando surge
-  um envio novo já `ready_to_print` com despacho **hoje**. Independente do botão
-  Atualizar da tela; dedup por `shipment_id` em `alertas_pos_horario.json` (reseta
-  sozinho no dia seguinte). Isola falha por conta. Mostra SKU + quantidade **somada
-  por SKU** (`A01 - 2L 110 - 1`), sem número de envio — pedido do dono, só precisa
-  saber O QUE repor. Cada disparo também persiste os itens no mesmo arquivo
-  (junto do dedup), que alimenta o `/vendasapos` abaixo.
+  fornecedor. Percorre **todas** as contas ML **e também a Shopee** (loja única) e
+  avisa — uma vez por envio/pedido — quando surge algo novo já pronto pra despachar
+  **hoje** (`ready_to_print`+`expected_date` no ML, `READY_TO_SHIP`+`ship_by_date`
+  na Shopee — sinais equivalentes; `shopee_api.pedidos_prontos_novos` é o par Shopee
+  de `filtrar_para_imprimir`+`extrair_itens`). A checagem da Shopee **pula em
+  silêncio** se não houver `credenciais_shopee.json` (setup só-ML continua válido).
+  Independente do botão Atualizar da tela; dedup em `alertas_pos_horario.json` (reseta
+  sozinho no dia seguinte) — por `shipment_id` no ML, por `order_sn` na Shopee
+  (tratada como mais uma chave, `"Shopee"`). Isola falha por conta/loja — envio e
+  persistência compartilhados entre ML e Shopee via `_disparar_alerta` (não duplica
+  essa lógica). Mostra SKU + quantidade **somada por SKU** (`A01 - 2L 110 - 1`), sem
+  número de envio/pedido — pedido do dono, só precisa saber O QUE repor. Cada
+  disparo também persiste os itens no mesmo arquivo (junto do dedup), que alimenta
+  o `/vendasapos` abaixo.
 - **Testar na hora** (sem esperar os 5 min nem uma venda nova):
   `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta
   Pos-Horario.bat'`) — monta um `Application` de verdade e chama o job uma
@@ -49,9 +56,9 @@ verified_at_commit: bcab879
 ## Resumo agregado (`/vendasapos`)
 Se várias vendas caírem em sequência depois das 8:30, cada uma vira um alerta
 separado — poluindo o chat. `/vendasapos` (comando e botão "🔔 Vendas após" no
-`/menu`) junta **tudo que já foi avisado hoje**, por conta, com um TOTAL por SKU
-no final. Só relê `alertas_pos_horario.json` (os itens que o alerta já persistiu),
-não refaz nenhuma chamada de API.
+`/menu`) junta **tudo que já foi avisado hoje**, por conta/loja (ML e Shopee), com
+um TOTAL por SKU no final. Só relê `alertas_pos_horario.json` (os itens que o
+alerta já persistiu), não refaz nenhuma chamada de API.
 
 ## Sobe sozinho no login do Windows
 O alerta pós-horário só funciona com o bot de pé, e é fácil esquecer de ligá-lo

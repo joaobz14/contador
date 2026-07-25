@@ -179,13 +179,51 @@ def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
             core.definir_conta(original)
 
 
+CHAVE_ALERTA_SHOPEE = "Shopee"
+
+
+def _dados_alerta_shopee(avisados: set, hoje: str):
+    """Equivalente Shopee de _dados_alerta_da_conta: loja UNICA (sem troca de
+    conta — a Shopee so tem uma), delega o filtro pra
+    shopee_api.pedidos_prontos_novos (READY_TO_SHIP + despacho hoje, dedup
+    por order_sn). Roda em thread (rede) — ver job_alerta_pos_horario."""
+    cred = shopee.carregar_credenciais()
+    token = shopee.obter_token(cred)
+    return shopee.pedidos_prontos_novos(cred, token, avisados, hoje)
+
+
+async def _disparar_alerta(context, cfg: dict, dados: dict,
+                           chave_estado: str, itens: list, ids_novos: list) -> None:
+    """Monta o texto, manda pra todos os chats autorizados e atualiza `dados`
+    (dedup + itens) IN-PLACE. `chave_estado` e a chave usada em
+    dados['avisados']/['itens'] — nome da conta ML, ou CHAVE_ALERTA_SHOPEE.
+    `ids_novos` sao os identificadores pra dedup (shipment_id numerico no
+    ML, order_sn string na Shopee) — o chamador decide o tipo, esta funcao
+    so acumula. Compartilhada entre ML e Shopee pra nao duplicar o envio +
+    a persistencia em dois lugares."""
+    texto = relatorio.texto_alerta_pos_horario(chave_estado, itens)
+    for chat_id in cfg["chat_ids"]:
+        try:
+            for bloco in relatorio.dividir_mensagem(texto):
+                await context.bot.send_message(chat_id, bloco)
+        except Exception:
+            log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
+
+    dados["avisados"].setdefault(chave_estado, [])
+    dados["avisados"][chave_estado].extend(ids_novos)
+    dados["itens"].setdefault(chave_estado, [])
+    dados["itens"][chave_estado].extend(
+        {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
+
+
 async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roda a cada INTERVALO_ALERTA_SEGUNDOS, independente do botao Atualizar
-    da tela e de qualquer comando manual: percorre TODAS as contas
-    configuradas (ou a unica, em setup legado sem contas/) e avisa — uma vez
-    so, por envio — quando surge um envio novo ja pronto (ready_to_print) com
-    despacho HOJE. Isola falha por conta: uma conta com erro nao impede o
-    aviso das demais (mesma filosofia do ads-monitor/coletar.py)."""
+    da tela e de qualquer comando manual: percorre TODAS as contas ML
+    configuradas (ou a unica, em setup legado sem contas/) MAIS a Shopee (loja
+    unica), e avisa — uma vez so, por envio/pedido — quando surge algo novo ja
+    pronto pra despachar HOJE (ready_to_print no ML, READY_TO_SHIP na Shopee).
+    Isola falha por conta/loja: uma com erro nao impede o aviso das demais
+    (mesma filosofia do ads-monitor/coletar.py)."""
     cfg = context.bot_data["cfg"]
     contas = core.listar_contas() or [""]
     hoje = core._hoje_br()
@@ -202,21 +240,25 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             continue
         if not novos_pedidos:
             continue
-
-        texto = relatorio.texto_alerta_pos_horario(conta, itens)
-        for chat_id in cfg["chat_ids"]:
-            try:
-                for bloco in relatorio.dividir_mensagem(texto):
-                    await context.bot.send_message(chat_id, bloco)
-            except Exception:
-                log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
-
-        dados["avisados"].setdefault(conta, [])
-        dados["avisados"][conta].extend(p["_envio"]["shipment_id"] for p in novos_pedidos)
-        dados["itens"].setdefault(conta, [])
-        dados["itens"][conta].extend(
-            {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
+        await _disparar_alerta(context, cfg, dados, conta, itens,
+                               [p["_envio"]["shipment_id"] for p in novos_pedidos])
         mudou = True
+
+    # Shopee e independente das contas ML (loja unica); pula em silencio se
+    # nao houver credencial configurada (setup so-ML e valido e nao deve
+    # logar erro a cada 5 min pra sempre).
+    if shopee.ARQUIVO_CRED.exists():
+        avisados_shopee = set(dados["avisados"].get(CHAVE_ALERTA_SHOPEE, []))
+        try:
+            novos_shopee, itens_shopee = await asyncio.to_thread(
+                _dados_alerta_shopee, avisados_shopee, hoje)
+        except Exception:
+            log.exception("Falha ao checar alerta pos-horario da Shopee")
+            novos_shopee, itens_shopee = [], []
+        if novos_shopee:
+            await _disparar_alerta(context, cfg, dados, CHAVE_ALERTA_SHOPEE, itens_shopee,
+                                   [d["order_sn"] for d in novos_shopee])
+            mudou = True
 
     if mudou:
         await asyncio.to_thread(_salvar_alertas, dados)

@@ -11,12 +11,13 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1388 nodes · 2545 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1402 nodes · 2577 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
-  de teste do alerta pós-horário (`bot_telegram.py testar-alerta`) e o
-  formato enxuto + resumo agregado do alerta (`/vendasapos`). Ver
-  "Atualizações manuais" abaixo pro histórico completo.
+  de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
+  formato enxuto + resumo agregado do alerta (`/vendasapos`) e o alerta
+  pós-horário estendido pra Shopee. Ver "Atualizações manuais" abaixo pro
+  histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -43,6 +44,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07-24 — Alerta pós-horário estendido pra Shopee:** pedido do dono
+  depois de eu confirmar viabilidade — a Shopee tem sinal equivalente ao
+  `ready_to_print` do ML: `READY_TO_SHIP` (já filtrado por
+  `listar_order_sns`) + despacho hoje via `ship_by_date`. Nova
+  `shopee_api.pedidos_prontos_novos(cred, token, avisados, hoje)` (par
+  Shopee de `filtrar_para_imprimir`+`extrair_itens`), reusando
+  `_itens_de_detalhes` extraído de dentro de `grupos_de_detalhes` (evita
+  duplicar a extração de SKU/quantidade entre agrupamento e alerta).
+  `job_alerta_pos_horario` agora checa a Shopee depois do loop das contas
+  ML, tratando `"Shopee"` como mais uma chave no mesmo
+  `alertas_pos_horario.json` — dedup por `order_sn` (string), não
+  `shipment_id`. Pula em silêncio se `credenciais_shopee.json` não existir
+  (setup só-ML continua válido, sem log de erro a cada 5 min). Envio +
+  persistência extraídos pra `_disparar_alerta`, compartilhada entre ML e
+  Shopee. `/vendasapos` ganha a seção Shopee automaticamente (já era
+  genérico por "conta"). Novo nó `bot_alerta_shopee`.
 
 - **2026-07-24 — Alerta pós-horário: formato enxuto + resumo agregado
   (`/vendasapos`):** pedido do dono depois de testar na máquina real. O

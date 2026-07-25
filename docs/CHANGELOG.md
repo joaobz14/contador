@@ -303,6 +303,19 @@ Histórico das principais mudanças do projeto.
   (redação por `sem_segredos`).
 
 ### Bot do Telegram
+- **Alerta pós-horário agora também na Shopee.** `job_alerta_pos_horario`
+  percorre as contas ML e, na sequência, a Shopee (loja única) — sinal
+  equivalente ao `ready_to_print` do ML: pedido `READY_TO_SHIP` com
+  despacho **hoje** (`ship_by_date`). Nova função
+  `shopee_api.pedidos_prontos_novos` (par Shopee de
+  `filtrar_para_imprimir`+`extrair_itens`), reusando `_itens_de_detalhes`
+  extraído de dentro de `grupos_de_detalhes` (sem duplicar a extração de
+  SKU/quantidade). Dedup por `order_sn` (string), tratada como mais uma
+  chave (`"Shopee"`) no mesmo `alertas_pos_horario.json`. Pula em
+  **silêncio** se não houver `credenciais_shopee.json` (setup só-ML
+  continua válido, sem logar erro a cada 5 min). `/vendasapos` também passa
+  a incluir a seção da Shopee no resumo agregado, automaticamente (a
+  função já era genérica por "conta").
 - **Alerta pós-horário: formato mais enxuto + resumo agregado (`/vendasapos`).**
   Pedido do dono depois de testar na máquina real: o alerta não mostra mais o
   número do envio (`envio 123456789: ...`) — agora é só `SKU - quantidade`

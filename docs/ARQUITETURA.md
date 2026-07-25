@@ -52,16 +52,21 @@ antes de imprimir, valida que loja/conta ainda são as mesmas → imprime na **m
 onde o bot roda** (ZIP cai no Downloads dessa máquina) → registra em `bot.log`.
 Além dos comandos, dois jobs do `JobQueue` rodam sozinhos: o aviso da manhã
 (`job_bom_dia`, 1x/dia) e o **alerta pós-horário** (`job_alerta_pos_horario`, a
-cada 5 min) — percorre todas as contas e avisa, uma vez por envio, quando surge
-um envio novo já `ready_to_print` com despacho **hoje** (motivado por vendas
-que caem depois das 8:30 e passam despercebidas até ser tarde demais pra
-repor com o fornecedor) — o alerta só funciona com o bot de pé. Cada alerta
-mostra SKU + quantidade **somada por SKU** (sem número de envio — o dono
-precisa saber O QUE repor, não qual pedido). Cada disparo também persiste os
-itens em `alertas_pos_horario.json` (junto do dedup); `/vendasapos` (comando
-e botão "🔔 Vendas após" no `/menu`) junta **tudo que já foi avisado hoje**
-numa mensagem só, por conta + um TOTAL por SKU no final — evita que várias
-vendas caindo em sequência depois das 8:30 poluam o chat com um alerta cada.
+cada 5 min) — percorre todas as contas **ML** e também a **Shopee** (loja
+única) e avisa, uma vez por envio/pedido, quando surge algo novo já pronto
+pra despachar **hoje** (`ready_to_print`+`expected_date` no ML,
+`READY_TO_SHIP`+`ship_by_date` na Shopee — sinais equivalentes; motivado
+por vendas que caem depois das 8:30 e passam despercebidas até ser tarde
+demais pra repor com o fornecedor) — o alerta só funciona com o bot de pé.
+A checagem da Shopee pula em silêncio se não houver `credenciais_shopee.json`
+(setup só-ML é válido, sem logar erro a cada ciclo). Cada alerta mostra SKU +
+quantidade **somada por SKU** (sem número de envio/pedido — o dono precisa
+saber O QUE repor, não qual pedido). Cada disparo também persiste os itens
+em `alertas_pos_horario.json` (junto do dedup — por `shipment_id` no ML,
+`order_sn` na Shopee); `/vendasapos` (comando e botão "🔔 Vendas após" no
+`/menu`) junta **tudo que já foi avisado hoje** numa mensagem só, por
+conta/loja + um TOTAL por SKU no final — evita que várias vendas caindo em
+sequência depois das 8:30 poluam o chat com um alerta cada.
 O bot sobe sozinho no **login do Windows** via Agendador de Tarefas (`atalhos/
 registrar-tarefa-bot.ps1`, registrado uma vez), independente da tela estar
 aberta — ver "Áreas de risco" para o histórico de por que não é mais a tela
