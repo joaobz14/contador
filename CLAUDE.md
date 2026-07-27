@@ -310,22 +310,43 @@ em 2º plano.
   meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
   pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
   libera a trava; o `finally` libera mesmo se a confirmação estourar.
-- **Alerta pós-horário do bot (venda nova pronta pra hoje):** motivado por um
-  problema real do dono — venda que cai depois das 8:30 (quando ele já parou
-  de checar a tela) só é vista tarde demais, e o fornecedor já não tem mais o
-  produto pra repor no mesmo dia. `job_alerta_pos_horario` (`bot_telegram.py`,
-  `JobQueue.run_repeating` a cada 5 min) percorre **todas** as contas
-  (`core.listar_contas()`) e avisa — uma vez por envio — quando surge um envio
-  novo já `ready_to_print` com `expected_date == hoje`. Roda sozinho,
-  **independente** do botão Atualizar da tela e de qualquer comando manual.
-  Dedup por `shipment_id` num estado próprio (`alertas_pos_horario.json`,
-  gitignorado) que reseta sozinho na virada do dia. Isola falha por conta
-  (mesmo espírito do `ads-monitor/coletar.py`). **`_dados_alerta_da_conta` faz
-  a checagem + o detalhe dos itens NUM SÓ bloco de troca de conta** — separar
-  em duas chamadas arriscaria a 2ª rodar já com a conta ORIGINAL restaurada
-  pela 1ª (bug sutil de conta errada: `definir_conta` troca globais do núcleo
-  compartilhadas com o resto do bot; ver "Áreas de risco" em
-  `docs/ARQUITETURA.md`).
+- **Alerta pós-horário do bot (venda nova pronta pra hoje, ML + Shopee):**
+  motivado por um problema real do dono — venda que cai depois das 8:30
+  (quando ele já parou de checar a tela) só é vista tarde demais, e o
+  fornecedor já não tem mais o produto pra repor no mesmo dia.
+  `job_alerta_pos_horario` (`bot_telegram.py`, `JobQueue.run_repeating` a
+  cada 5 min) percorre **todas** as contas ML (`core.listar_contas()`) MAIS
+  a **Shopee** (loja única) e avisa — uma vez por envio/pedido — quando surge
+  algo novo já pronto pra despachar hoje (`ready_to_print`+`expected_date`
+  no ML, `READY_TO_SHIP`+`ship_by_date` na Shopee — sinais equivalentes;
+  `shopee_api.pedidos_prontos_novos` é o par Shopee de
+  `filtrar_para_imprimir`+`extrair_itens`, reusando `_itens_de_detalhes`
+  extraído de dentro de `grupos_de_detalhes` pra não duplicar a extração de
+  SKU/quantidade). Roda sozinho, **independente** do botão Atualizar da tela
+  e de qualquer comando manual. Dedup num estado próprio
+  (`alertas_pos_horario.json`, gitignorado) que reseta sozinho na virada do
+  dia — por `shipment_id` (numérico) no ML, por `order_sn` (string) na
+  Shopee, tratada como mais uma chave (`"Shopee"`) nesse mesmo estado.
+  A checagem da Shopee **pula em silêncio** se não houver
+  `credenciais_shopee.json` (setup só-ML é válido; sem isso, logaria erro a
+  cada 5 min pra sempre). Isola falha por conta/loja (mesmo espírito do
+  `ads-monitor/coletar.py`) — `_disparar_alerta` (envio + persistência) é
+  **compartilhada** entre ML e Shopee, pra não duplicar essa lógica em dois
+  lugares. **`_dados_alerta_da_conta` faz a checagem + o detalhe dos itens
+  NUM SÓ bloco de troca de conta** — separar em duas chamadas arriscaria a
+  2ª rodar já com a conta ORIGINAL restaurada pela 1ª (bug sutil de conta
+  errada: `definir_conta` troca globais do núcleo compartilhadas com o
+  resto do bot; ver "Áreas de risco" em `docs/ARQUITETURA.md`) — a Shopee
+  não tem esse risco (loja única, sem troca de conta). Cada alerta mostra
+  SKU + quantidade **somada por SKU** (`relatorio.texto_alerta_pos_horario`,
+  ex.: `A01 - 2L 110 - 1`), sem número de envio/pedido — pedido explícito
+  do dono, que só precisa saber O QUE repor. Cada disparo também persiste
+  os itens em `alertas_pos_horario.json` (junto do dedup); **`/vendasapos`**
+  (comando e botão "🔔 Vendas após" no `/menu`) junta **tudo que já foi
+  avisado hoje**, por conta/loja + um TOTAL por SKU no final
+  (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
+  sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
+  estado já persistido, não refaz chamada de API nenhuma.
 - **O bot sobe sozinho no login do Windows (Agendador de Tarefas), não pela
   tela:** o alerta acima só funciona com o bot rodando. A 1ª versão fazia a
   tela (`separador_gui.py`) subir o bot sozinha ao abrir — **abandonada**

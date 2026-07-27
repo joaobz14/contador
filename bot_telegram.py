@@ -131,14 +131,18 @@ INTERVALO_ALERTA_SEGUNDOS = 5 * 60
 
 def _carregar_alertas() -> dict:
     """Estado de dedup do alerta pos-horario: shipment_ids ja avisados HOJE,
-    por conta ({"dia": "...", "avisados": {conta: [sid, ...]}}). Reseta
-    sozinho quando o dia muda (mesma filosofia do estado de impressao — nao
-    precisa "limpar" nada na mao; um dia novo comeca com "hoje" vazio)."""
+    por conta ({"dia": "...", "avisados": {conta: [sid, ...]}}), MAIS os
+    itens (chave+quantidade) de cada aviso ja disparado hoje ({"itens":
+    {conta: [{chave, quantidade}, ...]}}) — usados pelo /vendasapos pra
+    juntar tudo sem refazer nenhuma chamada de API. Reseta sozinho quando o
+    dia muda (mesma filosofia do estado de impressao — nao precisa "limpar"
+    nada na mao; um dia novo comeca com "hoje" vazio)."""
     dados = core._ler_json(ARQUIVO_ALERTAS)
     hoje = core._hoje_br()
     if dados.get("dia") != hoje:
-        return {"dia": hoje, "avisados": {}}
+        return {"dia": hoje, "avisados": {}, "itens": {}}
     dados.setdefault("avisados", {})
+    dados.setdefault("itens", {})
     return dados
 
 
@@ -175,13 +179,51 @@ def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
             core.definir_conta(original)
 
 
+CHAVE_ALERTA_SHOPEE = "Shopee"
+
+
+def _dados_alerta_shopee(avisados: set, hoje: str):
+    """Equivalente Shopee de _dados_alerta_da_conta: loja UNICA (sem troca de
+    conta — a Shopee so tem uma), delega o filtro pra
+    shopee_api.pedidos_prontos_novos (READY_TO_SHIP + despacho hoje, dedup
+    por order_sn). Roda em thread (rede) — ver job_alerta_pos_horario."""
+    cred = shopee.carregar_credenciais()
+    token = shopee.obter_token(cred)
+    return shopee.pedidos_prontos_novos(cred, token, avisados, hoje)
+
+
+async def _disparar_alerta(context, cfg: dict, dados: dict,
+                           chave_estado: str, itens: list, ids_novos: list) -> None:
+    """Monta o texto, manda pra todos os chats autorizados e atualiza `dados`
+    (dedup + itens) IN-PLACE. `chave_estado` e a chave usada em
+    dados['avisados']/['itens'] — nome da conta ML, ou CHAVE_ALERTA_SHOPEE.
+    `ids_novos` sao os identificadores pra dedup (shipment_id numerico no
+    ML, order_sn string na Shopee) — o chamador decide o tipo, esta funcao
+    so acumula. Compartilhada entre ML e Shopee pra nao duplicar o envio +
+    a persistencia em dois lugares."""
+    texto = relatorio.texto_alerta_pos_horario(chave_estado, itens)
+    for chat_id in cfg["chat_ids"]:
+        try:
+            for bloco in relatorio.dividir_mensagem(texto):
+                await context.bot.send_message(chat_id, bloco)
+        except Exception:
+            log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
+
+    dados["avisados"].setdefault(chave_estado, [])
+    dados["avisados"][chave_estado].extend(ids_novos)
+    dados["itens"].setdefault(chave_estado, [])
+    dados["itens"][chave_estado].extend(
+        {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
+
+
 async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     """Roda a cada INTERVALO_ALERTA_SEGUNDOS, independente do botao Atualizar
-    da tela e de qualquer comando manual: percorre TODAS as contas
-    configuradas (ou a unica, em setup legado sem contas/) e avisa — uma vez
-    so, por envio — quando surge um envio novo ja pronto (ready_to_print) com
-    despacho HOJE. Isola falha por conta: uma conta com erro nao impede o
-    aviso das demais (mesma filosofia do ads-monitor/coletar.py)."""
+    da tela e de qualquer comando manual: percorre TODAS as contas ML
+    configuradas (ou a unica, em setup legado sem contas/) MAIS a Shopee (loja
+    unica), e avisa — uma vez so, por envio/pedido — quando surge algo novo ja
+    pronto pra despachar HOJE (ready_to_print no ML, READY_TO_SHIP na Shopee).
+    Isola falha por conta/loja: uma com erro nao impede o aviso das demais
+    (mesma filosofia do ads-monitor/coletar.py)."""
     cfg = context.bot_data["cfg"]
     contas = core.listar_contas() or [""]
     hoje = core._hoje_br()
@@ -198,18 +240,25 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             continue
         if not novos_pedidos:
             continue
-
-        texto = relatorio.texto_alerta_pos_horario(conta, itens, len(novos_pedidos))
-        for chat_id in cfg["chat_ids"]:
-            try:
-                for bloco in relatorio.dividir_mensagem(texto):
-                    await context.bot.send_message(chat_id, bloco)
-            except Exception:
-                log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
-
-        dados["avisados"].setdefault(conta, [])
-        dados["avisados"][conta].extend(p["_envio"]["shipment_id"] for p in novos_pedidos)
+        await _disparar_alerta(context, cfg, dados, conta, itens,
+                               [p["_envio"]["shipment_id"] for p in novos_pedidos])
         mudou = True
+
+    # Shopee e independente das contas ML (loja unica); pula em silencio se
+    # nao houver credencial configurada (setup so-ML e valido e nao deve
+    # logar erro a cada 5 min pra sempre).
+    if shopee.ARQUIVO_CRED.exists():
+        avisados_shopee = set(dados["avisados"].get(CHAVE_ALERTA_SHOPEE, []))
+        try:
+            novos_shopee, itens_shopee = await asyncio.to_thread(
+                _dados_alerta_shopee, avisados_shopee, hoje)
+        except Exception:
+            log.exception("Falha ao checar alerta pos-horario da Shopee")
+            novos_shopee, itens_shopee = [], []
+        if novos_shopee:
+            await _disparar_alerta(context, cfg, dados, CHAVE_ALERTA_SHOPEE, itens_shopee,
+                                   [d["order_sn"] for d in novos_shopee])
+            mudou = True
 
     if mudou:
         await asyncio.to_thread(_salvar_alertas, dados)
@@ -323,6 +372,7 @@ def _teclado(loja: str = LOJA_ML) -> InlineKeyboardMarkup:
          InlineKeyboardButton("📅 Amanhã", callback_data="amanha")],
         [InlineKeyboardButton("📊 Resumo", callback_data="resumo"),
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
+        [InlineKeyboardButton("🔔 Vendas após", callback_data="vendas_apos")],
         [InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")],
     ])
 
@@ -608,6 +658,27 @@ async def cmd_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _responder(update, context, "resumo", lambda: _exec_resumo(context))
 
 
+async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Junta TUDO que o alerta pos-horario ja avisou hoje (todas as contas)
+    numa mensagem so, com o TOTAL por SKU no final — pedido do dono: varias
+    vendas caindo depois das 8:30 no mesmo dia poluem o chat com um alerta
+    por venda. So le o estado ja persistido (nao refaz nenhuma chamada de
+    API), entao nao usa `_responder` (que mostra "Consultando a loja..." —
+    irrelevante aqui, isto nao depende de ML/Shopee)."""
+    cfg = context.bot_data["cfg"]
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if not _autorizado(update, cfg):
+        log.warning("Acao /vendasapos negada para chat %s", chat_id)
+        if chat_id:
+            await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    log.info("Acao /vendasapos de chat %s", chat_id)
+    dados = await asyncio.to_thread(_carregar_alertas)
+    texto = relatorio.texto_resumo_vendas_apos(dados["itens"])
+    for bloco in relatorio.dividir_mensagem(texto):
+        await context.bot.send_message(chat_id, bloco)
+
+
 async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Mostra a loja ativa e botoes para trocar (Mercado Livre / Shopee)."""
     cfg = context.bot_data["cfg"]
@@ -691,6 +762,9 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "resumo":
         await _responder(update, context, "resumo", lambda: _exec_resumo(context))
         return
+    if data == "vendas_apos":
+        await cmd_vendas_apos(update, context)
+        return
     if _params_listagem(data):
         await _listar_acao(update, context, data)
 
@@ -759,6 +833,7 @@ def main() -> None:
     app.add_handler(CommandHandler("amanha", cmd_amanha))
     app.add_handler(CommandHandler("todos", cmd_todos))
     app.add_handler(CommandHandler("resumo", cmd_resumo))
+    app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
     app.add_handler(CommandHandler("dia", cmd_dia))
     app.add_handler(CommandHandler("detalhar", cmd_detalhar))
     app.add_handler(CallbackQueryHandler(cb_botao))

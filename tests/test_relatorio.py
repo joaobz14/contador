@@ -74,29 +74,67 @@ def test_texto_alerta_pos_horario(core):
         core.ItemPedido(order_id=1, shipment_id=100, chave="A02", nome="A02", quantidade=2),
         core.ItemPedido(order_id=2, shipment_id=101, chave="A06F", nome="A06F", quantidade=1),
     ]
-    txt = relatorio.texto_alerta_pos_horario("cozilatti", itens, 2)
-    assert "🔔" in txt
-    assert "HOJE" in txt
-    assert "— cozilatti" in txt
-    assert "2 envio(s) novo(s)" in txt
-    assert "envio 100: 2x A02" in txt
-    assert "envio 101: 1x A06F" in txt
+    txt = relatorio.texto_alerta_pos_horario("Cozilatti", itens)
+    assert txt.split("\n")[0] == "🔔 Venda Cozilatti"
+    assert "A02 - 2" in txt
+    assert "A06F - 1" in txt
+    assert "100" not in txt  # sem numero de envio
 
 
-def test_texto_alerta_pos_horario_agrupa_por_envio(core):
-    # Um envio combo (2 SKUs) deve aparecer numa linha so, nao duas.
+def test_texto_alerta_pos_horario_soma_mesmo_sku_entre_envios(core):
+    # O mesmo SKU em 2 envios diferentes deve somar, numa linha so.
     itens = [
         core.ItemPedido(order_id=1, shipment_id=200, chave="A02", nome="A02", quantidade=1),
-        core.ItemPedido(order_id=1, shipment_id=200, chave="A06F", nome="A06F", quantidade=1),
+        core.ItemPedido(order_id=2, shipment_id=201, chave="A02", nome="A02", quantidade=2),
     ]
-    txt = relatorio.texto_alerta_pos_horario("", itens, 1)
-    assert txt.count("envio 200") == 1
-    assert "1x A02" in txt and "1x A06F" in txt
+    txt = relatorio.texto_alerta_pos_horario("", itens)
+    assert txt.count("A02") == 1
+    assert "A02 - 3" in txt
 
 
-def test_texto_alerta_pos_horario_sem_conta_nao_mostra_rotulo(core):
-    txt = relatorio.texto_alerta_pos_horario("", [], 0)
-    assert "—" not in txt.split("\n")[0]
+def test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico(core):
+    txt = relatorio.texto_alerta_pos_horario("", [])
+    assert txt == "🔔 Venda nova"
+
+
+# ------------------------------------------------------------ texto_resumo_vendas_apos
+def test_texto_resumo_vendas_apos_vazio(core):
+    assert relatorio.texto_resumo_vendas_apos({}) == "Nenhuma venda avisada hoje ainda."
+    assert relatorio.texto_resumo_vendas_apos({"Cozilatti": []}) == "Nenhuma venda avisada hoje ainda."
+
+
+def test_texto_resumo_vendas_apos_por_conta_e_total(core):
+    itens_por_conta = {
+        "Cozilatti": [{"chave": "A01 - 2L 110", "quantidade": 1},
+                      {"chave": "A05 - 6L 110 FAK", "quantidade": 3}],
+        "Gastromaq": [{"chave": "A01 - 2L 110", "quantidade": 5},
+                      {"chave": "A02 - 4L 110", "quantidade": 5}],
+    }
+    txt = relatorio.texto_resumo_vendas_apos(itens_por_conta)
+    linhas = txt.split("\n")
+    assert linhas[0] == "RESUMO VENDAS APOS 8:30"
+    assert "COZILATTI" in linhas
+    assert "GASTROMAQ" in linhas
+    assert "A01 - 2L 110 - 1" in txt   # secao Cozilatti
+    assert "A01 - 2L 110 - 5" in txt   # secao Gastromaq
+    assert "TOTAL:" in linhas
+    assert txt.rsplit("TOTAL:", 1)[1].count("A01 - 2L 110 - 6") == 1  # soma das 2 contas
+
+
+def test_texto_resumo_vendas_apos_ignora_conta_sem_venda(core):
+    txt = relatorio.texto_resumo_vendas_apos({
+        "Cozilatti": [{"chave": "A01", "quantidade": 1}],
+        "Gastromaq": [],
+    })
+    assert "GASTROMAQ" not in txt
+
+
+def test_texto_resumo_vendas_apos_sem_nome_de_conta(core):
+    # Setup legado (uma so conta, sem contas/): nao mostra cabecalho vazio
+    # (nao gera uma linha em branco extra so por causa do nome ausente).
+    txt = relatorio.texto_resumo_vendas_apos({"": [{"chave": "A01", "quantidade": 1}]})
+    assert "A01 - 1" in txt
+    assert "\n\n\n" not in txt
 
 
 def test_dividir_mensagem_curta_nao_divide(core):

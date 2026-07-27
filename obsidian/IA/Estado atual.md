@@ -25,8 +25,9 @@ verified_at_commit: bcab879
 - **Desempenho**: filtro ML com **20 workers** + `ml_tempos.log`; Shopee `_gerar_lote` paralelo. [[Desempenho]].
 - **Cache de AWB** (`awb_cache_shopee.json`) para conferência confiável. [[Conferência na Shopee (rastreio)]].
 - **Bot do Telegram** (consulta ML+Shopee; imprime só ML; `/resumo`) + **alerta pós-horário**
-  (a cada 5 min, todas as contas, avisa venda nova `ready_to_print` com despacho hoje) +
-  sobe sozinho no login do Windows (Agendador de Tarefas, sem janela). [[Telegram]].
+  (a cada 5 min, todas as contas ML **e Shopee**, avisa venda nova pronta com despacho
+  hoje; `/vendasapos` junta tudo num resumo com TOTAL por SKU) + sobe sozinho no login
+  do Windows (Agendador de Tarefas, sem janela). [[Telegram]].
 - **Grafo com sincronizador seguro** `tools/graph_sync.py` + `semantic.json` + `tests/test_graphify_sync.py`. [[Grafo em duas camadas]].
 - **Base de conhecimento Obsidian** (este cofre) + validador `tools/validar_obsidian.py`.
 
