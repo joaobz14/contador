@@ -19,6 +19,16 @@ Quem vinha da versão antiga não move nada: `migrar_para_pastas()` roda no impo
 do núcleo e migra sozinho — leva `.bak`/`.corrupto` junto, move `contas/`
 inteira, nunca sobrescreve destino existente e nunca derruba a abertura.
 
+> [!warning] Cada movimentação é isolada — e `contas/` vai primeiro
+> No Windows o bot sobe no logon pelo Agendador e mantém o `bot.log` **aberto**;
+> renomear arquivo aberto levanta `WinError 32`. Enquanto a migração inteira
+> rodava sob um único `try/except`, essa falha abortava tudo o que vinha depois
+> e a pasta `contas/` ficava na raiz — a tela abria **sem nenhuma conta ML**
+> (seletor e modo 🌐 Ambas sumiam). Corrigido em 2026-07-29: `try/except` por
+> item e `contas/` na frente da fila, por ser o dado mais caro de refazer
+> (exigiria refazer o OAuth). Nada se perde: o que falha fica na raiz e é
+> re-tentado na abertura seguinte.
+
 ## Versionados (sincronizam entre PCs)
 - `dados/nomes_sku.json` — SKU→nome + **ordem de separação** → [[Nomes amigáveis e ordem de separação]]
 - `dados/skus_por_anuncio.json` — adoção de anúncios sem SKU → [[Adoção de anúncios sem SKU]]

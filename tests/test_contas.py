@@ -239,3 +239,40 @@ def test_migrar_para_pastas_nunca_levanta(core, monkeypatch, tmp_path):
 
     monkeypatch.setattr(core.Path, "mkdir", _explode)
     core.migrar_para_pastas()          # silencioso
+
+
+def test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto(
+        core, monkeypatch, tmp_path):
+    """INCIDENTE REAL (2026-07-29): no Windows o bot sobe no logon pelo
+    Agendador e segura o bot.log ABERTO; renomear arquivo aberto levanta
+    WinError 32. Como a migracao inteira estava sob UM try/except, essa unica
+    falha abortava tudo o que vinha depois — a pasta contas/ ficava na raiz e a
+    tela abria SEM NENHUMA conta ML (o seletor e o modo 🌐 Ambas sumiam).
+    Cada move e isolado agora, e contas/ (credenciais, o dado mais caro de
+    refazer) vai antes dos logs."""
+    raiz = _patch_reorg(core, monkeypatch, tmp_path)
+    conta = raiz / "contas" / "Cozilatti"
+    conta.mkdir(parents=True)
+    (conta / "credenciais.json").write_text('{"seller_id":"9"}', encoding="utf-8")
+    (raiz / "config.json").write_text('{"a":1}', encoding="utf-8")
+    (raiz / "bot.log").write_text("preso pelo bot", encoding="utf-8")
+    (raiz / "ml_tempos.log").write_text("depois do travado", encoding="utf-8")
+
+    replace_real = core.Path.replace
+
+    def _replace_travando_o_bot_log(self, destino):
+        if self.name == "bot.log":
+            raise PermissionError(32, "arquivo em uso por outro processo")
+        return replace_real(self, destino)
+
+    monkeypatch.setattr(core.Path, "replace", _replace_travando_o_bot_log)
+    core.migrar_para_pastas()
+
+    # O que importa: as contas migraram apesar do log travado.
+    assert (raiz / "dados" / "contas" / "Cozilatti" / "credenciais.json").exists()
+    assert not (raiz / "contas").exists()
+    # E o resto da fila tambem — inclusive o log que vinha DEPOIS do travado.
+    assert (raiz / "dados" / "config.json").exists()
+    assert (raiz / "logs" / "ml_tempos.log").exists()
+    # O travado fica onde estava, para a proxima abertura tentar de novo.
+    assert (raiz / "bot.log").exists()

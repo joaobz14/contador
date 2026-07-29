@@ -309,6 +309,14 @@ em 2º plano.
   `.bak` desgarrado guarda refresh já rotacionado, morto), move `contas/`
   inteira, **nunca sobrescreve** destino existente (o dado em uso vence) e
   **nunca levanta** (best-effort: falha de IO não pode impedir o app de abrir).
+  **Cada movimentação é ISOLADA e `contas/` vai PRIMEIRO** (incidente
+  2026-07-29): o `try/except` mora dentro de `_mover_se_preciso`, não em volta
+  do laço — no Windows o bot sobe no logon pelo Agendador e mantém o `bot.log`
+  **aberto**, e renomear arquivo aberto levanta `WinError 32`; com um
+  `try/except` só, essa falha abortava em silêncio tudo o que vinha depois e a
+  pasta `contas/` (que vinha após os logs) ficava na raiz — a tela abria **sem
+  nenhuma conta ML**, seletor e modo 🌐 Ambas sumidos. Lição geral: em rotina
+  best-effort que percorre uma **fila**, o `try/except` pertence a cada item.
   `migrar_conta_legado` lê de `PASTA_DADOS` (o "solto" de hoje é `dados/`). No
   `.gitignore` a regra é **invertida**: ignora `dados/*` e `logs/` inteiros e
   libera explicitamente só os 2 versionados (`nomes_sku.json`,

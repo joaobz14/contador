@@ -30,19 +30,19 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785340967.005232,
-  "ast_hash": "9787c30f7f174302c0fd4d4866b3bff4475c0bf7",
-  "semantic_hash": "9787c30f7f174302c0fd4d4866b3bff4475c0bf7"
+  "mtime": 1785345850.836036,
+  "ast_hash": "3fe0e713fe0c7443dfbb5c23cee63ee54adec028",
+  "semantic_hash": "3fe0e713fe0c7443dfbb5c23cee63ee54adec028"
  },
  "CLAUDE.md": {
-  "mtime": 1785340967.0045283,
-  "ast_hash": "cf3e887cc781dbf8aa6ca5f26d2efa19751074fa",
-  "semantic_hash": "cf3e887cc781dbf8aa6ca5f26d2efa19751074fa"
+  "mtime": 1785345850.8353734,
+  "ast_hash": "065f8b6f504603cd5477450b13bac0132b998105",
+  "semantic_hash": "065f8b6f504603cd5477450b13bac0132b998105"
  },
  "README.md": {
-  "mtime": 1785340977.116634,
-  "ast_hash": "a2b733391618ca076360532ac5e62c7d31544cc8",
-  "semantic_hash": "a2b733391618ca076360532ac5e62c7d31544cc8"
+  "mtime": 1785345877.7947216,
+  "ast_hash": "aa826fcbb764db783e4580286830d36c0fdedb95",
+  "semantic_hash": "aa826fcbb764db783e4580286830d36c0fdedb95"
  },
  "ads-monitor/README.md": {
   "mtime": 1784916367.2070236,
@@ -90,14 +90,14 @@
   "semantic_hash": "98c84820059ef90401c0a38c8ca40604854873d8"
  },
  "dados/nomes_sku.json": {
-  "mtime": 1784923251.5902355,
-  "ast_hash": "bf64dfc1887f93550f422a214d9125f8fe012b56",
-  "semantic_hash": "bf64dfc1887f93550f422a214d9125f8fe012b56"
+  "mtime": 1785347101.9826937,
+  "ast_hash": "3d8b313a534af3700bc36ff8f3f1d268ba556372",
+  "semantic_hash": "3d8b313a534af3700bc36ff8f3f1d268ba556372"
  },
  "dados/skus_por_anuncio.json": {
-  "mtime": 1784736107.8123124,
-  "ast_hash": "4478de0a86de65c736661b4fa25e46f3fc109fe1",
-  "semantic_hash": "4478de0a86de65c736661b4fa25e46f3fc109fe1"
+  "mtime": 1785347101.9826937,
+  "ast_hash": "7657f213e291afc6305d9da4d650c908ba81c86c",
+  "semantic_hash": "7657f213e291afc6305d9da4d650c908ba81c86c"
  },
  "docs/AMAZON_SP_API.md": {
   "mtime": 1784160592.696835,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785340941.6406329,
-  "ast_hash": "8f08388038fe5a61086c59283568e78261d9cbfa",
-  "semantic_hash": "8f08388038fe5a61086c59283568e78261d9cbfa"
+  "mtime": 1785345830.6827226,
+  "ast_hash": "e4584fe985261cce0d5f74d3509ca31d66397fa1",
+  "semantic_hash": "e4584fe985261cce0d5f74d3509ca31d66397fa1"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785340907.7926316,
-  "ast_hash": "a2daafc9c4e7d06eb9388b64d5cbb53fd8902cb8",
-  "semantic_hash": "a2daafc9c4e7d06eb9388b64d5cbb53fd8902cb8"
+  "mtime": 1785347218.4266908,
+  "ast_hash": "5de5345a4956661f4c8ad26aaeaa09d7de856f54",
+  "semantic_hash": "5de5345a4956661f4c8ad26aaeaa09d7de856f54"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785341022.4966354,
@@ -340,9 +340,9 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785345610.5587277,
-  "ast_hash": "552d1051d1643a2fb9d39708fe31b79cde7f14df",
-  "semantic_hash": "552d1051d1643a2fb9d39708fe31b79cde7f14df"
+  "mtime": 1785347139.6506927,
+  "ast_hash": "ad3290919e4049085afe0ebc153d66562bac7286",
+  "semantic_hash": "ad3290919e4049085afe0ebc153d66562bac7286"
  },
  "separador_gui.py": {
   "mtime": 1784926070.190039,
@@ -420,9 +420,9 @@
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
  "tests/test_contas.py": {
-  "mtime": 1785345726.478725,
-  "ast_hash": "44da33258d26c4a171e7ba3c7ecdb1cd23ec3b07",
-  "semantic_hash": "44da33258d26c4a171e7ba3c7ecdb1cd23ec3b07"
+  "mtime": 1785347160.5106921,
+  "ast_hash": "db5c08e437954892acb1030531a9853928948585",
+  "semantic_hash": "db5c08e437954892acb1030531a9853928948585"
  },
  "tests/test_datas.py": {
   "mtime": 1783442165.7015514,

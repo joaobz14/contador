@@ -115,8 +115,12 @@ quem sobe o bot.
 > `AGENTS.md`, `.gitignore`, `pyproject.toml`, `ruff.toml`). Quem vinha da
 > versão antiga não move nada: `migrar_para_pastas()` roda no import do núcleo
 > e migra sozinho (com `.bak` junto, sem sobrescrever destino, sem nunca
-> derrubar a abertura). Os caminhos da tabela abaixo são relativos a essas
-> pastas.
+> derrubar a abertura). **Cada movimentação é isolada e `contas/` vai
+> primeiro** — no Windows o bot mantém o `bot.log` aberto e um rename de
+> arquivo aberto levanta `WinError 32`; quando essa falha abortava o resto da
+> fila, as credenciais das contas ML ficavam para trás e a tela abria sem
+> conta nenhuma (incidente de 2026-07-29). Os caminhos da tabela abaixo são
+> relativos a essas pastas.
 
 | Arquivo | Módulo/uso | Segredo? | Escopo | Versionar? |
 |---|---|---|---|---|
