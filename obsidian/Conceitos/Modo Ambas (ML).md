@@ -22,5 +22,19 @@ type: concept
 > aplica em memória: os sub-grupos `.por_conta` manteriam a chave antiga do anúncio,
 > escondendo envios do lote e marcando estado na chave errada → [[Adoção de anúncios sem SKU]].
 
+## Ideia em avaliação: sugerir o Ambas sozinho (BLOQUEADA)
+Hoje o dono lembra na mão que "o motorista é o mesmo nas duas contas" e clica no
+radio. A API do ML entrega o motorista da coleta
+(`GET /users/{id}/shipping/schedule/{logistic_type}` → `driver.id`, ID estável),
+e `tools/diag_coleta.py --comparar contaA contaB` já responde se é o mesmo hoje.
+
+> [!warning] Bloqueio: falta rodar o `--comparar` num dia com coleta e anotar o resultado
+> Sem saber se o `driver.id` vem preenchido nas duas contas reais, não há o que
+> automatizar. Detalhes e desenho proposto no item 12 do `PRIORIDADES_TECNICAS.md`.
+
+Se passar, o desenho é **sugerir, nunca trocar sozinho** — o Ambas muda o que sai
+junto no ZIP e onde o estado é marcado; ligá-lo em silêncio contraria a razão de
+ele ser escolha pontual e não persistida.
+
 ## Relacionado
 - [[provedores]] · [[Multi-conta (ML)]] · [[Agrupamento e identidade do produto]] · [[Adoção de anúncios sem SKU]]

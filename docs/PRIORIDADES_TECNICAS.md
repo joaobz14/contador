@@ -340,6 +340,63 @@ de prazo — a resposta #3 tambem ainda nao esta confirmada (se `ship_order`
 precisa de `package_number`), o que e pre-requisito pra saber se da pra
 migrar so a LEITURA (status) ou se a ESCRITA (`ship_order`) tambem muda.
 
+## 12. Sugerir o modo "Ambas" quando o motorista do dia for o mesmo (BLOQUEADO: falta o teste)
+
+**Ideia do dono:** hoje ele lembra na mao que "hoje o motorista e o mesmo nas
+duas contas" e clica no 🌐 Ambas. O app poderia perceber isso sozinho.
+
+**A base tecnica ja existe e foi confirmada na doc oficial do ML (2026-07-23):**
+
+```
+GET /users/{USER_ID}/shipping/schedule/{LOGISTIC_TYPE}
+```
+
+devolve, por dia da semana, `detail[]` com `from`/`to`/`cutoff`, `carrier{id,name}`,
+`vehicle{license_plate,...}` e `driver{id,name}`. Tem **`driver.id`** — ID estavel,
+bem melhor que casar por nome.
+
+**Ferramenta de diagnostico pronta** (so-leitura, nenhum POST, mascara nome do
+motorista e placa):
+
+```
+python tools/diag_coleta.py --comparar Cozilatti Gastromaq
+```
+
+Responde `MESMO MOTORISTA hoje (driver.id X)` ou `MOTORISTAS DIFERENTES`.
+
+### O BLOQUEIO
+
+**Ninguem registrou o resultado desse comando nas contas reais.** A ferramenta
+foi construida e o dono chegou a roda-la (um bug de rotulo foi achado e
+corrigido no teste dele, commit `49cc91d`), mas se o `driver.id` vem preenchido
+nas DUAS contas nunca foi anotado — e sem isso nao ha o que automatizar. Rodar
+tambem depende do dia: fora de um dia com coleta programada o comando responde
+"hoje sem coleta programada" e nao serve de teste.
+
+**Proximo passo, unico:** rodar o `--comparar` num dia com coleta nas duas contas
+e **anotar o resultado aqui**. Se o `driver.id` nao vier (conta sem coleta nessa
+logistica, logistic_type diferente ou token sem permissao pro recurso), a ideia
+morre e este item vira "nao fazer" — com o motivo escrito, pra nao ressuscitar.
+
+### Desenho proposto, SE o teste passar
+
+**Sugerir, nunca trocar sozinho.** O modo Ambas muda o que sai junto no ZIP e em
+qual arquivo o estado e marcado; liga-lo em silencio e o tipo de automatismo que
+acerta 20 dias e no 21o (dia atipico) imprime o lote errado. A convencao atual —
+Ambas e escolha pontual, nao persistida no config — existe por isso e deve
+continuar valendo.
+
+Formato: apos o Atualizar, se as duas contas tiverem o mesmo `driver.id` hoje, a
+tela mostra um aviso discreto ao lado do seletor de conta ("mesmo motorista hoje
+nas duas contas") e o dono decide se clica no 🌐 Ambas. Custo: 1 GET por conta,
+cacheado por dia (o cronograma e por dia da semana, nao muda a cada Atualizar).
+
+**Cuidados na implementacao:** a consulta precisa do token de CADA conta, entao
+passa por `definir_conta` — vale o mesmo cuidado do `_dados_alerta_da_conta` no
+bot (fazer o que precisa da conta NUM SO bloco de troca, ver "Areas de risco" na
+`ARQUITETURA.md`). E a falha da consulta nao pode atrapalhar o Atualizar: sem
+resposta, simplesmente nao sugere nada.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:
