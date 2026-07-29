@@ -340,10 +340,17 @@ de prazo — a resposta #3 tambem ainda nao esta confirmada (se `ship_order`
 precisa de `package_number`), o que e pre-requisito pra saber se da pra
 migrar so a LEITURA (status) ou se a ESCRITA (`ship_order`) tambem muda.
 
-## 12. Sugerir o modo "Ambas" quando o motorista do dia for o mesmo (BLOQUEADO: falta o teste)
+## 12. Avisar o motorista do dia (mesmo/diferente) nas contas ML (BLOQUEADO: falta o teste)
 
-**Ideia do dono:** hoje ele lembra na mao que "hoje o motorista e o mesmo nas
-duas contas" e clica no 🌐 Ambas. O app poderia perceber isso sozinho.
+**Ideia do dono:** hoje ele lembra na mao se "o motorista e o mesmo nas duas
+contas" e clica (ou nao) no 🌐 Ambas. O app poderia perceber isso sozinho.
+
+**Os DOIS lados interessam** (pedido do dono): avisar quando os motoristas sao
+os MESMOS (sinal de que o Ambas faz sentido) **e** quando sao DIFERENTES (sinal
+de que nao faz). O aviso negativo nao e redundante — hoje o "diferentes" e
+implicito (o dono nao ve aviso nenhum e tem que lembrar sozinho), e um aviso
+explicito transforma silencio em informacao confirmada. Em nenhum dos dois
+casos o app seleciona coisa alguma: ele so informa, o dono confere e decide.
 
 **A base tecnica ja existe e foi confirmada na doc oficial do ML (2026-07-23):**
 
@@ -378,24 +385,71 @@ e **anotar o resultado aqui**. Se o `driver.id` nao vier (conta sem coleta nessa
 logistica, logistic_type diferente ou token sem permissao pro recurso), a ideia
 morre e este item vira "nao fazer" — com o motivo escrito, pra nao ressuscitar.
 
-### Desenho proposto, SE o teste passar
+### FASE 1 (o que construir primeiro): so avisar, nunca selecionar
 
-**Sugerir, nunca trocar sozinho.** O modo Ambas muda o que sai junto no ZIP e em
+**Avisar, nunca trocar sozinho.** O modo Ambas muda o que sai junto no ZIP e em
 qual arquivo o estado e marcado; liga-lo em silencio e o tipo de automatismo que
 acerta 20 dias e no 21o (dia atipico) imprime o lote errado. A convencao atual —
 Ambas e escolha pontual, nao persistida no config — existe por isso e deve
-continuar valendo.
+continuar valendo enquanto a deteccao nao estiver provada.
 
-Formato: apos o Atualizar, se as duas contas tiverem o mesmo `driver.id` hoje, a
-tela mostra um aviso discreto ao lado do seletor de conta ("mesmo motorista hoje
-nas duas contas") e o dono decide se clica no 🌐 Ambas. Custo: 1 GET por conta,
-cacheado por dia (o cronograma e por dia da semana, nao muda a cada Atualizar).
+Formato: apos o Atualizar, um aviso discreto ao lado do seletor de conta, com
+**TRES estados** (o terceiro e o mais importante):
 
-**Cuidados na implementacao:** a consulta precisa do token de CADA conta, entao
-passa por `definir_conta` — vale o mesmo cuidado do `_dados_alerta_da_conta` no
-bot (fazer o que precisa da conta NUM SO bloco de troca, ver "Areas de risco" na
-`ARQUITETURA.md`). E a falha da consulta nao pode atrapalhar o Atualizar: sem
-resposta, simplesmente nao sugere nada.
+| `driver.id` das 2 contas hoje | Aviso na tela | O app seleciona algo? |
+|---|---|---|
+| iguais | "mesmo motorista hoje nas duas contas" | Nao |
+| diferentes | "motoristas diferentes hoje" | Nao |
+| faltando em uma ou nas duas | **nada** (silencio) | Nao |
+
+O terceiro estado nao pode virar "motoristas diferentes". Ausencia de dado
+(sem coleta programada, `logistic_type` diferente, token sem permissao, API
+fora) **nao e** evidencia de motorista diferente — e um palpite disfarcado de
+informacao, e o dono passaria a confiar num aviso que as vezes chuta. Silencio
+e a resposta honesta: cai no comportamento de hoje, em que ele confere na mao.
+
+Custo: 1 GET por conta, cacheado por dia (o cronograma e por dia da semana, nao
+muda a cada Atualizar).
+
+### FASE 2 (so depois de PROVADO): considerar automatizar
+
+O dono quer chegar em automacao ("se o sistema de identificar motorista estiver
+100%, colocar em producao automatica mais pra frente"). O caminho e esse mesmo,
+mas **"100%" precisa ser medido, nao sentido** — senao a decisao vira impressao
+("acho que nunca errou") depois de algumas semanas sem prestar atencao.
+
+**Como medir de graca durante a fase 1:** a cada Atualizar, registrar no
+`separador.log` (via `registro.py`) uma linha com o veredito e os ids
+(`coleta: A=<driver.id> B=<driver.id> -> iguais|diferentes|indeterminado`).
+Isso nao custa nada, nao aparece pro dono e produz o historico que a fase 2
+exige. Ao fim do periodo de observacao da pra responder com evidencia:
+- em quantos dias a deteccao foi conclusiva (nem sempre vai ser — ver 3o estado);
+- em quantos ela bateu com o que o dono realmente fez;
+- se houve algum dia em que ela disse "iguais" e o dia era de motorista diferente
+  (esse e o erro CARO: e o que levaria a imprimir contas juntas indevidamente).
+
+**Criterio sugerido pra abrir a fase 2:** varias semanas de operacao real sem
+nenhum falso "iguais". Um unico falso "iguais" reabre a discussao — o erro nessa
+direcao mistura lotes de contas diferentes, e o prejuizo nao e simetrico com o
+falso "diferentes" (que so faz o dono conferir na mao, como ja faz hoje).
+
+**Mesmo na fase 2, "automatico" nao precisa dizer "sem confirmacao":** um passo
+intermediario e o app deixar o 🌐 Ambas **pre-selecionado** quando os motoristas
+sao iguais, ainda visivel e reversivel antes do dono mandar imprimir. Ganha a
+comodidade sem tirar a decisao dele — e a impressao ja tem a confirmacao
+"as etiquetas sairam certo?" como ultima rede.
+
+### Cuidados na implementacao (valem nas duas fases)
+
+- A consulta precisa do token de CADA conta, entao passa por `definir_conta` —
+  vale o mesmo cuidado do `_dados_alerta_da_conta` no bot: fazer tudo o que
+  depende da conta NUM SO bloco de troca (ver "Areas de risco" na
+  `ARQUITETURA.md`).
+- Falha da consulta nao pode atrapalhar o Atualizar: sem resposta, cai no 3o
+  estado (silencio), nunca em erro na tela.
+- O aviso e **so leitura**: nao toca `self.grupos`, estado nem config.
+- Nao logar nome do motorista nem placa (dado pessoal) — so `driver.id`, como o
+  `diag_coleta.py` ja faz.
 
 ## O que evitar por enquanto
 

@@ -22,19 +22,32 @@ type: concept
 > aplica em memória: os sub-grupos `.por_conta` manteriam a chave antiga do anúncio,
 > escondendo envios do lote e marcando estado na chave errada → [[Adoção de anúncios sem SKU]].
 
-## Ideia em avaliação: sugerir o Ambas sozinho (BLOQUEADA)
-Hoje o dono lembra na mão que "o motorista é o mesmo nas duas contas" e clica no
-radio. A API do ML entrega o motorista da coleta
+## Ideia em avaliação: avisar o motorista do dia (BLOQUEADA)
+Hoje o dono lembra na mão se "o motorista é o mesmo nas duas contas" e clica (ou
+não) no radio. A API do ML entrega o motorista da coleta
 (`GET /users/{id}/shipping/schedule/{logistic_type}` → `driver.id`, ID estável),
 e `tools/diag_coleta.py --comparar contaA contaB` já responde se é o mesmo hoje.
 
+**Os dois lados interessam:** avisar "mesmo motorista" *e* "motoristas
+diferentes". O aviso negativo não é redundante — hoje ele é implícito (silêncio +
+memória do dono); explícito, vira informação confirmada. Em nenhum caso o app
+seleciona nada: só informa.
+
 > [!warning] Bloqueio: falta rodar o `--comparar` num dia com coleta e anotar o resultado
 > Sem saber se o `driver.id` vem preenchido nas duas contas reais, não há o que
-> automatizar. Detalhes e desenho proposto no item 12 do `PRIORIDADES_TECNICAS.md`.
+> automatizar. Detalhes, fases e desenho no item 12 do `PRIORIDADES_TECNICAS.md`.
 
-Se passar, o desenho é **sugerir, nunca trocar sozinho** — o Ambas muda o que sai
-junto no ZIP e onde o estado é marcado; ligá-lo em silêncio contraria a razão de
-ele ser escolha pontual e não persistida.
+> [!danger] Ausência de dado ≠ "motoristas diferentes"
+> O terceiro estado (sem coleta programada, logística diferente, token sem
+> permissão, API fora) tem que ser **silêncio**. Chamá-lo de "diferentes" seria
+> um palpite disfarçado de informação — e o dono passaria a confiar num aviso que
+> às vezes chuta.
+
+**Fases:** (1) só avisar, registrando o veredito no `separador.log` para gerar
+evidência; (2) considerar automatizar **só depois de provado** — o critério é
+nenhum falso "iguais" em semanas de operação real, porque esse é o erro caro
+(misturaria lotes de contas diferentes). Falso "diferentes" só faz o dono
+conferir na mão, como já faz hoje.
 
 ## Relacionado
 - [[provedores]] · [[Multi-conta (ML)]] · [[Agrupamento e identidade do produto]] · [[Adoção de anúncios sem SKU]]
