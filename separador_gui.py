@@ -11,6 +11,7 @@ janela preta do terminal.)
 """
 
 import threading
+import time
 import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, simpledialog, ttk
@@ -916,14 +917,28 @@ class SeparadorApp:
         except Exception as e:                      # noqa: BLE001 - releitura best-effort
             log.warning("Releitura do estado antes de gerar falhou (%s); usando estado em memória",
                         sem_segredos(str(e)))
+        # Instantâneo ANTES de gerar: a diferença depois identifica os nossos ZIPs
+        # sem precisar do caminho de volta pela cadeia provedor→núcleo.
+        antes = core.saidas_na_pasta()
+        inicio = time.time()
         try:
             impressos, falhas = self.prov.imprimir_lotes(grupos, self.estado, modo=self.modo_ident)
         except Exception as e:
             self.root.after(0, lambda erro=e: self._erro(str(erro)))
             return
-        self.root.after(0, lambda: self._confirmar_e_marcar(impressos, falhas))
+        # Espera um sinal do monitor da Zebra (ver `aguardar_impressao` no núcleo).
+        # Roda NESTA thread, nunca na do Tk: a tela não pode congelar. É só um
+        # aviso a mais na confirmação — falha aqui não afeta a impressão.
+        try:
+            sinal = core.aguardar_impressao(core.saidas_na_pasta() - antes, desde=inicio)
+        except Exception as e:                      # noqa: BLE001 - aviso best-effort
+            log.warning("Checagem do monitor da Zebra falhou (%s)", sem_segredos(str(e)))
+            sinal = "sem_saida"
+        log.info("Monitor da Zebra: %s", sinal)
+        self.root.after(0, lambda: self._confirmar_e_marcar(impressos, falhas, sinal))
 
-    def _confirmar_e_marcar(self, impressos: list, falhas: list | None = None) -> None:
+    def _confirmar_e_marcar(self, impressos: list, falhas: list | None = None,
+                            sinal: str = "sem_saida") -> None:
         """PASSOS 2 e 3 do contrato: pergunta ao operador se as etiquetas sairam
         certo (passo 2) e SO ENTAO marca como impresso (passo 3). Este e o UNICO
         ponto da GUI que chama marcar_impresso — nao marque em outro lugar, senao
@@ -934,12 +949,13 @@ class SeparadorApp:
         em que o papel já saiu mas o estado ainda não foi marcado — um 2º clique
         no meio da confirmação não reimprime o lote."""
         try:
-            self._confirmar_e_marcar_corpo(impressos, falhas)
+            self._confirmar_e_marcar_corpo(impressos, falhas, sinal)
         finally:
             self._ocupar(False, "")
             self._render()
 
-    def _confirmar_e_marcar_corpo(self, impressos: list, falhas: list | None = None) -> None:
+    def _confirmar_e_marcar_corpo(self, impressos: list, falhas: list | None = None,
+                                  sinal: str = "sem_saida") -> None:
         falhas = falhas or []
         if falhas:                              # alguns pedidos nao geraram (parcial)
             log.warning("Lote parcial: %d pedido(s) nao sairam (%s)", len(falhas),
@@ -959,10 +975,15 @@ class SeparadorApp:
         etiquetas = sum(len(pend) for _, pend in impressos)
         # Sempre confirma o resultado fisico antes de marcar (convencao "lotes
         # confirmam antes de marcar"), inclusive quando e um unico lote.
+        # O sinal do monitor INFORMA, nunca decide: ele confirma que o arquivo foi
+        # consumido, não que a etiqueta saiu legível e no lugar. Quem responde
+        # continua sendo o operador, olhando o papel (invariante 1).
+        aviso = core.texto_sinal_monitor(sinal)
         marcar = messagebox.askyesno(
             "Confirmar impressão",
-            f"Enviei {n} lote(s) para a impressora.\n\n"
-            "As etiquetas saíram corretamente?\n\n"
+            f"Enviei {n} lote(s) para a impressora.\n"
+            + (f"{aviso}\n" if aviso else "")
+            + "\nAs etiquetas saíram corretamente?\n\n"
             "Sim = marca como impressos.\n"
             "Não = mantém pendentes para reimprimir.")
         if marcar:

@@ -293,7 +293,25 @@ em 2º plano.
   (`tmp_{nome}.part`): o temporário **não pode casar** com os prefixos nem com as
   extensões (`*.zip`/`*.plain`) que o monitor vigia — exigência do contrato do
   app Zebra v1.25.5+ (item B); teste-guardião
-  `test_tmp_saida_nao_casa_o_que_o_monitor_vigia`.
+  `test_tmp_saida_nao_casa_o_que_o_monitor_vigia`. **O outro lado tem teste do
+  mesmo contrato** desde 2026-07-29 (repo `impressora-zebra-usb`,
+  `tests/test_contrato_com_o_contador.py`) — contrato documentado só de um lado
+  é meio contrato.
+- **Retorno do monitor (`aguardar_impressao`):** a entrega é por arquivo e não
+  havia canal de volta — com o monitor fechado, os ZIPs se acumulavam e o dono
+  só descobria pelo papel que não saía. A tela observa dois sinais que o monitor
+  **já produzia**: o arquivo **sumir** (ele apaga após imprimir) e o **log dele
+  avançar** (`ARQUIVO_LOG_MONITOR`), que cobre o lote grande em que o ZIP só some
+  na última etiqueta. Descobre quais arquivos são dela por **diferença de dois
+  instantâneos** (`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes`
+  devolve os pendentes, não o caminho, e propagá-lo mexeria em núcleo,
+  provedores, bot e CLI de uma vez. **Na dúvida, calado:** se o monitor consumiu
+  antes do 2º instantâneo (ele varre a cada 1s) o veredito é `imprimindo`,
+  **nunca** `impresso`; e `OSError` no `exists()` responde "ainda está lá". O
+  sinal **informa e nunca decide** — quem responde "saíram certo?" continua
+  sendo o operador (invariante 1), porque o monitor confirma que MANDOU
+  imprimir, não que a etiqueta saiu legível. Roda na thread de trabalho (nunca
+  na do Tk) e é best-effort: falha vira aviso a menos, jamais impressão a menos.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).

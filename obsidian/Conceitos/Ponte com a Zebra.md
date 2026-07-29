@@ -24,5 +24,34 @@ Polling de 1s; aceita `*.zip` (prefixos) e `*.plain` (DANFE); **duplicata** por
 `nome+tamanho+mtime` (nomes únicos nunca colidem); arquivos **devem estar em UTF-8**
 (decode `errors="ignore"`) → não converter → [[Identificação na impressão (carimbo)]].
 
+> O app da Zebra é do **mesmo dono** (repo `impressora-zebra-usb`) e desde
+> 2026-07-29 tem **teste do contrato do lado dele também** — contrato documentado
+> só de um lado é meio contrato.
+
+## Retorno do monitor (desde 2026-07-29)
+A entrega é por arquivo e não havia canal de volta: com o monitor fechado, os ZIPs
+só se acumulavam e o dono descobria pelo papel que não saía. `aguardar_impressao`
+observa dois sinais que o monitor **já produzia**:
+- o arquivo **some** (ele apaga após imprimir) → `impresso`;
+- o **log dele avança** (`~/zebra_usb_log.txt`) → `imprimindo` (cobre o lote grande,
+  em que o ZIP só some na última etiqueta);
+- nenhum dos dois → `sem_sinal` (provavelmente fechado).
+
+A tela sabe quais arquivos são dela por **diferença de dois instantâneos**
+(`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes` devolve os pendentes,
+não o caminho.
+
+> [!warning] Na dúvida, calado
+> O monitor varre a cada 1s e pode consumir o ZIP **antes** do 2º instantâneo — aí
+> a diferença vem vazia. Nesse caso o veredito é `imprimindo`, **nunca** `impresso`:
+> sem ter visto o nosso arquivo sumir, afirmar que ele saiu seria o erro que esta
+> tela não pode cometer. Mesma regra se o `exists()` levantar (arquivo preso pelo
+> antivírus/OneDrive): responde "ainda está lá".
+
+> [!danger] O sinal informa, nunca decide
+> Quem responde "as etiquetas saíram corretamente?" continua sendo o operador,
+> olhando o papel → [[Invariantes críticas]]. O monitor confirma que **mandou**
+> imprimir, não que a etiqueta saiu legível e no lugar.
+
 ## Relacionado
 - [[Sistemas externos]] · [[Escrita atômica de JSON]] · [[Identificação na impressão (carimbo)]] · [[separador_etiquetas_ml (núcleo)]]

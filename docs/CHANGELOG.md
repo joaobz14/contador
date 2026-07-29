@@ -4,6 +4,26 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Adicionado
+- **A tela agora sabe se o app da Zebra pegou o lote.** A entrega das etiquetas
+  é por arquivo (o `.zip` vai para a Downloads e o app da impressora o consome),
+  e até agora não havia retorno nenhum: com o monitor fechado, os ZIPs só se
+  acumulavam e você descobria pelo papel que não saía. Nada se perdia — a
+  marcação só acontece depois do seu "saíram certo?" —, mas você descobria
+  tarde. Agora a confirmação traz uma linha a mais:
+  - **✅ confirmou** — o arquivo foi consumido e apagado (o app apaga após
+    imprimir);
+  - **⏳ ativo e ainda imprimindo** — lote grande, o arquivo só some na última
+    etiqueta;
+  - **⚠️ não deu sinal** — o arquivo continua na Downloads e o app não escreveu
+    nada: provavelmente está fechado.
+
+  Não foi preciso mudar nada no app da impressora — os dois sinais (o arquivo
+  sumir e o log dele avançar) já existiam. **O aviso informa, nunca decide:**
+  quem responde se as etiquetas saíram corretamente continua sendo você, olhando
+  o papel — o monitor confirma que *mandou* imprimir, não que a etiqueta saiu
+  legível e no lugar.
+
 ### Corrigido
 - **Contas do ML sumiam da tela depois da reorganização de pastas** (incidente
   real, 2026-07-29). Na primeira abertura após a atualização, o seletor de conta
