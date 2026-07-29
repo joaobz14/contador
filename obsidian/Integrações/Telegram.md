@@ -32,7 +32,11 @@ verified_at_commit: bcab879
 
 ## Jobs automáticos (`JobQueue`)
 - **Aviso da manhã** (`job_bom_dia`, 1x/dia, `aviso_horario` no `bot_config.json`).
-- **Alerta pós-horário** (`job_alerta_pos_horario`, a cada 5 min): motivado por venda
+- **Alerta pós-horário** (`job_alerta_pos_horario`, a cada 5 min, das **07:00 às
+  20:59** de Brasília — fora disso é no-op sem chamada de API; busca ML com janela
+  dedicada de **5 dias** em vez dos 30 do Atualizar — juntas, as duas janelas
+  cortaram ~95% das chamadas que o alerta fazia, auditoria de APIs 2026-07):
+  motivado por venda
   que cai depois das 8:30 e passa despercebida até ser tarde pra repor com o
   fornecedor. Percorre **todas** as contas ML **e também a Shopee** (loja única) e
   avisa — uma vez por envio/pedido — quando surge algo novo já pronto pra despachar

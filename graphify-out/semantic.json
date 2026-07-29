@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 333,
- "edge_count": 570,
+ "node_count": 334,
+ "edge_count": 581,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3432,6 +3432,20 @@
    "norm_label": "barreira->solucao (p1 releitura externa): no windows o msvcrt.lk_lock desiste em ~10s e o refresh roda http de ate 30s dentro da trava — o 2o processo degradava no meio do refresh do 1o (refresh paralelo, corrida reaberta); trava(espera=) re-tenta so quando a falha e lenta (~10s = ocupada; falha rapida = fs sem suporte, degrada na hora) ate superar 2xtimeout — dai degradar e seguro (detentor ja salvou)"
   },
   {
+   "label": "AUDITORIA DE APIs (ML + Shopee, 2026-07): leitura integral dos caminhos de rede dos dois marketplaces atras de falhas/quebras/melhorias. 3 correcoes sairam dela. (1) AMARRA CREDENCIAL->ARQUIVO (a mais seria): a 'Area de risco' aceitava a corrida de definir_conta no bot com a justificativa 'so leitura' — mas o refresh de token e uma ESCRITA que pode acontecer em qualquer caminho de rede. obter_token/renovar_token/salvar_credenciais resolviam a global ARQUIVO_CRED na hora da chamada; se o job do alerta trocasse a conta (definir_conta, outra thread) no meio de um refresh, as credenciais renovadas de UMA conta eram gravadas no arquivo da OUTRA (e o .bak junto — sem recuperacao, conta travada, refazer pegar_token). Corrigido amarrando o arquivo de origem as credenciais no carregamento (chave volatil '_arquivo', nunca persistida): carregar_credenciais grava a amarra, _arquivo_das_credenciais resolve, e trava/releitura/refresh/salvamento seguem todos no arquivo da conta dona das credenciais, independente da global. De brinde remove a dependencia de ordem do modo Ambas (cada cred do _tokens_cred fica amarrada a sua conta). (2) DIETA DO ALERTA POS-HORARIO: cada ciclo de 5 min refazia o pipeline completo com a janela cheia de 30 dias — ~300+ GET /shipments por ciclo (medido nos logs do dono: 170+148), ~90-100 mil chamadas/dia, 24h/dia. Dois cortes: janela de HORARIO (07:00-21:00 Brasilia, _alerta_no_horario — fora dela o job e no-op sem chamada nenhuma; de madrugada o aviso nao tem utilidade, a venda da noite aparece no aviso da manha) e janela de BUSCA dedicada (buscar_pedidos ganhou dias=; DIAS_JANELA_ALERTA=5 — um envio com despacho HOJE e sempre recente; 5 dias cobrem fim de semana + feriado; caso raro que escape aparece no aviso da manha/Atualizar, que seguem com a janela cheia). Reducao estimada ~95%. (3) HIGIENE: gerar_etiqueta com rastreios=None le o cache de AWB antes da rede (reimpressao de grupo ja impresso nao pode falhar por refetch — o AWB e imutavel e conhecido desde a impressao); _json_limpo/guardas de resp.json() nos dois lados (corpo nao-JSON com status 200, ex. proxy interceptando, vira SeparadorError limpo em vez de JSONDecodeError cru); _aguardar_awbs com backoff (1s x10 depois 2s, teto ~40s igual, ~40% menos get_tracking_number por pedido preso); dedup por id na paginacao do buscar_pedidos (sort=date_desc + pedido novo no meio da paginacao desloca offsets e duplica pedido entre paginas).",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "auditoria_apis_2026_07",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "auditoria de apis (ml + shopee, 2026-07): leitura integral dos caminhos de rede dos dois marketplaces atras de falhas/quebras/melhorias. 3 correcoes sairam dela. (1) amarra credencial->arquivo (a mais seria): a 'area de risco' aceitava a corrida de definir_conta no bot com a justificativa 'so leitura' — mas o refresh de token e uma escrita que pode acontecer em qualquer caminho de rede. obter_token/renovar_token/salvar_credenciais resolviam a global arquivo_cred na hora da chamada; se o job do alerta trocasse a conta (definir_conta, outra thread) no meio de um refresh, as credenciais renovadas de uma conta eram gravadas no arquivo da outra (e o .bak junto — sem recuperacao, conta travada, refazer pegar_token). corrigido amarrando o arquivo de origem as credenciais no carregamento (chave volatil '_arquivo', nunca persistida): carregar_credenciais grava a amarra, _arquivo_das_credenciais resolve, e trava/releitura/refresh/salvamento seguem todos no arquivo da conta dona das credenciais, independente da global. de brinde remove a dependencia de ordem do modo ambas (cada cred do _tokens_cred fica amarrada a sua conta). (2) dieta do alerta pos-horario: cada ciclo de 5 min refazia o pipeline completo com a janela cheia de 30 dias — ~300+ get /shipments por ciclo (medido nos logs do dono: 170+148), ~90-100 mil chamadas/dia, 24h/dia. dois cortes: janela de horario (07:00-21:00 brasilia, _alerta_no_horario — fora dela o job e no-op sem chamada nenhuma; de madrugada o aviso nao tem utilidade, a venda da noite aparece no aviso da manha) e janela de busca dedicada (buscar_pedidos ganhou dias=; dias_janela_alerta=5 — um envio com despacho hoje e sempre recente; 5 dias cobrem fim de semana + feriado; caso raro que escape aparece no aviso da manha/atualizar, que seguem com a janela cheia). reducao estimada ~95%. (3) higiene: gerar_etiqueta com rastreios=none le o cache de awb antes da rede (reimpressao de grupo ja impresso nao pode falhar por refetch — o awb e imutavel e conhecido desde a impressao); _json_limpo/guardas de resp.json() nos dois lados (corpo nao-json com status 200, ex. proxy interceptando, vira separadorerror limpo em vez de jsondecodeerror cru); _aguardar_awbs com backoff (1s x10 depois 2s, teto ~40s igual, ~40% menos get_tracking_number por pedido preso); dedup por id na paginacao do buscar_pedidos (sort=date_desc + pedido novo no meio da paginacao desloca offsets e duplica pedido entre paginas)."
+  },
+  {
    "label": "BARREIRA->SOLUCAO (P2 releitura externa): a poda do awb_cache so persistia dentro de `if novos:` — no regime normal pos-cache tudo e hit, novos fica vazio e o arquivo cresceria para sempre; a poda agora roda a cada coleta e so regrava quando o conteudo muda",
    "file_type": "rationale",
    "source_file": "shopee_api.py",
@@ -4436,6 +4450,26 @@
    "weight": 1.0,
    "source": "area_risco_token",
    "target": "shopee_api_renovar_token"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "bot_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "trava_espera_windows",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -5761,6 +5795,96 @@
    "weight": 1.0,
    "source": "anuncio_sem_sku_adota",
    "target": "separador_gui",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "bot_telegram_alerta_no_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "separador_etiquetas_ml_arquivo_das_credenciais",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "separador_etiquetas_ml_buscar_pedidos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "separador_etiquetas_ml_carregar_credenciais",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "separador_etiquetas_ml_obter_token",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "separador_etiquetas_ml_salvar_credenciais",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "shopee_api_aguardar_awbs",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "shopee_api_gerar_etiqueta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "auditoria_apis_2026_07",
+   "target": "shopee_api_json_limpo",
    "confidence_score": 1.0
   },
   {

@@ -113,6 +113,69 @@ def test_gerar_etiqueta_aborta_sem_awb(monkeypatch):
         sh.gerar_etiqueta({"x": 1}, ["A1"])
 
 
+def test_gerar_etiqueta_usa_cache_de_awb_sem_rede(monkeypatch):
+    """Reimpressao (rastreios=None) com o AWB ja no cache: NAO vai a rede
+    buscar o rastreio — reimpressao de grupo ja impresso nao pode falhar por
+    um refetch (achado da auditoria de APIs). O cache vem da impressao."""
+    sh._cachear_awbs({"A1": "BR1"})
+    monkeypatch.setattr(sh, "numero_rastreio",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("sem rede pro AWB")))
+    monkeypatch.setattr(sh, "criar_documento", lambda *a, **k: None)
+    monkeypatch.setattr(sh, "resultado_documento", lambda *a, **k: {})
+    monkeypatch.setattr(sh, "_status_documento", lambda r: {"A1": "READY"})
+    monkeypatch.setattr(sh, "baixar_documento", lambda *a, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    assert sh.gerar_etiqueta({"x": 1}, ["A1"], token="TOK") == b"PK\x03\x04"
+
+
+def test_gerar_etiqueta_busca_so_awbs_ausentes_e_cacheia(monkeypatch):
+    """rastreios=None com cache parcial: so o AWB ausente vai a rede, e o
+    buscado entra no cache (a proxima reimpressao nem vai a rede)."""
+    sh._cachear_awbs({"A1": "BR1"})
+    buscados = []
+    monkeypatch.setattr(sh, "numero_rastreio",
+                        lambda c, t, sn: buscados.append(sn) or f"BR-{sn}")
+    monkeypatch.setattr(sh, "criar_documento", lambda *a, **k: None)
+    monkeypatch.setattr(sh, "resultado_documento", lambda *a, **k: {})
+    monkeypatch.setattr(sh, "_status_documento", lambda r: {"A1": "READY", "B2": "READY"})
+    monkeypatch.setattr(sh, "baixar_documento", lambda *a, **k: b"PK\x03\x04")
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+
+    sh.gerar_etiqueta({"x": 1}, ["A1", "B2"], token="TOK")
+
+    assert buscados == ["B2"]                              # A1 veio do cache
+    assert sh._carregar_awb_cache().get("B2") == "BR-B2"   # e B2 entrou nele
+
+
+def test_aguardar_awbs_backoff_apos_10_tentativas(monkeypatch):
+    """Polling do AWB: 1s nas 10 primeiras checagens, 2s depois — mesmo teto
+    (~40s), ~40% menos chamadas por pedido preso."""
+    esperas = []
+    monkeypatch.setattr(sh.time, "sleep", lambda s: esperas.append(s))
+    monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {sn: "" for sn in sns})
+    assert sh._aguardar_awbs({}, "TOK", ["S1"]) == {}
+    assert esperas == [1.0] * 10 + [2.0] * 15
+    assert sum(esperas) == 40.0                            # teto total preservado
+
+
+def test_get_shop_corpo_nao_json_vira_erro_limpo(monkeypatch):
+    """Status 200 com corpo nao-JSON (proxy interceptando): SeparadorError
+    limpo, nao JSONDecodeError cru."""
+    import pytest
+
+    class _RespNaoJson:
+        status_code = 200
+        headers = {}
+
+        def json(self):
+            raise ValueError("Expecting value")
+
+    monkeypatch.setattr(sh.core, "_requisicao_get", lambda *a, **k: _RespNaoJson())
+    cred = {"partner_id": 1, "partner_key": "k", "shop_id": 2}
+    with pytest.raises(sh.core.SeparadorError, match="nao-JSON"):
+        sh._get_shop(cred, "TOK", "/api/v2/x", {})
+
+
 def test_gerar_etiqueta_rejeita_mapa_parcial(monkeypatch):
     """order_sns=[A,B] com rastreios só de A: B seguia sem AWB até o erro remoto
     tracking_number_invalid. Agora aborta antes do create, citando B (5.9)."""

@@ -117,16 +117,39 @@ def _imprimir_grupo(grupo):
     return core.imprimir_pendentes(token, grupo, estado)
 
 
-def _prontos():
+def _prontos(dias: int | None = None):
     cred = core.carregar_credenciais()
     token = core.obter_token(cred)
-    pedidos = core.buscar_pedidos(token, cred["seller_id"])
+    pedidos = core.buscar_pedidos(token, cred["seller_id"], dias=dias)
     return core.filtrar_para_imprimir(token, pedidos)
 
 
 # ---------------------------------------------------------- alerta pos-horario
 ARQUIVO_ALERTAS = core.PASTA_SCRIPT / "alertas_pos_horario.json"
 INTERVALO_ALERTA_SEGUNDOS = 5 * 60
+# Janela de BUSCA do alerta (dias), bem menor que a DIAS_JANELA=30 do Atualizar:
+# um envio novo ja ready_to_print com despacho HOJE e sempre recente — 5 dias
+# cobrem fim de semana + feriado prolongado. Achado da auditoria de APIs: com a
+# janela cheia, cada ciclo de 5 min re-consultava TODOS os envios nao-terminais
+# de 30 dias (~300+ chamadas /shipments por ciclo, ~90-100 mil/dia); com a
+# janela curta, so os pedidos recentes. Um caso raro que escape (pedido criado
+# ha 6+ dias que so agora ficou pronto pra hoje) ainda aparece no aviso da
+# manha e em qualquer Atualizar manual, que seguem com a janela cheia.
+DIAS_JANELA_ALERTA = 5
+# Janela de HORARIO (Brasilia) em que o alerta roda: o motivo do alerta e a
+# venda que cai depois das 8:30 e precisa de reposicao no MESMO dia — de
+# madrugada nao ha o que fazer com o aviso (a venda da noite aparece no aviso
+# da manha), e cada ciclo fora de hora e so gasto de API. Fora da janela o job
+# acorda e volta a dormir sem chamada nenhuma.
+ALERTA_HORA_INICIO = 7    # inclusive (07:00)
+ALERTA_HORA_FIM = 21      # exclusive (roda ate 20:59)
+
+
+def _alerta_no_horario(agora=None) -> bool:
+    """True se o relogio de Brasilia esta dentro da janela em que o alerta e
+    util (ver ALERTA_HORA_INICIO/FIM)."""
+    hora = (agora or datetime.now(core.TZ_BR)).hour
+    return ALERTA_HORA_INICIO <= hora < ALERTA_HORA_FIM
 
 
 def _carregar_alertas() -> dict:
@@ -162,7 +185,7 @@ def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
     try:
         if conta and conta != original:
             core.definir_conta(conta)
-        prontos = _prontos()
+        prontos = _prontos(dias=DIAS_JANELA_ALERTA)
         novos_pedidos = [
             p for p in prontos
             if (p.get("_envio") or {}).get("expected_date") == hoje
@@ -223,7 +246,10 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     unica), e avisa — uma vez so, por envio/pedido — quando surge algo novo ja
     pronto pra despachar HOJE (ready_to_print no ML, READY_TO_SHIP na Shopee).
     Isola falha por conta/loja: uma com erro nao impede o aviso das demais
-    (mesma filosofia do ads-monitor/coletar.py)."""
+    (mesma filosofia do ads-monitor/coletar.py). Fora da janela de horario
+    (ver _alerta_no_horario) e um no-op sem chamada de API nenhuma."""
+    if not _alerta_no_horario():
+        return
     cfg = context.bot_data["cfg"]
     contas = core.listar_contas() or [""]
     hoje = core._hoje_br()

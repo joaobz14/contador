@@ -182,6 +182,13 @@ TTL** — o operador nao veria o pronto ate o TTL expirar. So implementar apos d
 TTL conservador e aceitar explicitamente o trade-off (ou dar um "forcar releitura" que
 ignora o cache curto). Nao mexer sem essa decisao.
 
+**Urgencia reduzida (auditoria de APIs, 2026-07):** o maior consumidor dessa fase
+era o **alerta pos-horario do bot** (ciclo de 5 min, 24h, janela cheia de 30 dias —
+~90-100 mil chamadas/dia). Ele agora roda so das 07:00 as 20:59 e busca com janela
+dedicada de 5 dias (`DIAS_JANELA_ALERTA`), cortando ~95% disso. O TTL continua
+valendo para o **Atualizar manual** (que segue com a janela cheia), mas sem a
+pressao de antes.
+
 ## 9. Resumo do dia: incluir reimpressao (decisao de v1)
 
 O "📋 Resumo do dia" (`historico.py`) conta o que foi impresso pela primeira vez
