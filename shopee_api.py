@@ -46,19 +46,19 @@ TAMANHO_LOTE = 50          # get_order_detail aceita ate 50 order_sn por chamada
 MARGEM_TOKEN = 300         # renova o token 5 min antes de expirar
 _LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_token)
 
-ARQUIVO_CRED = core.PASTA_SCRIPT / "credenciais_shopee.json"
+ARQUIVO_CRED = core.PASTA_DADOS / "credenciais_shopee.json"
 
 # Cache de AWB (order_sn -> tracking_number). O AWB e IMUTAVEL depois de emitido,
 # entao guardamos o que a impressao ja descobriu: a coleta seguinte le daqui em
 # vez de re-buscar um a um na rede (menos chamadas) e — mais importante — os
 # codigos que a tela mostra para conferencia passam a vir do momento da
 # impressao, nao de um refetch que pode falhar (best-effort). Local, gitignorado.
-ARQUIVO_AWB_CACHE = core.PASTA_SCRIPT / "awb_cache_shopee.json"
+ARQUIVO_AWB_CACHE = core.PASTA_DADOS / "awb_cache_shopee.json"
 
 # Cronometragem da impressao (diagnostico): registra quanto cada fase leva, para
 # saber ONDE o tempo vai (organizar x gerar x baixar) antes de otimizar. Arquivo
 # local, gitignorado; nunca guarda dados sensiveis (so contagens e segundos).
-ARQUIVO_TEMPOS = core.PASTA_SCRIPT / "shopee_tempos.log"
+ARQUIVO_TEMPOS = core.PASTA_LOGS / "shopee_tempos.log"
 
 
 def _log_tempos(n: int, organizar: float, gerar: float, *, contexto: str = "lote") -> None:
@@ -919,7 +919,7 @@ def preencher_rastreios(cred: dict, grupos: list, estado: dict) -> None:
 # ---------------------------------------------------------------------------
 # ESTADO (controle de "ja impresso") — arquivo proprio da Shopee
 # ---------------------------------------------------------------------------
-ARQUIVO_ESTADO = core.PASTA_SCRIPT / "estado_shopee.json"
+ARQUIVO_ESTADO = core.PASTA_DADOS / "estado_shopee.json"
 
 
 # Estado de "ja impresso" da Shopee: mesma camada comum do ML (estado.py), so

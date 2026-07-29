@@ -4,6 +4,31 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Organização da pasta
+- **Raiz reorganizada em `dados/` + `logs/`.** A pasta do projeto tinha ~35
+  arquivos misturando código, documentação, config de ferramenta e todo o
+  dado local do app (tokens, estado, caches, histórico e 4 logs que crescem
+  sem parar) — achar o `separador_gui.py` do dia a dia virou garimpo. Agora:
+  - **`dados/`** — o que o app lê e escreve: `credenciais*.json` (+`.bak`),
+    `config.json`, `bot_config.json`, estados, caches, `historico_impressao.json`,
+    `alertas_pos_horario.json`, os de-paras versionados (`nomes_sku.json`,
+    `skus_por_anuncio.json`) e a pasta `contas/`.
+  - **`logs/`** — `separador.log`, `bot.log`, `ml_tempos.log`, `shopee_tempos.log`.
+  - **Raiz** — o que você abre (`separador_gui.py`), os módulos `.py`, e o que
+    as ferramentas exigem lá (`README`/`CLAUDE`/`AGENTS.md`, `.gitignore`,
+    `pyproject.toml`, `ruff.toml`).
+
+  **Migração automática:** na primeira abertura (tela, bot ou CLI) os arquivos
+  antigos da raiz são movidos sozinhos — **não precisa refazer token nem
+  perder estado**. A migração leva o `.bak` das credenciais junto (um `.bak`
+  desgarrado do principal guarda um refresh já rotacionado, morto), move a
+  pasta `contas/` inteira, **nunca sobrescreve** um arquivo que já exista no
+  destino e **nunca derruba a abertura** se falhar. Também remove o
+  `bot.lock` órfão (sobra do auto-start pela tela, removido em 2026-07).
+  O `.gitignore` passou a ignorar `dados/*` e `logs/` inteiros, liberando
+  explicitamente só os dois de-paras versionados — assim um arquivo local
+  novo nunca escapa por esquecimento de regra.
+
 ### Auditoria de APIs (ML + Shopee)
 - **Correção real: refresh de token podia gravar credenciais no arquivo da
   conta ERRADA (corrida multi-conta do bot).** A "Área de risco" aceitava a

@@ -108,6 +108,16 @@ quem sobe o bot.
 
 ## Arquivos locais não versionados
 
+> **Onde ficam (desde a reorganização de 2026-07):** tudo que o app **lê e
+> escreve** vive em **`dados/`** (inclusive `contas/{nome}/`) e os registros em
+> **`logs/`**. A raiz fica só com o que se abre (`separador_gui.py`), os
+> módulos `.py` e os arquivos que as ferramentas exigem lá (`README`/`CLAUDE`/
+> `AGENTS.md`, `.gitignore`, `pyproject.toml`, `ruff.toml`). Quem vinha da
+> versão antiga não move nada: `migrar_para_pastas()` roda no import do núcleo
+> e migra sozinho (com `.bak` junto, sem sobrescrever destino, sem nunca
+> derrubar a abertura). Os caminhos da tabela abaixo são relativos a essas
+> pastas.
+
 | Arquivo | Módulo/uso | Segredo? | Escopo | Versionar? |
 |---|---|---|---|---|
 | `credenciais.json` | núcleo ML (`obter_token`) | **Sim** | por conta (`contas/{nome}/`) | ❌ Não |

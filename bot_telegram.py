@@ -71,8 +71,8 @@ import separador_etiquetas_ml as core
 from registro import sem_segredos
 import shopee_api as shopee
 
-ARQUIVO_CONFIG = core.PASTA_SCRIPT / "bot_config.json"
-ARQUIVO_LOG = core.PASTA_SCRIPT / "bot.log"
+ARQUIVO_CONFIG = core.PASTA_DADOS / "bot_config.json"
+ARQUIVO_LOG = core.PASTA_LOGS / "bot.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -125,7 +125,7 @@ def _prontos(dias: int | None = None):
 
 
 # ---------------------------------------------------------- alerta pos-horario
-ARQUIVO_ALERTAS = core.PASTA_SCRIPT / "alertas_pos_horario.json"
+ARQUIVO_ALERTAS = core.PASTA_DADOS / "alertas_pos_horario.json"
 INTERVALO_ALERTA_SEGUNDOS = 5 * 60
 # Janela de BUSCA do alerta (dias), bem menor que a DIAS_JANELA=30 do Atualizar:
 # um envio novo ja ready_to_print com despacho HOJE e sempre recente — 5 dias
