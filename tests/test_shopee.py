@@ -454,9 +454,12 @@ def _grupo(chave="A01", ids=("SN1", "SN2"), dia=""):
 
 def _forca_individual(monkeypatch):
     """Leva _organizar_varios direto ao caminho individual (sem AWB previo e sem
-    batch), preservando a semantica dos testes escritos antes do batch_ship_order."""
+    batch), preservando a semantica dos testes escritos antes do batch_ship_order.
+    Tambem forca 'ainda nao arranjado' pra ninguem pular o batch por engano —
+    sem isso, o filtro do 1.5 chamaria parametros_envio de verdade (rede)."""
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {str(s): "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("sem batch")))
 
@@ -757,11 +760,54 @@ def test_batch_ship_order_monta_o_corpo(monkeypatch):
                             "dropoff": {}}
 
 
+# --------------------------- filtro de "ja arranjado" antes do batch_ship_order
+def test_filtrar_ja_arranjados_identifica_organizados(monkeypatch):
+    respostas = {
+        "S1": {"response": {"info_needed": {}}},                # ja arranjado
+        "S2": {"response": {"info_needed": {"dropoff": []}}},   # ainda nao
+    }
+    monkeypatch.setattr(sh, "parametros_envio", lambda c, t, sn: respostas[sn])
+    assert sh._filtrar_ja_arranjados({}, "TOK", ["S1", "S2"]) == ["S1"]
+
+
+def test_filtrar_ja_arranjados_erro_de_rede_nao_conta_como_arranjado(monkeypatch):
+    """Em duvida (falha ao consultar), NAO assume que ja foi arranjado -- senao
+    o pedido pularia o batch E o individual re-verificaria do zero mesmo assim
+    (organizar_envio tem a mesma checagem), entao o pior caso e so um pouco
+    mais lento, nunca reenviar por engano."""
+    def _param(c, t, sn):
+        raise RuntimeError("timeout")
+    monkeypatch.setattr(sh, "parametros_envio", _param)
+    assert sh._filtrar_ja_arranjados({}, "TOK", ["S1"]) == []
+
+
+def test_organizar_varios_ja_arranjado_pula_o_batch(monkeypatch):
+    """Pedido ja arranjado (so falta o AWB) NAO pode ir pro batch_ship_order --
+    a Shopee rejeita com 'already shipped' (achado do requisito de qualidade
+    do v2.logistics.ship_order). Vai direto pro individual, que so espera."""
+    monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: ["S1"])
+    monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
+    batches = []
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda c, t, sns, dropoff=None: batches.append(list(sns)) or {})
+    chamados = []
+    monkeypatch.setattr(sh, "organizar_envio",
+                        lambda c, t, sn, **k: chamados.append(sn) or f"BR-{sn}")
+
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
+
+    assert batches == [["S2"]]              # S1 NUNCA entra no batch
+    assert sorted(chamados) == ["S1", "S2"]  # os dois vao pro individual
+    assert ok == {"S1": "BR-S1", "S2": "BR-S2"} and falhas == []
+
+
 def test_organizar_varios_via_batch_sem_individual(monkeypatch):
     # rodada 1 (idempotencia): ninguem tem AWB; rodada 2 (apos o batch): todos tem
     seq = iter([{"S1": "", "S2": ""}, {"S1": "BR1", "S2": "BR2"}])
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {k: v for k, v in next(seq).items() if k in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     batches = []
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda c, t, sns, dropoff=None: batches.append(list(sns)) or {})
@@ -784,6 +830,7 @@ def test_organizar_varios_idempotente_nem_chama_batch(monkeypatch):
 def test_organizar_varios_batch_indisponivel_cai_no_individual(monkeypatch):
     # endpoint falhou por inteiro -> NAO fica esperando AWB; vai direto pro individual
     monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("endpoint fora")))
     esperas = []
@@ -798,6 +845,7 @@ def test_organizar_varios_awb_que_nao_sai_cai_no_individual(monkeypatch):
     # batch "passa", mas o AWB de S2 nunca sai -> SO S2 vai pro individual
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {s: ("BR1" if s == "S1" else "") for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order", lambda c, t, sns, dropoff=None: {})
     monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
     chamados = []
@@ -811,6 +859,7 @@ def test_organizar_varios_awb_que_nao_sai_cai_no_individual(monkeypatch):
 def test_organizar_varios_dropoff_leva_branch_e_remetente(monkeypatch):
     capt = {}
     monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda c, t, sns, dropoff=None: capt.update(dropoff=dropoff) or {})
     monkeypatch.setattr(sh.time, "sleep", lambda *_: None)

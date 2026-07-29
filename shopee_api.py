@@ -466,17 +466,43 @@ def _aguardar_awbs(cred: dict, token: str, order_sns: list, *,
     return ok
 
 
+def _filtrar_ja_arranjados(cred: dict, token: str, order_sns: list) -> list:
+    """Dos `order_sns` (ja sem AWB), devolve os que a Shopee ja considera
+    ARRANJADOS (info_needed sem pickup/dropoff/non_integrated — so falta o AWB
+    sair). Consulta parametros_envio em paralelo; falha de rede num pedido nao
+    o classifica como arranjado (fica de fora, segue o caminho normal — mesmo
+    espirito conservador de _rede_limpa/envio_ja_arranjado: em duvida, nao
+    assume que ja foi organizado)."""
+    def _param(sn):
+        try:
+            return sn, parametros_envio(cred, token, sn)
+        except Exception:
+            return sn, None
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        params = dict(executor.map(_param, order_sns))
+    return [sn for sn in order_sns if params.get(sn) and envio_ja_arranjado(params[sn])]
+
+
 def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                       branch_id=None, sender_real_name=None) -> tuple[dict, list]:
     """Organiza varios envios, em camadas (da mais rapida para o fallback):
 
       1) quem JA tem AWB esta organizado (idempotente) — nada a fazer;
-      2) os demais vao TODOS num batch_ship_order (1 request p/ ate 50) e os
-         AWBs sao aguardados — o rastreio existir e a unica confirmacao em que
-         confiamos (nao dependemos do formato da resposta do batch);
-      3) quem ficar sem AWB cai no caminho individual (organizar_envio), que
-         resolve casos especiais (info_needed com campos exigidos) e reporta
-         em `falhas` quando nem assim sai.
+      1.5) dos que sobraram, quem a Shopee JA considera arranjado (so falta o
+         AWB sair) vai direto pro fallback individual — chamar ship_order de
+         novo (batch ou nao) num pedido ja arranjado a Shopee rejeita com
+         'already shipped' (achado no requisito de qualidade da Shopee pro
+         v2.logistics.ship_order: success rate > 90% por 7 dias — reenviar um
+         pedido ja arranjado e uma das causas documentadas de falha);
+      2) o restante (genuinamente nao arranjado) vai TODO num batch_ship_order
+         (1 request p/ ate 50) e os AWBs sao aguardados — o rastreio existir e
+         a unica confirmacao em que confiamos (nao dependemos do formato da
+         resposta do batch);
+      3) quem ficar sem AWB (do batch OU do 1.5) cai no caminho individual
+         (organizar_envio), que resolve casos especiais (info_needed com
+         campos exigidos), NAO reenvia quem ja esta arranjado (mesma checagem
+         de novo, mais recente) e reporta em `falhas` quando nem assim sai.
 
     Devolve (ok={order_sn: awb}, falhas=[(sn, motivo)]). NAO levanta — quem
     chama decide (grupo unico aborta; lote tolera)."""
@@ -491,8 +517,14 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                for sn, awb in _rastreios_paralelo(cred, token, order_sns).items() if awb})
     restantes = [sn for sn in order_sns if sn not in ok]
 
-    # 2) batch (1 request); os AWBs confirmam. Se NENHUM batch passou, nem
-    # espera — vai direto pro individual (evita 40s de polling inutil).
+    # 1.5) filtra quem ja foi arranjado antes de deixar QUALQUER um chegar no
+    # batch_ship_order (ver motivo no docstring).
+    ja_arranjados = _filtrar_ja_arranjados(cred, token, restantes) if restantes else []
+    restantes = [sn for sn in restantes if sn not in ja_arranjados]
+
+    # 2) batch (1 request) SO para quem realmente ainda precisa ser arranjado.
+    # Se NENHUM batch passou, nem espera — vai direto pro individual (evita
+    # 40s de polling inutil).
     if restantes:
         dropoff: dict = {}
         if branch_id not in (None, ""):
@@ -510,7 +542,9 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
             ok.update(_aguardar_awbs(cred, token, restantes))
             restantes = [sn for sn in restantes if sn not in ok]
 
-    # 3) fallback individual (paralelo) — o caminho que sempre funcionou
+    # 3) fallback individual (paralelo) — cobre quem sobrou do batch E quem
+    # ja estava arranjado no 1.5 (organizar_envio checa de novo e so espera
+    # o AWB, sem reenviar).
     def _um(sn):
         try:
             ok[sn] = organizar_envio(cred, token, sn,
@@ -518,9 +552,10 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
         except Exception as e:                       # inclui erro de rede (HTTPError)
             falhas.append((sn, str(e)))
 
-    if restantes:
+    restantes_final = restantes + ja_arranjados
+    if restantes_final:
         with ThreadPoolExecutor(max_workers=8) as executor:
-            list(executor.map(_um, restantes))
+            list(executor.map(_um, restantes_final))
     return ok, falhas
 
 

@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 332,
- "edge_count": 568,
+ "node_count": 333,
+ "edge_count": 570,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -1333,6 +1333,20 @@
    "id": "separador_gui_rationale_776",
    "community": 26,
    "norm_label": "janelinha de edicao do de-para sku -> nome amigavel."
+  },
+  {
+   "label": "COMPLIANCE DA SHOPEE: TAXA DE SUCESSO DO v2.logistics.ship_order (achado 2026-07): a Shopee mandou um requisito de qualidade obrigatorio (prazo de dias, risco de penalidade) exigindo success rate > 90% por 7 dias consecutivos nesse endpoint. O FAQ deles documenta 3 causas de erro de status de pedido, uma delas 'This parcel has already been shipped' -- chamar ship_order de novo num pedido que a Shopee ja considera arranjado. Investigando _organizar_varios, achei uma lacuna real: o caminho individual (organizar_envio) ja checava envio_ja_arranjado antes de (re)enviar, mas o caminho em LOTE (batch_ship_order) mandava TODOS os 'restantes' pro batch sem essa checagem -- um pedido ja arranjado numa tentativa anterior (ex.: AWB demorou mais que o timeout de _aguardar_awbs, ou uma 2a tentativa de impressao do mesmo grupo) seria reenviado via batch e provavelmente rejeitado. Corrigido com _filtrar_ja_arranjados: um passo NOVO (1.5) entre a checagem de AWB existente e o batch_ship_order, que consulta parametros_envio em paralelo pros 'restantes' e tira do batch quem ja esta arranjado -- esses vao direto pro fallback individual (que so espera o AWB, nao reenvia). Em duvida (falha de rede na consulta), NAO assume arranjado -- fica no caminho normal (mesmo espirito conservador de envio_ja_arranjado/_rede_limpa: errar pro lado de nao reenviar sem necessidade e pior que so ser um pouco mais lento). Tentei buscar a correcao mais completa que a Shopee recomenda no proprio FAQ (migrar pra v2.order.search_package_list + v2.order.get_package_detail, checando is_shipment_arranged/fulfillment_status em vez de inferir por info_needed) mas open.shopee.com esta bloqueado neste ambiente -- sem o schema real desses endpoints, essa migracao mais profunda ficou pendente (perguntas formuladas pro dono levar ao suporte da Shopee); esta correcao usa só os endpoints ja integrados e testados, mais conservadora mas de baixo risco.",
+   "file_type": "concept",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "shopee_compliance_ship_order",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "compliance da shopee: taxa de sucesso do v2.logistics.ship_order (achado 2026-07): a shopee mandou um requisito de qualidade obrigatorio (prazo de dias, risco de penalidade) exigindo success rate > 90% por 7 dias consecutivos nesse endpoint. o faq deles documenta 3 causas de erro de status de pedido, uma delas 'this parcel has already been shipped' -- chamar ship_order de novo num pedido que a shopee ja considera arranjado. investigando _organizar_varios, achei uma lacuna real: o caminho individual (organizar_envio) ja checava envio_ja_arranjado antes de (re)enviar, mas o caminho em lote (batch_ship_order) mandava todos os 'restantes' pro batch sem essa checagem -- um pedido ja arranjado numa tentativa anterior (ex.: awb demorou mais que o timeout de _aguardar_awbs, ou uma 2a tentativa de impressao do mesmo grupo) seria reenviado via batch e provavelmente rejeitado. corrigido com _filtrar_ja_arranjados: um passo novo (1.5) entre a checagem de awb existente e o batch_ship_order, que consulta parametros_envio em paralelo pros 'restantes' e tira do batch quem ja esta arranjado -- esses vao direto pro fallback individual (que so espera o awb, nao reenvia). em duvida (falha de rede na consulta), nao assume arranjado -- fica no caminho normal (mesmo espirito conservador de envio_ja_arranjado/_rede_limpa: errar pro lado de nao reenviar sem necessidade e pior que so ser um pouco mais lento). tentei buscar a correcao mais completa que a shopee recomenda no proprio faq (migrar pra v2.order.search_package_list + v2.order.get_package_detail, checando is_shipment_arranged/fulfillment_status em vez de inferir por info_needed) mas open.shopee.com esta bloqueado neste ambiente -- sem o schema real desses endpoints, essa migracao mais profunda ficou pendente (perguntas formuladas pro dono levar ao suporte da shopee); esta correcao usa só os endpoints ja integrados e testados, mais conservadora mas de baixo risco."
   },
   {
    "label": "shopee_api.py Integracao com a Shopee Open Platform API v2 — FASE 1 (somente lei",
@@ -8327,6 +8341,26 @@
    "weight": 1.0,
    "source": "shopee_awb_cache",
    "target": "shopee_api_preencher_rastreios",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "shopee_compliance_ship_order",
+   "target": "shopee_api_filtrar_ja_arranjados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "shopee_compliance_ship_order",
+   "target": "shopee_api_organizar_varios",
    "confidence_score": 1.0
   },
   {

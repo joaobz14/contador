@@ -380,10 +380,31 @@ em 2º plano.
   organizado (achado 5.3). `envio_ja_arranjado` = nenhum de
   pickup/dropoff/non_integrated em `info_needed`.
 - **Organizar em lote:** `_organizar_varios` é em camadas — AWB existente
-  (idempotência) → `batch_ship_order` (até 50 num request) → confirmação **pelo
-  AWB** (não confiar no formato da resposta do batch) → fallback individual
-  (`organizar_envio`) pra quem ficar sem AWB. Se o batch falhar por inteiro,
-  não espera polling: vai direto ao individual.
+  (idempotência) → **`_filtrar_ja_arranjados`** (quem já foi arranjado, só
+  falta o AWB, NUNCA vai pro batch — ver "compliance" abaixo) → `batch_ship_order`
+  (até 50 num request, só quem sobrou) → confirmação **pelo AWB** (não confiar
+  no formato da resposta do batch) → fallback individual (`organizar_envio`)
+  pra quem ficar sem AWB (do batch **ou** do filtro). Se o batch falhar por
+  inteiro, não espera polling: vai direto ao individual.
+- **Compliance da Shopee — success rate do `v2.logistics.ship_order` (achado
+  2026-07):** a Shopee exige (requisito obrigatório, com prazo e risco de
+  penalidade) success rate > 90% por 7 dias consecutivos nesse endpoint. O
+  FAQ deles lista "This parcel has already been shipped" como causa de erro
+  — reenviar um pedido já arranjado. `organizar_envio` (caminho individual)
+  já checava `envio_ja_arranjado` antes de (re)enviar, mas o caminho em LOTE
+  mandava **todos** os `restantes` pro `batch_ship_order` sem essa checagem —
+  um pedido arranjado numa tentativa anterior (ex.: AWB demorou mais que o
+  timeout de `_aguardar_awbs`, ou uma 2ª impressão do mesmo grupo) seria
+  reenviado via batch e provavelmente rejeitado. Corrigido com
+  `_filtrar_ja_arranjados` (consulta `parametros_envio` em paralelo antes do
+  batch; em dúvida — falha de rede — NÃO assume arranjado, mesmo espírito
+  conservador de `envio_ja_arranjado`/`_rede_limpa`). A correção mais
+  completa que a própria Shopee recomenda (migrar pra
+  `v2.order.search_package_list` + `v2.order.get_package_detail`, checando
+  `is_shipment_arranged`/`fulfillment_status` em vez de inferir por
+  `info_needed`) ficou **pendente**: `open.shopee.com` está bloqueado neste
+  ambiente, sem o schema real desses endpoints não dá pra implementar com
+  segurança numa ação que compromete o envio de verdade.
 - **Desempenho (medido, ver `docs/ARQUITETURA.md`):** organizar é **~14s fixos**
   (latência da Shopee emitir o AWB — piso intransponível, NÃO é o número de
   chamadas, então **batch não acelera**). O ganho está em **gerar os documentos

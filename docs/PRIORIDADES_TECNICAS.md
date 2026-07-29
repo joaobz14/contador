@@ -276,6 +276,38 @@ existente. `narrar.py` e aditivo/opcional (usa `claude -p`, mesmo padrao do
 conclusao nova; se falhar ou nao rodar, `recomendar.py` continua funcionando
 sozinho, determinístico, como antes.
 
+## 11. Shopee: migrar `ship_order` pra checar por `get_package_detail` (bloqueado — falta docs)
+
+**Contexto:** a Shopee mandou um requisito de qualidade obrigatorio (prazo,
+risco de penalidade) exigindo success rate > 90% por 7 dias consecutivos em
+`v2.logistics.ship_order`. O FAQ deles lista "This parcel has already been
+shipped" como uma causa documentada de erro — reenviar um pedido ja
+arranjado — e recomenda migrar de `get_shipping_parameter`/`info_needed`
+(o que este projeto usa hoje via `envio_ja_arranjado`) para
+`v2.order.search_package_list` + `v2.order.get_package_detail`, checando
+`is_shipment_arranged`/`fulfillment_status` diretamente — mais confiavel
+contra atraso de propagacao (a propria Shopee documenta que
+`fulfillment_status` pode demorar a atualizar apos o `ship_order`).
+
+**Ja corrigido (achado 2026-07):** `_organizar_varios` tinha uma lacuna real
+— o caminho em lote (`batch_ship_order`) nao checava `envio_ja_arranjado`
+antes de reenviar (so o caminho individual `organizar_envio` checava). Um
+pedido arranjado numa tentativa anterior (AWB demorou mais que o timeout do
+polling, ou uma 2ª impressao do mesmo grupo) seria reenviado via batch e
+provavelmente rejeitado. Corrigido com `_filtrar_ja_arranjados` (nova etapa
+1.5, antes do batch) — ver `docs/ARQUITETURA.md` / `CLAUDE.md` (seção
+"Compliance da Shopee").
+
+**Bloqueado:** a migração completa que a Shopee recomenda (`search_package_list`
++ `get_package_detail`) precisa do schema real desses dois endpoints —
+`open.shopee.com` está bloqueado neste ambiente de execução, sem acesso à
+documentação oficial. Chutar nomes de campo numa ação que compromete o
+envio de verdade é mais arriscado do que não mexer. Perguntas específicas
+já foram formuladas pro dono levar ao suporte/IA da Shopee (schema dos dois
+endpoints nomeados acima, se `batch_ship_order` conta pro mesmo indicador
+de sucesso, códigos de erro exatos, e o tempo típico de propagação). Assim
+que as respostas chegarem, dá pra implementar a migração com segurança.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:

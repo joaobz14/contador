@@ -30,19 +30,19 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1784935770.8551068,
-  "ast_hash": "545849bd57704b18d931c831890afed1d2ff5779",
-  "semantic_hash": "545849bd57704b18d931c831890afed1d2ff5779"
+  "mtime": 1784959452.010178,
+  "ast_hash": "a2e72504e0d11472e14a21a587af7ab1a16f5a09",
+  "semantic_hash": "a2e72504e0d11472e14a21a587af7ab1a16f5a09"
  },
  "CLAUDE.md": {
-  "mtime": 1784935759.227107,
-  "ast_hash": "cf33ddd8f114fc4f23da3d0fe1fd89264a16b4f8",
-  "semantic_hash": "cf33ddd8f114fc4f23da3d0fe1fd89264a16b4f8"
+  "mtime": 1784959429.6901786,
+  "ast_hash": "5f7e2f5339c2019e086fb4de475bf76eb03c9b20",
+  "semantic_hash": "5f7e2f5339c2019e086fb4de475bf76eb03c9b20"
  },
  "README.md": {
-  "mtime": 1784935744.1631074,
-  "ast_hash": "6a1eda95437b9d580c7493ecfd29621ce64da0b9",
-  "semantic_hash": "6a1eda95437b9d580c7493ecfd29621ce64da0b9"
+  "mtime": 1784959468.3981776,
+  "ast_hash": "3e803035e89697c9285cbdb1c8d83c110c108ae2",
+  "semantic_hash": "3e803035e89697c9285cbdb1c8d83c110c108ae2"
  },
  "ads-monitor/README.md": {
   "mtime": 1784916367.2070236,
@@ -95,9 +95,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1784935728.031108,
-  "ast_hash": "19b46b786d208cd577d614d9ef0de84bc99f0c2e",
-  "semantic_hash": "19b46b786d208cd577d614d9ef0de84bc99f0c2e"
+  "mtime": 1784959397.7341793,
+  "ast_hash": "2a2cb71d26fea7338740bc1ca57d6fd579f8767c",
+  "semantic_hash": "2a2cb71d26fea7338740bc1ca57d6fd579f8767c"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -105,9 +105,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1784935787.5591066,
-  "ast_hash": "177e23a5ee21310c79146976d9412c9f99c84ed1",
-  "semantic_hash": "177e23a5ee21310c79146976d9412c9f99c84ed1"
+  "mtime": 1784959479.1021774,
+  "ast_hash": "89fe9db4e5888e910ba5ef0016023f6b32f84efd",
+  "semantic_hash": "89fe9db4e5888e910ba5ef0016023f6b32f84efd"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1784923251.5822356,
@@ -235,9 +235,9 @@
   "semantic_hash": "3205a24fb353953b415a0f2c6a203e9f08d6d775"
  },
  "obsidian/IA/Estado atual.md": {
-  "mtime": 1784926366.8700564,
-  "ast_hash": "12f651df0a70a55a2c2b14e0eafc466c89cb9950",
-  "semantic_hash": "12f651df0a70a55a2c2b14e0eafc466c89cb9950"
+  "mtime": 1784959549.9061759,
+  "ast_hash": "115c99979c90bbc49bea66b1c51525b10819efa6",
+  "semantic_hash": "115c99979c90bbc49bea66b1c51525b10819efa6"
  },
  "obsidian/IA/Fontes de verdade.md": {
   "mtime": 1784736682.269462,
@@ -345,9 +345,9 @@
   "semantic_hash": "6e886810e4f9f741690f19cde54a8cc2e30ad38b"
  },
  "shopee_api.py": {
-  "mtime": 1784959192.4101841,
-  "ast_hash": "3aca3a31231e18258c64a9d45d6a691643e588f7",
-  "semantic_hash": "3aca3a31231e18258c64a9d45d6a691643e588f7"
+  "mtime": 1785326266.5776212,
+  "ast_hash": "170ce63c56403a0440eb99ecf6ba1c59058d14c4",
+  "semantic_hash": "170ce63c56403a0440eb99ecf6ba1c59058d14c4"
  },
  "skus_por_anuncio.json": {
   "mtime": 1784736107.8123124,
@@ -520,9 +520,9 @@
   "semantic_hash": "cd0986aea0d6510fbb20f86e0d81b53a76487bd8"
  },
  "tests/test_shopee.py": {
-  "mtime": 1784959279.574182,
-  "ast_hash": "2cbb863294882070107315edbff465ef005e8caf",
-  "semantic_hash": "2cbb863294882070107315edbff465ef005e8caf"
+  "mtime": 1785326483.8256292,
+  "ast_hash": "d3ebc20202b429c06d1f782520d69a073aa097d6",
+  "semantic_hash": "d3ebc20202b429c06d1f782520d69a073aa097d6"
  },
  "tests/test_validar_obsidian.py": {
   "mtime": 1784737273.0854487,

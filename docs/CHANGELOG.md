@@ -14,6 +14,31 @@ Histórico das principais mudanças do projeto.
   `NEEDRESTART_MODE=a` no passo de instalação; adicionado também
   `timeout-minutes: 10` no job como rede de segurança contra travas futuras.
 
+### Shopee
+- **Correção real: `_organizar_varios` podia reenviar um pedido já
+  arranjado via `batch_ship_order`.** Motivado por um requisito de
+  qualidade **obrigatório** da Shopee (prazo curto, risco de penalidade):
+  success rate > 90% por 7 dias consecutivos em `v2.logistics.ship_order`.
+  O FAQ deles documenta "This parcel has already been shipped" (reenviar
+  um pedido já arranjado) como causa de erro. O caminho individual
+  (`organizar_envio`) já checava `envio_ja_arranjado` antes de (re)enviar,
+  mas o caminho em **lote** mandava todos os `restantes` pro
+  `batch_ship_order` sem essa checagem — um pedido arranjado numa
+  tentativa anterior (AWB demorou mais que o timeout do polling, ou uma 2ª
+  impressão do mesmo grupo) seria reenviado via batch e provavelmente
+  rejeitado. Corrigido com `_filtrar_ja_arranjados` — nova etapa (1.5),
+  entre a checagem de AWB existente e o batch, que consulta
+  `parametros_envio` em paralelo e tira do batch quem já está arranjado
+  (esses vão direto pro fallback individual, que só espera o AWB sem
+  reenviar). Em dúvida (falha de rede na consulta), **não** assume
+  arranjado — mesmo espírito conservador de `envio_ja_arranjado`/
+  `_rede_limpa`. A migração mais completa que a própria Shopee recomenda
+  (`v2.order.search_package_list` + `v2.order.get_package_detail`) ficou
+  **pendente** — `open.shopee.com` está bloqueado neste ambiente, sem o
+  schema real desses endpoints não dá pra implementar com segurança numa
+  ação que compromete o envio de verdade (ver `docs/PRIORIDADES_TECNICAS.md`
+  item 11).
+
 ### Ferramentas de desenvolvimento
 - **`ads-monitor/coletar.py` — coletor determinístico do Product Ads (Mercado
   Ads):** primeira camada de um futuro monitor de campanhas. Grava, uma vez
