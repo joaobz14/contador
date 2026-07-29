@@ -451,6 +451,76 @@ comodidade sem tirar a decisao dele — e a impressao ja tem a confirmacao
 - Nao logar nome do motorista nem placa (dado pessoal) — so `driver.id`, como o
   `diag_coleta.py` ja faz.
 
+## 13. Melhorias de OPERACAO INTERNA (destilado da auditoria comercial de 2026-07-29)
+
+**Origem:** o dono pediu uma analise do projeto "como se fosse virar produto
+comercial". A conclusao dessa analise nao interessa aqui (ele NAO pretende
+comercializar — e uso proprio). O que interessa e o **destilado**: das ~14
+lacunas que a analise apontou, a maioria (OAuth centralizado, multi-inquilino,
+cobranca, LGPD, instalador, telemetria, onboarding) so faz sentido com clientes
+externos e foi **descartada**. Sobraram 7 itens que valem para UMA operacao.
+
+**Nota de escopo:** "facilidade de uso" nao e prioridade enquanto o dono for o
+unico usuario. Volta a ser se entrar um funcionario pra embalar — e ai o que
+importa nao e onboarding bonito, e o app **impedir** que essa pessoa erre
+(item 13.2).
+
+### 13.1. Reduzir a dependencia do app externo da Zebra
+Ver o debate/decisao proprios (secao "Pasta Downloads / app Zebra" da
+`ARQUITETURA.md`). E o unico ponto do fluxo em que uma falha PARA a expedicao e
+o conserto nao esta nas maos deste repo. Atencao: o contrato com o app **esta
+documentado e foi verificado dos DOIS lados em 20/07/2026** — o risco NAO e
+acoplamento obscuro; e **falta de retorno** (a tela nao sabe se o monitor esta
+rodando nem se o arquivo foi consumido) e **ponto unico de falha**.
+
+### 13.2. Conferencia por leitura de codigo de barras na embalagem
+Hoje o app **reduz** erro de separacao (pilha por produto, na ordem da
+prateleira). Ler o codigo antes de fechar a caixa **impede** o erro. E o unico
+item que ataca diretamente o problema que originou o projeto. Autocontido: uma
+tela, um leitor USB (que digita como teclado) e comparacao com o SKU esperado.
+Nao depende de nada da infra descartada acima.
+
+### 13.3. Registrar erro de separacao (o outro lado do historico)
+`historico_impressao.json` ja grava o que foi impresso e quando. Falta o
+contraponto: um registro de quando a separacao saiu errada. Com os dois, em 2-3
+meses da pra responder com NUMERO se a ordem da aba Nomes esta boa, quais SKUs
+concentram erro e se vale reordenar. Hoje isso e intuicao. Pre-requisito pra
+medir o beneficio de 13.2.
+
+### 13.4. Painel de produtividade a partir do dado que JA existe
+Etiquetas por dia/conta/marketplace, evolucao por semana. **Melhor relacao
+valor/esforco da lista inteira**: a coleta ja esta feita (`historico.py`), falta
+so a apresentacao. Reusa `resumo_do_dia`/`formatar_resumo`.
+
+### 13.5. Detectar pedido problematico ANTES de imprimir
+Endereco incompleto, produto que acabou. Melhor descobrir na tela do que na hora
+de embalar. Depende de definir quais sinais a API ja entrega (nao pesquisado).
+
+### 13.6. Ordem de separacao aprendida (evolucao do que ja existe)
+A ordem da aba Nomes e manual. Com o historico, da pra SUGERIR reordenacoes com
+base no que realmente sai junto. Como e uso interno, da pra ser mais agressivo
+que num produto — o dono valida na hora. Depende de 13.3/13.4 (dado).
+
+### 13.7. Margem por SKU no ads-monitor (o item 10 SOBE de prioridade)
+Numa leitura comercial isso seria "melhoria futura" (o modulo nao e vendavel).
+**Internamente e o contrario:** e o dinheiro de anuncio do proprio dono, e a
+atribuicao por SKU ja esta construida esperando exatamente essa fonte. Maior
+retorno financeiro DIRETO da lista. Detalhes tecnicos no item 10.
+
+### Ordem sugerida
+1. **13.1** se o criterio for RISCO (unica falha que para a operacao).
+2. **13.2** se o criterio for GANHO (ataca o problema original).
+3. **13.4** (barato, dado ja existe) → **13.3** → **13.6** (dependem de dado).
+4. **13.7** em paralelo — subsistema isolado, nao concorre com os outros.
+5. **13.5** por ultimo (precisa de pesquisa de API antes de virar tarefa).
+
+### Um achado nao-tecnico que continua valendo
+O repositorio e **publico e sem `LICENSE`** (sem licenca, direitos reservados por
+padrao). Sem intencao de vender, isso deixa de ser risco de concorrencia — mas as
+pegadinhas da Shopee descobertas em loja real (AWB so apos organizar, os ~14s
+fixos, o comportamento do `info_needed`) estao publicas. Nao e problema, e
+escolha; so vale ser **consciente**, nao esquecimento.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:
