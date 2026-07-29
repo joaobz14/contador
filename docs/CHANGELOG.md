@@ -15,29 +15,38 @@ Histórico das principais mudanças do projeto.
   `timeout-minutes: 10` no job como rede de segurança contra travas futuras.
 
 ### Shopee
-- **Correção real: `_organizar_varios` podia reenviar um pedido já
-  arranjado via `batch_ship_order`.** Motivado por um requisito de
+- **Correção real (2 rodadas): `_organizar_varios` podia reenviar um
+  pedido já arranjado via `ship_order`.** Motivado por um requisito de
   qualidade **obrigatório** da Shopee (prazo curto, risco de penalidade):
-  success rate > 90% por 7 dias consecutivos em `v2.logistics.ship_order`.
-  O FAQ deles documenta "This parcel has already been shipped" (reenviar
-  um pedido já arranjado) como causa de erro. O caminho individual
-  (`organizar_envio`) já checava `envio_ja_arranjado` antes de (re)enviar,
-  mas o caminho em **lote** mandava todos os `restantes` pro
-  `batch_ship_order` sem essa checagem — um pedido arranjado numa
-  tentativa anterior (AWB demorou mais que o timeout do polling, ou uma 2ª
-  impressão do mesmo grupo) seria reenviado via batch e provavelmente
-  rejeitado. Corrigido com `_filtrar_ja_arranjados` — nova etapa (1.5),
-  entre a checagem de AWB existente e o batch, que consulta
-  `parametros_envio` em paralelo e tira do batch quem já está arranjado
-  (esses vão direto pro fallback individual, que só espera o AWB sem
-  reenviar). Em dúvida (falha de rede na consulta), **não** assume
-  arranjado — mesmo espírito conservador de `envio_ja_arranjado`/
-  `_rede_limpa`. A migração mais completa que a própria Shopee recomenda
-  (`v2.order.search_package_list` + `v2.order.get_package_detail`) ficou
-  **pendente** — `open.shopee.com` está bloqueado neste ambiente, sem o
-  schema real desses endpoints não dá pra implementar com segurança numa
-  ação que compromete o envio de verdade (ver `docs/PRIORIDADES_TECNICAS.md`
-  item 11).
+  success rate > 90% por 7 dias consecutivos em `v2.logistics.ship_order`
+  (só o endpoint singular — confirmado com o suporte deles que
+  `batch_ship_order` não conta pra mesma métrica). O FAQ deles documenta
+  "This parcel has already been shipped" (`logistics.package_already_shipped`)
+  e "The order is being allocated, please wait" (`logistics.error_param`)
+  como causas de erro — mensagens exatas confirmadas com o suporte.
+  **Rodada 1:** o caminho individual (`organizar_envio`) já checava
+  `envio_ja_arranjado` antes de (re)enviar, mas o caminho em **lote**
+  mandava todos os `restantes` pro `batch_ship_order` sem essa checagem.
+  Corrigido com `_filtrar_ja_arranjados` — nova etapa (1.5), entre a
+  checagem de AWB existente e o batch, que consulta `parametros_envio` em
+  paralelo e tira do batch quem já está arranjado.
+  **Rodada 2 (revisão depois de respostas do suporte):** a rodada 1 não
+  resolvia o problema de verdade — a propagação de
+  `fulfillment_status`/`is_shipment_arranged` pode levar **até 15-20
+  minutos**, bem mais que os ~40s de polling deste módulo. Um pedido que
+  passava pelo batch mas ficava sem AWB (só pelo timeout curto) caía no
+  fallback individual, que consultava o status ainda **desatualizado** e
+  chamava `ship_order` **de novo** — exatamente o cenário rejeitado pela
+  Shopee. Corrigido: esses pedidos não caem mais no individual, viram
+  pendência de confirmação ("tente de novo em alguns minutos") em vez de
+  arriscar reenviar. Defesa adicional em `organizar_envio`: catch
+  específico pra "already been shipped" (não propaga como erro, só espera
+  o AWB) e retry com backoff curto pra "being allocated" (transiente,
+  segundo a própria Shopee). A migração mais completa que a Shopee
+  recomenda (`v2.order.search_package_list` + `v2.order.get_package_detail`)
+  segue como item de backlog — mudança maior (um `order_sn` pode ter mais
+  de um `package_number`), não urgente pra fechar o requisito de
+  compliance (ver `docs/PRIORIDADES_TECNICAS.md` item 11).
 
 ### Ferramentas de desenvolvimento
 - **`ads-monitor/coletar.py` — coletor determinístico do Product Ads (Mercado

@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1784959452.010178,
-  "ast_hash": "a2e72504e0d11472e14a21a587af7ab1a16f5a09",
-  "semantic_hash": "a2e72504e0d11472e14a21a587af7ab1a16f5a09"
+  "mtime": 1785326578.2976327,
+  "ast_hash": "82578217a7b50c12588da2f58e2cb5e39fbee24b",
+  "semantic_hash": "82578217a7b50c12588da2f58e2cb5e39fbee24b"
  },
  "CLAUDE.md": {
-  "mtime": 1784959429.6901786,
-  "ast_hash": "5f7e2f5339c2019e086fb4de475bf76eb03c9b20",
-  "semantic_hash": "5f7e2f5339c2019e086fb4de475bf76eb03c9b20"
+  "mtime": 1785326557.653632,
+  "ast_hash": "9898742d40037455fe01c83001e0482960207731",
+  "semantic_hash": "9898742d40037455fe01c83001e0482960207731"
  },
  "README.md": {
   "mtime": 1784959468.3981776,
@@ -105,14 +105,14 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1784959479.1021774,
-  "ast_hash": "89fe9db4e5888e910ba5ef0016023f6b32f84efd",
-  "semantic_hash": "89fe9db4e5888e910ba5ef0016023f6b32f84efd"
+  "mtime": 1785326647.3496351,
+  "ast_hash": "0d03f398d803e4f53c76c6e734ab6b024a8fd753",
+  "semantic_hash": "0d03f398d803e4f53c76c6e734ab6b024a8fd753"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1784923251.5822356,
-  "ast_hash": "101ec01d017df00a7fc01511eeb6fb17666d4988",
-  "semantic_hash": "101ec01d017df00a7fc01511eeb6fb17666d4988"
+  "mtime": 1785326621.7096343,
+  "ast_hash": "5bfa856ffd88ef2ed639b72022aeb177918443cc",
+  "semantic_hash": "5bfa856ffd88ef2ed639b72022aeb177918443cc"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -345,9 +345,9 @@
   "semantic_hash": "6e886810e4f9f741690f19cde54a8cc2e30ad38b"
  },
  "shopee_api.py": {
-  "mtime": 1785326266.5776212,
-  "ast_hash": "170ce63c56403a0440eb99ecf6ba1c59058d14c4",
-  "semantic_hash": "170ce63c56403a0440eb99ecf6ba1c59058d14c4"
+  "mtime": 1785327115.9936523,
+  "ast_hash": "4245f0e62955b7e5937574ec2df16540c541f9e7",
+  "semantic_hash": "4245f0e62955b7e5937574ec2df16540c541f9e7"
  },
  "skus_por_anuncio.json": {
   "mtime": 1784736107.8123124,
@@ -520,9 +520,9 @@
   "semantic_hash": "cd0986aea0d6510fbb20f86e0d81b53a76487bd8"
  },
  "tests/test_shopee.py": {
-  "mtime": 1785326483.8256292,
-  "ast_hash": "d3ebc20202b429c06d1f782520d69a073aa097d6",
-  "semantic_hash": "d3ebc20202b429c06d1f782520d69a073aa097d6"
+  "mtime": 1785327183.4136548,
+  "ast_hash": "2be2a36f66b6c44ca3a273ba34280782cee124c3",
+  "semantic_hash": "2be2a36f66b6c44ca3a273ba34280782cee124c3"
  },
  "tests/test_validar_obsidian.py": {
   "mtime": 1784737273.0854487,

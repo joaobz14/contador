@@ -27,7 +27,7 @@ extração de SKU/quantidade, sem duplicar). Consumido por
 ## Pegadinhas embutidas (validadas com loja real)
 - `_levantar_se_erro` (nunca `raise_for_status`) e `_rede_limpa` para **não vazar o token** → [[Redação de segredos]].
 - `envio_ja_arranjado` antes de recusar organizar (`info_needed={}` não é "sem drop-off").
-- `_organizar_varios` em camadas: AWB existente → `_filtrar_ja_arranjados` → `batch_ship_order` → confirmação **pelo AWB** → fallback individual → [[Shopee — organizar envio e AWB]] (compliance da Shopee, achado 2026-07).
+- `_organizar_varios` em camadas: AWB existente → `_filtrar_ja_arranjados` → `batch_ship_order` → confirmação **pelo AWB**; quem sobra sem AWB depois do batch **não** cai no individual (vira pendência de confirmação) → [[Shopee — organizar envio e AWB]] (compliance da Shopee, achado 2026-07, 2 rodadas).
 - `_gerar_lote` **paralelo por pedido** (a Shopee processa requests concorrentes em paralelo) → [[Desempenho]].
 
 ## Conferência do operador
