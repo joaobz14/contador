@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 336,
- "edge_count": 588,
+ "node_count": 337,
+ "edge_count": 594,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3877,6 +3877,20 @@
    "community": 0,
    "norm_label": "migracao de pastas: cada move e isolado e contas/ vai primeiro (incidente real 2026-07-29). depois da reorganizacao em dados/+logs/, a tela do dono abriu sem nenhuma conta ml — o seletor de conta e o modo 'ambas' sumiram (ambos so aparecem com 2+ contas; listar_contas() devolvia []). barreira: migrar_para_pastas() rodava o corpo inteiro sob um unico try/except oserror, entao a primeira falha de io abortava em silencio tudo o que vinha depois na fila. no windows isso nao e caso raro: o bot sobe no logon pelo agendador de tarefas (atalhos/registrar-tarefa-bot.ps1) e mantem o bot.log aberto; renomear arquivo aberto levanta winerror 32 (permissionerror). como _migrar_logs vinha antes do move de contas/, essa unica falha deixava as credenciais de todas as contas ml para tras na raiz — dado que so se refaz com oauth novo. solucao em duas partes: (1) o try/except desceu para dentro de _mover_se_preciso, entao um arquivo travado nao leva os outros junto e o que ficou para tras e re-tentado na proxima abertura (a migracao e idempotente); (2) contas/ passou a ser o primeiro move da fila — o dado mais caro de refazer nao espera atras de log nenhum. nada se perdeu no incidente: os arquivos seguiam na raiz. guarda: tests/test_contas.py::test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto (simula o winerror 32 no bot.log e exige que contas/ migre mesmo assim). licao geral: em rotina best-effort que percorre uma fila, o try/except pertence a cada item, nao ao laco — senao 'best-effort' vira 'para no primeiro erro'.",
    "_origin": "manual"
+  },
+  {
+   "label": "CONFIRMACAO DE IMPRESSAO: O RETORNO DO APP DA ZEBRA (2026-07-29). A entrega das etiquetas e por ARQUIVO -- o contador grava um .zip na Downloads e o impressora_zebra_usb.py (repo separado, MESMO DONO) o consome. O contrato do nome e do conteudo estava documentado e validado dos dois lados, mas NAO HAVIA CANAL DE RETORNO: a tela nao sabia se o monitor estava aberto. Monitor fechado = ZIPs se acumulando na Downloads e o operador so descobrindo pelo papel que nao sai. Nada se perdia (a marcacao so acontece depois do 'saiu certo?', invariante 1), mas ele descobria tarde. SOLUCAO sem mudar NADA do outro lado, usando duas coisas que o monitor ja fazia: (1) com 'Excluir apos imprimir' ligado o arquivo SOME quando imprime -- sumiu = imprimiu; (2) o log dele (~/zebra_usb_log.txt) avanca a cada arquivo processado -- serve para lote grande, em que o ZIP so some na ultima etiqueta, provando que ele esta VIVO antes de terminar. Sem nenhum dos dois, o provavel e que esteja fechado. COMO A TELA SABE QUAIS ARQUIVOS SAO DELA: dois instantaneos da pasta (saidas_na_pasta antes/depois de gerar) e a diferenca -- gerar_zip_lotes devolve os pendentes, nao o caminho, e propagar o caminho ate a tela mexeria em nucleo, provedores, bot e CLI de uma vez. CORRIDA CONHECIDA (achada por teste, nao em producao): o monitor varre a cada 1s e pode consumir o ZIP ANTES do segundo instantaneo -- a diferenca vem vazia, indistinguivel de 'nada gerado'. Nesse caso o veredito e 'imprimindo' (o log prova vida), NUNCA 'impresso': o log tambem avanca por um lote anterior, e afirmar que o NOSSO saiu sem ter visto o arquivo sumir seria o erro que esta tela nao pode cometer. Mesma regra em _ainda_na_pasta: OSError ao checar (antivirus/OneDrive segurando) responde 'ainda esta la' -- na duvida, calado. O sinal INFORMA e nunca DECIDE: quem responde 'as etiquetas sairam corretamente?' continua sendo o operador olhando o papel, porque o monitor confirma que MANDOU imprimir, nao que a etiqueta saiu legivel e no lugar. Teste-guarda test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa. A checagem roda na thread de trabalho (nunca na do Tk) e e best-effort: falha vira aviso a menos, jamais impressao a menos.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "confirmacao_de_impressao_monitor_zebra",
+   "community": 0,
+   "norm_label": "confirmacao de impressao: o retorno do app da zebra (2026-07-29). a entrega das etiquetas e por arquivo -- o contador grava um .zip na downloads e o impressora_zebra_usb.py (repo separado, mesmo dono) o consome. o contrato do nome e do conteudo estava documentado e validado dos dois lados, mas nao havia canal de retorno: a tela nao sabia se o monitor estava aberto. monitor fechado = zips se acumulando na downloads e o operador so descobrindo pelo papel que nao sai. nada se perdia (a marcacao so acontece depois do 'saiu certo?', invariante 1), mas ele descobria tarde. solucao sem mudar nada do outro lado, usando duas coisas que o monitor ja fazia: (1) com 'excluir apos imprimir' ligado o arquivo some quando imprime -- sumiu = imprimiu; (2) o log dele (~/zebra_usb_log.txt) avanca a cada arquivo processado -- serve para lote grande, em que o zip so some na ultima etiqueta, provando que ele esta vivo antes de terminar. sem nenhum dos dois, o provavel e que esteja fechado. como a tela sabe quais arquivos sao dela: dois instantaneos da pasta (saidas_na_pasta antes/depois de gerar) e a diferenca -- gerar_zip_lotes devolve os pendentes, nao o caminho, e propagar o caminho ate a tela mexeria em nucleo, provedores, bot e cli de uma vez. corrida conhecida (achada por teste, nao em producao): o monitor varre a cada 1s e pode consumir o zip antes do segundo instantaneo -- a diferenca vem vazia, indistinguivel de 'nada gerado'. nesse caso o veredito e 'imprimindo' (o log prova vida), nunca 'impresso': o log tambem avanca por um lote anterior, e afirmar que o nosso saiu sem ter visto o arquivo sumir seria o erro que esta tela nao pode cometer. mesma regra em _ainda_na_pasta: oserror ao checar (antivirus/onedrive segurando) responde 'ainda esta la' -- na duvida, calado. o sinal informa e nunca decide: quem responde 'as etiquetas sairam corretamente?' continua sendo o operador olhando o papel, porque o monitor confirma que mandou imprimir, nao que a etiqueta saiu legivel e no lugar. teste-guarda test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa. a checagem roda na thread de trabalho (nunca na do tk) e e best-effort: falha vira aviso a menos, jamais impressao a menos.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4700,6 +4714,17 @@
    "weight": 1.0,
    "source": "confirma_antes_marcar",
    "target": "separador_etiquetas_ml_marcar_impresso"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "tests_test_confirmacao_monitor",
+   "confidence_score": 1.0,
+   "context": "teste-guarda dos tres sinais e do texto que nao pode prometer demais"
   },
   {
    "relation": "conceptually_related_to",
@@ -6375,6 +6400,57 @@
    "source": "confirma_antes_marcar",
    "target": "separador_gui_separadorapp_pos_lotes",
    "confidence_score": 0.85
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "separador_etiquetas_ml_ainda_na_pasta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "separador_etiquetas_ml_saidas_na_pasta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "separador_etiquetas_ml_texto_sinal_monitor",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "confirmacao_de_impressao_monitor_zebra",
+   "target": "separador_gui_separadorapp_confirmar_e_marcar_corpo",
+   "confidence_score": 1.0,
+   "context": "e onde o sinal aparece para o operador, sem decidir por ele"
   },
   {
    "relation": "rationale_for",

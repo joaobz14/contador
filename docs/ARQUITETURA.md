@@ -301,6 +301,23 @@ quem sobe o bot.
   envio ML é gráfico `^GFA`, a Shopee é imagem Z64 e o nosso carimbo é
   auto-encapsulado `^CI28…^CI0`). Nenhuma mudança exigida de nenhum dos lados;
   o `tmp_saida` daqui é defesa em profundidade além do exigido.
+  **Retorno do monitor (desde 2026-07-29):** a entrega é por arquivo e não havia
+  canal de volta — monitor fechado significava ZIPs se acumulando, descobertos
+  só pelo papel que não saía. `aguardar_impressao` observa dois sinais que o
+  monitor **já produzia**: o arquivo **sumir** (ele apaga após imprimir, opção
+  "Excluir após imprimir") e o **log dele avançar** (`~/zebra_usb_log.txt`),
+  que cobre o lote grande em que o ZIP só some na última etiqueta. A tela
+  descobre quais arquivos são dela por **diferença de dois instantâneos da
+  pasta** (`saidas_na_pasta` antes/depois) — `gerar_zip_lotes` devolve os
+  pendentes, não o caminho. **Corrida conhecida:** o monitor varre a cada 1s e
+  pode consumir o ZIP antes do 2º instantâneo; nesse caso o veredito é
+  `imprimindo` (o log prova vida), **nunca** `impresso` — sem ter visto o nosso
+  arquivo sumir, afirmar que ele saiu seria o erro que esta tela não pode
+  cometer. Mesma regra quando o `exists()` levanta (arquivo preso pelo
+  antivírus/OneDrive): responde "ainda está lá". O sinal **informa e nunca
+  decide** — a resposta ao "saíram certo?" continua sendo do operador
+  (invariante 1). O outro lado tem teste do contrato desde 2026-07-29
+  (`tests/test_contrato_com_o_contador.py` no repo `impressora-zebra-usb`).
 
 ## Desempenho da impressão Shopee (medido em produção)
 

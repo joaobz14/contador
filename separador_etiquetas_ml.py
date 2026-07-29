@@ -1450,6 +1450,128 @@ def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
     return alvo
 
 
+# ---------------------------------------------------------------------------
+# CONFIRMACAO DE IMPRESSAO (o retorno do app da Zebra)
+#
+# A entrega e por ARQUIVO: gravamos o ZIP na Downloads e o monitor
+# (impressora_zebra_usb.py) o pega. Ate aqui a tela nao tinha como saber se ele
+# chegou a rodar — se o monitor estivesse fechado, os ZIPs so se acumulavam e a
+# unica evidencia era o papel nao sair. Nada se perdia (a marcacao so acontece
+# depois do "saiu certo?"), mas o operador descobria tarde.
+#
+# Sao dois sinais, ambos de graca e sem mudar nada do outro lado:
+#   1. o ARQUIVO SOME — o monitor apaga apos imprimir (opcao "Excluir apos
+#      imprimir"); some = imprimiu, e a confirmacao mais forte que existe;
+#   2. o LOG DO MONITOR AVANCA — ele registra cada arquivo processado. Serve
+#      para lote grande, em que o arquivo so some quando a ultima etiqueta sai:
+#      prova que o monitor esta VIVO mesmo antes de terminar.
+# Sem nenhum dos dois, o mais provavel e que o monitor nao esteja aberto.
+#
+# Tudo aqui e best-effort e NUNCA levanta: e um aviso a mais na confirmacao,
+# jamais um motivo para a impressao falhar.
+# ---------------------------------------------------------------------------
+ARQUIVO_LOG_MONITOR = Path.home() / "zebra_usb_log.txt"
+# Prefixos que o monitor vigia (MonitorEtiquetas.PREFIXOS do outro repo) e que
+# ESTE app gera. Usados so para reconhecer as nossas saidas na pasta.
+PREFIXOS_SAIDA = ("etiqueta de envio", "etiqueta shopee")
+ESPERA_MONITOR = 12.0          # s no total aguardando sinal
+INTERVALO_MONITOR = 0.5        # s entre checagens
+
+
+def saidas_na_pasta(pasta: Path | None = None) -> set[Path]:
+    """Instantaneo dos ZIPs de etiqueta na pasta de saida.
+
+    Comparar dois instantaneos (antes/depois de gerar) diz quais arquivos sao
+    nossos, sem precisar mudar a assinatura de `gerar_zip_lotes` e das camadas
+    acima dela — a geracao devolve os pendentes, nao o caminho, e propagar o
+    caminho ate a tela mexeria em nucleo, provedores, bot e CLI de uma vez.
+    """
+    pasta = pasta or PASTA_DOWNLOADS
+    try:
+        return {p for p in pasta.iterdir()
+                if p.suffix.lower() == ".zip"
+                and p.name.lower().startswith(PREFIXOS_SAIDA)}
+    except OSError:
+        return set()
+
+
+def _monitor_vivo_desde(momento: float) -> bool:
+    """True se o log do monitor foi escrito depois de `momento` (time.time())."""
+    try:
+        return ARQUIVO_LOG_MONITOR.stat().st_mtime >= momento
+    except OSError:
+        return False
+
+
+def _ainda_na_pasta(nossos: set[Path]) -> bool:
+    """True se algum arquivo continua la. Na duvida (OSError: arquivo preso pelo
+    antivirus/OneDrive), responde TRUE: e melhor nao avisar nada do que afirmar
+    'foi impresso' sem ter visto o arquivo sumir."""
+    for p in nossos:
+        try:
+            if p.exists():
+                return True
+        except OSError:
+            return True
+    return False
+
+
+def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
+                       intervalo: float = INTERVALO_MONITOR,
+                       desde: float | None = None) -> str:
+    """Espera um sinal do monitor da Zebra sobre `nossos` arquivos.
+
+    Devolve:
+      "impresso"  — todos sumiram: o monitor consumiu e apagou (certeza);
+      "imprimindo"— o monitor esta vivo, mas ainda nao da para afirmar que O
+                    NOSSO arquivo saiu;
+      "sem_sinal" — nada sumiu e o log nao mexeu (provavelmente fechado);
+      "sem_saida" — nao ha o que observar nem sinal de vida: fica calado.
+
+    Retorna assim que houver certeza, entao lote pequeno nao espera nada. O teto
+    e curto de proposito: isto informa a confirmacao, nao pode virar espera longa
+    na frente do operador.
+
+    CORRIDA CONHECIDA: o monitor varre a pasta a cada 1s, entao ele pode consumir
+    o ZIP ANTES de a tela tirar o segundo instantaneo — e ai `nossos` vem vazio,
+    indistinguivel de "nada foi gerado". Nesse caso o veredito e "imprimindo"
+    (o log prova que ele esta vivo), NUNCA "impresso": o log tambem avanca por
+    causa de um lote anterior, e afirmar que o NOSSO saiu sem ter visto o arquivo
+    sumir seria exatamente o erro que esta tela nao pode cometer.
+    """
+    inicio = desde if desde is not None else time.time()
+    if not nossos:
+        return "imprimindo" if _monitor_vivo_desde(inicio) else "sem_saida"
+    fim = inicio + espera
+    vivo = False
+    while True:
+        if not _ainda_na_pasta(nossos):
+            return "impresso"
+        vivo = vivo or _monitor_vivo_desde(inicio)
+        if time.time() >= fim:
+            return "imprimindo" if vivo else "sem_sinal"
+        time.sleep(intervalo)
+
+
+_TEXTO_SINAL = {
+    "impresso": "✅ O monitor da Zebra confirmou: o arquivo foi impresso.",
+    "imprimindo": "⏳ O monitor da Zebra está ativo e ainda imprimindo o lote.",
+    "sem_sinal": ("⚠️ O monitor da Zebra NÃO deu sinal — o arquivo continua na pasta "
+                  "Downloads.\nVerifique se o app da impressora está aberto e "
+                  "monitorando."),
+}
+
+
+def texto_sinal_monitor(sinal: str) -> str:
+    """Linha para a confirmacao da tela. Vazia quando nao ha o que dizer.
+
+    O texto NUNCA decide por ninguem: mesmo com "impresso", quem responde se as
+    etiquetas sairam certo continua sendo o operador olhando o papel (o monitor
+    confirma que MANDOU imprimir, nao que a etiqueta saiu legivel e no lugar).
+    """
+    return _TEXTO_SINAL.get(sinal, "")
+
+
 def _gerar_zip(rotulo: str, zpl_texto: str) -> Path:
     """
     Monta um ZIP no formato que o impressora_zebra_usb.py reconhece:

@@ -74,6 +74,14 @@ def test_erro_com_segredo_sai_redigido():
 import types  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _saida_isolada(monkeypatch, tmp_path):
+    """A geracao consulta a pasta de saida (checagem do monitor da Zebra) —
+    nenhum teste pode olhar a Downloads real da maquina."""
+    monkeypatch.setattr(core, "PASTA_DOWNLOADS", tmp_path)
+    monkeypatch.setattr(core, "ARQUIVO_LOG_MONITOR", tmp_path / "zebra_usb_log.txt")
+
+
 def _app_fake(prov, estado_memoria):
     """App minimo para exercitar _gerar_sem_marcar_thread sem Tk (liga o metodo
     nao-vinculado a um objeto com so o que ele toca)."""
@@ -85,8 +93,8 @@ def _app_fake(prov, estado_memoria):
         _ctx_log=lambda: "ctx",
         # after chama o callback na hora (sem laco de eventos do Tk)
         root=types.SimpleNamespace(after=lambda _ms, fn: fn()),
-        _confirmar_e_marcar=lambda impressos, falhas: capturado.update(
-            impressos=impressos, falhas=falhas),
+        _confirmar_e_marcar=lambda impressos, falhas, sinal: capturado.update(
+            impressos=impressos, falhas=falhas, sinal=sinal),
         _erro=lambda msg: capturado.update(erro=msg),
     )
     return app, capturado
@@ -128,6 +136,88 @@ def test_gerar_segue_com_estado_em_memoria_se_releitura_falha():
     app, _cap = _app_fake(ProvFake(), {"em_memoria": True})
     gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
     assert usado["estado"] == {"em_memoria": True}   # caiu para o estado em memoria
+
+
+# ------------------------- sinal do monitor da Zebra --------------------------
+
+def _prov_que_gera(pasta, nome="etiqueta de envio - LOTES x1 - 143012.zip"):
+    class ProvFake:
+        def carregar_estado(self):
+            return {}
+
+        def imprimir_lotes(self, grupos, estado, *, modo):
+            (pasta / nome).write_bytes(b"PK\x03\x04")   # o ZIP que o monitor pegaria
+            return [(grupos[0], ["S1"])], []
+
+    return ProvFake()
+
+
+def test_sinal_do_monitor_chega_na_confirmacao(tmp_path):
+    """O arquivo continua na pasta e o log nao mexeu: o monitor nao deu sinal —
+    e a confirmacao precisa dizer isso ao operador."""
+    app, cap = _app_fake(_prov_que_gera(tmp_path), {})
+    gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
+    assert cap["sinal"] == "sem_sinal"
+
+
+def test_monitor_rapido_demais_ainda_da_sinal_de_vida(tmp_path):
+    """CORRIDA REAL: o monitor varre a cada 1s e pode consumir o ZIP ANTES de a
+    tela tirar o segundo instantâneo — aí a diferença vem vazia, igualzinho a
+    "nada foi gerado".
+
+    O log avançando resolve: prova que ele está vivo. O veredito é "imprimindo",
+    NÃO "impresso" — sem ter visto o nosso arquivo sumir, afirmar que ele saiu
+    seria justamente o erro que esta tela não pode cometer.
+    """
+    prov = _prov_que_gera(tmp_path)
+    original = prov.imprimir_lotes
+
+    def _gerar_e_o_monitor_leva_na_hora(grupos, estado, *, modo):
+        r = original(grupos, estado, modo=modo)
+        for p in tmp_path.glob("*.zip"):
+            p.unlink()
+        core.ARQUIVO_LOG_MONITOR.write_text("[14:30:12] imprimindo", encoding="utf-8")
+        return r
+
+    prov.imprimir_lotes = _gerar_e_o_monitor_leva_na_hora
+    app, cap = _app_fake(prov, {})
+    gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
+    assert cap["sinal"] == "imprimindo"
+
+
+def test_zip_que_ja_estava_na_pasta_nao_e_contado(tmp_path, monkeypatch):
+    """Só o que aparece DEPOIS de gerar é nosso.
+
+    Cenário: um ZIP antigo está encalhado na Downloads (lote que o monitor nunca
+    consumiu) e o nosso é impresso normalmente. Se o antigo entrasse na conta,
+    ele nunca sumiria e o veredito seria "sem_sinal" — um alarme falso toda vez
+    que sobrasse lixo na pasta.
+    """
+    encalhado = tmp_path / "etiqueta de envio - de ontem - 090000.zip"
+    encalhado.write_bytes(b"PK\x03\x04")
+
+    # O monitor consome o NOSSO durante a espera (depois do instantâneo).
+    def _monitor_consome(_s):
+        (tmp_path / "etiqueta de envio - LOTES x1 - 143012.zip").unlink(missing_ok=True)
+
+    monkeypatch.setattr(core.time, "sleep", _monitor_consome)
+
+    app, cap = _app_fake(_prov_que_gera(tmp_path), {})
+    gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
+
+    assert cap["sinal"] == "impresso", "o ZIP encalhado de ontem contaminou o veredito"
+    assert encalhado.exists()
+
+
+def test_falha_na_checagem_do_monitor_nao_impede_a_confirmacao(tmp_path, monkeypatch):
+    """A checagem e um aviso a mais. Se ela quebrar, a impressao segue e o
+    operador confirma como sempre — nunca o contrario."""
+    monkeypatch.setattr(core, "aguardar_impressao",
+                        lambda *a, **k: (_ for _ in ()).throw(OSError("pasta sumiu")))
+    app, cap = _app_fake(_prov_que_gera(tmp_path), {})
+    gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
+    assert cap["impressos"], "a confirmacao tem de acontecer mesmo assim"
+    assert cap["sinal"] == "sem_saida"
 
 
 # ---------------------------- trava de ponta a ponta na impressão (anti-duplicata)

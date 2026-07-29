@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1441 nodes · 2651 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1472 nodes · 2710 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,17 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-29 — Confirmação de impressão: o retorno do app da Zebra.** A
+  entrega das etiquetas é por arquivo (ZIP na Downloads) e não havia canal de
+  volta: com o monitor fechado, os ZIPs se acumulavam e o dono só descobria pelo
+  papel que não saía. `aguardar_impressao` passou a observar dois sinais que o
+  monitor **já produzia** — o arquivo sumir (ele apaga após imprimir) e o log
+  dele avançar — sem mudar nada do outro lado. A tela identifica os arquivos
+  dela por diferença de dois instantâneos (`saidas_na_pasta`). Corrida conhecida
+  (achada por teste): consumo antes do 2º instantâneo devolve `imprimindo`,
+  nunca `impresso`. O sinal informa e **nunca decide** — a resposta ao "saíram
+  certo?" continua sendo do operador (invariante 1). Novo nó
+  `confirmacao_de_impressao_monitor_zebra`.
 - **2026-07-29 — Incidente: as contas do ML sumiram da tela.** Na primeira
   abertura após a reorganização, o seletor de conta e o modo 🌐 Ambas
   desapareceram (`listar_contas()` devolvia `[]`). Causa: `migrar_para_pastas`

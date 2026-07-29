@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785345850.836036,
-  "ast_hash": "3fe0e713fe0c7443dfbb5c23cee63ee54adec028",
-  "semantic_hash": "3fe0e713fe0c7443dfbb5c23cee63ee54adec028"
+  "mtime": 1785347355.450983,
+  "ast_hash": "6d84071116051697a91c17fcbbb185e5334cd56b",
+  "semantic_hash": "6d84071116051697a91c17fcbbb185e5334cd56b"
  },
  "CLAUDE.md": {
-  "mtime": 1785345850.8353734,
-  "ast_hash": "065f8b6f504603cd5477450b13bac0132b998105",
-  "semantic_hash": "065f8b6f504603cd5477450b13bac0132b998105"
+  "mtime": 1785347355.4503713,
+  "ast_hash": "2b3c7a2697c31c33dba9df94fc585c5ac189afad",
+  "semantic_hash": "2b3c7a2697c31c33dba9df94fc585c5ac189afad"
  },
  "README.md": {
   "mtime": 1785345877.7947216,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785345830.6827226,
-  "ast_hash": "e4584fe985261cce0d5f74d3509ca31d66397fa1",
-  "semantic_hash": "e4584fe985261cce0d5f74d3509ca31d66397fa1"
+  "mtime": 1785347324.9346886,
+  "ast_hash": "6c5f94219cb75e0a08340d88ebb9e229bb98d402",
+  "semantic_hash": "6c5f94219cb75e0a08340d88ebb9e229bb98d402"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -120,9 +120,9 @@
   "semantic_hash": "5de5345a4956661f4c8ad26aaeaa09d7de856f54"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1785341022.4966354,
-  "ast_hash": "31950de5c8ada6233102cb779c70b4a5fa43604a",
-  "semantic_hash": "31950de5c8ada6233102cb779c70b4a5fa43604a"
+  "mtime": 1785349625.150636,
+  "ast_hash": "52f3091e367d394b56420ef3f1b91b925ba637fb",
+  "semantic_hash": "52f3091e367d394b56420ef3f1b91b925ba637fb"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -210,9 +210,9 @@
   "semantic_hash": "6df4b1facdaebac42c081d1cc5311905204b35c1"
  },
  "obsidian/Conceitos/Modo Ambas (ML).md": {
-  "mtime": 1784923251.5902355,
-  "ast_hash": "238964452e0e066ab97ef95083a37d161770b884",
-  "semantic_hash": "238964452e0e066ab97ef95083a37d161770b884"
+  "mtime": 1785348519.478661,
+  "ast_hash": "7aaebb1f6ba33d5a489c911a4aedde967e9c166c",
+  "semantic_hash": "7aaebb1f6ba33d5a489c911a4aedde967e9c166c"
  },
  "obsidian/Conceitos/Multi-conta (ML).md": {
   "mtime": 1784923251.5902355,
@@ -340,14 +340,14 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785347139.6506927,
-  "ast_hash": "ad3290919e4049085afe0ebc153d66562bac7286",
-  "semantic_hash": "ad3290919e4049085afe0ebc153d66562bac7286"
+  "mtime": 1785351164.3146007,
+  "ast_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5",
+  "semantic_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5"
  },
  "separador_gui.py": {
-  "mtime": 1784926070.190039,
-  "ast_hash": "6e886810e4f9f741690f19cde54a8cc2e30ad38b",
-  "semantic_hash": "6e886810e4f9f741690f19cde54a8cc2e30ad38b"
+  "mtime": 1785350923.3866062,
+  "ast_hash": "e735a11bc878125e124e6042a01d8222ac9733f2",
+  "semantic_hash": "e735a11bc878125e124e6042a01d8222ac9733f2"
  },
  "shopee_api.py": {
   "mtime": 1785345571.1193204,
@@ -419,6 +419,11 @@
   "ast_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5",
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
+ "tests/test_confirmacao_monitor.py": {
+  "mtime": 1785351010.0546043,
+  "ast_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db",
+  "semantic_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db"
+ },
  "tests/test_contas.py": {
   "mtime": 1785347160.5106921,
   "ast_hash": "db5c08e437954892acb1030531a9853928948585",
@@ -450,9 +455,9 @@
   "semantic_hash": "45d9d8a2fd46da0bce1f33608c448cfdd1ca678b"
  },
  "tests/test_gui_confirmacao.py": {
-  "mtime": 1784649902.0514512,
-  "ast_hash": "44a8cf85db063bc09fee734533c432c905ce16ed",
-  "semantic_hash": "44a8cf85db063bc09fee734533c432c905ce16ed"
+  "mtime": 1785351226.0545993,
+  "ast_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b",
+  "semantic_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b"
  },
  "tests/test_gui_editores.py": {
   "mtime": 1784229860.1942687,
