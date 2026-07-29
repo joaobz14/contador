@@ -10,10 +10,21 @@ type: reference
 > Invariante 12: credenciais, estado, cache e config **são locais e nunca versionados**.
 > Só dois JSONs de dados sincronizam por Git.
 
+## Onde ficam: `dados/` e `logs/` (desde 2026-07)
+Tudo que o app **lê e escreve** vive em **`dados/`** (inclusive `contas/{nome}/`)
+e todo registro em **`logs/`**. A raiz fica só com o que se **abre**
+(`separador_gui.py`), os módulos `.py` e o que as ferramentas exigem lá
+(`README`/`CLAUDE`/`AGENTS.md`, `.gitignore`, `pyproject.toml`, `ruff.toml`).
+Quem vinha da versão antiga não move nada: `migrar_para_pastas()` roda no import
+do núcleo e migra sozinho — leva `.bak`/`.corrupto` junto, move `contas/`
+inteira, nunca sobrescreve destino existente e nunca derruba a abertura.
+
 ## Versionados (sincronizam entre PCs)
-- `nomes_sku.json` — SKU→nome + **ordem de separação** → [[Nomes amigáveis e ordem de separação]]
-- `skus_por_anuncio.json` — adoção de anúncios sem SKU → [[Adoção de anúncios sem SKU]]
+- `dados/nomes_sku.json` — SKU→nome + **ordem de separação** → [[Nomes amigáveis e ordem de separação]]
+- `dados/skus_por_anuncio.json` — adoção de anúncios sem SKU → [[Adoção de anúncios sem SKU]]
 > Gravados em **LF** (via `gravar_json` com `newline="\n"`) → [[Escrita atômica de JSON]].
+> No `.gitignore` a regra é **invertida**: ignora `dados/*` e `logs/` inteiros e
+> libera só estes dois — arquivo local novo nunca escapa por esquecimento.
 
 ## Locais de cada máquina (NÃO versionados)
 | Arquivo | Uso | Segredo? |

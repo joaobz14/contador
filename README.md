@@ -240,9 +240,10 @@ pela pasta `docs/` via GitHub Pages). Atalho: `atalhos\Pegar Token Shopee.bat`.
 
 - Cada PC usa o **seu próprio clone**; atualize com **`Atualizar programa.bat`**
   (`git pull`) em cada máquina.
-- **Sincronizam via Git:** `nomes_sku.json` (nomes + ordem) e `skus_por_anuncio.json`
-  (adoção de anúncios sem SKU).
-- **Ficam locais** de cada máquina: credenciais, estado de impresso, caches e logs.
+- **Sincronizam via Git:** `dados/nomes_sku.json` (nomes + ordem) e
+  `dados/skus_por_anuncio.json` (adoção de anúncios sem SKU).
+- **Ficam locais** de cada máquina: credenciais, estado de impresso, caches
+  (o resto de `dados/`) e os registros em `logs/`.
 
 ---
 
@@ -425,9 +426,15 @@ screenshots como artefato.
 | `separador_gui.py` | Interface gráfica (Tkinter) |
 | `bot_telegram.py` / `relatorio.py` | Bot do Telegram e formatação dos textos |
 | `pegar_token.py` / `pegar_token_shopee.py` | Configuração inicial (OAuth) do ML e da Shopee |
-| `nomes_sku.json` / `skus_por_anuncio.json` | Nomes + ordem por SKU e adoção de anúncios sem SKU (versionados) |
+| **`dados/`** | Tudo que o app lê e escreve: credenciais (+`.bak`), `config.json`, estados, caches, histórico, `contas/{nome}/` e os de-paras versionados `nomes_sku.json` / `skus_por_anuncio.json` |
+| **`logs/`** | `separador.log`, `bot.log`, `ml_tempos.log`, `shopee_tempos.log` |
 | `Abrir Separador.bat` / `Atualizar programa.bat` | Atalhos principais (abrir a tela / `git pull`) |
 | `atalhos/` · `exemplos/` · `tests/` · `tools/` · `docs/` | Atalhos, modelos de config, testes, ferramentas de dev e notas/arquitetura |
+
+> **Vindo de uma versão antiga?** Os arquivos que ficavam soltos na raiz são
+> movidos para `dados/`/`logs/` **sozinhos** na primeira abertura — não precisa
+> refazer token nem perder estado. A migração leva o `.bak` junto, move a pasta
+> `contas/` inteira e nunca sobrescreve um arquivo que já exista no destino.
 
 Documentação técnica em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) (fluxos e
 invariantes), [`docs/CHANGELOG.md`](docs/CHANGELOG.md) e no grafo de conhecimento em

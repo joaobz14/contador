@@ -297,6 +297,26 @@ em 2º plano.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).
+- **Onde os arquivos ficam: `dados/` e `logs/`, nunca soltos na raiz.** Tudo que
+  o app lê/escreve fica em **`dados/`** (`PASTA_DADOS`: credenciais, estado,
+  caches, de-paras, `contas/{nome}/`) e todo registro em **`logs/`**
+  (`PASTA_LOGS`). Arquivo novo entra numa dessas — **não** na raiz, que é só
+  para o que se abre (`separador_gui.py`), os módulos `.py` e o que as
+  ferramentas exigem lá (`README`/`CLAUDE`/`AGENTS.md`, `.gitignore`,
+  `pyproject.toml`, `ruff.toml`). Quem vinha da versão antiga não move nada:
+  **`migrar_para_pastas()`** roda no **import** do núcleo (antes de qualquer
+  leitura) e migra o que estava solto — leva `.bak`/`.corrupto` **junto** (um
+  `.bak` desgarrado guarda refresh já rotacionado, morto), move `contas/`
+  inteira, **nunca sobrescreve** destino existente (o dado em uso vence) e
+  **nunca levanta** (best-effort: falha de IO não pode impedir o app de abrir).
+  `migrar_conta_legado` lê de `PASTA_DADOS` (o "solto" de hoje é `dados/`). No
+  `.gitignore` a regra é **invertida**: ignora `dados/*` e `logs/` inteiros e
+  libera explicitamente só os 2 versionados (`nomes_sku.json`,
+  `skus_por_anuncio.json`) — assim um arquivo local novo nunca escapa por
+  esquecimento. **Não mova os módulos `.py` para uma subpasta**: exigiria tocar
+  os 26 arquivos que os importam, 8 `.bat`, o CI e re-ancorar `PASTA_SCRIPT`
+  (de onde sai todo caminho de token/estado), e a raiz continuaria com os
+  arquivos de ferramenta de qualquer jeito — ganho parcial, risco alto.
 - **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
   loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
   sem debugger. Duas regras: (1) log **nunca** atrapalha a operação (defensivo,

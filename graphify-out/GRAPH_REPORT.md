@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1428 nodes · 2624 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1439 nodes · 2645 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -20,8 +20,8 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
   `v2.logistics.ship_order` em 2 rodadas (`_filtrar_ja_arranjados` +
   correção do fallback individual pós-batch, após respostas do suporte da
   Shopee) e as 3 correções da auditoria de APIs (amarra credencial→arquivo,
-  dieta do alerta, higiene). Ver "Atualizações manuais" abaixo pro
-  histórico completo.
+  dieta do alerta, higiene) e a reorganização da raiz em `dados/` + `logs/`.
+  Ver "Atualizações manuais" abaixo pro histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -48,6 +48,27 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07 — Reorganização da raiz em `dados/` + `logs/`:** pedido do dono —
+  a raiz tinha ~35 arquivos misturando código, docs, config de ferramenta e
+  todo o dado local (tokens, estado, caches, 4 logs que crescem), e achar o
+  `separador_gui.py` que ele abre todo dia virou garimpo. Agora `dados/`
+  guarda o que o app lê/escreve (credenciais, estado, caches, de-paras,
+  `contas/`) e `logs/` os registros. **Deliberadamente NÃO movidos:**
+  `README`/`CLAUDE`/`AGENTS.md` e os configs de ferramenta
+  (`.gitignore`, `pyproject.toml`, `ruff.toml`, …) — as ferramentas só os
+  procuram na raiz; e os **módulos `.py`**, porque movê-los exigiria tocar
+  os 26 arquivos que os importam, 8 `.bat`, o CI e re-ancorar
+  `PASTA_SCRIPT` (de onde sai todo caminho de token/estado), e ainda assim a
+  raiz não ficaria com um arquivo só (os de ferramenta ficam) — ganho
+  parcial, risco alto. **Migração automática** (`migrar_para_pastas`, no
+  import do núcleo): move o que estava solto, leva `.bak`/`.corrupto` junto
+  (um `.bak` desgarrado guarda refresh já rotacionado) e a pasta `contas/`
+  inteira; nunca sobrescreve destino existente e nunca levanta
+  (best-effort). `migrar_conta_legado` passou a ler de `PASTA_DADOS`. O
+  `.gitignore` inverteu a lógica (ignora `dados/*` e libera os 2
+  versionados) para arquivo local novo nunca escapar. Novo nó
+  `reorganizacao_pastas_dados_logs`.
 
 - **2026-07 — Auditoria de APIs (ML + Shopee): 3 correções.** Leitura
   integral dos caminhos de rede dos dois marketplaces atrás de
