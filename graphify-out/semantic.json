@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 334,
- "edge_count": 581,
+ "node_count": 335,
+ "edge_count": 584,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3849,6 +3849,20 @@
    "community": 4,
    "_origin": "manual",
    "norm_label": "testar alerta pos-horario na hora (bot_telegram.py testar-alerta -> _testar_alerta_pos_horario_agora, atalhos/'testar alerta pos-horario.bat'): o alerta so roda a cada 5 min (jobqueue.run_repeating) e so manda mensagem quando ha uma venda nova de fato -- sem isso, confirmar que o envio funciona depois de mudar o mecanismo de auto-start (ver bot_agendador_tarefas_logon) exigia esperar ate 5 min e uma venda real cair, dificil de forcar sob demanda. o comando de cli monta um application de verdade (token/config reais) e chama job_alerta_pos_horario() uma unica vez, fora do agendamento -- reusa 100% a logica ja validada (nao reimplementa filtro nem envio), so chama antes da hora. usa dados/api/telegram reais: se houver um envio ready_to_print de hoje ainda nao avisado, manda a mensagem de verdade; senao, so avisa que nao achou nada (nao manda mensagem a toa so por rodar o teste)."
+  },
+  {
+   "label": "REORGANIZACAO EM PASTAS (dados/ + logs/, 2026-07): pedido do dono — a raiz do projeto tinha ~35 arquivos misturando codigo, docs, config de ferramenta e TODO o dado local do app (tokens, estado, caches, historico, 4 logs que crescem), e ficava impossivel achar o separador_gui.py que ele abre todo dia. Agora: dados/ guarda o que o app le e escreve (credenciais, estado, caches, de-paras, contas/) e logs/ os registros; a raiz fica com o que se ABRE e o que as ferramentas EXIGEM la. NAO foram movidos, de proposito: README/CLAUDE/AGENTS.md (GitHub renderiza o README da raiz; Claude Code e Codex leem o guia da raiz), .gitignore/.gitattributes/pyproject.toml/ruff.toml/.editorconfig (as ferramentas so procuram na raiz) e os modulos .py — mover os modulos exigiria tocar os 26 arquivos que os importam, 8 .bat, o CI, e re-ancorar PASTA_SCRIPT (de onde sai TODO caminho de token/estado), e ainda assim a raiz nao ficaria com um arquivo so por causa dos de ferramenta acima: ganho parcial, risco alto num app que roda o negocio. MIGRACAO AUTOMATICA (migrar_para_pastas, chamada no IMPORT do nucleo, antes de qualquer leitura): move o que estava solto na raiz, leva os sufixos .bak/.corrupto JUNTO (um .bak desgarrado do principal guarda refresh_token ja rotacionado, morto — mesma regra do migrar_conta_legado) e a pasta contas/ inteira. NUNCA sobrescreve destino existente (arquivo solto na raiz com destino ja criado e resto de copia antiga; o dado EM USO vence) e NUNCA levanta (best-effort: falha de IO nao pode impedir o app de abrir — filosofia do _log_tempos). Idempotente e cria as pastas mesmo em instalacao nova. migrar_conta_legado passou a ler de PASTA_DADOS (o 'solto' de hoje e dados/, nao a raiz). O .gitignore inverteu a logica: ignora dados/* e logs/ inteiros e LIBERA explicitamente os 2 versionados (nomes_sku/skus_por_anuncio) — assim um arquivo local novo nunca escapa por esquecimento de regra. registro.py monta logs/separador.log SEM importar o nucleo (segue modulo-folha) e cria a pasta ele mesmo, porque o FileHandler(delay=True) so abriria o arquivo na 1a escrita.",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "reorganizacao_pastas_dados_logs",
+   "community": 4,
+   "_origin": "manual",
+   "norm_label": "reorganizacao em pastas (dados/ + logs/, 2026-07): pedido do dono — a raiz do projeto tinha ~35 arquivos misturando codigo, docs, config de ferramenta e todo o dado local do app (tokens, estado, caches, historico, 4 logs que crescem), e ficava impossivel achar o separador_gui.py que ele abre todo dia. agora: dados/ guarda o que o app le e escreve (credenciais, estado, caches, de-paras, contas/) e logs/ os registros; a raiz fica com o que se abre e o que as ferramentas exigem la. nao foram movidos, de proposito: readme/claude/agents.md (github renderiza o readme da raiz; claude code e codex leem o guia da raiz), .gitignore/.gitattributes/pyproject.toml/ruff.toml/.editorconfig (as ferramentas so procuram na raiz) e os modulos .py — mover os modulos exigiria tocar os 26 arquivos que os importam, 8 .bat, o ci, e re-ancorar pasta_script (de onde sai todo caminho de token/estado), e ainda assim a raiz nao ficaria com um arquivo so por causa dos de ferramenta acima: ganho parcial, risco alto num app que roda o negocio. migracao automatica (migrar_para_pastas, chamada no import do nucleo, antes de qualquer leitura): move o que estava solto na raiz, leva os sufixos .bak/.corrupto junto (um .bak desgarrado do principal guarda refresh_token ja rotacionado, morto — mesma regra do migrar_conta_legado) e a pasta contas/ inteira. nunca sobrescreve destino existente (arquivo solto na raiz com destino ja criado e resto de copia antiga; o dado em uso vence) e nunca levanta (best-effort: falha de io nao pode impedir o app de abrir — filosofia do _log_tempos). idempotente e cria as pastas mesmo em instalacao nova. migrar_conta_legado passou a ler de pasta_dados (o 'solto' de hoje e dados/, nao a raiz). o .gitignore inverteu a logica: ignora dados/* e logs/ inteiros e libera explicitamente os 2 versionados (nomes_sku/skus_por_anuncio) — assim um arquivo local novo nunca escapa por esquecimento de regra. registro.py monta logs/separador.log sem importar o nucleo (segue modulo-folha) e cria a pasta ele mesmo, porque o filehandler(delay=true) so abriria o arquivo na 1a escrita."
   }
  ],
  "edges": [
@@ -7215,6 +7229,36 @@
    "weight": 1.0,
    "source": "relatorio_rationale_72",
    "target": "relatorio_dividir_mensagem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reorganizacao_pastas_dados_logs",
+   "target": "separador_etiquetas_ml_migrar_conta_legado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reorganizacao_pastas_dados_logs",
+   "target": "separador_etiquetas_ml_migrar_para_pastas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reorganizacao_pastas_dados_logs",
+   "target": "separador_etiquetas_ml_mover_se_preciso",
    "confidence_score": 1.0
   },
   {

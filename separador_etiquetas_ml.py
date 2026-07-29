@@ -53,31 +53,98 @@ TZ_BR = timezone(timedelta(hours=-3))
 # Pasta deste script: os arquivos de credenciais/estado/cache ficam sempre
 # aqui, independente de onde o programa for aberto (atalho, agendador, etc.).
 PASTA_SCRIPT = Path(__file__).resolve().parent
-ARQUIVO_CRED = PASTA_SCRIPT / "credenciais.json"
-ARQUIVO_ESTADO = PASTA_SCRIPT / "estado_grupos.json"
-ARQUIVO_CACHE = PASTA_SCRIPT / "itens_cache.json"
+# Os dados do app (credenciais, estado, caches, de-paras) vivem em dados/ e os
+# registros em logs/ — a raiz fica so com o que se ABRE (separador_gui.py) e o
+# que as ferramentas exigem la (README/CLAUDE/AGENTS, .gitignore, pyproject,
+# ruff). Antes tudo ficava solto na raiz e a pasta virava um paiol de ~35
+# arquivos, com os logs crescendo no meio do codigo. Arquivos antigos na raiz
+# sao movidos sozinhos na primeira abertura (ver migrar_para_pastas).
+PASTA_DADOS = PASTA_SCRIPT / "dados"
+PASTA_LOGS = PASTA_SCRIPT / "logs"
+ARQUIVO_CRED = PASTA_DADOS / "credenciais.json"
+ARQUIVO_ESTADO = PASTA_DADOS / "estado_grupos.json"
+ARQUIVO_CACHE = PASTA_DADOS / "itens_cache.json"
 # De-para opcional SKU -> nome amigavel, exibido junto do SKU na tela/CLI.
-ARQUIVO_NOMES = PASTA_SCRIPT / "nomes_sku.json"
+ARQUIVO_NOMES = PASTA_DADOS / "nomes_sku.json"
 # De-para opcional "codigo do anuncio (sem SKU) -> SKU": anuncios antigos sem
 # seller_sku caem no codigo do anuncio (ex.: MLB3982067005:0) como chave; este
 # mapa os adota num SKU do sistema (agrupa/ordena/carimba/nomeia igual). Chave
 # = a chave gerada por identidade() (GTIN:... ou {item_id}:{var_id}).
-ARQUIVO_SKUS_ANUNCIO = PASTA_SCRIPT / "skus_por_anuncio.json"
+ARQUIVO_SKUS_ANUNCIO = PASTA_DADOS / "skus_por_anuncio.json"
 # Cache de envios ja finalizados (shipped/delivered/etc.): uma vez terminais,
 # nunca mais voltam a ready_to_print, entao sao pulados nas proximas buscas.
-ARQUIVO_ENVIOS_CACHE = PASTA_SCRIPT / "envios_cache.json"
+ARQUIVO_ENVIOS_CACHE = PASTA_DADOS / "envios_cache.json"
 # Cronometragem por fase do "Atualizar" do ML (busca x filtro de envios x extrair).
 # Diagnostico local para saber ONDE o tempo vai antes de otimizar (como o
 # shopee_tempos.log). Gitignorado; so contagens e segundos, nunca dados sensiveis.
-ARQUIVO_TEMPOS = PASTA_SCRIPT / "ml_tempos.log"
+ARQUIVO_TEMPOS = PASTA_LOGS / "ml_tempos.log"
 # Historico de impressao (registro por dia-de-acao) — UNICO por maquina (ML de
 # todas as contas + Shopee), gitignorado. NAO e trocado por definir_conta (o
 # resumo do dia agrega tudo). Ver historico.py.
-ARQUIVO_HISTORICO = PASTA_SCRIPT / "historico_impressao.json"
+ARQUIVO_HISTORICO = PASTA_DADOS / "historico_impressao.json"
 # Preferencias do app (ex.: carimbar o SKU), editaveis pela tela.
-ARQUIVO_CONFIG = PASTA_SCRIPT / "config.json"
-PASTA_CONTAS = PASTA_SCRIPT / "contas"
+ARQUIVO_CONFIG = PASTA_DADOS / "config.json"
+PASTA_CONTAS = PASTA_DADOS / "contas"
 STATUS_TERMINAIS = {"shipped", "delivered", "not_delivered", "cancelled"}
+
+# Arquivos que viviam soltos na raiz antes da reorganizacao em dados/ + logs/.
+# A migracao roda sozinha no import (ver migrar_para_pastas) — quem ja usava o
+# app nao precisa mover nada a mao nem refazer token.
+_MIGRAR_DADOS = (
+    "credenciais.json", "credenciais_shopee.json", "bot_config.json",
+    "config.json", "estado_grupos.json", "estado_shopee.json",
+    "itens_cache.json", "envios_cache.json", "awb_cache_shopee.json",
+    "historico_impressao.json", "alertas_pos_horario.json",
+    "nomes_sku.json", "skus_por_anuncio.json",
+)
+_MIGRAR_LOGS = ("separador.log", "bot.log", "ml_tempos.log", "shopee_tempos.log")
+# Sufixos que acompanham o arquivo principal (o .bak precisa ir JUNTO: um .bak
+# desgarrado do principal guarda um refresh_token ja rotacionado, morto — mesmo
+# cuidado do migrar_conta_legado).
+_SUFIXOS_JUNTO = (".bak", ".corrupto")
+
+
+def _mover_se_preciso(origem: Path, destino: Path) -> None:
+    """Move origem->destino se a origem existir e o destino ainda nao. Nunca
+    sobrescreve (se ja ha arquivo no destino, o da raiz e resto de uma copia
+    antiga e fica onde esta, pra nao destruir o dado em uso)."""
+    if origem.exists() and not destino.exists():
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        origem.replace(destino)
+
+
+def migrar_para_pastas() -> None:
+    """Move os arquivos locais da RAIZ para dados/ e logs/ (uma unica vez).
+
+    Idempotente e best-effort: roda no import de qualquer entrypoint (tela,
+    bot, CLI) e NUNCA levanta — uma falha aqui nao pode impedir o app de abrir
+    (o pior caso e o arquivo seguir na raiz, que continua sendo lido por quem
+    ja o tinha aberto). Leva junto os sufixos .bak/.corrupto e a pasta
+    contas/ inteira. Mesmo espirito do migrar_conta_legado."""
+    try:
+        # Instalacao nova (nada a migrar) tambem precisa das pastas: sem elas a
+        # 1a gravacao de config/estado/log falharia.
+        PASTA_DADOS.mkdir(parents=True, exist_ok=True)
+        PASTA_LOGS.mkdir(parents=True, exist_ok=True)
+        for nome in _MIGRAR_DADOS:
+            _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_DADOS / nome)
+            for sufixo in _SUFIXOS_JUNTO:
+                _mover_se_preciso(PASTA_SCRIPT / (nome + sufixo),
+                                  PASTA_DADOS / (nome + sufixo))
+        for nome in _MIGRAR_LOGS:
+            _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_LOGS / nome)
+        # contas/ (pasta inteira, com as credenciais de cada conta ML dentro)
+        _mover_se_preciso(PASTA_SCRIPT / "contas", PASTA_CONTAS)
+        # bot.lock: sobra do auto-start pela tela, removido em 2026-07 (o bot
+        # sobe pelo Agendador de Tarefas). Sem codigo que o leia, so poluia.
+        antigo_lock = PASTA_SCRIPT / "bot.lock"
+        if antigo_lock.exists():
+            antigo_lock.unlink()
+    except OSError:
+        pass
+
+
+migrar_para_pastas()
 # Pasta que o app da Zebra (impressora_zebra_usb.py) vigia. AJUSTE aqui se o seu
 # app estiver monitorando outra pasta (veja "Monitorando: ..." na tela dele).
 PASTA_DOWNLOADS = Path.home() / "Downloads"
@@ -242,32 +309,36 @@ def listar_contas() -> list[str]:
 
 
 def migrar_conta_legado(nome: str) -> None:
-    """Move arquivos da raiz para contas/{nome}/ se necessario (uma unica vez).
+    """Move arquivos SOLTOS (setup de conta unica, anterior ao multi-conta) para
+    contas/{nome}/ se necessario (uma unica vez). "Solto" hoje quer dizer em
+    dados/ — a reorganizacao em pastas ja tirou esses arquivos da raiz antes
+    (ver migrar_para_pastas), entao a origem aqui e PASTA_DADOS.
 
     O `credenciais.json.bak` VAI JUNTO (e, se a conta ja foi migrada, um .bak
-    orfao deixado na raiz por uma migracao antiga e REMOVIDO): o refresh_token
+    orfao deixado para tras por uma migracao antiga e REMOVIDO): o refresh_token
     dele rotaciona junto com o principal — um .bak desgarrado do principal
     guarda um refresh JA CONSUMIDO (morto). Se ficasse, a auto-recuperacao
     (_carregar_credenciais_com_backup) poderia um dia "restaurar" um
-    credenciais.json zumbi na raiz: refresh invalido (na pior hipotese, a
-    corrida que trava a conta) + o prompt de migracao voltando a cada abertura."""
+    credenciais.json zumbi: refresh invalido (na pior hipotese, a corrida que
+    trava a conta) + o prompt de migracao voltando a cada abertura."""
     destino = PASTA_CONTAS / nome
-    bak_raiz = _caminho_backup(PASTA_SCRIPT / "credenciais.json")
+    solto = PASTA_DADOS / "credenciais.json"
+    bak_solto = _caminho_backup(solto)
     if (destino / "credenciais.json").exists():
         # Ja migrado: só limpa o .bak orfao (nunca e valido mante-lo — o
         # principal que ele espelhava foi embora).
-        if not (PASTA_SCRIPT / "credenciais.json").exists() and bak_raiz.exists():
+        if not solto.exists() and bak_solto.exists():
             try:
-                bak_raiz.unlink()
+                bak_solto.unlink()
             except OSError:
                 pass
         return
-    if not (PASTA_SCRIPT / "credenciais.json").exists():
+    if not solto.exists():
         return  # nao ha nada para migrar
     destino.mkdir(parents=True, exist_ok=True)
     for nome_arq in ("credenciais.json", "credenciais.json.bak",
                      "estado_grupos.json", "envios_cache.json", "itens_cache.json"):
-        origem = PASTA_SCRIPT / nome_arq
+        origem = PASTA_DADOS / nome_arq
         if origem.exists():
             origem.replace(destino / nome_arq)
 

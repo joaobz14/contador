@@ -1,11 +1,23 @@
-# Segredos e credenciais (NUNCA versionar)
+# ---------------------------------------------------------------------------
+# dados/ e logs/ (a partir da reorganizacao de pastas): os arquivos locais do
+# app vivem la. Regra: ignora TUDO em dados/ e logs/ e libera explicitamente o
+# que E versionado (os de-para editados na tela, que sincronizam entre as
+# maquinas via git). Assim um arquivo local novo nunca escapa por esquecimento.
+# ---------------------------------------------------------------------------
+dados/*
+!dados/nomes_sku.json
+!dados/skus_por_anuncio.json
+logs/
+
+# Segredos e credenciais (NUNCA versionar) — os caminhos abaixo cobrem tanto
+# dados/ quanto qualquer copia legada solta na raiz (pre-reorganizacao).
 credenciais.json
 credenciais_shopee.json
 link_autorizacao.txt
 link_autorizacao_shopee.txt
 bot_config.json
 
-# Arquivos por conta (contas/{nome}/)
+# Arquivos por conta (dados/contas/{nome}/)
 contas/*/credenciais.json
 contas/*/estado_grupos.json
 contas/*/itens_cache.json

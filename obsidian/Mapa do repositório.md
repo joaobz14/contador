@@ -24,9 +24,16 @@ type: hub
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais) | [[pegar_token (OAuth)]] |
 | `tools/` | Ferramentas de dev (screenshot da GUI headless) | — |
 
+## Pastas de dados (desde 2026-07)
+- **`dados/`** — tudo que o app lê/escreve: credenciais (+`.bak`), `config.json`,
+  estados, caches, histórico, `contas/{nome}/` e os 2 de-paras versionados.
+- **`logs/`** — `separador.log`, `bot.log`, `ml_tempos.log`, `shopee_tempos.log`.
+- A raiz fica só com o que se **abre**, os módulos `.py` e os arquivos que as
+  ferramentas exigem lá. Migração automática para quem vinha da versão antiga.
+
 ## Dados versionados (sincronizam por Git)
-- `nomes_sku.json` — SKU → nome + **ordem de separação** → [[Nomes amigáveis e ordem de separação]]
-- `skus_por_anuncio.json` — código do anúncio ML sem SKU → SKU → [[Adoção de anúncios sem SKU]]
+- `dados/nomes_sku.json` — SKU → nome + **ordem de separação** → [[Nomes amigáveis e ordem de separação]]
+- `dados/skus_por_anuncio.json` — código do anúncio ML sem SKU → SKU → [[Adoção de anúncios sem SKU]]
 
 ## Dados locais (nunca versionados)
 Ver [[Arquivos — locais vs versionados]] para a lista completa (credenciais, estado, caches, logs, config).

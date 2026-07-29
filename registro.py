@@ -14,13 +14,20 @@ import re
 import sys
 from pathlib import Path
 
-ARQUIVO_LOG = Path(__file__).resolve().parent / "separador.log"
+# logs/ ao lado do codigo (ver PASTA_LOGS no nucleo). O caminho e montado aqui
+# SEM importar o nucleo de proposito: este modulo e folha (ver docstring) — o
+# preco e repetir "logs", o ganho e poder ser importado/testado sozinho.
+ARQUIVO_LOG = Path(__file__).resolve().parent / "logs" / "separador.log"
 
 log = logging.getLogger("separador")
 if not log.handlers:
     log.setLevel(logging.INFO)
     log.propagate = False
     try:
+        # delay=True nao cria a pasta na abertura do handler, so na 1a escrita —
+        # entao garantimos a pasta aqui (o nucleo tambem cria, mas registro pode
+        # ser importado sozinho).
+        ARQUIVO_LOG.parent.mkdir(parents=True, exist_ok=True)
         _fh = logging.FileHandler(ARQUIVO_LOG, encoding="utf-8", delay=True)
         _fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s",
                                            datefmt="%Y-%m-%d %H:%M:%S"))
