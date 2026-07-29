@@ -466,17 +466,57 @@ def _aguardar_awbs(cred: dict, token: str, order_sns: list, *,
     return ok
 
 
+def _filtrar_ja_arranjados(cred: dict, token: str, order_sns: list) -> list:
+    """Dos `order_sns` (ja sem AWB), devolve os que a Shopee ja considera
+    ARRANJADOS (info_needed sem pickup/dropoff/non_integrated — so falta o AWB
+    sair). Consulta parametros_envio em paralelo; falha de rede num pedido nao
+    o classifica como arranjado (fica de fora, segue o caminho normal — mesmo
+    espirito conservador de _rede_limpa/envio_ja_arranjado: em duvida, nao
+    assume que ja foi organizado)."""
+    def _param(sn):
+        try:
+            return sn, parametros_envio(cred, token, sn)
+        except Exception:
+            return sn, None
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        params = dict(executor.map(_param, order_sns))
+    return [sn for sn in order_sns if params.get(sn) and envio_ja_arranjado(params[sn])]
+
+
 def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                       branch_id=None, sender_real_name=None) -> tuple[dict, list]:
     """Organiza varios envios, em camadas (da mais rapida para o fallback):
 
       1) quem JA tem AWB esta organizado (idempotente) — nada a fazer;
-      2) os demais vao TODOS num batch_ship_order (1 request p/ ate 50) e os
-         AWBs sao aguardados — o rastreio existir e a unica confirmacao em que
-         confiamos (nao dependemos do formato da resposta do batch);
-      3) quem ficar sem AWB cai no caminho individual (organizar_envio), que
-         resolve casos especiais (info_needed com campos exigidos) e reporta
-         em `falhas` quando nem assim sai.
+      1.5) dos que sobraram, quem a Shopee JA considera arranjado (so falta o
+         AWB sair) vai direto pro fallback individual — chamar ship_order de
+         novo num pedido ja arranjado a Shopee rejeita com 'already shipped'
+         (achado no requisito de qualidade da Shopee pro v2.logistics.ship_order:
+         success rate > 90% por 7 dias — reenviar um pedido ja arranjado e uma
+         das causas documentadas de falha);
+      2) o restante (genuinamente nao arranjado) vai TODO num batch_ship_order
+         (1 request p/ ate 50) e os AWBs sao aguardados — o rastreio existir e
+         a unica confirmacao em que confiamos (nao dependemos do formato da
+         resposta do batch);
+      3) quem ficar sem AWB apos o batch NAO cai no individual (ver motivo
+         abaixo) — entra em `falhas` como pendente de confirmacao. Ja quem
+         veio do 1.5 (ja arranjado antes desta chamada) OU cujo batch nunca
+         chegou a ser tentado (endpoint indisponivel por inteiro) vai pro
+         fallback individual (`organizar_envio`), que resolve casos especiais
+         (info_needed com campos exigidos) e so reporta em `falhas` quando
+         nem assim sai.
+
+    Por que o passo 3 NAO reenvia quem passou pelo batch sem AWB: a Shopee
+    confirmou que `fulfillment_status`/`is_shipment_arranged` podem levar
+    ATE 15-20 MINUTOS pra propagar depois de um ship aceito — bem mais que os
+    ~40s de polling deste modulo. Cair no individual logo em seguida
+    consultaria `parametros_envio` ainda com o status ANTIGO (nao arranjado)
+    e chamaria `ship_order` de novo no mesmo pedido — exatamente o cenario
+    'already shipped' que conta contra a taxa de sucesso do endpoint. Melhor
+    reportar como pendente e deixar o operador tentar de novo em alguns
+    minutos: nessa hora o 1.5 (que usa a mesma consulta) ja teria o status
+    atualizado e nao reenviaria.
 
     Devolve (ok={order_sn: awb}, falhas=[(sn, motivo)]). NAO levanta — quem
     chama decide (grupo unico aborta; lote tolera)."""
@@ -491,8 +531,15 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                for sn, awb in _rastreios_paralelo(cred, token, order_sns).items() if awb})
     restantes = [sn for sn in order_sns if sn not in ok]
 
-    # 2) batch (1 request); os AWBs confirmam. Se NENHUM batch passou, nem
-    # espera — vai direto pro individual (evita 40s de polling inutil).
+    # 1.5) filtra quem ja foi arranjado antes de deixar QUALQUER um chegar no
+    # batch_ship_order (ver motivo no docstring).
+    ja_arranjados = _filtrar_ja_arranjados(cred, token, restantes) if restantes else []
+    restantes = [sn for sn in restantes if sn not in ja_arranjados]
+
+    # 2) batch (1 request) SO para quem realmente ainda precisa ser arranjado.
+    # Se NENHUM batch passou, nem espera — vai direto pro individual (evita
+    # 40s de polling inutil).
+    restantes_sem_batch: list = []   # o ship nunca chegou a ser tentado
     if restantes:
         dropoff: dict = {}
         if branch_id not in (None, ""):
@@ -508,9 +555,17 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
                 pass
         if algum_batch:
             ok.update(_aguardar_awbs(cred, token, restantes))
-            restantes = [sn for sn in restantes if sn not in ok]
+            # estado ambiguo (ver docstring) -- NAO cai no individual.
+            for sn in restantes:
+                if sn not in ok:
+                    falhas.append((sn, "Envio enviado, aguardando confirmacao (AWB) "
+                                       "da Shopee. Tente novamente em alguns minutos."))
+        else:
+            restantes_sem_batch = restantes
 
-    # 3) fallback individual (paralelo) — o caminho que sempre funcionou
+    # 3) fallback individual (paralelo) — SO quem ja estava arranjado no 1.5
+    # (organizar_envio checa de novo e so espera o AWB, sem reenviar) e quem
+    # o batch nunca chegou a tentar (endpoint indisponivel por inteiro).
     def _um(sn):
         try:
             ok[sn] = organizar_envio(cred, token, sn,
@@ -518,9 +573,10 @@ def _organizar_varios(cred: dict, token: str, order_sns: list, *,
         except Exception as e:                       # inclui erro de rede (HTTPError)
             falhas.append((sn, str(e)))
 
-    if restantes:
+    restantes_final = ja_arranjados + restantes_sem_batch
+    if restantes_final:
         with ThreadPoolExecutor(max_workers=8) as executor:
-            list(executor.map(_um, restantes))
+            list(executor.map(_um, restantes_final))
     return ok, falhas
 
 
@@ -693,14 +749,32 @@ def _montar_dropoff(info_needed: dict, *, branch_id=None, sender_real_name=None)
     return dropoff
 
 
+# Trechos EXATOS das mensagens de erro documentadas no FAQ de compliance da
+# Shopee pro v2.logistics.ship_order (confirmados com o suporte deles,
+# 2026-07) — usados pra reconhecer os dois casos abaixo sem reimplementar
+# um parser de erro novo (a excecao ja carrega error+message, ver
+# _levantar_se_erro). Comparacao em minusculas.
+_MSG_JA_ENVIADO = "already been shipped"
+_MSG_ALOCANDO = "please wait until the allocate is completed"
+
+
 def organizar_envio(cred: dict, token: str, order_sn: str, *,
                     branch_id=None, sender_real_name=None,
-                    tentativas: int = 40, espera: float = 1.0) -> str:
+                    tentativas: int = 40, espera: float = 1.0,
+                    tentativas_alocando: int = 3, espera_alocando: float = 3.0) -> str:
     """Organiza o envio como Postagem (drop-off) — equivale a 'vou postar no ponto
     de coleta' no painel — e ESPERA o rastreio (AWB) ser emitido (a Shopee leva
     alguns segundos apos o ship_order). Idempotente: se ja houver AWB, devolve na
     hora. Retorna o tracking_number; erro claro se o AWB nao sair a tempo.
-    Polling de 1s (checa mais vezes -> encontra o AWB mais cedo)."""
+    Polling de 1s (checa mais vezes -> encontra o AWB mais cedo).
+
+    Defesa em profundidade contra os 2 casos de erro de status de pedido do
+    ship_order documentados pela Shopee (alem do filtro de quem chama, ver
+    _organizar_varios): 'already been shipped' (a Shopee ja considera
+    arranjado apesar do info_needed que acabamos de ler — normalmente uma
+    corrida com outra chamada; nao e erro de verdade, so falta o AWB) e
+    'please wait until the allocate is completed' (transiente segundo a
+    propria mensagem da Shopee — tenta de novo com um pequeno intervalo)."""
     tn = numero_rastreio(cred, token, order_sn)
     if tn:
         return tn
@@ -720,7 +794,18 @@ def organizar_envio(cred: dict, token: str, order_sn: str, *,
         )
     else:
         dropoff = _montar_dropoff(info, branch_id=branch_id, sender_real_name=sender_real_name)
-        ship_order(cred, token, order_sn, dropoff=dropoff)
+        for tentativa in range(tentativas_alocando):
+            try:
+                ship_order(cred, token, order_sn, dropoff=dropoff)
+                break
+            except core.SeparadorError as e:
+                msg = str(e).lower()
+                if _MSG_JA_ENVIADO in msg:
+                    break                      # ja arranjado -- so falta o AWB
+                if _MSG_ALOCANDO in msg and tentativa < tentativas_alocando - 1:
+                    time.sleep(espera_alocando)
+                    continue
+                raise
     # O AWB nao sai na hora: a Shopee leva alguns segundos para emiti-lo.
     for _ in range(tentativas):
         time.sleep(espera)

@@ -14,6 +14,40 @@ Histórico das principais mudanças do projeto.
   `NEEDRESTART_MODE=a` no passo de instalação; adicionado também
   `timeout-minutes: 10` no job como rede de segurança contra travas futuras.
 
+### Shopee
+- **Correção real (2 rodadas): `_organizar_varios` podia reenviar um
+  pedido já arranjado via `ship_order`.** Motivado por um requisito de
+  qualidade **obrigatório** da Shopee (prazo curto, risco de penalidade):
+  success rate > 90% por 7 dias consecutivos em `v2.logistics.ship_order`
+  (só o endpoint singular — confirmado com o suporte deles que
+  `batch_ship_order` não conta pra mesma métrica). O FAQ deles documenta
+  "This parcel has already been shipped" (`logistics.package_already_shipped`)
+  e "The order is being allocated, please wait" (`logistics.error_param`)
+  como causas de erro — mensagens exatas confirmadas com o suporte.
+  **Rodada 1:** o caminho individual (`organizar_envio`) já checava
+  `envio_ja_arranjado` antes de (re)enviar, mas o caminho em **lote**
+  mandava todos os `restantes` pro `batch_ship_order` sem essa checagem.
+  Corrigido com `_filtrar_ja_arranjados` — nova etapa (1.5), entre a
+  checagem de AWB existente e o batch, que consulta `parametros_envio` em
+  paralelo e tira do batch quem já está arranjado.
+  **Rodada 2 (revisão depois de respostas do suporte):** a rodada 1 não
+  resolvia o problema de verdade — a propagação de
+  `fulfillment_status`/`is_shipment_arranged` pode levar **até 15-20
+  minutos**, bem mais que os ~40s de polling deste módulo. Um pedido que
+  passava pelo batch mas ficava sem AWB (só pelo timeout curto) caía no
+  fallback individual, que consultava o status ainda **desatualizado** e
+  chamava `ship_order` **de novo** — exatamente o cenário rejeitado pela
+  Shopee. Corrigido: esses pedidos não caem mais no individual, viram
+  pendência de confirmação ("tente de novo em alguns minutos") em vez de
+  arriscar reenviar. Defesa adicional em `organizar_envio`: catch
+  específico pra "already been shipped" (não propaga como erro, só espera
+  o AWB) e retry com backoff curto pra "being allocated" (transiente,
+  segundo a própria Shopee). A migração mais completa que a Shopee
+  recomenda (`v2.order.search_package_list` + `v2.order.get_package_detail`)
+  segue como item de backlog — mudança maior (um `order_sn` pode ter mais
+  de um `package_number`), não urgente pra fechar o requisito de
+  compliance (ver `docs/PRIORIDADES_TECNICAS.md` item 11).
+
 ### Ferramentas de desenvolvimento
 - **`ads-monitor/coletar.py` — coletor determinístico do Product Ads (Mercado
   Ads):** primeira camada de um futuro monitor de campanhas. Grava, uma vez

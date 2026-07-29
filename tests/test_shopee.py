@@ -400,6 +400,93 @@ def test_organizar_envio_erro_se_awb_nao_sai(monkeypatch):
         sh.organizar_envio({}, "TOK", "A1", tentativas=2)
 
 
+# -------------------- defesa contra erros de status documentados pela Shopee
+def test_organizar_envio_ship_order_ja_enviado_nao_e_erro(monkeypatch):
+    """Se a Shopee responder 'already been shipped' ao chamar ship_order (ex.:
+    corrida com outra chamada que ja organizou), NAO propaga como falha -- so
+    passa a aguardar o AWB, como se envio_ja_arranjado ja fosse True."""
+    chamadas = {"n": 0}
+
+    def fake_rastreio(c, t, sn):
+        chamadas["n"] += 1
+        return "" if chamadas["n"] == 1 else "BR9"
+
+    monkeypatch.setattr(sh, "numero_rastreio", fake_rastreio)
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+
+    def _ship_falha(c, t, sn, **k):
+        raise sh.core.SeparadorError(
+            "Shopee /api/v2/logistics/ship_order: HTTP 400 - "
+            "logistics.package_already_shipped This parcel has already been shipped")
+
+    monkeypatch.setattr(sh, "ship_order", _ship_falha)
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    assert sh.organizar_envio({}, "TOK", "A1") == "BR9"
+
+
+def test_organizar_envio_alocando_tenta_de_novo(monkeypatch):
+    """'The order is being allocated' e transiente (segundo a propria mensagem
+    da Shopee) -- organizar_envio tenta de novo em vez de falhar na hora."""
+    tentativas_ship = {"n": 0}
+
+    def _ship(c, t, sn, **k):
+        tentativas_ship["n"] += 1
+        if tentativas_ship["n"] < 2:
+            raise sh.core.SeparadorError(
+                "Shopee /api/v2/logistics/ship_order: HTTP 400 - "
+                "logistics.error_param The order is being allocated, please "
+                "wait until the allocate is completed.")
+        return {}
+
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "BR9" if tentativas_ship["n"] else "")
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+    monkeypatch.setattr(sh, "ship_order", _ship)
+    esperas = []
+    monkeypatch.setattr(sh.time, "sleep", lambda s: esperas.append(s))
+    assert sh.organizar_envio({}, "TOK", "A1") == "BR9"
+    assert tentativas_ship["n"] == 2                  # tentou de novo apos o 1o erro
+    assert esperas[0] == 3.0                          # espera_alocando (default)
+
+
+def test_organizar_envio_alocando_esgota_tentativas_levanta(monkeypatch):
+    """Se continuar 'allocating' ate esgotar as tentativas, propaga o erro
+    (nao trava esperando pra sempre)."""
+    import pytest
+
+    def _ship(c, t, sn, **k):
+        raise sh.core.SeparadorError(
+            "Shopee /api/v2/logistics/ship_order: HTTP 400 - "
+            "logistics.error_param The order is being allocated, please "
+            "wait until the allocate is completed.")
+
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+    monkeypatch.setattr(sh, "ship_order", _ship)
+    monkeypatch.setattr(sh.time, "sleep", lambda *_a, **_k: None)
+    with pytest.raises(sh.core.SeparadorError, match="allocat"):
+        sh.organizar_envio({}, "TOK", "A1", tentativas_alocando=3)
+
+
+def test_organizar_envio_outro_erro_de_ship_order_propaga(monkeypatch):
+    """Um erro que nao seja 'already shipped' nem 'allocating' continua
+    propagando na hora, sem re-tentar nem engolir."""
+    import pytest
+    monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")
+    monkeypatch.setattr(sh, "parametros_envio",
+                        lambda c, t, sn: {"response": {"info_needed": {"dropoff": []}}})
+
+    def _ship(c, t, sn, **k):
+        raise sh.core.SeparadorError("Shopee /api/v2/logistics/ship_order: HTTP 400 - "
+                                     "logistics.invalid_param Bad request")
+
+    monkeypatch.setattr(sh, "ship_order", _ship)
+    with pytest.raises(sh.core.SeparadorError, match="invalid_param"):
+        sh.organizar_envio({}, "TOK", "A1")
+
+
 def test_organizar_envio_erro_se_so_pickup(monkeypatch):
     import pytest
     monkeypatch.setattr(sh, "numero_rastreio", lambda c, t, sn: "")
@@ -454,9 +541,12 @@ def _grupo(chave="A01", ids=("SN1", "SN2"), dia=""):
 
 def _forca_individual(monkeypatch):
     """Leva _organizar_varios direto ao caminho individual (sem AWB previo e sem
-    batch), preservando a semantica dos testes escritos antes do batch_ship_order."""
+    batch), preservando a semantica dos testes escritos antes do batch_ship_order.
+    Tambem forca 'ainda nao arranjado' pra ninguem pular o batch por engano —
+    sem isso, o filtro do 1.5 chamaria parametros_envio de verdade (rede)."""
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {str(s): "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("sem batch")))
 
@@ -757,11 +847,57 @@ def test_batch_ship_order_monta_o_corpo(monkeypatch):
                             "dropoff": {}}
 
 
+# --------------------------- filtro de "ja arranjado" antes do batch_ship_order
+def test_filtrar_ja_arranjados_identifica_organizados(monkeypatch):
+    respostas = {
+        "S1": {"response": {"info_needed": {}}},                # ja arranjado
+        "S2": {"response": {"info_needed": {"dropoff": []}}},   # ainda nao
+    }
+    monkeypatch.setattr(sh, "parametros_envio", lambda c, t, sn: respostas[sn])
+    assert sh._filtrar_ja_arranjados({}, "TOK", ["S1", "S2"]) == ["S1"]
+
+
+def test_filtrar_ja_arranjados_erro_de_rede_nao_conta_como_arranjado(monkeypatch):
+    """Em duvida (falha ao consultar), NAO assume que ja foi arranjado -- senao
+    o pedido pularia o batch E o individual re-verificaria do zero mesmo assim
+    (organizar_envio tem a mesma checagem), entao o pior caso e so um pouco
+    mais lento, nunca reenviar por engano."""
+    def _param(c, t, sn):
+        raise RuntimeError("timeout")
+    monkeypatch.setattr(sh, "parametros_envio", _param)
+    assert sh._filtrar_ja_arranjados({}, "TOK", ["S1"]) == []
+
+
+def test_organizar_varios_ja_arranjado_pula_o_batch(monkeypatch):
+    """Pedido ja arranjado (so falta o AWB) NAO pode ir pro batch_ship_order --
+    a Shopee rejeita com 'already shipped' (achado do requisito de qualidade
+    do v2.logistics.ship_order). Vai direto pro individual, que so espera.
+    S2 (genuinamente novo) passa pelo batch normal e recebe o AWB por la."""
+    seq = iter([{"S1": "", "S2": ""}, {"S1": "", "S2": "BR2"}])
+    monkeypatch.setattr(sh, "_rastreios_paralelo",
+                        lambda c, t, sns: {k: v for k, v in next(seq).items() if k in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: ["S1"])
+    monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
+    batches = []
+    monkeypatch.setattr(sh, "batch_ship_order",
+                        lambda c, t, sns, dropoff=None: batches.append(list(sns)) or {})
+    chamados = []
+    monkeypatch.setattr(sh, "organizar_envio",
+                        lambda c, t, sn, **k: chamados.append(sn) or f"BR-{sn}")
+
+    ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
+
+    assert batches == [["S2"]]        # S1 NUNCA entra no batch
+    assert chamados == ["S1"]         # so S1 (ja arranjado) vai pro individual
+    assert ok == {"S1": "BR-S1", "S2": "BR2"} and falhas == []
+
+
 def test_organizar_varios_via_batch_sem_individual(monkeypatch):
     # rodada 1 (idempotencia): ninguem tem AWB; rodada 2 (apos o batch): todos tem
     seq = iter([{"S1": "", "S2": ""}, {"S1": "BR1", "S2": "BR2"}])
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {k: v for k, v in next(seq).items() if k in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     batches = []
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda c, t, sns, dropoff=None: batches.append(list(sns)) or {})
@@ -784,6 +920,7 @@ def test_organizar_varios_idempotente_nem_chama_batch(monkeypatch):
 def test_organizar_varios_batch_indisponivel_cai_no_individual(monkeypatch):
     # endpoint falhou por inteiro -> NAO fica esperando AWB; vai direto pro individual
     monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("endpoint fora")))
     esperas = []
@@ -794,23 +931,28 @@ def test_organizar_varios_batch_indisponivel_cai_no_individual(monkeypatch):
     assert esperas == []                          # sem polling inutil
 
 
-def test_organizar_varios_awb_que_nao_sai_cai_no_individual(monkeypatch):
-    # batch "passa", mas o AWB de S2 nunca sai -> SO S2 vai pro individual
+def test_organizar_varios_sem_awb_apos_batch_nao_reenvia(monkeypatch):
+    """Pedido que passou pelo batch mas o AWB nao saiu NAO pode cair no
+    individual: reenviar ship_order arriscaria 'already shipped' (a Shopee
+    pode levar ate 15-20 min pra propagar o status, bem mais que os ~40s de
+    polling daqui). Fica pendente de confirmacao em vez de reenviar."""
     monkeypatch.setattr(sh, "_rastreios_paralelo",
                         lambda c, t, sns: {s: ("BR1" if s == "S1" else "") for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order", lambda c, t, sns, dropoff=None: {})
     monkeypatch.setattr(sh.time, "sleep", lambda *_: None)
-    chamados = []
     monkeypatch.setattr(sh, "organizar_envio",
-                        lambda c, t, sn, **k: chamados.append(sn) or f"BRX-{sn}")
+                        lambda *a, **k: pytest.fail("nao devia reenviar S2"))
     ok, falhas = sh._organizar_varios({}, "TOK", ["S1", "S2"])
-    assert ok == {"S1": "BR1", "S2": "BRX-S2"} and falhas == []
-    assert chamados == ["S2"]                     # S1 (idempotente) nem e tocado
+    assert ok == {"S1": "BR1"}                    # S1 idempotente (ja tinha AWB)
+    assert len(falhas) == 1 and falhas[0][0] == "S2"
+    assert "aguardando" in falhas[0][1].lower()
 
 
 def test_organizar_varios_dropoff_leva_branch_e_remetente(monkeypatch):
     capt = {}
     monkeypatch.setattr(sh, "_rastreios_paralelo", lambda c, t, sns: {s: "" for s in sns})
+    monkeypatch.setattr(sh, "_filtrar_ja_arranjados", lambda c, t, sns: [])
     monkeypatch.setattr(sh, "batch_ship_order",
                         lambda c, t, sns, dropoff=None: capt.update(dropoff=dropoff) or {})
     monkeypatch.setattr(sh.time, "sleep", lambda *_: None)

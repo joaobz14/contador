@@ -11,13 +11,15 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1402 nodes · 2577 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1411 nodes · 2590 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
-  formato enxuto + resumo agregado do alerta (`/vendasapos`) e o alerta
-  pós-horário estendido pra Shopee. Ver "Atualizações manuais" abaixo pro
-  histórico completo.
+  formato enxuto + resumo agregado do alerta (`/vendasapos`), o alerta
+  pós-horário estendido pra Shopee e a correção de compliance do
+  `v2.logistics.ship_order` em 2 rodadas (`_filtrar_ja_arranjados` +
+  correção do fallback individual pós-batch, após respostas do suporte da
+  Shopee). Ver "Atualizações manuais" abaixo pro histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -44,6 +46,59 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07 — Compliance da Shopee, RODADA 2: correção de verdade da taxa
+  de sucesso do `v2.logistics.ship_order`:** depois do dono levar as
+  perguntas da rodada 1 (abaixo) ao suporte da Shopee, 3 fatos novos
+  mudaram o diagnóstico: (a) `batch_ship_order` **não conta** pra mesma
+  métrica de sucesso do `ship_order` singular; (b) propagação de
+  `fulfillment_status`/`is_shipment_arranged` pode levar **até 15-20
+  minutos** (bem mais que os ~40s de polling deste módulo); (c) códigos de
+  erro exatos confirmados: `logistics.package_already_shipped`/"This
+  parcel has already been shipped" e `logistics.error_param`/"The order is
+  being allocated, please wait until the allocate is completed.". Isso
+  revelou que a rodada 1 **não** resolvia o problema de verdade: um pedido
+  que passa pelo batch mas fica sem AWB (só pelo timeout curto, não porque
+  falhou) caía no fallback individual, que consultava `parametros_envio`
+  ainda com o status **antigo** (não propagado) e chamava `ship_order` de
+  novo — exatamente o cenário "already shipped" que conta contra a
+  métrica. Corrigido: `_organizar_varios` não manda mais pro individual
+  quem passou pelo batch sem AWB — vira `falhas` pendente de confirmação
+  ("tente de novo em alguns minutos"; na próxima tentativa, minutos
+  depois, `_filtrar_ja_arranjados` já veria o status atualizado e não
+  reenviaria). Individual só recebe quem já estava arranjado ANTES desta
+  chamada (1.5, sem risco de propagação) ou quem o batch nunca chegou a
+  tentar (endpoint indisponível por inteiro). Defesa em profundidade
+  adicional em `organizar_envio`: catch específico pra "already been
+  shipped" (não propaga como erro, só passa a aguardar o AWB) e retry com
+  backoff curto (3 tentativas, 3s) pra "being allocated" (documentado como
+  transiente pela própria Shopee). Migração completa
+  (`v2.order.search_package_list` + `v2.order.get_package_detail`) segue
+  de backlog — mudança maior de modelo (`package_number` pode ser 1:N com
+  `order_sn`), não urgente pro compliance (`docs/PRIORIDADES_TECNICAS.md`
+  item 11, com as 6 respostas do suporte documentadas).
+
+- **2026-07 — Compliance da Shopee, RODADA 1: correção inicial da taxa de
+  sucesso do `v2.logistics.ship_order`:** a Shopee mandou um requisito de
+  qualidade **obrigatório** (prazo curto, risco de penalidade) exigindo
+  success rate > 90% por 7 dias consecutivos nesse endpoint. O FAQ deles
+  documenta "This parcel has already been shipped" como causa de erro —
+  reenviar um pedido já arranjado. Investigando `_organizar_varios`, achei
+  uma lacuna real: o caminho individual (`organizar_envio`) já checava
+  `envio_ja_arranjado` antes de (re)enviar, mas o caminho em **lote**
+  mandava todos os `restantes` pro `batch_ship_order` sem essa checagem —
+  um pedido arranjado numa tentativa anterior (AWB demorou mais que o
+  timeout do polling, ou uma 2ª impressão do mesmo grupo) seria reenviado
+  via batch e provavelmente rejeitado. Corrigido com `_filtrar_ja_arranjados`
+  (nova etapa 1.5, antes do batch, consulta `parametros_envio` em
+  paralelo; em dúvida — falha de rede — NÃO assume arranjado, mesmo
+  espírito conservador de `envio_ja_arranjado`/`_rede_limpa`). A migração
+  mais completa que a própria Shopee recomenda ficou **pendente** —
+  `open.shopee.com` está bloqueado neste ambiente, sem o schema real
+  desses endpoints não dá pra implementar com segurança numa ação que
+  compromete o envio de verdade — perguntas formuladas pro dono levar ao
+  suporte (respondidas na rodada 2 acima). Nó `shopee_compliance_ship_order`
+  (atualizado na rodada 2 com o diagnóstico completo).
 
 - **2026-07-24 — Alerta pós-horário estendido pra Shopee:** pedido do dono
   depois de eu confirmar viabilidade — a Shopee tem sinal equivalente ao

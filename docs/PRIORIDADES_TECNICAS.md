@@ -276,6 +276,63 @@ existente. `narrar.py` e aditivo/opcional (usa `claude -p`, mesmo padrao do
 conclusao nova; se falhar ou nao rodar, `recomendar.py` continua funcionando
 sozinho, determinístico, como antes.
 
+## 11. Shopee: migrar `ship_order` pra checar por `get_package_detail` (respostas recebidas — migração ainda não implementada)
+
+**Contexto:** a Shopee mandou um requisito de qualidade obrigatorio (prazo,
+risco de penalidade) exigindo success rate > 90% por 7 dias consecutivos em
+`v2.logistics.ship_order`. O FAQ deles lista "This parcel has already been
+shipped" e "The order is being allocated, please wait" como causas
+documentadas de erro — reenviar um pedido ja arranjado, ou enviar cedo
+demais.
+
+**Corrigido em 2 rodadas (achado 2026-07) — ver `docs/ARQUITETURA.md` /
+`CLAUDE.md` (seção "Compliance da Shopee") pro detalhe tecnico completo:**
+- Rodada 1: `_organizar_varios` mandava todo pedido sem AWB pro
+  `batch_ship_order` sem checar se ja estava arranjado (so o caminho
+  individual `organizar_envio` checava). Corrigido com
+  `_filtrar_ja_arranjados` (nova etapa 1.5, antes do batch).
+- Rodada 2 (apos as respostas do suporte abaixo): a rodada 1 nao resolvia o
+  problema de verdade — um pedido que passa pelo batch mas fica sem AWB (so
+  por causa do timeout curto de ~40s) caia no fallback individual, que
+  reenviava `ship_order` com o status ainda desatualizado (propagacao pode
+  levar ate 15-20 min, confirmado pelo suporte). Corrigido: esses pedidos
+  nao caem mais no individual, viram pendencia de confirmacao ("tente de
+  novo em alguns minutos"). Defesa adicional em `organizar_envio`: catch pra
+  "already been shipped" (nao propaga como erro) e retry curto pra "being
+  allocated" (transiente, segundo a propria Shopee).
+
+**Respostas do suporte da Shopee (2026-07, via IA de suporte deles):**
+1. `search_package_list` aceita `package_status` (int) e `invoice_pending`
+   (bool); a resposta **ja inclui `is_shipment_arranged` por pacote** —
+   nao precisaria de `get_package_detail` separado so pra essa checagem.
+2. `get_package_detail`: `fulfillment_status` (string, enum incluindo
+   `LOGISTICS_READY` — lista completa nao confirmada), `is_shipment_arranged`
+   (bool), `package_number` (**um `order_sn` pode ter mais de um
+   `package_number`** — mudanca de modelo de identidade relevante).
+3. Se `ship_order` passou a aceitar/exigir `package_number` alem de
+   `order_sn`: **nao confirmado** pelo suporte, recomendaram testar/validar
+   direto.
+4. `batch_ship_order` **NAO conta** pra mesma metrica de sucesso do
+   `ship_order` singular (confirmado) — o foco da correcao e so as chamadas
+   ao endpoint singular.
+5. Codigos/mensagens exatos: `logistics.package_already_shipped` / "This
+   parcel has already been shipped"; `logistics.error_param` / "The order
+   is being allocated, please wait until the allocate is completed." (ja
+   usados na correcao da rodada 2).
+6. Propagacao apos `ship_order`/`batch_ship_order`: suporte recomendou
+   esperar **15-20 minutos** antes de reconsultar — usado pra decidir NAO
+   reenviar no mesmo ciclo (rodada 2).
+
+**Ainda pendente (nao urgente pro compliance — a correcao acima ja resolve o
+requisito):** migrar de fato pra `search_package_list`/`get_package_detail`
+em vez de `get_shipping_parameter`/`info_needed`. E uma mudanca maior do que
+parece: `package_number` pode ser 1:N com `order_sn`, o que exigiria repensar
+a identidade usada em `estado.py`/`Grupo.shipment_ids` (hoje tudo indexado
+por `order_sn`). Vale uma avaliacao separada, com mais tempo, nao sob pressao
+de prazo — a resposta #3 tambem ainda nao esta confirmada (se `ship_order`
+precisa de `package_number`), o que e pre-requisito pra saber se da pra
+migrar so a LEITURA (status) ou se a ESCRITA (`ship_order`) tambem muda.
+
 ## O que evitar por enquanto
 
 Algumas mudancas parecem atraentes, mas provavelmente nao valem o risco agora:

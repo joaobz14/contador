@@ -380,10 +380,50 @@ em 2º plano.
   organizado (achado 5.3). `envio_ja_arranjado` = nenhum de
   pickup/dropoff/non_integrated em `info_needed`.
 - **Organizar em lote:** `_organizar_varios` é em camadas — AWB existente
-  (idempotência) → `batch_ship_order` (até 50 num request) → confirmação **pelo
-  AWB** (não confiar no formato da resposta do batch) → fallback individual
-  (`organizar_envio`) pra quem ficar sem AWB. Se o batch falhar por inteiro,
-  não espera polling: vai direto ao individual.
+  (idempotência) → **`_filtrar_ja_arranjados`** (quem já foi arranjado, só
+  falta o AWB, NUNCA vai pro batch — ver "compliance" abaixo) → `batch_ship_order`
+  (até 50 num request, só quem sobrou) → confirmação **pelo AWB** (não confiar
+  no formato da resposta do batch). Quem sobra sem AWB **depois do batch**
+  vira `falhas` ("aguardando confirmação, tente de novo") — **não** cai no
+  individual (ver por quê abaixo). O fallback individual (`organizar_envio`)
+  só recebe quem veio do `_filtrar_ja_arranjados` (1.5) ou quem o batch nunca
+  chegou a tentar (endpoint indisponível por inteiro).
+- **Compliance da Shopee — success rate do `v2.logistics.ship_order` (achado
+  2026-07, 2 rodadas):** a Shopee exige (requisito obrigatório, com prazo e
+  risco de penalidade) success rate > 90% por 7 dias consecutivos **nesse
+  endpoint** (só o singular — confirmado com o suporte deles que
+  `batch_ship_order` **não** conta pra mesma métrica). O FAQ lista "This
+  parcel has already been shipped" (`logistics.package_already_shipped`) e
+  "The order is being allocated, please wait until the allocate is
+  completed" (`logistics.error_param`) como causas de erro documentadas —
+  mensagens exatas confirmadas com o suporte.
+  **Rodada 1** (achado inicial): só o caminho individual checava
+  `envio_ja_arranjado` antes de (re)enviar; o caminho em lote mandava
+  **todos** os `restantes` pro `batch_ship_order` sem essa checagem.
+  Corrigido com `_filtrar_ja_arranjados` (consulta `parametros_envio` em
+  paralelo antes do batch).
+  **Rodada 2** (revisão depois de respostas do suporte da Shopee — ver
+  `docs/PRIORIDADES_TECNICAS.md` item 11): a propagação de
+  `fulfillment_status`/`is_shipment_arranged` após um ship aceito pode levar
+  **até 15-20 minutos** — bem mais que os ~40s de polling deste módulo. Isso
+  revelava que a rodada 1 não resolvia o problema de verdade: um pedido que
+  passa pelo batch mas fica sem AWB (só por causa do timeout curto, não
+  porque falhou) caía no fallback individual, que consultava
+  `parametros_envio` ainda com o status **antigo** (não propagado) e
+  chamava `ship_order` **de novo** — exatamente o cenário "already shipped"
+  que conta contra a métrica. Corrigido de verdade: esses pedidos não vão
+  mais pro individual, viram `falhas` pendentes de confirmação (a próxima
+  tentativa, minutos depois, já vê o status atualizado via
+  `_filtrar_ja_arranjados` e não reenvia). Defesa em profundidade adicional
+  em `organizar_envio`: catch específico pra "already been shipped" (não
+  propaga como erro, só passa a aguardar o AWB) e retry com backoff curto
+  (3 tentativas, 3s) pra "being allocated" (documentado como transiente
+  pela própria Shopee). A migração mais completa que a Shopee recomenda
+  (`v2.order.search_package_list` + `v2.order.get_package_detail`,
+  `is_shipment_arranged` já vem por pacote na busca; `package_number` pode
+  ser 1:N com `order_sn`) é uma mudança maior (novo modelo de identidade por
+  pacote) e ficou registrada como item de backlog — não é urgente pra
+  fechar o requisito de compliance com a correção acima.
 - **Desempenho (medido, ver `docs/ARQUITETURA.md`):** organizar é **~14s fixos**
   (latência da Shopee emitir o AWB — piso intransponível, NÃO é o número de
   chamadas, então **batch não acelera**). O ganho está em **gerar os documentos
