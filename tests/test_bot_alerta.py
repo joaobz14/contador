@@ -17,6 +17,10 @@ except BaseException as e:  # noqa: BLE001 - pyo3 PanicException herda de BaseEx
 import separador_etiquetas_ml as core  # noqa: E402
 import shopee_api as shopee  # noqa: E402
 
+# Referencia REAL do gate de horario, capturada antes de a fixture autouse
+# substitui-la (os testes do proprio gate precisam da implementacao de verdade).
+_ALERTA_NO_HORARIO_REAL = bot._alerta_no_horario
+
 
 @pytest.fixture(autouse=True)
 def _arquivo_alertas_isolado(tmp_path, monkeypatch):
@@ -25,6 +29,9 @@ def _arquivo_alertas_isolado(tmp_path, monkeypatch):
     # e faz o job pular a checagem Shopee em silencio, como um setup so-ML).
     # Testes especificos da Shopee apontam pra um arquivo que EXISTE.
     monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "sem_credencial_shopee.json")
+    # Testes rodam a qualquer hora (CI): fixa "dentro da janela de horario" pro
+    # gate do job nao virar flakiness. O gate em si tem testes proprios.
+    monkeypatch.setattr(bot, "_alerta_no_horario", lambda agora=None: True)
 
 
 def _envio(sid, dia, item_id=1):
@@ -60,7 +67,7 @@ def test_dados_alerta_filtra_por_hoje_e_dedup(monkeypatch):
     prontos = [_envio(1, "2026-07-24"), _envio(2, "2026-07-23"), _envio(3, "2026-07-24")]
     monkeypatch.setattr(core, "conta_ativa", lambda: "")
     monkeypatch.setattr(core, "definir_conta", lambda nome: None)
-    monkeypatch.setattr(bot, "_prontos", lambda: prontos)
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None: prontos)
     monkeypatch.setattr(core, "carregar_credenciais", lambda: {})
     monkeypatch.setattr(core, "obter_token", lambda cred: "tok")
     monkeypatch.setattr(core, "extrair_itens", lambda token, pedidos: [f"item-{p['id']}" for p in pedidos])
@@ -75,7 +82,7 @@ def test_dados_alerta_filtra_por_hoje_e_dedup(monkeypatch):
 def test_dados_alerta_sem_novidade_nao_chama_extrair_itens(monkeypatch):
     monkeypatch.setattr(core, "conta_ativa", lambda: "")
     monkeypatch.setattr(core, "definir_conta", lambda nome: None)
-    monkeypatch.setattr(bot, "_prontos", lambda: [_envio(1, "2026-07-24")])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [_envio(1, "2026-07-24")])
     chamou = []
     monkeypatch.setattr(core, "extrair_itens", lambda *a, **k: chamou.append(1))
 
@@ -89,7 +96,7 @@ def test_dados_alerta_troca_e_restaura_conta(monkeypatch):
     trocas = []
     monkeypatch.setattr(core, "conta_ativa", lambda: "gastromaq")
     monkeypatch.setattr(core, "definir_conta", lambda nome: trocas.append(nome))
-    monkeypatch.setattr(bot, "_prontos", lambda: [])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [])
     monkeypatch.setattr(core, "extrair_itens", lambda *a, **k: [])
 
     bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-24")
@@ -102,7 +109,7 @@ def test_dados_alerta_nao_troca_se_ja_e_a_conta_ativa(monkeypatch):
     trocas = []
     monkeypatch.setattr(core, "conta_ativa", lambda: "cozilatti")
     monkeypatch.setattr(core, "definir_conta", lambda nome: trocas.append(nome))
-    monkeypatch.setattr(bot, "_prontos", lambda: [])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [])
 
     bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-24")
 
@@ -122,6 +129,39 @@ def test_dados_alerta_shopee_delega_pro_shopee_api(monkeypatch):
 
     assert novos == ["novo"] and itens == ["item"]
     assert chamadas == [({"cred": 1}, "TOK", {"SN0"}, "2026-07-24")]
+
+
+# ----------------------------------------------------- janela de horario/busca
+def test_alerta_no_horario_janela():
+    from datetime import datetime
+    tz = core.TZ_BR
+
+    def as_(h, m=0):
+        return datetime(2026, 7, 29, h, m, tzinfo=tz)
+
+    assert _ALERTA_NO_HORARIO_REAL(as_(6, 59)) is False   # madrugada: dorme
+    assert _ALERTA_NO_HORARIO_REAL(as_(7, 0)) is True     # inicio inclusivo
+    assert _ALERTA_NO_HORARIO_REAL(as_(12, 30)) is True
+    assert _ALERTA_NO_HORARIO_REAL(as_(20, 59)) is True   # ultimo ciclo util
+    assert _ALERTA_NO_HORARIO_REAL(as_(21, 0)) is False   # fim exclusivo
+
+
+def test_dados_alerta_usa_janela_curta_de_busca(monkeypatch):
+    """O alerta busca com DIAS_JANELA_ALERTA (5 dias), nao a janela cheia de 30
+    — e o corte de ~90% das chamadas achado na auditoria de APIs."""
+    capturado = {}
+
+    def _fake_prontos(dias=None):
+        capturado["dias"] = dias
+        return []
+
+    monkeypatch.setattr(core, "conta_ativa", lambda: "")
+    monkeypatch.setattr(core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(bot, "_prontos", _fake_prontos)
+
+    bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-29")
+
+    assert capturado["dias"] == bot.DIAS_JANELA_ALERTA
 
 
 # ------------------------------------------------------------------- job_alerta
@@ -156,6 +196,22 @@ def test_job_alerta_avisa_e_marca_dedup(monkeypatch):
     dados = bot._carregar_alertas()
     assert dados["avisados"]["cozilatti"] == [1]
     assert dados["itens"]["cozilatti"] == [{"chave": "A02", "quantidade": 1}]
+
+
+def test_job_alerta_fora_do_horario_e_noop_sem_api(monkeypatch):
+    """Fora da janela (madrugada), o job acorda e volta a dormir: nenhuma
+    chamada de API, nenhuma leitura de estado, nenhuma mensagem."""
+    monkeypatch.setattr(bot, "_alerta_no_horario", lambda agora=None: False)
+    monkeypatch.setattr(core, "listar_contas",
+                        lambda: (_ for _ in ()).throw(AssertionError("nao devia consultar nada")))
+    monkeypatch.setattr(bot, "_carregar_alertas",
+                        lambda: (_ for _ in ()).throw(AssertionError("nao devia ler estado")))
+    enviados = []
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert enviados == []
 
 
 def test_job_alerta_sem_novidade_nao_envia_nada(monkeypatch):

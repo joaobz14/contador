@@ -275,8 +275,10 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
 - **Segurança:** responde só aos `chat_ids` autorizados; token do `bot_config.json`
   (não versionado) ou da variável `TELEGRAM_BOT_TOKEN`. Envie `/id` para descobrir o seu.
 - **Aviso da manhã:** `"aviso_horario": "08:00"` no `bot_config.json` (fuso de Brasília).
-- **Alerta pós-horário:** a cada 5 minutos, o bot checa **todas as contas ML e também
-  a Shopee** e avisa assim que surge uma venda nova já pronta para despachar **hoje**
+- **Alerta pós-horário:** a cada 5 minutos (das **07:00 às 21:00**, horário de
+  Brasília — de madrugada o job dorme, a venda da noite aparece no aviso da manhã),
+  o bot checa **todas as contas ML e também a Shopee** e avisa assim que surge uma
+  venda nova já pronta para despachar **hoje**
   (`ready_to_print` no ML, `READY_TO_SHIP` na Shopee) — ajuda a não perder o prazo de
   repor com o fornecedor quando a venda cai depois que você já parou de checar a tela.
   A checagem da Shopee é pulada em silêncio se você não tiver `credenciais_shopee.json`

@@ -58,6 +58,12 @@ pra despachar **hoje** (`ready_to_print`+`expected_date` no ML,
 `READY_TO_SHIP`+`ship_by_date` na Shopee — sinais equivalentes; motivado
 por vendas que caem depois das 8:30 e passam despercebidas até ser tarde
 demais pra repor com o fornecedor) — o alerta só funciona com o bot de pé.
+O job só trabalha das **07:00 às 20:59 de Brasília** (`_alerta_no_horario` —
+fora disso é no-op sem chamada de API; de madrugada o aviso não tem utilidade)
+e busca com uma **janela dedicada de 5 dias** (`DIAS_JANELA_ALERTA`, via
+`buscar_pedidos(dias=)`) em vez dos 30 do Atualizar — um envio com despacho
+HOJE é sempre recente; juntas, as duas janelas cortaram ~95% das ~90-100 mil
+chamadas/dia que o alerta fazia (auditoria de APIs 2026-07).
 A checagem da Shopee pula em silêncio se não houver `credenciais_shopee.json`
 (setup só-ML é válido, sem logar erro a cada ciclo). Cada alerta mostra SKU +
 quantidade **somada por SKU** (sem número de envio/pedido — o dono precisa
@@ -218,6 +224,18 @@ quem sobe o bot.
   arriscaria a 2ª rodar já com a conta original restaurada pela 1ª (bug
   sutil de conta errada). Não estenda esse job para operações de escrita sem
   reconsiderar essa janela.
+  **Furo fechado na auditoria de APIs (2026-07):** a justificativa "só
+  leitura" ignorava que o **refresh de token é uma escrita** que pode
+  acontecer em qualquer caminho de rede — e `obter_token`/`renovar_token`/
+  `salvar_credenciais` resolviam a global `ARQUIVO_CRED` na hora da chamada,
+  então um refresh em voo durante a troca de conta podia gravar as
+  credenciais de UMA conta no arquivo da OUTRA (e o `.bak` junto — conta
+  travada, refazer `pegar_token`). Corrigido com a **amarra
+  credencial→arquivo**: `carregar_credenciais` grava o arquivo de origem no
+  dict (chave volátil `_arquivo`, nunca persistida) e trava/releitura/
+  refresh/salvamento usam a amarra (`_arquivo_das_credenciais`), não a
+  global. A janela de leitura (dados da conta errada exibidos) continua
+  aceita como antes.
 - **Auto-start do bot: abandonada a tentativa de subir pela tela (histórico).**
   A 1ª versão fazia `separador_gui.py` subir o bot sozinho ao abrir (lock de
   PID em `bot.lock`, checado via `tasklist`) — a ideia era não depender de

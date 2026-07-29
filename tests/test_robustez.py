@@ -57,7 +57,7 @@ def test_carregar_credenciais_restaura_do_backup_quando_corrompe(core, tmp_path,
     core.salvar_credenciais({"refresh_token": "bom"})     # gera o .bak
     arq.write_text("\x00\x00\x00", encoding="utf-8")      # simula queda de energia
     cred = core.carregar_credenciais()                    # deve recuperar do .bak
-    assert cred == {"refresh_token": "bom"}
+    assert cred["refresh_token"] == "bom"
     # e reescreve o principal a partir do backup (proxima leitura ja le direto)
     assert json.loads(arq.read_text(encoding="utf-8")) == {"refresh_token": "bom"}
 
@@ -67,8 +67,88 @@ def test_carregar_credenciais_gera_backup_na_primeira_leitura(core, tmp_path, mo
     arq = tmp_path / "credenciais.json"
     arq.write_text(json.dumps({"refresh_token": "x"}), encoding="utf-8")
     monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
-    assert core.carregar_credenciais() == {"refresh_token": "x"}
+    assert core.carregar_credenciais()["refresh_token"] == "x"
     assert (tmp_path / "credenciais.json.bak").exists()
+
+
+def test_get_ml_corpo_nao_json_vira_erro_limpo(core, monkeypatch):
+    """Status 200 com corpo nao-JSON (proxy interceptando): SeparadorError
+    limpo em vez de JSONDecodeError cru."""
+    class _RespNaoJson:
+        status_code = 200
+        headers = {}
+
+        def json(self):
+            raise ValueError("Expecting value")
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(core, "_requisicao_get", lambda *a, **k: _RespNaoJson())
+    with pytest.raises(core.SeparadorError, match="nao-JSON"):
+        core._get("https://api.mercadolibre.com/x", "tok")
+
+
+# ------------------- amarra credencial -> arquivo (corrida multi-conta do bot)
+def test_carregar_credenciais_amarra_o_arquivo_de_origem(core, tmp_path, monkeypatch):
+    arq = tmp_path / "credenciais.json"
+    arq.write_text(json.dumps({"refresh_token": "x"}), encoding="utf-8")
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq)
+    assert core.carregar_credenciais()["_arquivo"] == str(arq)
+
+
+def test_salvar_credenciais_grava_no_arquivo_amarrado_mesmo_com_conta_trocada(
+        core, tmp_path, monkeypatch):
+    """O bug da auditoria: definir_conta (job do alerta, outra thread) re-aponta
+    a global ARQUIVO_CRED no meio de um refresh — o salvamento gravava as
+    credenciais de UMA conta no arquivo da OUTRA (e o .bak junto). Com a
+    amarra, o salvamento segue no arquivo de onde as credenciais vieram."""
+    arq_a = tmp_path / "a" / "credenciais.json"
+    arq_b = tmp_path / "b" / "credenciais.json"
+    arq_a.parent.mkdir()
+    arq_b.parent.mkdir()
+    arq_a.write_text(json.dumps({"refresh_token": "de_a"}), encoding="utf-8")
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq_a)
+    cred = core.carregar_credenciais()                    # amarrado em A
+
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq_b)      # "troca de conta" no meio
+    cred["refresh_token"] = "novo_de_a"
+    core.salvar_credenciais(cred)
+
+    assert json.loads(arq_a.read_text(encoding="utf-8")) == {"refresh_token": "novo_de_a"}
+    assert not arq_b.exists()                             # NADA vazou pra conta B
+    # a chave volatil da amarra nunca vai pro JSON persistido
+    assert "_arquivo" not in json.loads(arq_a.read_text(encoding="utf-8"))
+
+
+def test_obter_token_renova_contra_o_arquivo_amarrado_apos_troca_de_conta(
+        core, tmp_path, monkeypatch):
+    """obter_token com a conta trocada no meio-tempo: a releitura do disco e o
+    refresh tem que acontecer no arquivo AMARRADO (conta original) — sem a
+    amarra, adotava o token da conta errada (lida da global re-apontada)."""
+    arq_a = tmp_path / "a" / "credenciais.json"
+    arq_b = tmp_path / "b" / "credenciais.json"
+    arq_a.parent.mkdir()
+    arq_b.parent.mkdir()
+    core._gravar_json(arq_a, {"refresh_token": "ra", "access_token": "VELHO_A",
+                              "access_token_exp": 0})
+    core._gravar_json(arq_b, {"refresh_token": "rb", "access_token": "DE_B",
+                              "access_token_exp": time.time() + 9999})
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq_a)
+    cred = core.carregar_credenciais()                    # amarrado em A (expirado)
+
+    def fake_renovar(c):
+        c["access_token"] = "NOVO_A"
+        c["access_token_exp"] = time.time() + 9999
+        core.salvar_credenciais(c)
+        return "NOVO_A"
+
+    monkeypatch.setattr(core, "renovar_token", fake_renovar)
+    monkeypatch.setattr(core, "ARQUIVO_CRED", arq_b)      # troca de conta no meio
+
+    assert core.obter_token(cred) == "NOVO_A"             # nunca "DE_B"
+    assert json.loads(arq_a.read_text(encoding="utf-8"))["access_token"] == "NOVO_A"
+    assert json.loads(arq_b.read_text(encoding="utf-8"))["access_token"] == "DE_B"  # intocado
 
 
 def test_backup_acompanha_token_girado(core, tmp_path, monkeypatch):

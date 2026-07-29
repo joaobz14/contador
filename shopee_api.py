@@ -164,13 +164,27 @@ def _levantar_se_erro(resp, path: str) -> None:
     raise core.SeparadorError(f"Shopee {path}: HTTP {resp.status_code}{detalhe}")
 
 
+def _json_limpo(resp, path: str) -> dict:
+    """resp.json() convertendo corpo nao-JSON em SeparadorError LIMPO. Um proxy
+    ou rede corporativa interceptando pode devolver HTML com status 200 — sem
+    esta guarda, o JSONDecodeError cru subia ate a tela/bot (feio, mas sem
+    segredo: a mensagem dele nao carrega a URL). `from None` pela mesma razao
+    de _rede_limpa: nao arrastar encadeamento pro log."""
+    try:
+        return resp.json()
+    except ValueError:
+        raise core.SeparadorError(
+            f"Shopee {path}: resposta invalida da API (nao-JSON). "
+            "Tente de novo.") from None
+
+
 def _get_shop(cred: dict, token: str, path: str, params: dict) -> dict:
     """GET assinado em uma API de loja, com a resiliencia de rede do core."""
     query = {**_params_assinados(cred, token, path), **params}
     resp = _rede_limpa(lambda: core._requisicao_get(
         f"{HOST}{path}", headers={}, params=query), path)
     _levantar_se_erro(resp, path)
-    dados = resp.json()
+    dados = _json_limpo(resp, path)
     if dados.get("error"):
         raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
     return dados
@@ -182,7 +196,7 @@ def _post_shop(cred: dict, token: str, path: str, body: dict) -> dict:
     resp = _rede_limpa(lambda: core._requisicao_post(
         f"{HOST}{path}", params=_params_assinados(cred, token, path), json=body), path)
     _levantar_se_erro(resp, path)
-    dados = resp.json()
+    dados = _json_limpo(resp, path)
     if dados.get("error"):
         raise core.SeparadorError(f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
     return dados
@@ -195,7 +209,7 @@ def _download_shop(cred: dict, token: str, path: str, body: dict) -> bytes:
         f"{HOST}{path}", params=_params_assinados(cred, token, path), json=body), path)
     _levantar_se_erro(resp, path)
     if "application/json" in resp.headers.get("Content-Type", ""):
-        dados = resp.json()
+        dados = _json_limpo(resp, path)
         raise core.SeparadorError(
             f"Shopee {path}: {dados.get('error')} - {dados.get('message')}")
     return resp.content
@@ -217,9 +231,13 @@ def renovar_token(cred: dict) -> str:
               "partner_id": int(cred["partner_id"]), "shop_id": int(cred["shop_id"])},
         tentativas=1,
     ), path)
-    dados = resp.json()
-    if resp.status_code != 200 or dados.get("error"):
-        raise core.SeparadorError(f"Falha ao renovar token Shopee: {dados or resp.text}")
+    try:
+        dados = resp.json()
+    except ValueError:                           # corpo nao-JSON (proxy/HTML)
+        dados = {}
+    if resp.status_code != 200 or not dados or dados.get("error"):
+        raise core.SeparadorError(
+            f"Falha ao renovar token Shopee: {dados or f'HTTP {resp.status_code}'}")
     cred["access_token"] = dados["access_token"]
     cred["access_token_exp"] = time.time() + float(dados.get("expire_in", 14400))
     novo_refresh = dados.get("refresh_token")
@@ -449,16 +467,22 @@ def batch_ship_order(cred: dict, token: str, order_sns: list, *,
 
 
 def _aguardar_awbs(cred: dict, token: str, order_sns: list, *,
-                   tentativas: int = 40, espera: float = 1.0) -> dict:
+                   tentativas: int = 25, espera: float = 1.0) -> dict:
     """Espera os AWBs de varios pedidos sairem (a Shopee leva alguns segundos
     apos o ship). Polling paralelo; para assim que todos sairem. Devolve
-    {order_sn: awb} apenas dos que sairam no prazo."""
+    {order_sn: awb} apenas dos que sairam no prazo.
+
+    Backoff suave: 1s nas 10 primeiras tentativas (o AWB tipico sai em ~14s —
+    checagem frequente encontra cedo), 2s dali em diante. Teto total ~40s como
+    antes (10x1 + 15x2), com ~40% menos chamadas get_tracking_number por
+    pedido que ainda nao saiu (achado da auditoria de APIs: 40 polls/pedido
+    era agressivo sem ganho de latencia)."""
     pendentes = [str(sn) for sn in order_sns]
     ok: dict = {}
-    for _ in range(tentativas):
+    for tentativa in range(tentativas):
         if not pendentes:
             break
-        time.sleep(espera)
+        time.sleep(espera if tentativa < 10 else espera * 2)
         for sn, awb in _rastreios_paralelo(cred, token, pendentes).items():
             if awb:
                 ok[sn] = awb
@@ -651,7 +675,18 @@ def gerar_etiqueta(cred: dict, order_sns: list[str], *, tipo: str = TIPO_ETIQUET
         raise core.SeparadorError("Nenhum pedido informado para gerar a etiqueta.")
     token = token or obter_token(cred)
     if rastreios is None:
-        rastreios = _rastreios_paralelo(cred, token, order_sns)
+        # Cache de AWB primeiro (o AWB e imutavel; ver ARQUIVO_AWB_CACHE): a
+        # REIMPRESSAO de um grupo ja impresso nao pode falhar so porque um
+        # refetch de rede do rastreio falhou — o codigo ja e conhecido desde a
+        # impressao original. So os ausentes vao a rede; os buscados entram no
+        # cache (best-effort), como na impressao.
+        cache = _carregar_awb_cache()
+        rastreios = {str(sn): cache.get(str(sn), "") for sn in order_sns}
+        faltantes = [sn for sn in order_sns if not rastreios.get(str(sn))]
+        if faltantes:
+            buscados = _rastreios_paralelo(cred, token, faltantes)
+            rastreios.update({str(sn): awb for sn, awb in buscados.items()})
+            _cachear_awbs(buscados)
     # Valida TODOS os order_sns, nao so as chaves presentes em `rastreios`: um
     # pedido AUSENTE do mapa (mapa parcial) passava batido e seguia sem AWB ate a
     # Shopee devolver 'tracking_number_invalid' (auditoria 5.9). Compara por str

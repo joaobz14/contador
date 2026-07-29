@@ -4,6 +4,44 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Auditoria de APIs (ML + Shopee)
+- **Correção real: refresh de token podia gravar credenciais no arquivo da
+  conta ERRADA (corrida multi-conta do bot).** A "Área de risco" aceitava a
+  corrida de `definir_conta` no job do alerta com a justificativa "só
+  leitura" — mas o refresh de token é uma **escrita** que pode acontecer em
+  qualquer caminho de rede. `obter_token`/`renovar_token`/`salvar_credenciais`
+  resolviam a global `ARQUIVO_CRED` na hora da chamada: se o job do alerta
+  trocasse a conta (outra thread) no meio de um refresh de um comando manual,
+  as credenciais renovadas de uma conta eram gravadas no arquivo da outra
+  (e o `.bak` junto — sem recuperação; conta travada, refazer `pegar_token`).
+  Corrigido amarrando o arquivo de origem às credenciais no carregamento
+  (chave volátil `_arquivo`, nunca persistida): trava, releitura, refresh e
+  salvamento seguem todos no arquivo da conta dona das credenciais,
+  independente da global. Probabilidade baixa (exigia coincidência de
+  timing), impacto alto — nunca observado em produção.
+- **Alerta pós-horário: ~95% menos chamadas à API do ML.** Cada ciclo de
+  5 min refazia o pipeline completo com a janela cheia de 30 dias (~300+
+  `GET /shipments` por ciclo, ~90-100 mil chamadas/dia, 24h/dia). Dois
+  cortes: **janela de horário** (o job só trabalha das 07:00 às 20:59 de
+  Brasília — fora disso é um no-op sem chamada nenhuma; de madrugada o
+  aviso não tem utilidade, a venda da noite aparece no aviso da manhã) e
+  **janela de busca dedicada** (`buscar_pedidos` ganhou `dias=`;
+  `DIAS_JANELA_ALERTA=5` — um envio com despacho HOJE é sempre recente, e
+  5 dias cobrem fim de semana + feriado; um caso raro que escape ainda
+  aparece no aviso da manhã e em qualquer Atualizar, que seguem com a
+  janela cheia de 30 dias).
+- **Higiene de robustez/eficiência:** reimpressão Shopee lê o **cache de
+  AWB** antes da rede (`gerar_etiqueta` com `rastreios=None` — reimpressão
+  de grupo já impresso não pode falhar por um refetch; o AWB é imutável e
+  conhecido desde a impressão); corpo **não-JSON** com status 200 (proxy
+  interceptando) vira `SeparadorError` limpo em vez de `JSONDecodeError`
+  cru (ML e Shopee, incluindo os refresh de token); `_aguardar_awbs` com
+  **backoff** (1s×10 depois 2s, mesmo teto de ~40s, ~40% menos
+  `get_tracking_number` por pedido preso); **dedup por id** na paginação do
+  `buscar_pedidos` (com `sort=date_desc`, um pedido novo chegando no meio
+  da paginação desloca os offsets e o mesmo pedido podia vir em duas
+  páginas).
+
 ### CI
 - **`gui-smoke` travava (às vezes) instalando dependências, sem nunca dar
   erro:** o `apt-get install` do `imagemagick` aciona o `needrestart`, que em

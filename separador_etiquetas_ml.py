@@ -346,8 +346,18 @@ def _carregar_credenciais_com_backup(arquivo: Path) -> dict | None:
 
 
 def carregar_credenciais() -> dict:
-    dados = _carregar_credenciais_com_backup(ARQUIVO_CRED)
+    arquivo = ARQUIVO_CRED                       # resolve a conta ativa AGORA
+    dados = _carregar_credenciais_com_backup(arquivo)
     if dados:
+        # AMARRA o arquivo de origem as credenciais (chave volatil "_arquivo",
+        # nunca gravada no JSON): salvar_credenciais e obter_token usam esta
+        # amarra em vez de reler a global ARQUIVO_CRED — que definir_conta
+        # re-aponta a qualquer momento (o job do alerta do bot troca de conta
+        # em outra thread). Sem a amarra, um refresh de token em voo durante a
+        # troca podia gravar as credenciais renovadas de UMA conta no arquivo
+        # da OUTRA (e o .bak junto, sem recuperacao): conta travada, refazer o
+        # pegar_token (achado da auditoria de APIs).
+        dados["_arquivo"] = str(arquivo)
         return dados
     if not ARQUIVO_CRED.exists():
         raise SeparadorError(
@@ -358,8 +368,19 @@ def carregar_credenciais() -> dict:
     )
 
 
+def _arquivo_das_credenciais(cred: dict) -> Path:
+    """Arquivo a que estas credenciais pertencem: a amarra do carregamento
+    (cred['_arquivo']) ou, sem ela (dict montado a mao/testes), a global."""
+    return Path(cred["_arquivo"]) if cred.get("_arquivo") else ARQUIVO_CRED
+
+
 def salvar_credenciais(cred: dict) -> None:
-    _gravar_credenciais_com_backup(ARQUIVO_CRED, cred)
+    # Grava no arquivo AMARRADO no carregamento, nao na global (que a troca de
+    # conta pode ter re-apontado no meio-tempo). A chave volatil fica fora do
+    # JSON persistido.
+    _gravar_credenciais_com_backup(
+        _arquivo_das_credenciais(cred),
+        {k: v for k, v in cred.items() if k != "_arquivo"})
 
 
 def renovar_token(cred: dict) -> str:
@@ -380,7 +401,12 @@ def renovar_token(cred: dict) -> str:
     )
     if resp.status_code != 200:
         raise SeparadorError(f"Falha ao renovar token: {resp.text}")
-    dados = resp.json()
+    try:
+        dados = resp.json()
+    except ValueError:                           # corpo nao-JSON (proxy/HTML)
+        raise SeparadorError(
+            "Falha ao renovar token: resposta invalida (nao-JSON) da API. "
+            "Tente de novo.") from None
     # Cacheia o access_token e sua validade para reaproveitar entre chamadas (o
     # refresh_token do ML e de uso unico e ROTACIONA a cada refresh, entao evitar
     # refresh desnecessario reduz o risco de invalidar o token).
@@ -424,8 +450,13 @@ def obter_token(cred: dict) -> str:
         # refresh do primeiro e dispararia um refresh paralelo. Esperando mais
         # que a duracao maxima da operacao, degradar vira seguro (o detentor ja
         # salvou; a releitura abaixo adota o token dele).
-        with _estado.trava(ARQUIVO_CRED, espera=2 * TIMEOUT):
-            disco = _ler_json(ARQUIVO_CRED)
+        # O arquivo vem da AMARRA das credenciais (nao da global ARQUIVO_CRED):
+        # se definir_conta trocar a conta ativa em outra thread no meio-tempo
+        # (job do alerta do bot), a trava, a releitura e o salvamento do
+        # refresh continuam todos no arquivo DESTA conta.
+        arquivo = _arquivo_das_credenciais(cred)
+        with _estado.trava(arquivo, espera=2 * TIMEOUT):
+            disco = _ler_json(arquivo)
             if disco.get("access_token"):
                 cred.update(disco)
                 if _token_valido(cred):
@@ -494,7 +525,15 @@ def _get(url: str, token: str, params: dict | None = None, extra: dict | None = 
         headers.update(extra)
     resp = _requisicao_get(url, headers, params)
     resp.raise_for_status()
-    return resp.json()
+    try:
+        return resp.json()
+    except ValueError:
+        # Corpo nao-JSON com status 2xx (proxy/rede corporativa interceptando):
+        # erro limpo em vez de um JSONDecodeError cru. A URL aqui nao carrega
+        # segredo (o token do ML vai no header, nao na query).
+        raise SeparadorError(
+            f"Mercado Livre {url}: resposta invalida da API (nao-JSON). "
+            "Tente de novo.") from None
 
 
 # ---------------------------------------------------------------------------
@@ -628,8 +667,13 @@ def identidade(item: dict, cache: dict, skus_anuncio: dict | None = None) -> tup
 # ---------------------------------------------------------------------------
 # BUSCA DE PEDIDOS E ENVIOS
 # ---------------------------------------------------------------------------
-def buscar_pedidos(token: str, seller_id: str) -> list[dict]:
-    desde = (datetime.now(TZ_BR) - timedelta(days=DIAS_JANELA)).strftime("%Y-%m-%dT00:00:00.000-03:00")
+def buscar_pedidos(token: str, seller_id: str, *, dias: int | None = None) -> list[dict]:
+    """Pedidos pagos da janela de `dias` (default DIAS_JANELA). O parametro
+    existe pro alerta pos-horario do bot usar uma janela curta (um envio com
+    despacho HOJE e sempre recente) sem mexer no Atualizar da tela/CLI, que
+    continua cobrindo a janela cheia."""
+    janela = DIAS_JANELA if dias is None else dias
+    desde = (datetime.now(TZ_BR) - timedelta(days=janela)).strftime("%Y-%m-%dT00:00:00.000-03:00")
 
     def pagina(offset: int) -> dict:
         return _get(
@@ -654,7 +698,18 @@ def buscar_pedidos(token: str, seller_id: str) -> list[dict]:
         with ThreadPoolExecutor(max_workers=8) as ex:
             for dados in ex.map(pagina, offsets):
                 pedidos.extend(dados.get("results", []))
-    return pedidos
+    # Dedup por id: com sort=date_desc, um pedido NOVO chegando no meio da
+    # paginacao desloca os offsets e o mesmo pedido pode vir em duas paginas.
+    # (Um deslocado pra FORA se corrige no proximo Atualizar.)
+    vistos: set = set()
+    unicos: list[dict] = []
+    for p in pedidos:
+        pid = p.get("id")
+        if pid in vistos:
+            continue
+        vistos.add(pid)
+        unicos.append(p)
+    return unicos
 
 
 def buscar_pedidos_amplo(token: str, seller_id: str, limite: int = 1000) -> list[dict]:

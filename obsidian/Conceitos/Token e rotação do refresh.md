@@ -24,6 +24,21 @@ No Windows o `LK_LOCK` desiste sozinho em ~10s; o refresh dura até 30s. Sem a e
 de `2*TIMEOUT`, o 2º processo degradaria **no meio** do refresh do 1º e renovaria de
 novo — rotacionando por cima.
 
+## Amarra credencial → arquivo (ML, multi-conta)
+`carregar_credenciais` grava o **arquivo de origem** no dict (chave volátil
+`_arquivo`, nunca persistida); trava, releitura, refresh e salvamento usam a amarra
+(`_arquivo_das_credenciais`), **não** a global `ARQUIVO_CRED` — que `definir_conta`
+re-aponta a qualquer momento (o job do alerta do bot troca de conta em outra
+thread).
+
+> [!bug] Achado da auditoria de APIs (2026-07)
+> A "área de risco" aceitava a corrida de `definir_conta` como "só leitura" — mas o
+> **refresh de token é uma escrita** possível em qualquer caminho de rede. Sem a
+> amarra, um refresh em voo durante a troca de conta podia gravar as credenciais
+> renovadas de uma conta no arquivo da **outra** (e o `.bak` junto — sem
+> recuperação): conta travada, refazer `pegar_token`. Nunca observado em produção
+> (timing raro), fechado preventivamente.
+
 ## Credenciais
 Locais, com espelho **`.bak`** (auto-recuperação). O `.bak` só vale **ao lado do
 principal** — um desgarrado tem refresh já rotacionado (morto) → [[Arquivos — locais vs versionados]].

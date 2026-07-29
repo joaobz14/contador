@@ -184,6 +184,14 @@ em 2º plano.
   disso é seguro (o detentor já salvou; a releitura adota).
   `renovar_token` **não re-tenta** (`tentativas=1`): re-tentar o refresh grant após
   o servidor já ter rotacionado gastaria um token de uso único.
+  **No ML, as credenciais são AMARRADAS ao arquivo de origem** (auditoria de
+  APIs 2026-07): `carregar_credenciais` grava o caminho no dict (chave volátil
+  `_arquivo`, nunca persistida) e trava/releitura/refresh/salvamento usam a
+  amarra (`_arquivo_das_credenciais`), não a global `ARQUIVO_CRED` — que
+  `definir_conta` re-aponta a qualquer momento (o job do alerta do bot troca
+  de conta em outra thread). Sem a amarra, um refresh em voo durante a troca
+  podia gravar as credenciais de uma conta no arquivo da OUTRA (e o `.bak`
+  junto): conta travada. Não "simplifique" voltando a usar a global.
 - **Escrita de JSON é atômica e durável** (`.tmp` + `flush`/`fsync` → `replace`) e
   leitura tolerante. `gravar_json` abre com **`newline="\n"`** — grava **LF**
   mesmo no Windows; sem isso a GUI reescrevia os JSONs **versionados**

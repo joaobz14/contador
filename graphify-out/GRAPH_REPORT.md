@@ -11,15 +11,17 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1411 nodes · 2590 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1428 nodes · 2624 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
   formato enxuto + resumo agregado do alerta (`/vendasapos`), o alerta
-  pós-horário estendido pra Shopee e a correção de compliance do
+  pós-horário estendido pra Shopee, a correção de compliance do
   `v2.logistics.ship_order` em 2 rodadas (`_filtrar_ja_arranjados` +
   correção do fallback individual pós-batch, após respostas do suporte da
-  Shopee). Ver "Atualizações manuais" abaixo pro histórico completo.
+  Shopee) e as 3 correções da auditoria de APIs (amarra credencial→arquivo,
+  dieta do alerta, higiene). Ver "Atualizações manuais" abaixo pro
+  histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
   CLI o re-deriva** — comunidades/centralidade/"perguntas sugeridas" não são
@@ -46,6 +48,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > ambiente e reconstruiria só o AST, apagando esta camada). O `graph.json` é a
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
+
+- **2026-07 — Auditoria de APIs (ML + Shopee): 3 correções.** Leitura
+  integral dos caminhos de rede dos dois marketplaces atrás de
+  falhas/quebras/melhorias. (1) **Amarra credencial→arquivo** (a mais
+  séria): a "área de risco" aceitava a corrida de `definir_conta` no bot
+  como "só leitura", mas o refresh de token é uma ESCRITA que resolvia a
+  global `ARQUIVO_CRED` na hora da chamada — um refresh em voo durante a
+  troca de conta podia gravar as credenciais de uma conta no arquivo da
+  outra (e o `.bak` junto: conta travada). `carregar_credenciais` agora
+  grava o arquivo de origem no dict (chave volátil `_arquivo`) e
+  trava/releitura/refresh/salvamento usam `_arquivo_das_credenciais`.
+  (2) **Dieta do alerta pós-horário**: ~90-100 mil chamadas/dia (ciclo de
+  5 min, 24h, janela cheia de 30 dias) cortadas em ~95% com janela de
+  horário (07:00–20:59 BR, `_alerta_no_horario`) + janela de busca
+  dedicada (`buscar_pedidos(dias=)`, `DIAS_JANELA_ALERTA=5`).
+  (3) **Higiene**: reimpressão Shopee lê o cache de AWB antes da rede;
+  `resp.json()` com guarda limpa nos dois lados (`_json_limpo`);
+  `_aguardar_awbs` com backoff (mesmo teto, ~40% menos chamadas); dedup
+  por id na paginação do `buscar_pedidos`. Novo nó `auditoria_apis_2026_07`.
 
 - **2026-07 — Compliance da Shopee, RODADA 2: correção de verdade da taxa
   de sucesso do `v2.logistics.ship_order`:** depois do dono levar as
