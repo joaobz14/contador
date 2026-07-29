@@ -107,10 +107,21 @@ _SUFIXOS_JUNTO = (".bak", ".corrupto")
 def _mover_se_preciso(origem: Path, destino: Path) -> None:
     """Move origem->destino se a origem existir e o destino ainda nao. Nunca
     sobrescreve (se ja ha arquivo no destino, o da raiz e resto de uma copia
-    antiga e fica onde esta, pra nao destruir o dado em uso)."""
-    if origem.exists() and not destino.exists():
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        origem.replace(destino)
+    antiga e fica onde esta, pra nao destruir o dado em uso).
+
+    CADA move e isolado: uma falha de IO aqui NAO propaga. No Windows um
+    arquivo ABERTO por outro processo nao pode ser renomeado (WinError 32) — e
+    o bot sobe no logon pelo Agendador de Tarefas, entao ele esta segurando o
+    bot.log justamente quando a tela abre e roda a migracao. Sem o isolamento,
+    essa unica falha abortava o RESTO do migrar_para_pastas: a pasta contas/,
+    que vem depois dos logs, ficava na raiz e a tela abria SEM NENHUMA conta ML
+    (seletor de conta e modo 🌐 Ambas sumiam). Incidente real, 2026-07-29."""
+    try:
+        if origem.exists() and not destino.exists():
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            origem.replace(destino)
+    except OSError:
+        pass
 
 
 def migrar_para_pastas() -> None:
@@ -120,23 +131,32 @@ def migrar_para_pastas() -> None:
     bot, CLI) e NUNCA levanta — uma falha aqui nao pode impedir o app de abrir
     (o pior caso e o arquivo seguir na raiz, que continua sendo lido por quem
     ja o tinha aberto). Leva junto os sufixos .bak/.corrupto e a pasta
-    contas/ inteira. Mesmo espirito do migrar_conta_legado."""
+    contas/ inteira. Mesmo espirito do migrar_conta_legado.
+
+    Cada passo e INDEPENDENTE (ver _mover_se_preciso): um arquivo travado por
+    outro processo nao pode levar os outros junto. E a pasta contas/ vai
+    PRIMEIRO — e o que guarda as credenciais de cada conta ML, o dado mais caro
+    de refazer (exige refazer o OAuth), entao ela nao fica atras de nenhum log
+    na fila."""
     try:
         # Instalacao nova (nada a migrar) tambem precisa das pastas: sem elas a
         # 1a gravacao de config/estado/log falharia.
         PASTA_DADOS.mkdir(parents=True, exist_ok=True)
         PASTA_LOGS.mkdir(parents=True, exist_ok=True)
-        for nome in _MIGRAR_DADOS:
-            _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_DADOS / nome)
-            for sufixo in _SUFIXOS_JUNTO:
-                _mover_se_preciso(PASTA_SCRIPT / (nome + sufixo),
-                                  PASTA_DADOS / (nome + sufixo))
-        for nome in _MIGRAR_LOGS:
-            _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_LOGS / nome)
-        # contas/ (pasta inteira, com as credenciais de cada conta ML dentro)
-        _mover_se_preciso(PASTA_SCRIPT / "contas", PASTA_CONTAS)
-        # bot.lock: sobra do auto-start pela tela, removido em 2026-07 (o bot
-        # sobe pelo Agendador de Tarefas). Sem codigo que o leia, so poluia.
+    except OSError:
+        pass
+    # contas/ (pasta inteira, com as credenciais de cada conta ML dentro)
+    _mover_se_preciso(PASTA_SCRIPT / "contas", PASTA_CONTAS)
+    for nome in _MIGRAR_DADOS:
+        _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_DADOS / nome)
+        for sufixo in _SUFIXOS_JUNTO:
+            _mover_se_preciso(PASTA_SCRIPT / (nome + sufixo),
+                              PASTA_DADOS / (nome + sufixo))
+    for nome in _MIGRAR_LOGS:
+        _mover_se_preciso(PASTA_SCRIPT / nome, PASTA_LOGS / nome)
+    # bot.lock: sobra do auto-start pela tela, removido em 2026-07 (o bot
+    # sobe pelo Agendador de Tarefas). Sem codigo que o leia, so poluia.
+    try:
         antigo_lock = PASTA_SCRIPT / "bot.lock"
         if antigo_lock.exists():
             antigo_lock.unlink()

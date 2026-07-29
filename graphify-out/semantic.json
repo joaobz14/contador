@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 335,
- "edge_count": 584,
+ "node_count": 336,
+ "edge_count": 588,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3863,6 +3863,20 @@
    "community": 4,
    "_origin": "manual",
    "norm_label": "reorganizacao em pastas (dados/ + logs/, 2026-07): pedido do dono — a raiz do projeto tinha ~35 arquivos misturando codigo, docs, config de ferramenta e todo o dado local do app (tokens, estado, caches, historico, 4 logs que crescem), e ficava impossivel achar o separador_gui.py que ele abre todo dia. agora: dados/ guarda o que o app le e escreve (credenciais, estado, caches, de-paras, contas/) e logs/ os registros; a raiz fica com o que se abre e o que as ferramentas exigem la. nao foram movidos, de proposito: readme/claude/agents.md (github renderiza o readme da raiz; claude code e codex leem o guia da raiz), .gitignore/.gitattributes/pyproject.toml/ruff.toml/.editorconfig (as ferramentas so procuram na raiz) e os modulos .py — mover os modulos exigiria tocar os 26 arquivos que os importam, 8 .bat, o ci, e re-ancorar pasta_script (de onde sai todo caminho de token/estado), e ainda assim a raiz nao ficaria com um arquivo so por causa dos de ferramenta acima: ganho parcial, risco alto num app que roda o negocio. migracao automatica (migrar_para_pastas, chamada no import do nucleo, antes de qualquer leitura): move o que estava solto na raiz, leva os sufixos .bak/.corrupto junto (um .bak desgarrado do principal guarda refresh_token ja rotacionado, morto — mesma regra do migrar_conta_legado) e a pasta contas/ inteira. nunca sobrescreve destino existente (arquivo solto na raiz com destino ja criado e resto de copia antiga; o dado em uso vence) e nunca levanta (best-effort: falha de io nao pode impedir o app de abrir — filosofia do _log_tempos). idempotente e cria as pastas mesmo em instalacao nova. migrar_conta_legado passou a ler de pasta_dados (o 'solto' de hoje e dados/, nao a raiz). o .gitignore inverteu a logica: ignora dados/* e logs/ inteiros e libera explicitamente os 2 versionados (nomes_sku/skus_por_anuncio) — assim um arquivo local novo nunca escapa por esquecimento de regra. registro.py monta logs/separador.log sem importar o nucleo (segue modulo-folha) e cria a pasta ele mesmo, porque o filehandler(delay=true) so abriria o arquivo na 1a escrita."
+  },
+  {
+   "label": "MIGRACAO DE PASTAS: CADA MOVE E ISOLADO E contas/ VAI PRIMEIRO (incidente real 2026-07-29). Depois da reorganizacao em dados/+logs/, a tela do dono abriu SEM NENHUMA conta ML — o seletor de conta e o modo 'Ambas' sumiram (ambos so aparecem com 2+ contas; listar_contas() devolvia []). BARREIRA: migrar_para_pastas() rodava o corpo INTEIRO sob um unico try/except OSError, entao a PRIMEIRA falha de IO abortava em silencio tudo o que vinha depois na fila. NO WINDOWS isso nao e caso raro: o bot sobe no logon pelo Agendador de Tarefas (atalhos/registrar-tarefa-bot.ps1) e mantem o bot.log ABERTO; renomear arquivo aberto levanta WinError 32 (PermissionError). Como _MIGRAR_LOGS vinha ANTES do move de contas/, essa unica falha deixava as credenciais de todas as contas ML para tras na raiz — dado que so se refaz com OAuth novo. SOLUCAO em duas partes: (1) o try/except desceu para dentro de _mover_se_preciso, entao um arquivo travado nao leva os outros junto e o que ficou para tras e re-tentado na proxima abertura (a migracao e idempotente); (2) contas/ passou a ser o PRIMEIRO move da fila — o dado mais caro de refazer nao espera atras de log nenhum. Nada se perdeu no incidente: os arquivos seguiam na raiz. Guarda: tests/test_contas.py::test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto (simula o WinError 32 no bot.log e exige que contas/ migre mesmo assim). LICAO GERAL: em rotina best-effort que percorre uma FILA, o try/except pertence a cada item, nao ao laco — senao 'best-effort' vira 'para no primeiro erro'.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "migracao_pastas_isolamento_de_falha",
+   "community": 0,
+   "norm_label": "migracao de pastas: cada move e isolado e contas/ vai primeiro (incidente real 2026-07-29). depois da reorganizacao em dados/+logs/, a tela do dono abriu sem nenhuma conta ml — o seletor de conta e o modo 'ambas' sumiram (ambos so aparecem com 2+ contas; listar_contas() devolvia []). barreira: migrar_para_pastas() rodava o corpo inteiro sob um unico try/except oserror, entao a primeira falha de io abortava em silencio tudo o que vinha depois na fila. no windows isso nao e caso raro: o bot sobe no logon pelo agendador de tarefas (atalhos/registrar-tarefa-bot.ps1) e mantem o bot.log aberto; renomear arquivo aberto levanta winerror 32 (permissionerror). como _migrar_logs vinha antes do move de contas/, essa unica falha deixava as credenciais de todas as contas ml para tras na raiz — dado que so se refaz com oauth novo. solucao em duas partes: (1) o try/except desceu para dentro de _mover_se_preciso, entao um arquivo travado nao leva os outros junto e o que ficou para tras e re-tentado na proxima abertura (a migracao e idempotente); (2) contas/ passou a ser o primeiro move da fila — o dado mais caro de refazer nao espera atras de log nenhum. nada se perdeu no incidente: os arquivos seguiam na raiz. guarda: tests/test_contas.py::test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto (simula o winerror 32 no bot.log e exige que contas/ migre mesmo assim). licao geral: em rotina best-effort que percorre uma fila, o try/except pertence a cada item, nao ao laco — senao 'best-effort' vira 'para no primeiro erro'.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -5027,6 +5041,17 @@
    "source": "migracao_bak_zumbi",
    "target": "separador_etiquetas_ml_carregar_credenciais_com_backup",
    "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "migracao_pastas_isolamento_de_falha",
+   "target": "tests_test_contas_test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto",
+   "confidence_score": 1.0,
+   "context": "teste-guarda do incidente"
   },
   {
    "relation": "conceptually_related_to",
@@ -6869,6 +6894,37 @@
    "weight": 1.0,
    "source": "migracao_bak_zumbi",
    "target": "separador_etiquetas_ml_migrar_conta_legado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "migracao_pastas_isolamento_de_falha",
+   "target": "separador_etiquetas_ml_listar_contas",
+   "confidence_score": 1.0,
+   "context": "listar_contas() devolvia [] porque contas/ ficou na raiz"
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "migracao_pastas_isolamento_de_falha",
+   "target": "separador_etiquetas_ml_migrar_para_pastas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "migracao_pastas_isolamento_de_falha",
+   "target": "separador_etiquetas_ml_mover_se_preciso",
    "confidence_score": 1.0
   },
   {

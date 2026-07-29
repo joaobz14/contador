@@ -4,6 +4,21 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Corrigido
+- **Contas do ML sumiam da tela depois da reorganização de pastas** (incidente
+  real, 2026-07-29). Na primeira abertura após a atualização, o seletor de conta
+  e o modo **🌐 Ambas** desapareciam: a tela abria como se não houvesse nenhuma
+  conta cadastrada. Causa: a migração automática rodava inteira sob um único
+  `try/except`, então a **primeira** falha de IO abortava tudo o que vinha
+  depois. No Windows o bot sobe no logon pelo Agendador de Tarefas e mantém o
+  `bot.log` **aberto** — e arquivo aberto não pode ser renomeado (WinError 32).
+  Como os logs eram movidos **antes** da pasta `contas/`, essa única falha
+  deixava as credenciais das contas para trás na raiz. Agora cada movimentação é
+  independente (uma que falhe não leva as outras junto) e a pasta `contas/` —
+  o dado mais caro de refazer, porque exigiria refazer o OAuth — é a **primeira**
+  da fila. **Nada foi perdido**: os arquivos continuavam na raiz e voltam
+  sozinhos na próxima abertura.
+
 ### Organização da pasta
 - **Raiz reorganizada em `dados/` + `logs/`.** A pasta do projeto tinha ~35
   arquivos misturando código, documentação, config de ferramenta e todo o

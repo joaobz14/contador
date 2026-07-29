@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1439 nodes · 2645 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1441 nodes · 2651 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -20,7 +20,9 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
   `v2.logistics.ship_order` em 2 rodadas (`_filtrar_ja_arranjados` +
   correção do fallback individual pós-batch, após respostas do suporte da
   Shopee) e as 3 correções da auditoria de APIs (amarra credencial→arquivo,
-  dieta do alerta, higiene) e a reorganização da raiz em `dados/` + `logs/`.
+  dieta do alerta, higiene), a reorganização da raiz em `dados/` + `logs/` e a
+  correção do incidente em que as contas ML sumiam da tela (isolamento de falha
+  por item na migração + `contas/` na frente da fila).
   Ver "Atualizações manuais" abaixo pro histórico completo.
 - O **Summary** mais abaixo (844 nodes · 1498 edges · comunidades · God Nodes ·
   centralidade) é do **build do CLI de 2026-07-08** e **só um rebuild completo do
@@ -49,6 +51,18 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-29 — Incidente: as contas do ML sumiram da tela.** Na primeira
+  abertura após a reorganização, o seletor de conta e o modo 🌐 Ambas
+  desapareceram (`listar_contas()` devolvia `[]`). Causa: `migrar_para_pastas`
+  rodava o corpo inteiro sob **um** `try/except OSError`, então a primeira
+  falha de IO abortava em silêncio o resto da fila — e no Windows o bot (que
+  sobe no logon pelo Agendador) mantém o `bot.log` **aberto**, o que faz o
+  rename levantar `WinError 32`. Como os logs eram movidos **antes** de
+  `contas/`, as credenciais ficavam para trás. Correção: o `try/except` desceu
+  para dentro de `_mover_se_preciso` (um item travado não leva os outros) e
+  `contas/` virou o **primeiro** move da fila. Teste-guarda
+  `test_migrar_para_pastas_arquivo_travado_nao_leva_o_resto_junto`. Novo nó
+  `migracao_pastas_isolamento_de_falha`.
 - **2026-07 — Reorganização da raiz em `dados/` + `logs/`:** pedido do dono —
   a raiz tinha ~35 arquivos misturando código, docs, config de ferramenta e
   todo o dado local (tokens, estado, caches, 4 logs que crescem), e achar o
