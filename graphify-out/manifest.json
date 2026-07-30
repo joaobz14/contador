@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785429441.5539021,
-  "ast_hash": "fd745ed3b3f6de29c1122e7043086a29b4c7695a",
-  "semantic_hash": "fd745ed3b3f6de29c1122e7043086a29b4c7695a"
+  "mtime": 1785436643.2899013,
+  "ast_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e",
+  "semantic_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e"
  },
  "CLAUDE.md": {
-  "mtime": 1785429430.4347124,
-  "ast_hash": "f30ef09bda6f851e4303c2a770f537c1799a7df3",
-  "semantic_hash": "f30ef09bda6f851e4303c2a770f537c1799a7df3"
+  "mtime": 1785436643.2890642,
+  "ast_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1",
+  "semantic_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,14 +115,19 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785429503.9787107,
-  "ast_hash": "0e01c9086477ff1beb5a88a54b7ed71bc06e4192",
-  "semantic_hash": "0e01c9086477ff1beb5a88a54b7ed71bc06e4192"
+  "mtime": 1785436655.0333607,
+  "ast_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e",
+  "semantic_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
   "ast_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80",
   "semantic_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80"
+ },
+ "docs/TIKTOK_SHOP_API.md": {
+  "mtime": 1785437144.788088,
+  "ast_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82",
+  "semantic_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -220,9 +225,9 @@
   "semantic_hash": "5a1c61cdd57333ddf0402e039e46b0d6e6a73a57"
  },
  "obsidian/Conceitos/Ponte com a Zebra.md": {
-  "mtime": 1785412374.974931,
-  "ast_hash": "a1bf0eeeeabcf87f72dfea02ce468cd2c9bc6aef",
-  "semantic_hash": "a1bf0eeeeabcf87f72dfea02ce468cd2c9bc6aef"
+  "mtime": 1785429736.8427055,
+  "ast_hash": "0ca0abdd29ce36047d4a6fe1330b46f92f4b17fa",
+  "semantic_hash": "0ca0abdd29ce36047d4a6fe1330b46f92f4b17fa"
  },
  "obsidian/Conceitos/Trava entre processos.md": {
   "mtime": 1784923251.5942357,
@@ -298,6 +303,11 @@
   "mtime": 1783442165.6943207,
   "ast_hash": "aeb2ec0b3bd1505a8f3ef9335bc3e585e162835f",
   "semantic_hash": "aeb2ec0b3bd1505a8f3ef9335bc3e585e162835f"
+ },
+ "pegar_token_tiktok.py": {
+  "mtime": 1785437155.1160889,
+  "ast_hash": "0874485b4dafde8819c1d1911d673f2775a41128",
+  "semantic_hash": "0874485b4dafde8819c1d1911d673f2775a41128"
  },
  "provedores.py": {
   "mtime": 1784202399.1608725,

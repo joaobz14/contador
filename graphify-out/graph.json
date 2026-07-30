@@ -20911,6 +20911,62 @@
    "community": 0,
    "norm_label": "por que os dois apps nao sao um so (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb nao e back-end do contador. evidencia decisiva: monitoretiquetas.prefixos inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o proprio site do mercado livre da ao baixar etiqueta na mao. ou seja, ele imprime sem o contador existir, e e o plano b no dia em que o contador estiver quebrado. alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + popupseparadora, com lista de produtos e busca proprias). tres impedimentos tecnicos: (1) ele roda elevado (elevar_privilegios/uac, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o uac; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo agendador; (3) plataforma -- pywin32/pystray/pillow sao windows-only, enquanto o nucleo daqui e portatil e o ci roda no linux. e a separacao paga: a pasta downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). o unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
    "_origin": "manual"
+  },
+  {
+   "label": "pegar_token_tiktok.py",
+   "file_type": "code",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "pegar_token_tiktok",
+   "community": 75,
+   "norm_label": "pegar_token_tiktok.py"
+  },
+  {
+   "label": "perguntar()",
+   "file_type": "code",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L50",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "pegar_token_tiktok_perguntar",
+   "community": 75,
+   "norm_label": "perguntar()"
+  },
+  {
+   "label": "extrair_code()",
+   "file_type": "code",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L57",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "pegar_token_tiktok_extrair_code",
+   "community": 75,
+   "norm_label": "extrair_code()"
+  },
+  {
+   "label": "main()",
+   "file_type": "code",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L71",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "pegar_token_tiktok_main",
+   "community": 75,
+   "norm_label": "main()"
   }
  ],
  "links": [
@@ -22155,6 +22211,26 @@
    "weight": 1.0,
    "source": "pegar_token_shopee_main",
    "target": "pegar_token_shopee_perguntar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L100",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok_main",
+   "target": "pegar_token_tiktok_extrair_code",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L76",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok_main",
+   "target": "pegar_token_tiktok_perguntar",
    "confidence_score": 1.0
   },
   {
@@ -34794,6 +34870,36 @@
    "weight": 1.0,
    "source": "pegar_token_shopee",
    "target": "pegar_token_shopee_perguntar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L57",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok",
+   "target": "pegar_token_tiktok_extrair_code",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L71",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok",
+   "target": "pegar_token_tiktok_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L50",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok",
+   "target": "pegar_token_tiktok_perguntar",
    "confidence_score": 1.0
   },
   {
@@ -51112,5 +51218,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "7cf993ee7fb1f6426e7f64767f2e5e7e77670b3c"
+ "built_at_commit": "926e4fdd513885db6da75f9f9f4a4af24fca1445"
 }

@@ -75,6 +75,12 @@ em 2º plano.
   sugerido (ordem recomendada de evolução). **`docs/AMAZON_SP_API.md`**:
   levantamento (pesquisa, nada implementado) de como a Amazon SP-API encaixaria
   no app no futuro — o risco decisivo é de negócio/BR (só FBM/MFN gera etiqueta).
+  **`docs/TIKTOK_SHOP_API.md`**: idem para o TikTok Shop (pesquisa, nada
+  implementado). **O objetivo imediato do dono é SÓ aviso de venda no Telegram**
+  — não imprimir —, o que contorna as perguntas em aberto sobre etiqueta; o resto
+  do levantamento fica para quando/se a impressão entrar. A doc oficial é
+  **inacessível** do ambiente de sessão; leia a seção "Força da evidência" antes
+  de tratar qualquer item como fato.
 - **`obsidian/` é a base de contexto humano e operacional** (cofre versionado):
   decisões, conceitos, estado atual, incidentes, runbooks, funcionalidades e
   orientação para agentes. **Graphify continua sendo a base estrutural/semântica**;
