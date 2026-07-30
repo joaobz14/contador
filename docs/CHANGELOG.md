@@ -21,6 +21,20 @@ Histórico das principais mudanças do projeto.
   Com um app da Zebra anterior à v1.26.0 nada muda — a tela cai exatamente no
   comportamento de antes.
 
+### Pesquisado
+- **Levantamento do TikTok Shop (`docs/TIKTOK_SHOP_API.md`)** — pesquisa, nada
+  implementado, nos moldes do que já existe para a Amazon. Boas notícias: a
+  etiqueta sai em **ZPL** no Brasil (confirmado no painel, em produção), o envio
+  por Correios é "TikTok Shipping" (o caso que a API cobre) e a autenticação é
+  irmã da Shopee — encaixaria como mais um provedor, sem caminho de impressão
+  novo. Dois pontos ficaram **em aberto** e estão marcados como tal: se a **API**
+  também entrega ZPL (o painel entrega, mas são coisas diferentes) e se ela
+  entrega a **NF-e** — porque o painel imprime etiqueta **e** nota, o que põe o
+  TikTok no formato 2-por-venda do Mercado Livre e mexeria na validação de
+  paridade do app da Zebra. O documento marca a força da evidência item a item e
+  registra os becos sem saída, inclusive uma IA de suporte que respondeu pela
+  documentação de outro produto.
+
 ### Decidido
 - **Os dois apps continuam separados** (avaliado a pedido do dono). O app da
   Zebra não é back-end deste: ele também imprime o que você baixa **na mão** pelo
