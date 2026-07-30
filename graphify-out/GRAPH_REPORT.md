@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1477 nodes · 2727 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1479 nodes · 2732 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -71,6 +71,15 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   `--envio` + `_caminhos_de_interesse` varrem o payload sem despejá-lo inteiro
   (envio carrega nome e endereço do COMPRADOR; despejo cru ali vazaria dado de
   terceiro). Se também não vier, o item 12 vira "não fazer".
+  **ENCERRADO (mesmo dia):** o `--envio` provou que o payload do envio não tem
+  nem a chave `driver`/`vehicle`/`carrier` (apareceriam vazias se existissem).
+  As duas fontes plausíveis da API pública são negativas → **item 12 = "não
+  fazer"**. O painel do vendedor mostra o dado, logo ele existe do lado do ML,
+  mas por endpoint interno. A premissa de negócio estava CERTA; falta o canal.
+  Nada muda: o 🌐 Ambas segue manual. `--chaves` (lista todos os caminhos de
+  chave, sem valores — nome de chave não é dado pessoal) fica registrado como o
+  que reabriria o item, caso o campo exista com outro nome (`courier`,
+  `collector`, `operator`).
 - **2026-07-29 — Confirmação de impressão: o retorno do app da Zebra.** A
   entrega das etiquetas é por arquivo (ZIP na Downloads) e não havia canal de
   volta: com o monitor fechado, os ZIPs se acumulavam e o dono só descobria pelo

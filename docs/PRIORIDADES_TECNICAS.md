@@ -340,7 +340,7 @@ de prazo — a resposta #3 tambem ainda nao esta confirmada (se `ship_order`
 precisa de `package_number`), o que e pre-requisito pra saber se da pra
 migrar so a LEITURA (status) ou se a ESCRITA (`ship_order`) tambem muda.
 
-## 12. Avisar o motorista do dia (mesmo/diferente) nas contas ML (BLOQUEADO: falta o teste)
+## 12. Avisar o motorista do dia nas contas ML — NAO FAZER (a API publica nao expoe o dado)
 
 **Ideia do dono:** hoje ele lembra na mao se "o motorista e o mesmo nas duas
 contas" e clica (ou nao) no 🌐 Ambas. O app poderia perceber isso sozinho.
@@ -453,12 +453,62 @@ nome e endereco do COMPRADOR, e um despejo cru ali vazaria dado pessoal de
 terceiro. Nome do motorista, placa e o codigo de autorizacao saem mascarados; o
 `driver.id` sai em claro, porque e o que precisamos comparar.
 
-**Se o `--envio` tambem nao trouxer motorista:** o painel usa endpoint interno,
-fora da API publica, e este item vira **"nao fazer"** — com dois caminhos
-registrados para quem reabrir a questao um dia: (1) perguntar ao suporte/IA do
-ML se ha endpoint publico para o motorista da coleta do dia (funcionou bem na
-rodada da Shopee, item 11); (2) aceitar que a deteccao automatica nao e
-possivel e manter o 🌐 Ambas como escolha manual, que e o que sempre foi.
+### VEREDITO FINAL do `--envio` (2026-07-30): ENCERRADO como "nao fazer"
+
+```
+envio 47640966807: status=ready_to_ship
+  origin.shipping_address.agency.*       = (vazio)
+  destination.shipping_address.agency.*  = (vazio)
+  origin.node / .shipping_address.node   = (vazio)
+  lead_time.pickup_promise.from / .to    = None
+  lead_time.estimated_schedule_limit.date= (vazio)
+```
+
+**Nenhuma chave `driver`, `vehicle` ou `carrier` no payload do envio** — e elas
+apareceriam mesmo VAZIAS, porque o varredor reporta chave de interesse ainda que
+sem valor. Elas nao existem ali. O que existe (`agency`, `node`,
+`pickup_promise`) vem todo vazio.
+
+**Conclusao: a API publica do ML nao expoe o motorista da coleta do dia.** As
+duas fontes plausiveis foram testadas com dado real e as duas sao negativas:
+
+| Fonte | Resultado |
+|---|---|
+| `GET /users/{id}/shipping/schedule/{logistic_type}` | gabarito semanal; `driver`/`carrier`/`vehicle` sempre vazios |
+| `GET /shipments/{id}` (que o nucleo JA chama) | nao tem nem a chave |
+
+O painel do vendedor mostra motorista e placa, entao o dado existe do lado do ML
+— mas por endpoint **interno**, fora da API publica. Nao ha como consumi-lo de
+forma suportada.
+
+### O que fica no lugar
+
+**Nada muda:** o 🌐 Ambas continua sendo **escolha manual**, como sempre foi. O
+dono ja sabe, olhando o painel, se o motorista e o mesmo — e clica. O custo de
+nao ter a automacao e um clique consciente por dia de motorista unico.
+
+### O que reabriria este item
+
+1. **`python tools/diag_coleta.py --chaves <conta>`** — lista TODAS as chaves do
+   envio (sem valores; nome de chave nao e dado pessoal). Fecha a ultima lacuna
+   do `--envio`, que procura por PALAVRA: se o ML batizou o campo de `courier`,
+   `collector` ou `operator`, o filtro anterior passaria batido. Se aparecer
+   candidato, este item volta.
+2. **Perguntar ao suporte/IA do ML** se existe endpoint publico para o motorista
+   da coleta do dia. Funcionou bem na rodada da Shopee (item 11) — a resposta
+   deles derrubou uma conclusao nossa que estava errada.
+3. **O ML publicar** um endpoint de coleta agendada com o motorista. Se isso
+   acontecer, o `diag_coleta.py` ja tem toda a infra de comparacao pronta
+   (`_comparar`, `_porque_sem_driver`, mascaramento) — e so trocar a fonte.
+
+### Por que vale ter feito o percurso
+
+A ideia era boa e a premissa de negocio estava **certa** (o mesmo motorista
+atende as duas contas; confirmado nos dois paineis no mesmo dia). O que nao
+existe e o CANAL. Sem este registro, a ideia voltaria a cada poucos meses e
+alguem gastaria o mesmo dia de novo — foi exatamente o que aconteceu antes de
+2026-07-29, quando a ferramenta ja existia mas o resultado nunca tinha sido
+anotado.
 
 ### FASE 1 (o que construir primeiro): so avisar, nunca selecionar
 

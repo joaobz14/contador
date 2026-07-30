@@ -22,20 +22,26 @@ type: concept
 > aplica em memória: os sub-grupos `.por_conta` manteriam a chave antiga do anúncio,
 > escondendo envios do lote e marcando estado na chave errada → [[Adoção de anúncios sem SKU]].
 
-## Ideia em avaliação: avisar o motorista do dia (BLOQUEADA)
-Hoje o dono lembra na mão se "o motorista é o mesmo nas duas contas" e clica (ou
-não) no radio. A API do ML entrega o motorista da coleta
-(`GET /users/{id}/shipping/schedule/{logistic_type}` → `driver.id`, ID estável),
-e `tools/diag_coleta.py --comparar contaA contaB` já responde se é o mesmo hoje.
+## Avisar o motorista do dia — ENCERRADO ("não fazer", 2026-07-30)
+A ideia era o app perceber sozinho se o motorista do dia é o mesmo nas duas
+contas e **avisar** (sem selecionar nada), em vez do dono lembrar na mão.
 
-**Os dois lados interessam:** avisar "mesmo motorista" *e* "motoristas
-diferentes". O aviso negativo não é redundante — hoje ele é implícito (silêncio +
-memória do dono); explícito, vira informação confirmada. Em nenhum caso o app
-seleciona nada: só informa.
+A premissa estava **certa** — no mesmo dia, os painéis das duas contas mostraram
+o mesmo motorista e a mesma placa. O que não existe é o **canal**: nenhuma das
+duas fontes plausíveis da API pública entrega o dado (ver abaixo). Ferramenta de
+diagnóstico usada: `tools/diag_coleta.py` (`--comparar`, `--cru`, `--envio`,
+`--chaves`) — só leitura, com dado pessoal mascarado.
 
-> [!warning] Bloqueio: falta rodar o `--comparar` num dia com coleta e anotar o resultado
-> Sem saber se o `driver.id` vem preenchido nas duas contas reais, não há o que
-> automatizar. Detalhes, fases e desenho no item 12 do `PRIORIDADES_TECNICAS.md`.
+> [!failure] A API pública do ML não expõe o motorista da coleta do dia
+> Testado com dado real em 2026-07-30, nas duas fontes plausíveis:
+> - `schedule/{logistic_type}` → **gabarito semanal**; `driver`/`carrier`/`vehicle`
+>   existem na estrutura mas vêm vazios em todos os 7 dias;
+> - `GET /shipments/{id}` (que o núcleo já chama) → **não tem nem a chave**.
+>
+> O painel do vendedor mostra motorista e placa, então o dado existe — mas por
+> endpoint **interno**. A premissa estava certa; o que falta é o canal.
+> **Nada muda:** o Ambas segue sendo escolha manual. Veredito completo e o que
+> reabriria o item no item 12 do `PRIORIDADES_TECNICAS.md`.
 
 > [!danger] Ausência de dado ≠ "motoristas diferentes"
 > O terceiro estado (sem coleta programada, logística diferente, token sem
@@ -43,11 +49,9 @@ seleciona nada: só informa.
 > um palpite disfarçado de informação — e o dono passaria a confiar num aviso que
 > às vezes chuta.
 
-**Fases:** (1) só avisar, registrando o veredito no `separador.log` para gerar
-evidência; (2) considerar automatizar **só depois de provado** — o critério é
-nenhum falso "iguais" em semanas de operação real, porque esse é o erro caro
-(misturaria lotes de contas diferentes). Falso "diferentes" só faz o dono
-conferir na mão, como já faz hoje.
+O desenho que teria sido usado (avisar sem selecionar, em duas fases, com
+critério de "nenhum falso *iguais*") fica registrado no item 12 — serve de molde
+se o ML publicar o dado um dia.
 
 ## Relacionado
 - [[provedores]] · [[Multi-conta (ML)]] · [[Agrupamento e identidade do produto]] · [[Adoção de anúncios sem SKU]]

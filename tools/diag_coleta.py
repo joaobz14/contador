@@ -341,10 +341,71 @@ def _envio_de_interesse(conta: str) -> int:
     return 1
 
 
+def _todas_as_chaves(valor, prefixo="") -> list[str]:
+    """Todos os caminhos de chave do JSON, SEM NENHUM VALOR.
+
+    Nome de chave nao e dado pessoal — entao isto e seguro de colar mesmo num
+    payload de envio, que carrega nome e endereco do comprador. Serve para uma
+    coisa so: fechar a ultima lacuna do `--envio`, que procura por PALAVRA
+    ("driver", "vehicle", "carrier"...). Se o ML tivesse batizado o campo de
+    `courier`, `collector` ou `operator`, aquele filtro passaria batido.
+    """
+    chaves = []
+    if isinstance(valor, dict):
+        for k, v in valor.items():
+            caminho = f"{prefixo}.{k}" if prefixo else k
+            chaves.append(caminho)
+            chaves += _todas_as_chaves(v, caminho)
+    elif isinstance(valor, list) and valor:
+        chaves += _todas_as_chaves(valor[0], f"{prefixo}[]")
+    return chaves
+
+
+def _chaves_do_envio(conta: str) -> int:
+    """Lista TODAS as chaves do detalhe do envio (sem valores).
+
+    Ultimo passo do item 12: prova que nao existe campo de motorista com OUTRO
+    nome escondido no payload.
+    """
+    rotulo = conta or core.conta_ativa() or "(padrao)"
+    token, seller = _token_seller(conta)
+    print(f"conta: {rotulo}  |  seller: {seller}\n")
+    try:
+        pedidos = core.buscar_pedidos(token, seller)
+    except Exception as e:                       # noqa: BLE001 - diagnostico
+        print(f"nao deu pra buscar pedidos: {type(e).__name__}")
+        return 1
+    for p in pedidos:
+        sid = (p.get("shipping") or {}).get("id")
+        if not sid:
+            continue
+        env = core.buscar_envio(token, sid)
+        if not env:
+            continue
+        chaves = _todas_as_chaves(env)
+        print(f"envio {sid}: {len(chaves)} caminho(s) de chave\n")
+        for c in chaves:
+            print(f"  {c}")
+        pistas = [c for c in chaves if any(
+            p in c.lower() for p in ("driver", "courier", "collector", "operator",
+                                     "pickup", "vehicle", "plate", "carrier",
+                                     "transport", "motorista"))]
+        print("\n=== candidatos a 'quem vem buscar' ===")
+        print("\n".join(f"  {c}" for c in pistas) if pistas
+              else "  NENHUM. O payload do envio nao tem campo de motorista, com "
+                   "nome nenhum -> a API publica nao expoe esse dado.")
+        print("\nSaida SEM VALORES: nome de chave nao e dado pessoal, pode colar.")
+        return 0
+    print("Nenhum envio com id encontrado na janela atual.")
+    return 1
+
+
 def main() -> int:
     args = sys.argv[1:]
     if args and args[0] == "--envio":
         return _envio_de_interesse(args[1] if len(args) > 1 else "")
+    if args and args[0] == "--chaves":
+        return _chaves_do_envio(args[1] if len(args) > 1 else "")
     if args and args[0] == "--comparar":
         if len(args) < 3:
             print("uso: python tools/diag_coleta.py --comparar contaA contaB")

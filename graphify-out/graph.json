@@ -16184,7 +16184,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L344",
+   "source_location": "L403",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19791,6 +19791,34 @@
    "id": "tools_diag_coleta_envio_de_interesse",
    "community": 63,
    "norm_label": "_envio_de_interesse()"
+  },
+  {
+   "label": "_todas_as_chaves()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L344",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_todas_as_chaves",
+   "community": 63,
+   "norm_label": "_todas_as_chaves()"
+  },
+  {
+   "label": "_chaves_do_envio()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L364",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_chaves_do_envio",
+   "community": 63,
+   "norm_label": "_chaves_do_envio()"
   }
  ],
  "links": [
@@ -29093,6 +29121,26 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L385",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_chaves_do_envio",
+   "target": "tools_diag_coleta_todas_as_chaves",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L371",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_chaves_do_envio",
+   "target": "tools_diag_coleta_token_seller",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L106",
    "weight": 1.0,
    "source": "tools_diag_coleta_coletar_conta",
@@ -29257,6 +29305,16 @@
    "weight": 1.0,
    "source": "tools_diag_coleta_main",
    "target": "tools_diag_coleta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L408",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_main",
+   "target": "tools_diag_coleta_chaves_do_envio",
    "confidence_score": 1.0
   },
   {
@@ -40060,6 +40118,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L364",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_chaves_do_envio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L131",
    "weight": 1.0,
    "source": "tools_diag_coleta",
@@ -40140,7 +40208,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L344",
+   "source_location": "L403",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_main",
@@ -40194,6 +40262,16 @@
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_schedule",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L344",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_todas_as_chaves",
    "confidence_score": 1.0
   },
   {
@@ -47832,5 +47910,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "517ba4e18f79c774229e3b5c39aa3a862f94eaa5"
+ "built_at_commit": "515848c2d32acab60602b091e9e952f34f2198b4"
 }
