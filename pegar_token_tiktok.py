@@ -4,6 +4,15 @@ Programa de UMA VEZ SO. Autoriza sua loja no TikTok Shop e salva tudo em
 'dados/credenciais_tiktok.json'.
 
 Pre-requisitos (em https://partner.tiktokshop.com, aba "Manage apps"):
+
+  ATENCAO AO PORTAL. NAO e o developers.tiktok.com (TikTok for Developers) --
+  aquele e o portal das APIs de conteudo/login, e as credenciais de la NAO
+  servem aqui. Como saber que voce esta no errado: la a credencial se chama
+  "Client key"/"Client secret" (aqui e App key/App secret), os produtos sao
+  Login Kit / Display API / Content Posting API, e nao existe "Service ID".
+  Nao ha conversao: e outro cadastro, do zero. Ja custou tempo 3x -- ver
+  "A armadilha dos portais parecidos" em docs/TIKTOK_SHOP_API.md.
+
   - App Key e App Secret do app;
   - SERVICE ID do app -- e ele, NAO o app_key, que vai no link de autorizacao.
     Fica na pagina do app, perto do App Key (as vezes rotulado "Service ID" ou

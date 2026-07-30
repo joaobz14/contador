@@ -235,6 +235,30 @@ log e para o chat, e nada de `raise_for_status()`.
 4. Estender `tiktok_api.py` (despachar, etiqueta, estado).
 5. `ProvedorTikTok` na GUI + arquivo de estado.
 
+## 🚩 A armadilha dos portais parecidos (bateu 3× em um dia)
+
+O ecossistema do TikTok tem **vários portais de desenvolvedor** com nome quase
+igual, e cair no vizinho errado custou tempo três vezes em 30/07/2026: a IA de
+suporte respondeu por **Mini Programs** e **Local Services**, depois "corrigiu" o
+endpoint de token do Shop por um do **TikTok for Developers**, e por fim o dono
+criou o app no portal errado (`developers.tiktok.com`) e quase o mandou para
+revisão.
+
+**O certo é `partner.tiktokshop.com`** (Partner Center) → *Manage apps*.
+
+Como saber, em 5 segundos, se você está no portal errado:
+
+| Sinal | Portal errado (TikTok for Developers) | TikTok Shop (o certo) |
+|---|---|---|
+| Nome da credencial | **Client key** / **Client secret** | **App key** / **App secret** |
+| Produtos oferecidos | Login Kit, Share Kit, Display API, Content Posting API | Order API, Fulfillment API, Authorization API |
+| Revisão pede | vídeo demo ponta a ponta, Terms of Service URL, Privacy Policy URL | fluxo próprio do Partner Center |
+| Tem "Service ID"? | **não** | **sim** — e é ele que autoriza a loja |
+| Host de token | `open.tiktokapis.com` | `auth.tiktok-shops.com` |
+
+Se a página fala em `client_key`, **pare**: essa credencial não serve para o
+TikTok Shop Open API. Não existe conversão — é outro cadastro, do zero.
+
 ## Becos sem saída (para ninguém repetir)
 
 - **`partner.tiktokshop.com` é inacessível** do ambiente de sessão do Claude: a

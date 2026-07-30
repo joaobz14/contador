@@ -125,9 +125,9 @@
   "semantic_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80"
  },
  "docs/TIKTOK_SHOP_API.md": {
-  "mtime": 1785436755.640065,
-  "ast_hash": "2f01b5e96970cc2fc719a7e5f59ba65f61be37d6",
-  "semantic_hash": "2f01b5e96970cc2fc719a7e5f59ba65f61be37d6"
+  "mtime": 1785437144.788088,
+  "ast_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82",
+  "semantic_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -303,6 +303,11 @@
   "mtime": 1783442165.6943207,
   "ast_hash": "aeb2ec0b3bd1505a8f3ef9335bc3e585e162835f",
   "semantic_hash": "aeb2ec0b3bd1505a8f3ef9335bc3e585e162835f"
+ },
+ "pegar_token_tiktok.py": {
+  "mtime": 1785437155.1160889,
+  "ast_hash": "0874485b4dafde8819c1d1911d673f2775a41128",
+  "semantic_hash": "0874485b4dafde8819c1d1911d673f2775a41128"
  },
  "provedores.py": {
   "mtime": 1784202399.1608725,
