@@ -23,7 +23,10 @@ Histórico das principais mudanças do projeto.
 
 ### Pesquisado
 - **Levantamento do TikTok Shop (`docs/TIKTOK_SHOP_API.md`)** — pesquisa, nada
-  implementado, nos moldes do que já existe para a Amazon. Boas notícias: a
+  implementado, nos moldes do que já existe para a Amazon. **O objetivo imediato
+  é só receber aviso de venda no Telegram**, não imprimir — o que dispensa as
+  perguntas em aberto sobre etiqueta e reduz o trabalho a uma função nova, do
+  mesmo feitio da que a Shopee usa no alerta pós-horário. Boas notícias: a
   etiqueta sai em **ZPL** no Brasil (confirmado no painel, em produção), o envio
   por Correios é "TikTok Shipping" (o caso que a API cobre) e a autenticação é
   irmã da Shopee — encaixaria como mais um provedor, sem caminho de impressão

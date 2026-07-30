@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785436425.1576633,
-  "ast_hash": "65c71ae60b7ccba1bee45803f5cc5272b65e8c77",
-  "semantic_hash": "65c71ae60b7ccba1bee45803f5cc5272b65e8c77"
+  "mtime": 1785436643.2899013,
+  "ast_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e",
+  "semantic_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e"
  },
  "CLAUDE.md": {
-  "mtime": 1785436425.156784,
-  "ast_hash": "dcfe844aee2df845447d46303f5212a7207cc85e",
-  "semantic_hash": "dcfe844aee2df845447d46303f5212a7207cc85e"
+  "mtime": 1785436643.2890642,
+  "ast_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1",
+  "semantic_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,14 +115,19 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785436437.8360462,
-  "ast_hash": "2f0afd98ba2d8ababe8f54a13f4ef92d8131141a",
-  "semantic_hash": "2f0afd98ba2d8ababe8f54a13f4ef92d8131141a"
+  "mtime": 1785436655.0333607,
+  "ast_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e",
+  "semantic_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
   "ast_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80",
   "semantic_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80"
+ },
+ "docs/TIKTOK_SHOP_API.md": {
+  "mtime": 1785436630.7280576,
+  "ast_hash": "c892df41ff629ff5f84957a6d167d8bb2b5a22d3",
+  "semantic_hash": "c892df41ff629ff5f84957a6d167d8bb2b5a22d3"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,

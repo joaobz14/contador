@@ -9,7 +9,33 @@
 > que está aqui vem de três fontes de peso desigual, e isso está marcado item a
 > item. Não trate nada marcado como 🟡 como fato.
 
-## Resumo executivo
+## ⚠️ Objetivo imediato: SÓ aviso no Telegram (definido pelo dono, 30/07/2026)
+
+**Não é para imprimir etiqueta do TikTok.** O pedido do dono é apenas **receber
+aviso de venda nova pelo Telegram** — "por agora é apenas isso".
+
+Isso muda o tamanho do trabalho e **contorna as duas perguntas em aberto** deste
+documento (a API entrega ZPL? entrega a NF-e?): nenhuma delas importa para um
+aviso. O resto do levantamento continua válido para quando/se a impressão entrar,
+mas **não é o escopo atual**.
+
+O que o escopo de aviso precisa, e só:
+
+| Precisa | Não precisa |
+|---|---|
+| Autenticação (token + `shop_cipher`) | `shipping_documents` / ZPL / NF-e |
+| Listar pedidos (`/order/202309/orders/search`) | `ship` / drop-off / AWB |
+| Dedup de "já avisei" | Estado de "já impresso" (`{dia}\|{chave}\|q{qtd}`) |
+| Texto do alerta | `ProvedorTikTok`, GUI, prefixo do ZIP, paridade na Zebra |
+
+**Encaixe:** é exatamente como a Shopee entrou no alerta pós-horário — o bot
+consome **uma única função** por marketplace,
+`pedidos_prontos_novos(cred, token, avisados, hoje) -> (novos, itens)`, e o
+`job_alerta_pos_horario` trata a loja como mais uma chave no dedup de
+`alertas_pos_horario.json`. Ver a convenção "Alerta pós-horário do bot" no
+`CLAUDE.md`.
+
+## Resumo executivo (escopo completo, para o futuro)
 
 - **Encaixa bem no app.** A etiqueta sai em **ZPL** no Brasil (🟢 confirmado em
   produção), a autenticação é **irmã da Shopee** (assinatura HMAC na query) e o
