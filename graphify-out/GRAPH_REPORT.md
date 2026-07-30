@@ -76,7 +76,7 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   não com o `app_key`). Registrada também a **armadilha dos portais parecidos**,
   que custou tempo 3× num dia — `developers.tiktok.com` (Client key/Client
   secret, Login Kit) **não é** `partner.tiktokshop.com` (App key/App secret,
-  Service ID). Depois do `--update`: **1561 nós, 2948 arestas, 0 órfãs**.
+  Service ID). Depois do `--update`: **1562 nós, 2950 arestas, 0 órfãs**.
 
 - **2026-07-30 — Teste do item 12 feito: resultado NEGATIVO no endpoint.** O
   `--comparar` rodou nas duas contas num dia com coleta real e devolveu

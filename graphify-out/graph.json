@@ -20944,7 +20944,7 @@
    "label": "extrair_code()",
    "file_type": "code",
    "source_file": "pegar_token_tiktok.py",
-   "source_location": "L57",
+   "source_location": "L71",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20958,7 +20958,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "pegar_token_tiktok.py",
-   "source_location": "L71",
+   "source_location": "L85",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20967,6 +20967,20 @@
    "id": "pegar_token_tiktok_main",
    "community": 75,
    "norm_label": "main()"
+  },
+  {
+   "label": "extrair_service_id()",
+   "file_type": "code",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L57",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "pegar_token_tiktok_extrair_service_id",
+   "community": 75,
+   "norm_label": "extrair_service_id()"
   }
  ],
  "links": [
@@ -22221,6 +22235,16 @@
    "weight": 1.0,
    "source": "pegar_token_tiktok_main",
    "target": "pegar_token_tiktok_extrair_code",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L97",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok_main",
+   "target": "pegar_token_tiktok_extrair_service_id",
    "confidence_score": 1.0
   },
   {
@@ -34876,7 +34900,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "pegar_token_tiktok.py",
-   "source_location": "L57",
+   "source_location": "L71",
    "weight": 1.0,
    "source": "pegar_token_tiktok",
    "target": "pegar_token_tiktok_extrair_code",
@@ -34886,7 +34910,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "pegar_token_tiktok.py",
-   "source_location": "L71",
+   "source_location": "L57",
+   "weight": 1.0,
+   "source": "pegar_token_tiktok",
+   "target": "pegar_token_tiktok_extrair_service_id",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "pegar_token_tiktok.py",
+   "source_location": "L85",
    "weight": 1.0,
    "source": "pegar_token_tiktok",
    "target": "pegar_token_tiktok_main",
@@ -51218,5 +51252,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "926e4fdd513885db6da75f9f9f4a4af24fca1445"
+ "built_at_commit": "53a3cc3ed25d5a36681708d1ca54142cd586d842"
 }

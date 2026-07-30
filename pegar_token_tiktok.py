@@ -54,6 +54,20 @@ def perguntar(rotulo: str) -> str:
     return valor
 
 
+def extrair_service_id(colado: str) -> str:
+    """Aceita o Service ID cru OU um link de autorizacao inteiro colado do painel.
+
+    O Service ID nem sempre esta visivel na pagina do app (as vezes so aparece
+    depois da aprovacao, as vezes fica noutra secao). Mas o painel costuma
+    oferecer o LINK de autorizacao pronto -- e dele da pra tirar o mesmo valor.
+    Aceitar os dois evita que o operador fique cacando um campo escondido.
+    """
+    colado = colado.strip()
+    if "service_id=" in colado:
+        return (parse_qs(urlparse(colado).query).get("service_id") or [""])[0].strip()
+    return colado
+
+
 def extrair_code(colado: str) -> str:
     """Aceita a URL inteira de retorno OU so o code.
 
@@ -75,9 +89,15 @@ def main() -> None:
 
     app_key = perguntar("\n1) App Key:\n> ")
     app_secret = perguntar("\n2) App Secret:\n> ")
-    service_id = perguntar(
-        "\n3) SERVICE ID do app (NAO e o App Key -- veja o cabecalho deste\n"
-        "   arquivo se nao souber onde achar):\n> ")
+    print("\n3) SERVICE ID do app -- NAO e o App Key.")
+    print("   Nao achou o campo? O painel costuma oferecer um LINK de")
+    print("   autorizacao pronto (procure em 'chamar sua primeira API',")
+    print("   'Authorization' ou no guia de inicio). Cole o LINK INTEIRO")
+    print("   aqui que eu extraio o service_id dele.")
+    service_id = extrair_service_id(perguntar("> "))
+    if not service_id:
+        print("\n[ERRO] Nao identifiquei o service_id no que voce colou.")
+        return
 
     link = f"{PAGINA_AUTORIZAR}?service_id={service_id}"
     # Em dados/, nao na raiz (convencao "onde os arquivos ficam"). De quebra, o
