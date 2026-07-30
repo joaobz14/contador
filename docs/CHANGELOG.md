@@ -4,6 +4,27 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Melhorado
+- **Resumo de vendas do bot (`/vendasapos`) com layout legível no celular.** Era
+  uma lista crua de "SKU - quantidade", uma linha embaixo da outra, em ordem de
+  chegada. Agora:
+  - cabeçalho com a janela (`desde 08h30`) e o horário do envio;
+  - **um bloco por conta**, com subtotal no título (`COZILATTI · 59 unidades ·
+    26 SKUs`) e divisor entre eles;
+  - lista **alinhada** — quantidade encostada à direita, largura da coluna vinda
+    do SKU mais longo daquele bloco;
+  - **ordenado pelo que mais vendeu**, não mais pela ordem em que a venda caiu;
+  - conta sem venda aparece como "nenhuma venda" em vez de sumir — ausência
+    também é informação;
+  - total geral no rodapé.
+
+  A mensagem vai **sempre em uma só**: se a lista passar do limite do Telegram,
+  mostra os maiores e acrescenta "… e mais X SKUs (Y un)".
+  **O total por SKU somando as contas saiu** — o rodapé agora traz só o total
+  geral em unidades. Se fizer falta para repor estoque, é fácil trazer de volta.
+  Novo comando `python bot_telegram.py testar-resumo` manda o resumo para os
+  chats liberados na hora, para conferir o layout sem esperar uma venda.
+
 ### Investigado e descartado
 - **Detectar sozinho se o motorista da coleta é o mesmo nas duas contas ML: não
   é possível pela API pública.** A ideia era o app avisar (sem selecionar nada)
