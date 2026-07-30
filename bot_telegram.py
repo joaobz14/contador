@@ -81,6 +81,22 @@ logging.basicConfig(
 )
 log = logging.getLogger("bot")
 
+# O TOKEN DO BOT NAO PODE IR PARA O LOG.
+# A URL da API do Telegram carrega o token no PROPRIO CAMINHO
+# (https://api.telegram.org/bot<TOKEN>/getUpdates), e a biblioteca HTTP registra
+# cada requisicao em INFO — com o `basicConfig` acima em INFO, o token ia inteiro
+# para o bot.log E para o console, a cada chamada, para sempre. Quem quisesse
+# ajuda com um erro colava o log e entregava o token junto (aconteceu em
+# 2026-07-30). Nao e o `sem_segredos` do registro.py que resolve: estes registros
+# vem de dentro da biblioteca, sem passar pelo nosso codigo.
+#
+# WARNING mantem erro de rede visivel (que importa pra diagnostico) e corta o
+# INFO de requisicao (que so repete o obvio e vaza o token). `httpcore` entra
+# junto como defesa em profundidade: e a camada de baixo do httpx e loga a mesma
+# URL se alguem subir o nivel global para DEBUG algum dia.
+for _biblioteca in ("httpx", "httpcore"):
+    logging.getLogger(_biblioteca).setLevel(logging.WARNING)
+
 
 # ---------------------------------------------------------------- configuracao
 def carregar_config() -> dict:

@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1482 nodes · 2743 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1487 nodes · 2747 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -80,6 +80,16 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   chave, sem valores — nome de chave não é dado pessoal) fica registrado como o
   que reabriria o item, caso o campo exista com outro nome (`courier`,
   `collector`, `operator`).
+- **2026-07-30 — O token do bot saiu do log (segredo por dentro de biblioteca).**
+  A URL da API do Telegram carrega o token no próprio caminho e o `httpx`
+  registra cada requisição em INFO — com o log do bot em INFO, o token ia
+  inteiro para o `bot.log` e o console, a cada chamada. O `sem_segredos` do
+  `registro.py` **não alcançava**: esses registros nascem dentro da biblioteca,
+  sem passar pelo código do projeto. `httpx` e `httpcore` passaram a WARNING
+  (erro de rede continua visível). Convenção nova no `CLAUDE.md`: biblioteca que
+  fale HTTP com credencial na URL tem o **logger** subido, porque redigir na
+  saída não cobre o que ela escreve sozinha. Guardas em
+  `tests/test_bot_segredo_no_log.py`.
 - **2026-07-30 — Falso alarme do aviso do monitor: o ⚠️ passou a exigir prova.**
   Em produção, um lote de 12 avisou "o monitor da Zebra NÃO deu sinal" com a
   impressora trabalhando normalmente; lotes pequenos acertavam. Dois fatos

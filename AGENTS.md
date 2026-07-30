@@ -351,6 +351,17 @@ em 2º plano.
   os 26 arquivos que os importam, 8 `.bat`, o CI e re-ancorar `PASTA_SCRIPT`
   (de onde sai todo caminho de token/estado), e a raiz continuaria com os
   arquivos de ferramenta de qualquer jeito — ganho parcial, risco alto.
+- **Segredo NUNCA vai para o log — nem por dentro de biblioteca:** o
+  `sem_segredos` do `registro.py` só cobre o texto que o PROJETO escreve. O
+  token do bot vazava por fora dele: a URL da API do Telegram carrega o token no
+  próprio caminho (`.../bot<TOKEN>/getUpdates`) e o `httpx` registra cada
+  requisição em **INFO** — com o `basicConfig` do bot em INFO, o token ia
+  inteiro para o `bot.log` e para o console, a cada chamada. Por isso
+  `bot_telegram.py` sobe `httpx` e `httpcore` para **WARNING** logo após o
+  `basicConfig` (erro de rede continua visível; só o INFO de requisição sai).
+  Regra geral: ao adicionar uma biblioteca que fale HTTP com credencial na URL,
+  **suba o logger dela** — redigir na saída não alcança o que ela escreve
+  sozinha. Guardas em `tests/test_bot_segredo_no_log.py`.
 - **Log operacional (`separador.log`, via `registro.py`):** a GUI registra
   loja/conta/dia, contagens, confirmação (sim/não) e falhas — para diagnóstico
   sem debugger. Duas regras: (1) log **nunca** atrapalha a operação (defensivo,

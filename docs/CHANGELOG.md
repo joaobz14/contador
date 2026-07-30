@@ -42,6 +42,22 @@ Histórico das principais mudanças do projeto.
   o papel — o monitor confirma que *mandou* imprimir, não que a etiqueta saiu
   legível e no lugar.
 
+### Segurança
+- **O token do bot parou de ser gravado no `bot.log` e no console.** A URL da API
+  do Telegram carrega o token no próprio caminho
+  (`https://api.telegram.org/bot<TOKEN>/getUpdates`), e a biblioteca HTTP
+  registrava cada requisição em INFO — com o log do bot em INFO, o token ia
+  inteiro para o arquivo e para a tela, a cada chamada, para sempre. Bastava
+  colar um trecho do log pedindo ajuda para entregar o token junto (foi o que
+  aconteceu em 30/07/2026). O `sem_segredos` do `registro.py` não cobria isso:
+  esses registros nascem dentro da biblioteca, sem passar pelo código do
+  projeto.
+  Agora `httpx` e `httpcore` ficam em WARNING — **erro de rede continua
+  aparecendo** (é o que importa para diagnóstico), só o INFO de requisição sai.
+  Nada do que o bot registra mudou.
+  Um token que apareceu num log deve ser trocado no BotFather (`/revoke`) por
+  precaução; esta correção garante que o novo não vaze do mesmo jeito.
+
 ### Corrigido
 - **O aviso do app da Zebra dava falso alarme em lote grande.** Num lote de 12 a
   confirmação dizia "⚠️ o monitor da Zebra NÃO deu sinal" com a impressora

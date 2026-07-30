@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785345571.1225069,
-  "ast_hash": "98c84820059ef90401c0a38c8ca40604854873d8",
-  "semantic_hash": "98c84820059ef90401c0a38c8ca40604854873d8"
+  "mtime": 1785425769.6627963,
+  "ast_hash": "9ef1e058188b585d7d91072317aca1eb610d8f3f",
+  "semantic_hash": "9ef1e058188b585d7d91072317aca1eb610d8f3f"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785347101.9826937,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785412357.8828444,
-  "ast_hash": "da8c1ed49990e752d16cb8fa2549191e8c8e3566",
-  "semantic_hash": "da8c1ed49990e752d16cb8fa2549191e8c8e3566"
+  "mtime": 1785425841.4613955,
+  "ast_hash": "f8403948d6b956e1981521d3a1e04dc5b933b1be",
+  "semantic_hash": "f8403948d6b956e1981521d3a1e04dc5b933b1be"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -398,6 +398,11 @@
   "mtime": 1784935664.5831094,
   "ast_hash": "0e5146afe3e21d6d935f1aff171a227feaa65b48",
   "semantic_hash": "0e5146afe3e21d6d935f1aff171a227feaa65b48"
+ },
+ "tests/test_bot_segredo_no_log.py": {
+  "mtime": 1785425799.5627954,
+  "ast_hash": "5e43b2c37a76bd66a8a99fa2fe8cd1c2702ce2ca",
+  "semantic_hash": "5e43b2c37a76bd66a8a99fa2fe8cd1c2702ce2ca"
  },
  "tests/test_busca_pedidos.py": {
   "mtime": 1785340799.9126282,
