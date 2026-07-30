@@ -98,6 +98,36 @@ def _driver_id_hoje(sched: dict):
     return None
 
 
+def _porque_sem_driver(sched: dict | None) -> str:
+    """Distingue as causas de `driver.id` ausente — cada uma pede acao diferente.
+
+    Achado de 2026-07-30: o painel do ML mostrava o motorista (o MESMO nas duas
+    contas, em dia com coleta programada), mas este endpoint devolveu 200 sem
+    driver.id. Sem separar os casos abaixo nao da pra saber se o endpoint esta
+    errado ou se o campo mudou de nome/lugar.
+    """
+    if sched is None:
+        return "o endpoint nao respondeu 200 em nenhuma logistica"
+    dia = (sched.get("schedule") or {}).get(_hoje())
+    if dia is None:
+        return f"o cronograma nao tem entrada para {_hoje()}"
+    if dia.get("work") is False:
+        return f"o cronograma marca {_hoje()} como dia SEM trabalho (work=false)"
+    detalhes = dia.get("detail") or []
+    if not detalhes:
+        return (f"{_hoje()} existe no cronograma mas com detail[] VAZIO "
+                "-> o cronograma semanal nao reflete a coleta real do dia "
+                "(endpoint provavelmente errado para esta pergunta)")
+    sem_chave = [i for i, d in enumerate(detalhes, 1) if "driver" not in d]
+    if len(sem_chave) == len(detalhes):
+        chaves = sorted({k for d in detalhes for k in d})
+        return (f"detail[] tem {len(detalhes)} janela(s), mas NENHUMA traz a chave "
+                f"'driver' -> o campo mudou de nome/lugar. Chaves presentes: "
+                f"{', '.join(chaves)}")
+    return (f"detail[] tem {len(detalhes)} janela(s) com a chave 'driver', mas "
+            "sem 'id' dentro dela (driver vazio ou so com nome)")
+
+
 def _coletar_conta(conta: str):
     """Devolve (seller, logistica_usada, status, sched) para o 1o logistic_type
     que responde 200 (tentando a do envio real primeiro)."""
@@ -165,14 +195,18 @@ def _comparar(contaA: str, contaB: str) -> int:
             for d in _detalhes_hoje(sched):
                 cid = (d.get("carrier") or {}).get("id") or cid
         res[conta] = {"seller": seller, "logistica": logistica, "status": status,
-                      "driver_id": did, "carrier_id": cid}
+                      "driver_id": did, "carrier_id": cid, "sched": sched}
         print(f"  {conta}: seller={seller} logistica={logistica} HTTP={status} "
               f"driver.id={did} carrier.id={cid}")
+        if not did:
+            print(f"      por que: {_porque_sem_driver(sched)}")
     a, b = res[contaA], res[contaB]
     print()
     if not a["driver_id"] or not b["driver_id"]:
-        print("Nao deu pra comparar: uma das contas nao trouxe driver.id hoje "
-              "(sem coleta programada, logistica diferente ou sem permissao).")
+        print("Nao deu pra comparar: uma das contas nao trouxe driver.id hoje.")
+        print("Veja o 'por que' de cada conta acima — a causa define o passo "
+              "seguinte. Para o despejo cru (mascarado), rode:")
+        print(f"    python tools/diag_coleta.py --cru {contaA}")
         return 1
     if a["driver_id"] == b["driver_id"]:
         print(f"MESMO MOTORISTA hoje (driver.id {a['driver_id']}) -> o modo 'Ambas' "
@@ -183,6 +217,49 @@ def _comparar(contaA: str, contaB: str) -> int:
     return 0
 
 
+_CHAVES_PESSOAIS = ("name", "license_plate", "plate", "phone", "email",
+                    "document", "address", "nickname")
+
+
+def _mascarar_fundo(valor):
+    """Mascara RECURSIVAMENTE qualquer dado pessoal no JSON, preservando a
+    ESTRUTURA (que e o que interessa no diagnostico). Chave desconhecida entra
+    como esta: sao dados de logistica, nao de pessoa — e se aparecer uma chave
+    nova que carregue nome, ela vai entrar aqui na proxima rodada."""
+    if isinstance(valor, dict):
+        return {k: (_mask(v) if k in _CHAVES_PESSOAIS else _mascarar_fundo(v))
+                for k, v in valor.items()}
+    if isinstance(valor, list):
+        return [_mascarar_fundo(v) for v in valor]
+    return valor
+
+
+def _despejo_cru(conta: str) -> int:
+    """Imprime o cronograma CRU (mascarado) para ver a estrutura de verdade.
+
+    Existe por causa do achado de 2026-07-30: o painel do ML mostrava o
+    motorista e este endpoint devolveu 200 sem `driver.id`. Sem ver a resposta
+    crua nao da pra saber se o campo mudou de nome, se mudou de lugar, ou se o
+    cronograma semanal simplesmente nao e a fonte dessa informacao.
+    """
+    import json
+
+    rotulo = conta or core.conta_ativa() or "(padrao)"
+    seller, logistica, status, sched = _coletar_conta(conta)
+    print(f"conta: {rotulo}  |  seller: {seller}  |  hoje = {_hoje()}")
+    print(f"logistic_type: {logistica}  ->  HTTP {status}\n")
+    if not sched:
+        print("Sem cronograma para despejar.")
+        return 1
+    print(f"dias presentes em schedule: "
+          f"{', '.join(sorted((sched.get('schedule') or {}).keys())) or '(nenhum)'}")
+    print(f"veredito: {_porque_sem_driver(sched)}\n")
+    print("=== resposta crua (nome/placa/telefone mascarados) ===")
+    print(json.dumps(_mascarar_fundo(sched), indent=2, ensure_ascii=False)[:6000])
+    print("\nA saida acima e SEGURA para colar: dado pessoal saiu como ***(n chars).")
+    return 0
+
+
 def main() -> int:
     args = sys.argv[1:]
     if args and args[0] == "--comparar":
@@ -190,6 +267,8 @@ def main() -> int:
             print("uso: python tools/diag_coleta.py --comparar contaA contaB")
             return 2
         return _comparar(args[1], args[2])
+    if args and args[0] == "--cru":
+        return _despejo_cru(args[1] if len(args) > 1 else "")
     return _mostrar_um(args[0] if args else "")
 
 

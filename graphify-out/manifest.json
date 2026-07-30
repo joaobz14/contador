@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785347355.450983,
-  "ast_hash": "6d84071116051697a91c17fcbbb185e5334cd56b",
-  "semantic_hash": "6d84071116051697a91c17fcbbb185e5334cd56b"
+  "mtime": 1785352885.5545878,
+  "ast_hash": "d7a2a00d636c12588153b4aec50b52f457e843de",
+  "semantic_hash": "d7a2a00d636c12588153b4aec50b52f457e843de"
  },
  "CLAUDE.md": {
-  "mtime": 1785347355.4503713,
-  "ast_hash": "2b3c7a2697c31c33dba9df94fc585c5ac189afad",
-  "semantic_hash": "2b3c7a2697c31c33dba9df94fc585c5ac189afad"
+  "mtime": 1785352885.5545878,
+  "ast_hash": "5d4d46f94f8bbff449204d812d4c4236ccc50b7e",
+  "semantic_hash": "5d4d46f94f8bbff449204d812d4c4236ccc50b7e"
  },
  "README.md": {
   "mtime": 1785345877.7947216,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785347324.9346886,
-  "ast_hash": "6c5f94219cb75e0a08340d88ebb9e229bb98d402",
-  "semantic_hash": "6c5f94219cb75e0a08340d88ebb9e229bb98d402"
+  "mtime": 1785352885.5545878,
+  "ast_hash": "b958d8b41ae8a35512d63ae17f7c11fa8e5a7d2f",
+  "semantic_hash": "b958d8b41ae8a35512d63ae17f7c11fa8e5a7d2f"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,14 +115,14 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785347218.4266908,
-  "ast_hash": "5de5345a4956661f4c8ad26aaeaa09d7de856f54",
-  "semantic_hash": "5de5345a4956661f4c8ad26aaeaa09d7de856f54"
+  "mtime": 1785352885.5545878,
+  "ast_hash": "4709ea937bfd0c156a12443832c2926f117e8a2f",
+  "semantic_hash": "4709ea937bfd0c156a12443832c2926f117e8a2f"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1785349625.150636,
-  "ast_hash": "52f3091e367d394b56420ef3f1b91b925ba637fb",
-  "semantic_hash": "52f3091e367d394b56420ef3f1b91b925ba637fb"
+  "mtime": 1785409930.2874358,
+  "ast_hash": "cfcfc75e767a7809082e59675e15690114e4fa93",
+  "semantic_hash": "cfcfc75e767a7809082e59675e15690114e4fa93"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -220,9 +220,9 @@
   "semantic_hash": "5a1c61cdd57333ddf0402e039e46b0d6e6a73a57"
  },
  "obsidian/Conceitos/Ponte com a Zebra.md": {
-  "mtime": 1784923251.5902355,
-  "ast_hash": "d5ae84646f8e83079002afe25b86b0613c061c6e",
-  "semantic_hash": "d5ae84646f8e83079002afe25b86b0613c061c6e"
+  "mtime": 1785352885.562588,
+  "ast_hash": "9f9c94cb1384204a2c7e8079c04faae8ab0ea8cc",
+  "semantic_hash": "9f9c94cb1384204a2c7e8079c04faae8ab0ea8cc"
  },
  "obsidian/Conceitos/Trava entre processos.md": {
   "mtime": 1784923251.5942357,
@@ -340,12 +340,12 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785351164.3146007,
+  "mtime": 1785352885.562588,
   "ast_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5",
   "semantic_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5"
  },
  "separador_gui.py": {
-  "mtime": 1785350923.3866062,
+  "mtime": 1785352885.562588,
   "ast_hash": "e735a11bc878125e124e6042a01d8222ac9733f2",
   "semantic_hash": "e735a11bc878125e124e6042a01d8222ac9733f2"
  },
@@ -420,7 +420,7 @@
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
  "tests/test_confirmacao_monitor.py": {
-  "mtime": 1785351010.0546043,
+  "mtime": 1785352885.566588,
   "ast_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db",
   "semantic_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db"
  },
@@ -455,7 +455,7 @@
   "semantic_hash": "45d9d8a2fd46da0bce1f33608c448cfdd1ca678b"
  },
  "tests/test_gui_confirmacao.py": {
-  "mtime": 1785351226.0545993,
+  "mtime": 1785352885.566588,
   "ast_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b",
   "semantic_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b"
  },
@@ -540,9 +540,9 @@
   "semantic_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798"
  },
  "tools/diag_coleta.py": {
-  "mtime": 1784806092.1543498,
-  "ast_hash": "4d7bca88dfe5170237a6c3b81fdcb0b6d010b524",
-  "semantic_hash": "4d7bca88dfe5170237a6c3b81fdcb0b6d010b524"
+  "mtime": 1785409883.0754359,
+  "ast_hash": "04f91ae2bc917244a71e6cf9246a285358a1bac9",
+  "semantic_hash": "04f91ae2bc917244a71e6cf9246a285358a1bac9"
  },
  "tools/diag_seller_sku.py": {
   "mtime": 1784830839.0648768,

@@ -16184,7 +16184,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L186",
+   "source_location": "L263",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16296,7 +16296,7 @@
    "label": "_coletar_conta()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L101",
+   "source_location": "L131",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16310,7 +16310,7 @@
    "label": "_mostrar_um()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L119",
+   "source_location": "L149",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16324,7 +16324,7 @@
    "label": "_comparar()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L157",
+   "source_location": "L187",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19721,6 +19721,48 @@
    "community": 0,
    "norm_label": "confirmacao de impressao: o retorno do app da zebra (2026-07-29). a entrega das etiquetas e por arquivo -- o contador grava um .zip na downloads e o impressora_zebra_usb.py (repo separado, mesmo dono) o consome. o contrato do nome e do conteudo estava documentado e validado dos dois lados, mas nao havia canal de retorno: a tela nao sabia se o monitor estava aberto. monitor fechado = zips se acumulando na downloads e o operador so descobrindo pelo papel que nao sai. nada se perdia (a marcacao so acontece depois do 'saiu certo?', invariante 1), mas ele descobria tarde. solucao sem mudar nada do outro lado, usando duas coisas que o monitor ja fazia: (1) com 'excluir apos imprimir' ligado o arquivo some quando imprime -- sumiu = imprimiu; (2) o log dele (~/zebra_usb_log.txt) avanca a cada arquivo processado -- serve para lote grande, em que o zip so some na ultima etiqueta, provando que ele esta vivo antes de terminar. sem nenhum dos dois, o provavel e que esteja fechado. como a tela sabe quais arquivos sao dela: dois instantaneos da pasta (saidas_na_pasta antes/depois de gerar) e a diferenca -- gerar_zip_lotes devolve os pendentes, nao o caminho, e propagar o caminho ate a tela mexeria em nucleo, provedores, bot e cli de uma vez. corrida conhecida (achada por teste, nao em producao): o monitor varre a cada 1s e pode consumir o zip antes do segundo instantaneo -- a diferenca vem vazia, indistinguivel de 'nada gerado'. nesse caso o veredito e 'imprimindo' (o log prova vida), nunca 'impresso': o log tambem avanca por um lote anterior, e afirmar que o nosso saiu sem ter visto o arquivo sumir seria o erro que esta tela nao pode cometer. mesma regra em _ainda_na_pasta: oserror ao checar (antivirus/onedrive segurando) responde 'ainda esta la' -- na duvida, calado. o sinal informa e nunca decide: quem responde 'as etiquetas sairam corretamente?' continua sendo o operador olhando o papel, porque o monitor confirma que mandou imprimir, nao que a etiqueta saiu legivel e no lugar. teste-guarda test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa. a checagem roda na thread de trabalho (nunca na do tk) e e best-effort: falha vira aviso a menos, jamais impressao a menos.",
    "_origin": "manual"
+  },
+  {
+   "label": "_porque_sem_driver()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L101",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_porque_sem_driver",
+   "community": 63,
+   "norm_label": "_porque_sem_driver()"
+  },
+  {
+   "label": "_mascarar_fundo()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L224",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_mascarar_fundo",
+   "community": 63,
+   "norm_label": "_mascarar_fundo()"
+  },
+  {
+   "label": "_despejo_cru()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L237",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_despejo_cru",
+   "community": 63,
+   "norm_label": "_despejo_cru()"
   }
  ],
  "links": [
@@ -29083,6 +29125,56 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L202",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_comparar",
+   "target": "tools_diag_coleta_porque_sem_driver",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L248",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_despejo_cru",
+   "target": "tools_diag_coleta_coletar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L249",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_despejo_cru",
+   "target": "tools_diag_coleta_hoje",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L258",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_despejo_cru",
+   "target": "tools_diag_coleta_mascarar_fundo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L256",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_despejo_cru",
+   "target": "tools_diag_coleta_porque_sem_driver",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L89",
    "weight": 1.0,
    "source": "tools_diag_coleta_detalhes_hoje",
@@ -29123,10 +29215,30 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L271",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_main",
+   "target": "tools_diag_coleta_despejo_cru",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L188",
    "weight": 1.0,
    "source": "tools_diag_coleta_main",
    "target": "tools_diag_coleta_mostrar_um",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L230",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_mascarar_fundo",
+   "target": "tools_diag_coleta_mask",
    "confidence_score": 1.0
   },
   {
@@ -29167,6 +29279,16 @@
    "weight": 1.0,
    "source": "tools_diag_coleta_mostrar_um",
    "target": "tools_diag_coleta_mask",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L111",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_porque_sem_driver",
+   "target": "tools_diag_coleta_hoje",
    "confidence_score": 1.0
   },
   {
@@ -39860,7 +39982,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L101",
+   "source_location": "L131",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_coletar_conta",
@@ -39870,10 +39992,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L157",
+   "source_location": "L187",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_comparar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L237",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_despejo_cru",
    "confidence_score": 1.0
   },
   {
@@ -39920,10 +40052,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L186",
+   "source_location": "L263",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L224",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_mascarar_fundo",
    "confidence_score": 1.0
   },
   {
@@ -39940,10 +40082,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L119",
+   "source_location": "L149",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_mostrar_um",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L101",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_porque_sem_driver",
    "confidence_score": 1.0
   },
   {
@@ -47592,5 +47744,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "07f2b5d0a319981adea2dd37af01f61b9475be46"
+ "built_at_commit": "9cf425ea88fd4b68702fb5eaf368161f4b5bdddb"
 }
