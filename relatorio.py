@@ -6,9 +6,39 @@ Funcoes puras, sem dependencia do Telegram nem de rede -> faceis de testar.
 
 from __future__ import annotations
 
+import html
 from collections import defaultdict
+from datetime import datetime
 
 import separador_etiquetas_ml as core
+
+# --------------------------------------------------------------------------
+# HTML do Telegram (parse_mode="HTML")
+#
+# So estas tags existem: b i u s a code pre blockquote tg-spoiler. NAO ha
+# lista, tabela, <br>, <div>, <span> nem CSS — quebra de linha e "\n".
+# Alinhamento de coluna SO funciona dentro de <pre> (fonte monoespacada);
+# fora dele a fonte e proporcional e o alinhamento se perde.
+# Texto dinamico (SKU, nome de conta) TEM de ser escapado: um "&" ou "<" solto
+# faz a API devolver 400 e a mensagem simplesmente nao chega.
+# --------------------------------------------------------------------------
+LIMITE_TELEGRAM = 4096
+LIMITE_SEGURO = 3900          # folga para o rodape e o aviso de corte
+DIVISOR = "━" * 16
+HORA_CORTE = "08h30"          # o "pos-horario" do alerta, no texto do resumo
+
+
+def esc(texto) -> str:
+    """Escapa &, < e > — obrigatorio em TODO texto dinamico do HTML do Telegram."""
+    return html.escape(str(texto), quote=False)
+
+
+def _un(n: int) -> str:
+    return f"{n} unidade" if n == 1 else f"{n} unidades"
+
+
+def _sku(n: int) -> str:
+    return f"{n} SKU" if n == 1 else f"{n} SKUs"
 
 
 def texto_grupos(grupos: list, titulo: str) -> str:
@@ -83,41 +113,99 @@ def texto_alerta_pos_horario(conta: str, itens: list) -> str:
     return "\n".join(linhas)
 
 
-def texto_resumo_vendas_apos(itens_por_conta: dict) -> str:
+def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
+                             contas=None) -> str:
     """Junta TUDO que o alerta pos-horario ja avisou HOJE (todas as contas)
-    numa mensagem so, com o TOTAL por SKU no final. Motivado por: varias
-    vendas caindo depois das 8:30 no mesmo dia viram um alerta separado cada
-    uma, poluindo o chat — este resumo agrega sob pedido, sob demanda.
-    `itens_por_conta` vem do estado persistido pelo alerta (`{conta: [{chave,
-    quantidade}, ...]}`, ja acumulado a cada disparo) — nao refaz nenhuma
-    chamada de API, so relê o que ja foi avisado."""
-    contas_com_venda = [c for c, itens in itens_por_conta.items() if itens]
-    if not contas_com_venda:
+    numa mensagem so. Motivado por: varias vendas caindo depois das 8:30 no
+    mesmo dia viram um alerta separado cada uma, poluindo o chat — este resumo
+    agrega sob demanda. `itens_por_conta` vem do estado persistido pelo alerta
+    (`{conta: [{chave, quantidade}, ...]}`, ja acumulado a cada disparo) — nao
+    refaz nenhuma chamada de API, so relê o que ja foi avisado.
+
+    Devolve **HTML** (mandar com `parse_mode="HTML"`): cabecalho com a janela de
+    tempo, um bloco por conta com subtotal, a lista de SKUs num `<pre>` (a unica
+    forma de alinhar coluna no Telegram) ordenada por quantidade DECRESCENTE, e
+    o total geral no rodape.
+
+    `contas` (opcional) lista as contas que DEVEM aparecer mesmo sem venda —
+    ausencia tambem e informacao ("nenhuma venda" e diferente de "sumiu o
+    bloco"). Sem ela, so aparecem as que tem venda.
+
+    A mensagem SEMPRE cabe em uma so: o que passar do limite vira
+    "… e mais X SKUs (Y un)". Isso e requisito, nao conveniencia — dividir o
+    texto partiria um `<pre>` no meio e a API devolveria 400.
+    """
+    por_conta = {c: _somar(itens_por_conta.get(c) or []) for c in
+                 _ordem_contas(itens_por_conta, contas)}
+    if not any(por_conta.values()):
         return "Nenhuma venda avisada hoje ainda."
 
-    linhas = ["RESUMO VENDAS APOS 8:30"]
-    total: dict[str, int] = defaultdict(int)
-    ordem_total: list[str] = []
-    for conta in contas_com_venda:
-        linhas.append("")
-        if conta:
-            linhas.append(conta.upper())
-        por_sku: dict[str, int] = defaultdict(int)
-        ordem: list[str] = []
-        for it in itens_por_conta[conta]:
-            chave, qtd = it["chave"], it["quantidade"]
-            if chave not in por_sku:
-                ordem.append(chave)
-            por_sku[chave] += qtd
-            if chave not in total:
-                ordem_total.append(chave)
-            total[chave] += qtd
-        linhas.extend(f"{chave} - {por_sku[chave]}" for chave in ordem)
+    agora = agora or datetime.now(core.TZ_BR)
+    total_geral = sum(sum(s.values()) for s in por_conta.values())
 
-    linhas.append("")
-    linhas.append("TOTAL:")
-    linhas.extend(f"{chave} - {total[chave]}" for chave in ordem_total)
-    return "\n".join(linhas)
+    cabecalho = (f"🧾 <b>RESUMO DE VENDAS</b>\n"
+                 f"<i>desde {HORA_CORTE} · {agora:%d/%m}, {agora:%H:%M}</i>")
+    rodape = f"{DIVISOR}\n<b>TOTAL: {_un(total_geral)}</b>"
+
+    # Corta pelos maiores ate caber: o teto vale para a mensagem INTEIRA, entao
+    # o limite por bloco vai baixando ate o texto entrar no limite.
+    for teto in (None, 25, 15, 10, 6, 3):
+        corpo = "\n".join(_bloco(conta, somas, teto) for conta, somas in por_conta.items())
+        texto = f"{cabecalho}\n\n{corpo}\n{rodape}"
+        if len(texto) <= LIMITE_SEGURO:
+            return texto
+    return texto            # ja no teto minimo: melhor curto que nao enviar
+
+
+def _ordem_contas(itens_por_conta: dict, contas) -> list:
+    """Contas com venda primeiro (na ordem em que apareceram), depois as sem."""
+    vistas = list(itens_por_conta)
+    for c in (contas or []):
+        if c not in vistas:
+            vistas.append(c)
+    return vistas
+
+
+def _somar(itens: list) -> dict[str, int]:
+    """SKU -> quantidade, ja ordenado por quantidade DECRESCENTE.
+
+    Empate desempata pelo SKU (ordem estavel): sem isso, dois SKUs de mesma
+    quantidade trocariam de lugar entre dois envios do mesmo dia, e o dono leria
+    isso como "mudou alguma coisa".
+    """
+    somas: dict[str, int] = defaultdict(int)
+    for it in itens:
+        somas[it["chave"]] += it["quantidade"]
+    return dict(sorted(somas.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+def _bloco(conta, somas: dict[str, int], teto: int | None) -> str:
+    """Um bloco de conta: divisor, cabecalho com subtotal e a lista no <pre>."""
+    # MAIUSCULA ANTES de escapar: `esc()` primeiro produziria "&AMP;" (entidade
+    # quebrada -> 400 na API). Bug pego no teste de caractere perigoso.
+    nome = esc(str(conta).upper()) if conta else "GERAL"
+    if not somas:
+        return f"{DIVISOR}\n🏪 <b>{nome}</b>\n<i>nenhuma venda</i>\n"
+
+    unidades = sum(somas.values())
+    titulo = f"{DIVISOR}\n🏪 <b>{nome} · {_un(unidades)} · {_sku(len(somas))}</b>"
+
+    itens = list(somas.items())
+    mostrados = itens if teto is None else itens[:teto]
+    # Largura vinda do SKU mais longo MOSTRADO (nao um numero fixo): SKU curto
+    # nao deixa buraco e SKU longo nao empurra a coluna para fora.
+    larg_sku = max(len(s) for s, _ in mostrados)
+    larg_qtd = max(len(str(q)) for _, q in mostrados)
+    # Preenche ANTES de escapar (parece invertido, mas e o certo): o Telegram
+    # RENDERIZA "&amp;" como 1 caractere, entao a largura tem de ser medida no
+    # texto cru. Escapar primeiro faria "A&B" virar 5 caracteres e desalinhar a
+    # coluna na tela, apesar de o codigo "parecer" alinhado.
+    linhas = [f"{esc(s.ljust(larg_sku))}  {q:>{larg_qtd}}" for s, q in mostrados]
+
+    if len(mostrados) < len(itens):
+        resto = itens[len(mostrados):]
+        linhas.append(f"… e mais {_sku(len(resto))} ({sum(q for _, q in resto)} un)")
+    return f"{titulo}\n<pre>{chr(10).join(linhas)}</pre>\n"
 
 
 def texto_detalhe(itens: list, chave: str) -> str:

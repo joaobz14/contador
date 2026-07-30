@@ -721,7 +721,7 @@
    "label": "cmd_loja()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L724",
+   "source_location": "L747",
    "_origin": "ast",
    "id": "bot_telegram_cmd_loja",
    "community": 1,
@@ -735,7 +735,7 @@
    "label": "cmd_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L736",
+   "source_location": "L759",
    "_origin": "ast",
    "id": "bot_telegram_cmd_dia",
    "community": 1,
@@ -749,7 +749,7 @@
    "label": "cmd_detalhar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L745",
+   "source_location": "L768",
    "_origin": "ast",
    "id": "bot_telegram_cmd_detalhar",
    "community": 1,
@@ -763,7 +763,7 @@
    "label": "cb_botao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L755",
+   "source_location": "L778",
    "_origin": "ast",
    "id": "bot_telegram_cb_botao",
    "community": 1,
@@ -777,7 +777,7 @@
    "label": "cmd_desconhecido()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L814",
+   "source_location": "L837",
    "_origin": "ast",
    "id": "bot_telegram_cmd_desconhecido",
    "community": 1,
@@ -791,7 +791,7 @@
    "label": "job_bom_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L819",
+   "source_location": "L842",
    "_origin": "ast",
    "id": "bot_telegram_job_bom_dia",
    "community": 1,
@@ -805,7 +805,7 @@
    "label": "_agendar_aviso()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L840",
+   "source_location": "L863",
    "_origin": "ast",
    "id": "bot_telegram_agendar_aviso",
    "community": 1,
@@ -819,7 +819,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L857",
+   "source_location": "L880",
    "_origin": "ast",
    "id": "bot_telegram_main",
    "community": 1,
@@ -833,7 +833,7 @@
    "label": "_pausar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L921",
+   "source_location": "L944",
    "_origin": "ast",
    "id": "bot_telegram_pausar",
    "community": 1,
@@ -1932,7 +1932,7 @@
    "label": "texto_grupos()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L14",
+   "source_location": "L44",
    "_origin": "ast",
    "id": "relatorio_texto_grupos",
    "community": 24,
@@ -1946,7 +1946,7 @@
    "label": "texto_resumo()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L33",
+   "source_location": "L63",
    "_origin": "ast",
    "id": "relatorio_texto_resumo",
    "community": 24,
@@ -1960,7 +1960,7 @@
    "label": "texto_bom_dia()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L61",
+   "source_location": "L91",
    "_origin": "ast",
    "id": "relatorio_texto_bom_dia",
    "community": 24,
@@ -1974,7 +1974,7 @@
    "label": "texto_detalhe()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L123",
+   "source_location": "L211",
    "_origin": "ast",
    "id": "relatorio_texto_detalhe",
    "community": 24,
@@ -1988,7 +1988,7 @@
    "label": "dividir_mensagem()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L140",
+   "source_location": "L228",
    "_origin": "ast",
    "id": "relatorio_dividir_mensagem",
    "community": 24,
@@ -8762,7 +8762,7 @@
    "label": "test_texto_grupos_vazio()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L6",
+   "source_location": "L9",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_grupos_vazio",
    "community": 3,
@@ -8776,7 +8776,7 @@
    "label": "test_texto_grupos_lista_por_quantidade()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L11",
+   "source_location": "L14",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_grupos_lista_por_quantidade",
    "community": 3,
@@ -8790,7 +8790,7 @@
    "label": "test_texto_resumo()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L22",
+   "source_location": "L25",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_resumo",
    "community": 3,
@@ -8804,7 +8804,7 @@
    "label": "test_texto_resumo_vazio()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L34",
+   "source_location": "L37",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_resumo_vazio",
    "community": 3,
@@ -8818,7 +8818,7 @@
    "label": "test_texto_bom_dia()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L38",
+   "source_location": "L41",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_bom_dia",
    "community": 3,
@@ -8832,7 +8832,7 @@
    "label": "test_texto_bom_dia_sem_pedidos()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L49",
+   "source_location": "L52",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_bom_dia_sem_pedidos",
    "community": 3,
@@ -8846,7 +8846,7 @@
    "label": "test_texto_detalhe()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L54",
+   "source_location": "L57",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_detalhe",
    "community": 3,
@@ -8860,7 +8860,7 @@
    "label": "test_texto_detalhe_sem_resultado()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L68",
+   "source_location": "L71",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_texto_detalhe_sem_resultado",
    "community": 3,
@@ -8874,7 +8874,7 @@
    "label": "test_dividir_mensagem_curta_nao_divide()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L140",
+   "source_location": "L235",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_curta_nao_divide",
    "community": 3,
@@ -8888,7 +8888,7 @@
    "label": "test_dividir_mensagem_respeita_limite()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L144",
+   "source_location": "L239",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_respeita_limite",
    "community": 3,
@@ -8902,7 +8902,7 @@
    "label": "test_dividir_mensagem_linha_gigante()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L151",
+   "source_location": "L246",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_linha_gigante",
    "community": 3,
@@ -12404,7 +12404,7 @@
    "label": "texto_resumo_contagem()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L40",
+   "source_location": "L70",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -12418,7 +12418,7 @@
    "label": "_formatar_resumo()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L48",
+   "source_location": "L78",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18018,7 +18018,7 @@
    "label": "texto_alerta_pos_horario()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L69",
+   "source_location": "L99",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18186,7 +18186,7 @@
    "label": "test_job_alerta_avisa_e_marca_dedup()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L180",
+   "source_location": "L185",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18200,7 +18200,7 @@
    "label": "test_job_alerta_sem_novidade_nao_envia_nada()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L217",
+   "source_location": "L222",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18214,7 +18214,7 @@
    "label": "test_job_alerta_nao_repete_o_mesmo_envio_em_ciclos_seguintes()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L229",
+   "source_location": "L234",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18228,7 +18228,7 @@
    "label": "test_job_alerta_isola_falha_por_conta()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L250",
+   "source_location": "L255",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18242,7 +18242,7 @@
    "label": "test_job_alerta_falha_num_chat_nao_cala_os_outros()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L270",
+   "source_location": "L275",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18256,7 +18256,7 @@
    "label": "test_job_alerta_sem_contas_nao_quebra()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L291",
+   "source_location": "L296",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18270,7 +18270,7 @@
    "label": "test_texto_alerta_pos_horario()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L72",
+   "source_location": "L75",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18368,7 +18368,7 @@
    "label": "_testar_alerta_pos_horario_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L891",
+   "source_location": "L914",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18382,7 +18382,7 @@
    "label": "test_testar_alerta_cli_chama_job_uma_vez_com_contexto_real()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L384",
+   "source_location": "L389",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18410,7 +18410,7 @@
    "label": "texto_resumo_vendas_apos()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L86",
+   "source_location": "L116",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18424,7 +18424,7 @@
    "label": "_update()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L428",
+   "source_location": "L433",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18438,7 +18438,7 @@
    "label": "test_cmd_vendas_apos_junta_tudo_que_ja_foi_avisado()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L438",
+   "source_location": "L443",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18452,7 +18452,7 @@
    "label": "test_cmd_vendas_apos_sem_nada_avisado()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L454",
+   "source_location": "L496",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18466,7 +18466,7 @@
    "label": "test_cmd_vendas_apos_nao_autorizado()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L465",
+   "source_location": "L508",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18494,7 +18494,7 @@
    "label": "test_texto_alerta_pos_horario_soma_mesmo_sku_entre_envios()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L84",
+   "source_location": "L87",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18508,7 +18508,7 @@
    "label": "test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L95",
+   "source_location": "L98",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18522,7 +18522,7 @@
    "label": "test_texto_resumo_vendas_apos_vazio()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L101",
+   "source_location": "L119",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18531,48 +18531,6 @@
    "id": "tests_test_relatorio_test_texto_resumo_vendas_apos_vazio",
    "community": 3,
    "norm_label": "test_texto_resumo_vendas_apos_vazio()"
-  },
-  {
-   "label": "test_texto_resumo_vendas_apos_por_conta_e_total()",
-   "file_type": "code",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L106",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_relatorio_test_texto_resumo_vendas_apos_por_conta_e_total",
-   "community": 3,
-   "norm_label": "test_texto_resumo_vendas_apos_por_conta_e_total()"
-  },
-  {
-   "label": "test_texto_resumo_vendas_apos_ignora_conta_sem_venda()",
-   "file_type": "code",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L124",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_relatorio_test_texto_resumo_vendas_apos_ignora_conta_sem_venda",
-   "community": 3,
-   "norm_label": "test_texto_resumo_vendas_apos_ignora_conta_sem_venda()"
-  },
-  {
-   "label": "test_texto_resumo_vendas_apos_sem_nome_de_conta()",
-   "file_type": "code",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L132",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_relatorio_test_texto_resumo_vendas_apos_sem_nome_de_conta",
-   "community": 3,
-   "norm_label": "test_texto_resumo_vendas_apos_sem_nome_de_conta()"
   },
   {
    "label": "_dados_alerta_shopee()",
@@ -18648,7 +18606,7 @@
    "label": "_pedido_shopee()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L300",
+   "source_location": "L305",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18662,7 +18620,7 @@
    "label": "test_job_alerta_pula_shopee_sem_credencial()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L304",
+   "source_location": "L309",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18676,7 +18634,7 @@
    "label": "test_job_alerta_avisa_shopee_quando_configurada()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L319",
+   "source_location": "L324",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18690,7 +18648,7 @@
    "label": "test_job_alerta_shopee_isola_falha_sem_impedir_ml()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L344",
+   "source_location": "L349",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18704,7 +18662,7 @@
    "label": "test_job_alerta_shopee_sem_novidade_nao_envia()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L368",
+   "source_location": "L373",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18956,7 +18914,7 @@
    "label": "test_job_alerta_fora_do_horario_e_noop_sem_api()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L201",
+   "source_location": "L206",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19931,6 +19889,398 @@
    "id": "tests_test_bot_segredo_no_log_test_nivel_configurado_no_import",
    "community": 74,
    "norm_label": "test_nivel_configurado_no_import()"
+  },
+  {
+   "label": "_contas_do_resumo()",
+   "file_type": "code",
+   "source_file": "bot_telegram.py",
+   "source_location": "L722",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "bot_telegram_contas_do_resumo",
+   "community": 1,
+   "norm_label": "_contas_do_resumo()"
+  },
+  {
+   "label": "_resumo_para_envio()",
+   "file_type": "code",
+   "source_file": "bot_telegram.py",
+   "source_location": "L731",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "bot_telegram_resumo_para_envio",
+   "community": 1,
+   "norm_label": "_resumo_para_envio()"
+  },
+  {
+   "label": "_testar_resumo_vendas_agora()",
+   "file_type": "code",
+   "source_file": "bot_telegram.py",
+   "source_location": "L958",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "bot_telegram_testar_resumo_vendas_agora",
+   "community": 1,
+   "norm_label": "_testar_resumo_vendas_agora()"
+  },
+  {
+   "label": "esc()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L31",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_esc",
+   "community": 24,
+   "norm_label": "esc()"
+  },
+  {
+   "label": "_un()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L36",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_un",
+   "community": 24,
+   "norm_label": "_un()"
+  },
+  {
+   "label": "_sku()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L40",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_sku",
+   "community": 24,
+   "norm_label": "_sku()"
+  },
+  {
+   "label": "_ordem_contas()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L160",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_ordem_contas",
+   "community": 24,
+   "norm_label": "_ordem_contas()"
+  },
+  {
+   "label": "_somar()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L169",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_somar",
+   "community": 24,
+   "norm_label": "_somar()"
+  },
+  {
+   "label": "_bloco()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L182",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_bloco",
+   "community": 24,
+   "norm_label": "_bloco()"
+  },
+  {
+   "label": "test_cmd_vendas_apos_envia_como_html()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L460",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_cmd_vendas_apos_envia_como_html",
+   "community": 72,
+   "norm_label": "test_cmd_vendas_apos_envia_como_html()"
+  },
+  {
+   "label": "test_resumo_inclui_conta_sem_venda_do_dia()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L477",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_resumo_inclui_conta_sem_venda_do_dia",
+   "community": 72,
+   "norm_label": "test_resumo_inclui_conta_sem_venda_do_dia()"
+  },
+  {
+   "label": "test_falha_ao_listar_contas_nao_derruba_o_resumo()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L485",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_falha_ao_listar_contas_nao_derruba_o_resumo",
+   "community": 72,
+   "norm_label": "test_falha_ao_listar_contas_nao_derruba_o_resumo()"
+  },
+  {
+   "label": "_itens()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L111",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_itens",
+   "community": 3,
+   "norm_label": "_itens()"
+  },
+  {
+   "label": "_resumo()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L115",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_resumo",
+   "community": 3,
+   "norm_label": "_resumo()"
+  },
+  {
+   "label": "test_cabecalho_traz_a_janela_e_o_horario()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L124",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_cabecalho_traz_a_janela_e_o_horario",
+   "community": 3,
+   "norm_label": "test_cabecalho_traz_a_janela_e_o_horario()"
+  },
+  {
+   "label": "test_ordena_por_quantidade_decrescente()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L131",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_ordena_por_quantidade_decrescente",
+   "community": 3,
+   "norm_label": "test_ordena_por_quantidade_decrescente()"
+  },
+  {
+   "label": "test_empate_desempata_pelo_sku()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L137",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_empate_desempata_pelo_sku",
+   "community": 3,
+   "norm_label": "test_empate_desempata_pelo_sku()"
+  },
+  {
+   "label": "test_quantidade_alinhada_a_direita()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L145",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_quantidade_alinhada_a_direita",
+   "community": 3,
+   "norm_label": "test_quantidade_alinhada_a_direita()"
+  },
+  {
+   "label": "test_subtotal_por_conta_e_total_geral()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L156",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_subtotal_por_conta_e_total_geral",
+   "community": 3,
+   "norm_label": "test_subtotal_por_conta_e_total_geral()"
+  },
+  {
+   "label": "test_singular_e_plural()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L164",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_singular_e_plural",
+   "community": 3,
+   "norm_label": "test_singular_e_plural()"
+  },
+  {
+   "label": "test_conta_sem_venda_aparece_como_nenhuma_venda()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L170",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_conta_sem_venda_aparece_como_nenhuma_venda",
+   "community": 3,
+   "norm_label": "test_conta_sem_venda_aparece_como_nenhuma_venda()"
+  },
+  {
+   "label": "test_conta_conhecida_sem_registro_tambem_aparece()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L177",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_conta_conhecida_sem_registro_tambem_aparece",
+   "community": 3,
+   "norm_label": "test_conta_conhecida_sem_registro_tambem_aparece()"
+  },
+  {
+   "label": "test_escapa_texto_dinamico()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L185",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_escapa_texto_dinamico",
+   "community": 3,
+   "norm_label": "test_escapa_texto_dinamico()"
+  },
+  {
+   "label": "test_nao_gera_entidade_quebrada_ao_maiusculizar()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L191",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_nao_gera_entidade_quebrada_ao_maiusculizar",
+   "community": 3,
+   "norm_label": "test_nao_gera_entidade_quebrada_ao_maiusculizar()"
+  },
+  {
+   "label": "test_alinhamento_medido_no_texto_CRU()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L198",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
+   "community": 3,
+   "norm_label": "test_alinhamento_medido_no_texto_cru()"
+  },
+  {
+   "label": "test_corta_pelos_maiores_e_avisa_o_corte()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L210",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_corta_pelos_maiores_e_avisa_o_corte",
+   "community": 3,
+   "norm_label": "test_corta_pelos_maiores_e_avisa_o_corte()"
+  },
+  {
+   "label": "test_pre_nunca_fica_aberto()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L218",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_pre_nunca_fica_aberto",
+   "community": 3,
+   "norm_label": "test_pre_nunca_fica_aberto()"
+  },
+  {
+   "label": "_linhas_pre()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L226",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_linhas_pre",
+   "community": 3,
+   "norm_label": "_linhas_pre()"
   }
  ],
  "links": [
@@ -20520,6 +20870,16 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L719",
+   "weight": 1.0,
+   "source": "bot_telegram_cmd_vendas_apos",
+   "target": "bot_telegram_resumo_para_envio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
@@ -20812,6 +21172,16 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L741",
+   "weight": 1.0,
+   "source": "bot_telegram_resumo_para_envio",
+   "target": "bot_telegram_contas_do_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
@@ -20849,6 +21219,46 @@
    "weight": 1.0,
    "source": "bot_telegram_testar_alerta_pos_horario_agora",
    "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L969",
+   "weight": 1.0,
+   "source": "bot_telegram_testar_resumo_vendas_agora",
+   "target": "bot_telegram_carregar_alertas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L968",
+   "weight": 1.0,
+   "source": "bot_telegram_testar_resumo_vendas_agora",
+   "target": "bot_telegram_carregar_config",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L967",
+   "weight": 1.0,
+   "source": "bot_telegram_testar_resumo_vendas_agora",
+   "target": "bot_telegram_garantir_conta_ativa",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L969",
+   "weight": 1.0,
+   "source": "bot_telegram_testar_resumo_vendas_agora",
+   "target": "bot_telegram_resumo_para_envio",
    "confidence_score": 1.0
   },
   {
@@ -21428,6 +21838,36 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L186",
+   "weight": 1.0,
+   "source": "relatorio_bloco",
+   "target": "relatorio_esc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L191",
+   "weight": 1.0,
+   "source": "relatorio_bloco",
+   "target": "relatorio_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L191",
+   "weight": 1.0,
+   "source": "relatorio_bloco",
+   "target": "relatorio_un",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
@@ -21455,6 +21895,46 @@
    "weight": 1.0,
    "source": "relatorio_texto_resumo_contagem",
    "target": "relatorio_formatar_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L153",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_bloco",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L139",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_ordem_contas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L138",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_somar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L148",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_un",
    "confidence_score": 1.0
   },
   {
@@ -25693,6 +26173,26 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L469",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_cmd_vendas_apos_envia_como_html",
+   "target": "tests_test_bot_alerta_ctx",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L471",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_cmd_vendas_apos_envia_como_html",
+   "target": "tests_test_bot_alerta_update",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
    "source_location": "L285",
    "weight": 1.0,
    "source": "tests_test_bot_alerta_test_cmd_vendas_apos_junta_tudo_que_ja_foi_avisado",
@@ -28293,6 +28793,306 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L204",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L203",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
+   "target": "tests_test_relatorio_linhas_pre",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L203",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L125",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_cabecalho_traz_a_janela_e_o_horario",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L125",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_cabecalho_traz_a_janela_e_o_horario",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L179",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_conta_conhecida_sem_registro_tambem_aparece",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L179",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_conta_conhecida_sem_registro_tambem_aparece",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L172",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_conta_sem_venda_aparece_como_nenhuma_venda",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L172",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_conta_sem_venda_aparece_como_nenhuma_venda",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L212",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_corta_pelos_maiores_e_avisa_o_corte",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L212",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_corta_pelos_maiores_e_avisa_o_corte",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L140",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_empate_desempata_pelo_sku",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L141",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_empate_desempata_pelo_sku",
+   "target": "tests_test_relatorio_linhas_pre",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L141",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_empate_desempata_pelo_sku",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L186",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_escapa_texto_dinamico",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L186",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_escapa_texto_dinamico",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L194",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_nao_gera_entidade_quebrada_ao_maiusculizar",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L194",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_nao_gera_entidade_quebrada_ao_maiusculizar",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L133",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_ordena_por_quantidade_decrescente",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L134",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_ordena_por_quantidade_decrescente",
+   "target": "tests_test_relatorio_linhas_pre",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L133",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_ordena_por_quantidade_decrescente",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L222",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_pre_nunca_fica_aberto",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L222",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_pre_nunca_fica_aberto",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L148",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_quantidade_alinhada_a_direita",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L148",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_quantidade_alinhada_a_direita",
+   "target": "tests_test_relatorio_linhas_pre",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L148",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_quantidade_alinhada_a_direita",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L165",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_singular_e_plural",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L165",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_singular_e_plural",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L157",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_subtotal_por_conta_e_total_geral",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L157",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_subtotal_por_conta_e_total_geral",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "INFERRED",
    "confidence_score": 0.8,
@@ -28301,6 +29101,16 @@
    "weight": 1.0,
    "source": "tests_test_relatorio_test_texto_grupos_lista_por_quantidade",
    "target": "tests_conftest_make_grupo"
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L120",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_texto_resumo_vendas_apos_vazio",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
   },
   {
    "relation": "calls",
@@ -31640,7 +32450,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L840",
+   "source_location": "L863",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_agendar_aviso",
@@ -31690,7 +32500,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L755",
+   "source_location": "L778",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cb_botao",
@@ -31720,7 +32530,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L814",
+   "source_location": "L837",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_desconhecido",
@@ -31730,7 +32540,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L745",
+   "source_location": "L768",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_detalhar",
@@ -31740,7 +32550,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L736",
+   "source_location": "L759",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_dia",
@@ -31770,7 +32580,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L724",
+   "source_location": "L747",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_loja",
@@ -31854,6 +32664,16 @@
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_conta_mudou",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L722",
+   "weight": 1.0,
+   "source": "bot_telegram",
+   "target": "bot_telegram_contas_do_resumo",
    "confidence_score": 1.0
   },
   {
@@ -31970,7 +32790,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L819",
+   "source_location": "L842",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_job_bom_dia",
@@ -32020,7 +32840,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L857",
+   "source_location": "L880",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_main",
@@ -32040,7 +32860,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L921",
+   "source_location": "L944",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_pausar",
@@ -32064,6 +32884,16 @@
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_responder",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L731",
+   "weight": 1.0,
+   "source": "bot_telegram",
+   "target": "bot_telegram_resumo_para_envio",
    "confidence_score": 1.0
   },
   {
@@ -32130,10 +32960,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L891",
+   "source_location": "L914",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_alerta_pos_horario_agora",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L958",
+   "weight": 1.0,
+   "source": "bot_telegram",
+   "target": "bot_telegram_testar_resumo_vendas_agora",
    "confidence_score": 1.0
   },
   {
@@ -32600,7 +33440,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L140",
+   "source_location": "L182",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_bloco",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L228",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_dividir_mensagem",
@@ -32610,7 +33460,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L48",
+   "source_location": "L31",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_esc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L78",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_formatar_resumo",
@@ -32620,50 +33480,10 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L69",
+   "source_location": "L160",
    "weight": 1.0,
    "source": "relatorio",
-   "target": "relatorio_texto_alerta_pos_horario",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "relatorio.py",
-   "source_location": "L61",
-   "weight": 1.0,
-   "source": "relatorio",
-   "target": "relatorio_texto_bom_dia",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "relatorio.py",
-   "source_location": "L123",
-   "weight": 1.0,
-   "source": "relatorio",
-   "target": "relatorio_texto_detalhe",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "relatorio.py",
-   "source_location": "L14",
-   "weight": 1.0,
-   "source": "relatorio",
-   "target": "relatorio_texto_grupos",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "relatorio.py",
-   "source_location": "L33",
-   "weight": 1.0,
-   "source": "relatorio",
-   "target": "relatorio_texto_resumo",
+   "target": "relatorio_ordem_contas",
    "confidence_score": 1.0
   },
   {
@@ -32673,6 +33493,76 @@
    "source_location": "L40",
    "weight": 1.0,
    "source": "relatorio",
+   "target": "relatorio_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L169",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_somar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L99",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_texto_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L91",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_texto_bom_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L211",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_texto_detalhe",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L44",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_texto_grupos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L63",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_texto_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L70",
+   "weight": 1.0,
+   "source": "relatorio",
    "target": "relatorio_texto_resumo_contagem",
    "confidence_score": 1.0
   },
@@ -32680,10 +33570,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L86",
+   "source_location": "L116",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_texto_resumo_vendas_apos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L36",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_un",
    "confidence_score": 1.0
   },
   {
@@ -35340,7 +36240,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L300",
+   "source_location": "L305",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_pedido_shopee",
@@ -35390,7 +36290,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L438",
+   "source_location": "L460",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_cmd_vendas_apos_envia_como_html",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L443",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_cmd_vendas_apos_junta_tudo_que_ja_foi_avisado",
@@ -35400,7 +36310,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L465",
+   "source_location": "L508",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_cmd_vendas_apos_nao_autorizado",
@@ -35410,7 +36320,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L454",
+   "source_location": "L496",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_cmd_vendas_apos_sem_nada_avisado",
@@ -35480,7 +36390,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L180",
+   "source_location": "L485",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_falha_ao_listar_contas_nao_derruba_o_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L185",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_avisa_e_marca_dedup",
@@ -35490,7 +36410,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L319",
+   "source_location": "L324",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_avisa_shopee_quando_configurada",
@@ -35500,7 +36420,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L270",
+   "source_location": "L275",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_falha_num_chat_nao_cala_os_outros",
@@ -35510,7 +36430,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L201",
+   "source_location": "L206",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_fora_do_horario_e_noop_sem_api",
@@ -35520,7 +36440,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L250",
+   "source_location": "L255",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_isola_falha_por_conta",
@@ -35530,7 +36450,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L229",
+   "source_location": "L234",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_nao_repete_o_mesmo_envio_em_ciclos_seguintes",
@@ -35540,7 +36460,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L304",
+   "source_location": "L309",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_pula_shopee_sem_credencial",
@@ -35550,7 +36470,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L291",
+   "source_location": "L296",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_sem_contas_nao_quebra",
@@ -35560,7 +36480,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L217",
+   "source_location": "L222",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_sem_novidade_nao_envia_nada",
@@ -35570,7 +36490,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L344",
+   "source_location": "L349",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_shopee_isola_falha_sem_impedir_ml",
@@ -35580,7 +36500,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L368",
+   "source_location": "L373",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_job_alerta_shopee_sem_novidade_nao_envia",
@@ -35590,7 +36510,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L384",
+   "source_location": "L477",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_resumo_inclui_conta_sem_venda_do_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L389",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_testar_alerta_cli_chama_job_uma_vez_com_contexto_real",
@@ -35600,7 +36530,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L428",
+   "source_location": "L433",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_update",
@@ -38730,140 +39660,40 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L140",
+   "source_location": "L111",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_dividir_mensagem_curta_nao_divide",
+   "target": "tests_test_relatorio_itens",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L151",
+   "source_location": "L226",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_dividir_mensagem_linha_gigante",
+   "target": "tests_test_relatorio_linhas_pre",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L144",
+   "source_location": "L115",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_dividir_mensagem_respeita_limite",
+   "target": "tests_test_relatorio_resumo",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L72",
+   "source_location": "L198",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_alerta_pos_horario",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L95",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L84",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_alerta_pos_horario_soma_mesmo_sku_entre_envios",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L38",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_bom_dia",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L49",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_bom_dia_sem_pedidos",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L54",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_detalhe",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L68",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_detalhe_sem_resultado",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L11",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_grupos_lista_por_quantidade",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L6",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_grupos_vazio",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L22",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_resumo",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_relatorio.py",
-   "source_location": "L34",
-   "weight": 1.0,
-   "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_resumo_vazio",
+   "target": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
    "confidence_score": 1.0
   },
   {
@@ -38873,34 +39703,264 @@
    "source_location": "L124",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_resumo_vendas_apos_ignora_conta_sem_venda",
+   "target": "tests_test_relatorio_test_cabecalho_traz_a_janela_e_o_horario",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L106",
+   "source_location": "L177",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_resumo_vendas_apos_por_conta_e_total",
+   "target": "tests_test_relatorio_test_conta_conhecida_sem_registro_tambem_aparece",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L132",
+   "source_location": "L170",
    "weight": 1.0,
    "source": "tests_test_relatorio",
-   "target": "tests_test_relatorio_test_texto_resumo_vendas_apos_sem_nome_de_conta",
+   "target": "tests_test_relatorio_test_conta_sem_venda_aparece_como_nenhuma_venda",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L101",
+   "source_location": "L210",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_corta_pelos_maiores_e_avisa_o_corte",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L235",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_dividir_mensagem_curta_nao_divide",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L246",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_dividir_mensagem_linha_gigante",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L239",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_dividir_mensagem_respeita_limite",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L137",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_empate_desempata_pelo_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L185",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_escapa_texto_dinamico",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L191",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_nao_gera_entidade_quebrada_ao_maiusculizar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L131",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_ordena_por_quantidade_decrescente",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L218",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_pre_nunca_fica_aberto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L145",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_quantidade_alinhada_a_direita",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L164",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_singular_e_plural",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L156",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_subtotal_por_conta_e_total_geral",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L75",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L98",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L87",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_alerta_pos_horario_soma_mesmo_sku_entre_envios",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L41",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_bom_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L52",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_bom_dia_sem_pedidos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L57",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_detalhe",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L71",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_detalhe_sem_resultado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L14",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_grupos_lista_por_quantidade",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L9",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_grupos_vazio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L25",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L37",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_texto_resumo_vazio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L119",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_texto_resumo_vendas_apos_vazio",
@@ -41254,6 +42314,16 @@
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "relatorio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "imports",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L1",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "separador_etiquetas_ml",
    "confidence_score": 1.0
   },
   {
@@ -48172,5 +49242,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "6cc907bd7aeb2c0f4cb82552c0a9a7f93199ee6a"
+ "built_at_commit": "fa044247350cd7a5eb02f4aa3a1db4c8b30b70a0"
 }

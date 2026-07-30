@@ -716,9 +716,32 @@ async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     log.info("Acao /vendasapos de chat %s", chat_id)
     dados = await asyncio.to_thread(_carregar_alertas)
-    texto = relatorio.texto_resumo_vendas_apos(dados["itens"])
-    for bloco in relatorio.dividir_mensagem(texto):
-        await context.bot.send_message(chat_id, bloco)
+    await context.bot.send_message(chat_id, **_resumo_para_envio(dados["itens"]))
+
+
+def _contas_do_resumo() -> list[str]:
+    """Contas que DEVEM aparecer no resumo, mesmo sem venda — ausencia tambem e
+    informacao ("nenhuma venda" e diferente de o bloco sumir)."""
+    try:
+        return [*core.listar_contas(), CHAVE_ALERTA_SHOPEE]
+    except OSError:                              # diagnostico nao pode derrubar o envio
+        return []
+
+
+def _resumo_para_envio(itens_por_conta: dict) -> dict:
+    """Argumentos do `send_message` para o resumo de vendas.
+
+    MENSAGEM UNICA de proposito: o texto usa `<pre>` para alinhar as colunas
+    (unica forma no Telegram), e `dividir_mensagem` partiria o bloco no meio —
+    HTML quebrado faz a API devolver 400 e a mensagem nao chega. Por isso o
+    proprio `texto_resumo_vendas_apos` corta pelos maiores ate caber.
+    """
+    return {
+        "text": relatorio.texto_resumo_vendas_apos(
+            itens_por_conta, contas=_contas_do_resumo()),
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
 
 
 async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -932,7 +955,48 @@ def _pausar() -> None:
         pass
 
 
+def _testar_resumo_vendas_agora() -> None:
+    """Manda o resumo de vendas para os chats autorizados, AGORA.
+
+    Existe porque o layout do resumo so pode ser conferido de verdade no
+    celular: `<pre>`, alinhamento de coluna e escape de HTML sao coisas que o
+    texto cru nao mostra — e um escape errado nao quebra nada localmente, so
+    devolve 400 na hora do envio. Le o estado ja persistido; nao faz chamada de
+    API de marketplace nenhuma. Rode: python bot_telegram.py testar-resumo"""
+    core.aplicar_config()
+    _garantir_conta_ativa()
+    cfg = carregar_config()
+    envio = _resumo_para_envio(_carregar_alertas()["itens"])
+
+    print("--- texto que sera enviado (com as tags) ---")
+    print(envio["text"])
+    print(f"--- {len(envio['text'])} caracteres (limite do Telegram: 4096) ---\n")
+
+    async def _rodar() -> None:
+        app = ApplicationBuilder().token(cfg["token"]).build()
+        await app.initialize()
+        try:
+            for chat_id in cfg["chat_ids"]:
+                await app.bot.send_message(chat_id, **envio)
+                print(f"enviado para o chat {chat_id}")
+        finally:
+            await app.shutdown()
+
+    asyncio.run(_rodar())
+    print("\nPronto — confira no celular. Se a API devolver 400, o motivo quase "
+          "sempre e escape de HTML num SKU ou nome de conta.")
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "testar-resumo":
+        try:
+            _testar_resumo_vendas_agora()
+        except core.SeparadorError as e:
+            print(f"\nNAO CONSEGUI ENVIAR O RESUMO:\n  {e}")
+            _pausar()
+            raise SystemExit(1)
+        _pausar()
+        raise SystemExit(0)
     if len(sys.argv) > 1 and sys.argv[1] == "testar-alerta":
         try:
             _testar_alerta_pos_horario_agora()

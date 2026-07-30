@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1487 nodes · 2747 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1512 nodes · 2819 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -80,6 +80,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   chave, sem valores — nome de chave não é dado pessoal) fica registrado como o
   que reabriria o item, caso o campo exista com outro nome (`courier`,
   `collector`, `operator`).
+- **2026-07-30 — Resumo de vendas do bot reformatado (HTML do Telegram).** A
+  mensagem era uma lista crua "SKU - qtd" em ordem de chegada, cansativa de ler
+  no celular. Agora: cabeçalho com janela e horário, um bloco por conta com
+  subtotal, lista **dentro de `<pre>`** (única forma de alinhar coluna no
+  Telegram — fora dele a fonte é proporcional) ordenada por **quantidade
+  decrescente**, e total geral. Detalhes que o `relatorio.py` documenta: escape
+  de `& < >` é obrigatório (erro → 400 e a mensagem não chega); **maiúscula
+  antes de escapar**, senão o `.upper()` produz `&AMP;` (entidade quebrada —
+  bug pego em teste); **largura medida no texto CRU**, porque o Telegram
+  renderiza `&amp;` como 1 caractere; e mensagem **única**, porque
+  `dividir_mensagem` partiria um `<pre>` no meio. O corte por limite mostra os
+  maiores + "… e mais X SKUs (Y un)". Novo CLI `bot_telegram.py testar-resumo`
+  para conferir no celular sem esperar venda.
 - **2026-07-30 — O token do bot saiu do log (segredo por dentro de biblioteca).**
   A URL da API do Telegram carrega o token no próprio caminho e o `httpx`
   registra cada requisição em INFO — com o log do bot em INFO, o token ia
