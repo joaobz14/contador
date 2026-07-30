@@ -1495,12 +1495,22 @@ def saidas_na_pasta(pasta: Path | None = None) -> set[Path]:
         return set()
 
 
-def _monitor_vivo_desde(momento: float) -> bool:
-    """True se o log do monitor foi escrito depois de `momento` (time.time())."""
+def _mtime_log_monitor() -> float | None:
+    """mtime do log do monitor, ou None quando NAO DA PARA SABER (log ausente,
+    em outro caminho, sem permissao).
+
+    None e "nao sei", NAO "monitor parado" — a distincao e o ponto central. A
+    1a versao devolvia um booleano e colapsava os dois casos: em lote grande
+    (arquivo ainda na pasta, porque o monitor so o apaga na ULTIMA etiqueta) um
+    log ilegivel virava o aviso "o monitor NAO deu sinal" com a impressora
+    trabalhando normalmente. Falso alarme e pior que aviso nenhum: ensina o
+    operador a ignorar o ⚠️, e ai o aviso perde a utilidade justamente no dia em
+    que estiver certo. Incidente real, 2026-07-30.
+    """
     try:
-        return ARQUIVO_LOG_MONITOR.stat().st_mtime >= momento
+        return ARQUIVO_LOG_MONITOR.stat().st_mtime
     except OSError:
-        return False
+        return None
 
 
 def _ainda_na_pasta(nossos: set[Path]) -> bool:
@@ -1525,12 +1535,22 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
       "impresso"  — todos sumiram: o monitor consumiu e apagou (certeza);
       "imprimindo"— o monitor esta vivo, mas ainda nao da para afirmar que O
                     NOSSO arquivo saiu;
-      "sem_sinal" — nada sumiu e o log nao mexeu (provavelmente fechado);
-      "sem_saida" — nao ha o que observar nem sinal de vida: fica calado.
+      "sem_sinal" — o log EXISTE e provadamente nao avancou (evidencia de que o
+                    monitor esta parado);
+      "sem_saida" — nao da para afirmar nada: fica CALADO.
 
     Retorna assim que houver certeza, entao lote pequeno nao espera nada. O teto
     e curto de proposito: isto informa a confirmacao, nao pode virar espera longa
     na frente do operador.
+
+    O ⚠️ EXIGE PROVA (incidente de 2026-07-30): um lote de 12 avisou "o monitor
+    NAO deu sinal" com a impressora trabalhando normalmente. Sao dois fatos que
+    se somaram — em lote grande o arquivo NAO some dentro do teto (o monitor so
+    o apaga depois da ultima etiqueta), e o log nao pudera ser lido. A versao
+    anterior tratava "nao consegui ler o log" como "monitor parado" e disparava
+    o aviso. Agora log ilegivel/ausente e `None` = "nao sei" -> silencio, que e
+    o comportamento de antes desta funcionalidade (o operador confere o papel).
+    Falso alarme e pior que aviso nenhum: ensina a ignorar o ⚠️.
 
     CORRIDA CONHECIDA: o monitor varre a pasta a cada 1s, entao ele pode consumir
     o ZIP ANTES de a tela tirar o segundo instantaneo — e ai `nossos` vem vazio,
@@ -1540,16 +1560,28 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
     sumir seria exatamente o erro que esta tela nao pode cometer.
     """
     inicio = desde if desde is not None else time.time()
+
+    def _vivo() -> bool | None:
+        """True = log avancou; False = log parado; None = nao da para saber."""
+        mtime = _mtime_log_monitor()
+        return None if mtime is None else mtime >= inicio
+
     if not nossos:
-        return "imprimindo" if _monitor_vivo_desde(inicio) else "sem_saida"
+        return "imprimindo" if _vivo() else "sem_saida"
     fim = inicio + espera
-    vivo = False
+    vivo: bool | None = False
     while True:
         if not _ainda_na_pasta(nossos):
             return "impresso"
-        vivo = vivo or _monitor_vivo_desde(inicio)
+        atual = _vivo()
+        if atual:                       # log avancou: prova de vida, para de olhar
+            vivo = True
+        elif atual is None:             # log ilegivel: "nao sei" vence "log parado"
+            vivo = None if vivo is not True else True
         if time.time() >= fim:
-            return "imprimindo" if vivo else "sem_sinal"
+            if vivo is True:
+                return "imprimindo"
+            return "sem_saida" if vivo is None else "sem_sinal"
         time.sleep(intervalo)
 
 

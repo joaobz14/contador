@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785352885.5545878,
-  "ast_hash": "d7a2a00d636c12588153b4aec50b52f457e843de",
-  "semantic_hash": "d7a2a00d636c12588153b4aec50b52f457e843de"
+  "mtime": 1785412357.8853555,
+  "ast_hash": "6166631c0c65eaeea51d2d2e0eb1a08481938321",
+  "semantic_hash": "6166631c0c65eaeea51d2d2e0eb1a08481938321"
  },
  "CLAUDE.md": {
-  "mtime": 1785352885.5545878,
-  "ast_hash": "5d4d46f94f8bbff449204d812d4c4236ccc50b7e",
-  "semantic_hash": "5d4d46f94f8bbff449204d812d4c4236ccc50b7e"
+  "mtime": 1785412357.8841357,
+  "ast_hash": "7ae280b9e92060f4ce10b02cf88dc2fe990abd7f",
+  "semantic_hash": "7ae280b9e92060f4ce10b02cf88dc2fe990abd7f"
  },
  "README.md": {
   "mtime": 1785345877.7947216,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785410881.7034488,
-  "ast_hash": "e28884fed0b83258a2e06f6df875a8ab133f2a31",
-  "semantic_hash": "e28884fed0b83258a2e06f6df875a8ab133f2a31"
+  "mtime": 1785412357.8828444,
+  "ast_hash": "da8c1ed49990e752d16cb8fa2549191e8c8e3566",
+  "semantic_hash": "da8c1ed49990e752d16cb8fa2549191e8c8e3566"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -220,9 +220,9 @@
   "semantic_hash": "5a1c61cdd57333ddf0402e039e46b0d6e6a73a57"
  },
  "obsidian/Conceitos/Ponte com a Zebra.md": {
-  "mtime": 1785352885.562588,
-  "ast_hash": "9f9c94cb1384204a2c7e8079c04faae8ab0ea8cc",
-  "semantic_hash": "9f9c94cb1384204a2c7e8079c04faae8ab0ea8cc"
+  "mtime": 1785412374.974931,
+  "ast_hash": "a1bf0eeeeabcf87f72dfea02ce468cd2c9bc6aef",
+  "semantic_hash": "a1bf0eeeeabcf87f72dfea02ce468cd2c9bc6aef"
  },
  "obsidian/Conceitos/Trava entre processos.md": {
   "mtime": 1784923251.5942357,
@@ -340,14 +340,14 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785352885.562588,
-  "ast_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5",
-  "semantic_hash": "533051d6a9e675fc2f8c1eeb509acbc501a58ef5"
+  "mtime": 1785412172.4253445,
+  "ast_hash": "6cca7cbc43fd6e3b616462314630f7eea5d2d6ec",
+  "semantic_hash": "6cca7cbc43fd6e3b616462314630f7eea5d2d6ec"
  },
  "separador_gui.py": {
-  "mtime": 1785352885.562588,
-  "ast_hash": "e735a11bc878125e124e6042a01d8222ac9733f2",
-  "semantic_hash": "e735a11bc878125e124e6042a01d8222ac9733f2"
+  "mtime": 1785412335.4173543,
+  "ast_hash": "98c8c35141667f767b0ee7e68f5610bc7833c06e",
+  "semantic_hash": "98c8c35141667f767b0ee7e68f5610bc7833c06e"
  },
  "shopee_api.py": {
   "mtime": 1785345571.1193204,
@@ -420,9 +420,9 @@
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
  "tests/test_confirmacao_monitor.py": {
-  "mtime": 1785352885.566588,
-  "ast_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db",
-  "semantic_hash": "b183c4df8ce5e1c537b1682d4cad7107c75a59db"
+  "mtime": 1785412277.859218,
+  "ast_hash": "b123c688698d149cb888e52232e9c8452f755e80",
+  "semantic_hash": "b123c688698d149cb888e52232e9c8452f755e80"
  },
  "tests/test_contas.py": {
   "mtime": 1785347160.5106921,
@@ -455,9 +455,9 @@
   "semantic_hash": "45d9d8a2fd46da0bce1f33608c448cfdd1ca678b"
  },
  "tests/test_gui_confirmacao.py": {
-  "mtime": 1785352885.566588,
-  "ast_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b",
-  "semantic_hash": "b576ee7104d31aa8c11bbdcf7f69387e46fbec1b"
+  "mtime": 1785412291.4773517,
+  "ast_hash": "f446a4489c013be67b6be09a10423dd01ddd2ffd",
+  "semantic_hash": "f446a4489c013be67b6be09a10423dd01ddd2ffd"
  },
  "tests/test_gui_editores.py": {
   "mtime": 1784229860.1942687,
