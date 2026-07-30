@@ -35,6 +35,23 @@ consome **uma única função** por marketplace,
 `alertas_pos_horario.json`. Ver a convenção "Alerta pós-horário do bot" no
 `CLAUDE.md`.
 
+### Regra do aviso (decidida pelo dono, 30/07/2026)
+
+**Toda venda nova, a qualquer hora** — e **não** a regra do ML/Shopee (janela
+pós-horário + despacho hoje). O motivo é diferente: no ML/Shopee o alerta existe
+para pegar a venda que cai depois das 8:30, quando já não dá para repor com o
+fornecedor. No TikTok o canal é **novo e de volume baixo**, e o dono quer saber
+de **todas**. Se o volume crescer, aperta-se depois.
+
+Consequência para quem for implementar: **não reuse o filtro** de
+`filtrar_para_imprimir`/`pedidos_prontos_novos` tal como está — o corte por
+`hoje` e por status pronto-para-despachar **não se aplica** aqui. A função do
+TikTok tem a mesma **assinatura** (para o bot reusar o laço, o dedup e o
+`_disparar_alerta`), mas o critério interno é só "pedido que ainda não avisei".
+
+O dedup continua sendo o de sempre: chave própria em `alertas_pos_horario.json`
+(como `"Shopee"`), resetando na virada do dia.
+
 ## Resumo executivo (escopo completo, para o futuro)
 
 - **Encaixa bem no app.** A etiqueta sai em **ZPL** no Brasil (🟢 confirmado em
@@ -188,16 +205,35 @@ A abstração de **provedor** é a costura certa, como no levantamento da Amazon
 - Bootstrap: `pegar_token_tiktok.py`, como os dois que já existem.
 - Se houver carimbo, manter `^CI28`…`^CI0` (UTF-8).
 
-## Roteiro sugerido (quando/se formos fazer)
+## Roteiro — escopo ATUAL (só o aviso)
+
+**Bloqueado em (1): sem credencial não dá para verificar a forma da resposta.**
+O dono optou por esperar as credenciais em vez de codar contra os DTOs do SDK de
+terceiro, justamente para não acertar o nome dos campos por adivinhação.
+
+1. **Registrar o app** no TikTok Shop Partner Center → `app_key` + `app_secret`;
+   autorizar a loja (`services.tiktokshop.com/open/authorize`) → `auth_code` →
+   `POST /api/v2/token/get` → `access_token` + `refresh_token`; o `shop_cipher`
+   sai de `GET /authorization/202309/shops`.
+2. `pegar_token_tiktok.py` — bootstrap do OAuth, como os dois que já existem.
+3. `tiktok_api.py` — `obter_token(cred)` (cache + trava, padrão do núcleo),
+   listar pedidos e `pedidos_prontos_novos` (critério: **só o dedup**, ver acima).
+4. Gancho no `job_alerta_pos_horario` + chave nova no dedup + texto em
+   `relatorio.py`. Isolar falha da loja, como já se faz com ML e Shopee.
+5. Testes sem rede (mocks), como Shopee/ML.
+
+⚠️ A URL leva credencial (assinatura na query): `sem_segredos` no que for para o
+log e para o chat, e nada de `raise_for_status()`.
+
+## Roteiro do escopo COMPLETO (impressão — não é o plano atual)
 
 1. **Responder as duas perguntas em aberto primeiro** — API devolve ZPL? API
    devolve NF-e? O **sandbox existe**, então dá para responder sem tocar na loja
    de produção. Sem isso, não vale codar.
 2. Medir quantos pedidos caem em `self_shipment` (hoje: zero).
 3. Combinar o prefixo e o formato do lote com o repo da Zebra (paridade!).
-4. `pegar_token_tiktok.py` + `tiktok_api.py` (listar, despachar, etiqueta, estado).
+4. Estender `tiktok_api.py` (despachar, etiqueta, estado).
 5. `ProvedorTikTok` na GUI + arquivo de estado.
-6. Testes sem rede (mocks), como Shopee/ML.
 
 ## Becos sem saída (para ninguém repetir)
 
