@@ -1,25 +1,49 @@
 """Confirmação de impressão: o retorno do app da Zebra.
 
 A entrega é por arquivo (ZIP na Downloads) e até então a tela não tinha como
-saber se o monitor chegou a rodar. Com "Excluir após imprimir" ligado, o arquivo
-SOME quando imprime — e o log do monitor avança enquanto ele trabalha. São os
-dois sinais que `aguardar_impressao` observa.
+saber se o monitor chegou a rodar. `aguardar_impressao` observa três fontes, em
+ordem de força:
+
+  1. o STATUS que o monitor publica por arquivo processado (>= v1.26.0) — uma
+     RESPOSTA: diz o que processou e se deu certo;
+  2. o arquivo SUMIR (o monitor apaga o que imprime) — uma pista;
+  3. o log do monitor AVANÇAR (prova de vida) — outra pista.
 
 Nada aqui decide por ninguém: o resultado só informa a pergunta "as etiquetas
 saíram corretamente?", que continua sendo do operador (invariante 1).
 """
 from __future__ import annotations
 
+import json
+import time as _time
+
 import pytest
 
 
 @pytest.fixture
 def saida(core, monkeypatch, tmp_path):
-    """Pasta de saída isolada + log do monitor apontado para o tmp."""
+    """Pasta de saída isolada + log e status do monitor apontados para o tmp."""
     monkeypatch.setattr(core, "PASTA_DOWNLOADS", tmp_path)
     monkeypatch.setattr(core, "ARQUIVO_LOG_MONITOR", tmp_path / "zebra_usb_log.txt")
+    monkeypatch.setattr(core, "ARQUIVO_STATUS_MONITOR", tmp_path / "zebra_usb_status.json")
     monkeypatch.setattr(core.time, "sleep", lambda _s: None)
     return tmp_path
+
+
+def _publicar(core, *trabalhos: dict) -> None:
+    """Escreve o mural do jeito que `registrar_status_trabalho` (outro repo) escreve.
+
+    O formato está preso pelos testes DE LÁ (test_contrato_com_o_contador.py);
+    aqui ele é reproduzido para provar que este lado sabe lê-lo.
+    """
+    core.ARQUIVO_STATUS_MONITOR.write_text(
+        json.dumps({"versao": 1, "trabalhos": list(trabalhos)}), encoding="utf-8")
+
+
+def _trabalho(nome: str, *, ok: bool = True, quando: float | None = None,
+              etiquetas: int = 1) -> dict:
+    return {"arquivo": nome, "quando": _time.time() if quando is None else quando,
+            "hora": "2026-07-30 14:30:12", "etiquetas": etiquetas, "ok": ok}
 
 
 def _zip(pasta, nome: str):
@@ -168,6 +192,142 @@ def test_arquivo_preso_nao_e_confundido_com_impresso(core, saida, monkeypatch):
     monkeypatch.setattr(core.Path, "stat", _explode)
     # nem "impresso" (nao vimos sumir) nem ⚠️ (nao lemos o log): fica calado
     assert core.aguardar_impressao({nosso}, espera=0) == "sem_saida"
+
+
+# ── A resposta direta: o status publicado pelo monitor ───────────────────────
+
+def test_status_confirma_sem_o_arquivo_precisar_sumir(core, saida):
+    """O ganho central: hoje "impresso" dependia de o monitor APAGAR o arquivo,
+    ou seja, da opção "Excluir após imprimir" estar LIGADA. Com ela desligada o
+    arquivo nunca some e a tela jamais conseguia confirmar. O status responde."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _publicar(core, _trabalho(nosso.name, etiquetas=12))
+
+    assert nosso.exists(), "o cenário é justamente o arquivo continuar lá"
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "impresso"
+
+
+def test_status_de_falha_vira_aviso(core, saida):
+    """O ⚠️ exige PROVA — e esta é a prova mais forte que existe: o próprio
+    monitor dizendo que não conseguiu imprimir."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _publicar(core, _trabalho(nosso.name, ok=False))
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "falhou"
+
+
+def test_uma_falha_no_lote_contamina_o_veredito(core, saida):
+    """Meio lote impresso é problema do operador, não sucesso."""
+    inicio = _time.time() - 1
+    a = _zip(saida, "etiqueta de envio - a.zip")
+    b = _zip(saida, "etiqueta de envio - b.zip")
+    _publicar(core, _trabalho(a.name), _trabalho(b.name, ok=False))
+
+    assert core.aguardar_impressao({a, b}, espera=0, desde=inicio) == "falhou"
+
+
+def test_status_parcial_ainda_nao_e_veredito(core, saida):
+    """Só vale quando o monitor se pronunciou sobre TODOS os nossos arquivos —
+    senão um lote em curso seria lido como terminado."""
+    inicio = _time.time() - 1
+    a = _zip(saida, "etiqueta de envio - a.zip")
+    b = _zip(saida, "etiqueta de envio - b.zip")
+    _publicar(core, _trabalho(a.name))          # b ainda não saiu
+    core.ARQUIVO_LOG_MONITOR.write_text("[12:00:00] imprimindo...", encoding="utf-8")
+
+    assert core.aguardar_impressao({a, b}, espera=0, desde=inicio) == "imprimindo"
+
+
+def test_registro_de_lote_ANTERIOR_nao_responde_por_este(core, saida):
+    """O mural guarda os últimos trabalhos. Um registro velho com o mesmo nome
+    não pode ser lido como resposta a ESTA impressão — seria dizer "impresso"
+    para um lote que o monitor nem viu."""
+    inicio = _time.time()
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _publicar(core, _trabalho(nosso.name, quando=inicio - 3600))
+    _log_parado(core)
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "sem_sinal"
+
+
+def test_monitor_antigo_cai_nas_pistas_de_sempre(core, saida):
+    """Compatibilidade para trás: sem o arquivo de status (app < v1.26.0), o
+    comportamento tem de ser exatamente o de antes desta funcionalidade."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    assert not core.ARQUIVO_STATUS_MONITOR.exists()
+    core.ARQUIVO_LOG_MONITOR.write_text("[12:00:00] imprimindo...", encoding="utf-8")
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "imprimindo"
+
+
+@pytest.mark.parametrize("conteudo", [
+    "{lixo nao json",                       # gravação interrompida / corrompida
+    "[]",                                   # formato inesperado (lista no topo)
+    '{"versao": 1}',                        # sem a chave "trabalhos"
+    '{"versao": 1, "trabalhos": "nao"}',    # "trabalhos" com o tipo errado
+    '{"versao": 1, "trabalhos": [null, 3]}',  # itens que não são dicionários
+])
+def test_status_ilegivel_nao_atrapalha(core, saida, conteudo):
+    """Este canal só pode ADICIONAR certeza. Um status estragado tem de degradar
+    para as pistas antigas, nunca virar veredito nem exceção."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    core.ARQUIVO_STATUS_MONITOR.write_text(conteudo, encoding="utf-8")
+    core.ARQUIVO_LOG_MONITOR.write_text("[12:00:00] imprimindo...", encoding="utf-8")
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "imprimindo"
+
+
+def test_status_de_arquivo_alheio_nao_e_nosso(core, saida):
+    """O monitor também imprime o que o dono baixa na mão do painel do ML. Esses
+    trabalhos aparecem no mesmo mural e não podem responder por nós."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _publicar(core, _trabalho("danfe-simplificado-999.plain"))
+    _log_parado(core)
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "sem_sinal"
+
+
+def test_sem_arquivo_nosso_o_status_nao_e_consultado(core, saida):
+    """Corrida conhecida: o monitor consumiu antes do 2º instantâneo, então não
+    há nome para consultar. Não se pode adotar o trabalho de outro lote como
+    nosso — o veredito segue vindo só da prova de vida."""
+    inicio = _time.time() - 1
+    _publicar(core, _trabalho("etiqueta de envio - de outro lote.zip"))
+    core.ARQUIVO_LOG_MONITOR.write_text("[12:00:00] imprimindo...", encoding="utf-8")
+
+    assert core.aguardar_impressao(set(), desde=inicio) == "imprimindo"
+
+
+def test_status_e_consultado_antes_das_pistas(core, saida):
+    """Ordem importa: um arquivo que FALHOU não é apagado pelo monitor, então
+    ele fica na pasta com o log avançando — indistinguível de um lote demorado.
+    Só consultando o status primeiro a falha aparece."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _publicar(core, _trabalho(nosso.name, ok=False))
+    core.ARQUIVO_LOG_MONITOR.write_text("[12:00:00] trabalhando", encoding="utf-8")
+
+    assert core.aguardar_impressao({nosso}, espera=0, desde=inicio) == "falhou"
+
+
+def test_sai_assim_que_o_status_responde(core, saida, monkeypatch):
+    """Não pode fazer o operador esperar o teto inteiro depois da resposta."""
+    inicio = _time.time() - 1
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    voltas = []
+
+    def _publica_na_volta(_s):
+        voltas.append(1)
+        _publicar(core, _trabalho(nosso.name))
+
+    monkeypatch.setattr(core.time, "sleep", _publica_na_volta)
+    assert core.aguardar_impressao({nosso}, espera=60, desde=inicio) == "impresso"
+    assert len(voltas) == 1, "esperou mais do que precisava"
 
 
 # ── Texto mostrado na confirmação ────────────────────────────────────────────

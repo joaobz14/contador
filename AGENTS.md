@@ -297,12 +297,23 @@ em 2º plano.
   mesmo contrato** desde 2026-07-29 (repo `impressora-zebra-usb`,
   `tests/test_contrato_com_o_contador.py`) — contrato documentado só de um lado
   é meio contrato.
-- **Retorno do monitor (`aguardar_impressao`):** a entrega é por arquivo e não
-  havia canal de volta — com o monitor fechado, os ZIPs se acumulavam e o dono
-  só descobria pelo papel que não saía. A tela observa dois sinais que o monitor
-  **já produzia**: o arquivo **sumir** (ele apaga após imprimir) e o **log dele
-  avançar** (`ARQUIVO_LOG_MONITOR`), que cobre o lote grande em que o ZIP só some
-  na última etiqueta. Descobre quais arquivos são dela por **diferença de dois
+- **Retorno do monitor (`aguardar_impressao`): 3 fontes, resposta antes de pista.**
+  A entrega é por arquivo e não havia canal de volta — com o monitor fechado, os
+  ZIPs se acumulavam e o dono só descobria pelo papel que não saía. Hoje o app da
+  Zebra (**≥ v1.26.0**) publica uma **resposta**: um mural
+  (`ARQUIVO_STATUS_MONITOR` = `~/zebra_usb_status.json`, gravado por
+  `registrar_status_trabalho` no outro repo) com `{arquivo, quando, etiquetas,
+  ok}` por arquivo processado. `_veredito_do_status` é consultado **primeiro** no
+  laço, e só ele distingue **`falhou`** de "ainda não terminou" — um arquivo que
+  falhou **não é apagado** pelo monitor, então sem o mural a falha ficava
+  indistinguível de um lote demorado. Ele também é a única fonte que funciona com
+  a opção **"Excluir após imprimir" DESLIGADA** (sem ela o arquivo nunca some).
+  Sem o mural (**monitor antigo**), tudo degrada para as duas **pistas** de antes,
+  que o monitor **já produzia**: o arquivo **sumir** (ele apaga após imprimir) e o
+  **log dele avançar** (`ARQUIVO_LOG_MONITOR`), que cobre o lote grande em que o
+  ZIP só some na última etiqueta. O corte por `desde` no mural não é opcional:
+  ele guarda os últimos trabalhos, e um registro **anterior** de mesmo nome não
+  pode responder pela impressão atual. Descobre quais arquivos são dela por **diferença de dois
   instantâneos** (`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes`
   devolve os pendentes, não o caminho, e propagá-lo mexeria em núcleo,
   provedores, bot e CLI de uma vez. **Na dúvida, calado:** se o monitor consumiu
@@ -319,7 +330,24 @@ em 2º plano.
   o log não pôde ser lido; a versão anterior colapsava os dois casos num
   booleano. `None` → `sem_saida` (silêncio); só log **encontrado e sem avanço**
   vira `sem_sinal`. **Falso alarme é pior que aviso nenhum:** ensina o operador
-  a ignorar o ⚠️, e ele perde a utilidade no dia em que estiver certo.
+  a ignorar o ⚠️, e ele perde a utilidade no dia em que estiver certo. O mural
+  respeita a mesma regra: status **ilegível/ausente/parcial** nunca vira veredito
+  (`_status_do_monitor` devolve `{}` e o laço cai nas pistas), e o `try/except
+  OSError` em volta do `ler_json` **não é redundante** — o `exists()` dele fica
+  fora do próprio `try`, e um arquivo preso pelo OneDrive escaparia como exceção
+  numa checagem que roda **depois** de a etiqueta já ter saído.
+- **Os dois apps são separados de propósito — não junte (debate de 2026-07-30).**
+  O app da Zebra não é back-end do contador: seus `PREFIXOS` incluem
+  `etiqueta mercadoenvios`/`shipping-label`/`danfe-simplificado-`, os nomes que o
+  **site do ML** dá ao baixar etiqueta na mão (funciona sem o contador existir), e
+  ele tem funcionalidade própria (etiquetas separadoras, `gerar_zpl_separador`).
+  Além disso ele roda **elevado** (UAC, para limpar a fila do spooler), é app de
+  bandeja de **instância única** ligado o dia todo, e depende de
+  `pywin32`/`pystray`/`pillow` (**só Windows**) — enquanto o núcleo daqui é
+  portátil e o CI roda no Linux. A pasta Downloads é uma **fila com persistência
+  de graça**: a tela pode cair no meio do lote que a impressão continua. O único
+  ganho real da fusão era o canal de volta, e ele foi obtido **sem** fundir (mural
+  de status, acima).
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).

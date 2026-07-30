@@ -51,6 +51,22 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-07-30 — Canal de volta com o app da Zebra (mural de status) + decisão
+  de NÃO fundir os dois apps.** A entrega entre contador e app da Zebra é por
+  arquivo e não tinha resposta: a tela adivinhava por duas pistas (o ZIP sumir,
+  o log do monitor avançar). Duas limitações reais: "sumir" só existe com
+  *Excluir após imprimir* **ligada**, e nenhuma das pistas distingue **falha**
+  de "ainda imprimindo" (o monitor **não apaga** o que falhou). Agora o app
+  publica `~/zebra_usb_status.json` (`registrar_status_trabalho`, v1.26.0) e
+  `_veredito_do_status` o consulta **antes** das pistas. Nós novos:
+  `canal_de_volta_status_zebra`, `veredito_resposta_antes_de_pista`,
+  `status_ler_json_exists_fora_do_try` (o `except OSError` extra não é
+  redundante — o `exists()` do `ler_json` fica fora do try dele) e o conceito
+  `nao_fundir_contador_e_zebra` (evidência decisiva: os `PREFIXOS` do monitor
+  cobrem o download manual do painel do ML, então ele funciona sem o contador;
+  mais UAC, instância única de bandeja e dependências Windows-only). Depois do
+  `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
+
 - **2026-07-30 — Teste do item 12 feito: resultado NEGATIVO no endpoint.** O
   `--comparar` rodou nas duas contas num dia com coleta real e devolveu
   `HTTP 200` sem `driver.id`. Mas o painel do ML mostrava, nas DUAS contas, o

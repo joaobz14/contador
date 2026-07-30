@@ -1471,6 +1471,12 @@ def nome_saida_unico(pasta: Path, prefixo: str, base: str, ext: str) -> Path:
 # jamais um motivo para a impressao falhar.
 # ---------------------------------------------------------------------------
 ARQUIVO_LOG_MONITOR = Path.home() / "zebra_usb_log.txt"
+# Resposta DIRETA do monitor, publicada por ele a cada arquivo processado
+# (impressora_zebra_usb.py >= v1.26.0, `registrar_status_trabalho`). Quando
+# existe, ela dispensa a adivinhacao acima: o monitor diz QUAL arquivo processou
+# e SE deu certo. Monitor antigo nao publica nada -> caimos nos sinais indiretos,
+# exatamente como antes (compatibilidade para tras de graca).
+ARQUIVO_STATUS_MONITOR = Path.home() / "zebra_usb_status.json"
 # Prefixos que o monitor vigia (MonitorEtiquetas.PREFIXOS do outro repo) e que
 # ESTE app gera. Usados so para reconhecer as nossas saidas na pasta.
 PREFIXOS_SAIDA = ("etiqueta de envio", "etiqueta shopee")
@@ -1513,6 +1519,61 @@ def _mtime_log_monitor() -> float | None:
         return None
 
 
+def _status_do_monitor() -> dict[str, dict]:
+    """O que o monitor publicou, por nome de arquivo ({} quando nao da para saber).
+
+    Tolerante de proposito: arquivo ausente (monitor antigo, que nao publica),
+    ilegivel ou com formato inesperado viram {} — e ai valem os sinais indiretos
+    de sempre. Este canal so pode ADICIONAR certeza, nunca tirar.
+
+    Le por `ler_json` (silencia tudo como {}), e NAO por `ler_estado`: isto e um
+    mural de avisos de OUTRO app, nao o estado de impressao — nao ha nada a
+    preservar aqui, e um arquivo estragado deve simplesmente sumir do caminho.
+
+    O try/except em volta NAO e redundante: `ler_json` chama `caminho.exists()`
+    FORA do seu try, e um OSError sem errno conhecido (arquivo preso pelo
+    OneDrive/antivirus) escapa de la. Aqui isso nao pode virar excecao — a
+    checagem inteira e best-effort e roda depois de a etiqueta ja ter saido.
+    """
+    try:
+        dados = _estado.ler_json(ARQUIVO_STATUS_MONITOR)
+    except OSError:
+        return {}
+    if not isinstance(dados, dict) or not isinstance(dados.get("trabalhos"), list):
+        return {}
+    saida: dict[str, dict] = {}
+    for t in dados["trabalhos"]:            # em ordem cronologica: o ultimo vence
+        if isinstance(t, dict) and isinstance(t.get("arquivo"), str):
+            saida[t["arquivo"]] = t
+    return saida
+
+
+def _veredito_do_status(nossos: set[Path], desde: float) -> str | None:
+    """Resposta direta do monitor sobre `nossos`, ou None quando ele nao se
+    pronunciou sobre TODOS eles (monitor antigo, ou trabalho ainda em curso).
+
+    O corte por `desde` e essencial: o mural guarda os ultimos trabalhos, entao
+    um registro ANTERIOR com o mesmo nome nao pode ser lido como resposta a esta
+    impressao. O nome ja carrega carimbo unico (nome_saida_unico), mas depender
+    disso seria confiar numa propriedade de outra funcao para nao mentir aqui.
+    """
+    if not nossos:
+        return None                          # sem nome para consultar, o mural nao ajuda
+    status = _status_do_monitor()
+    if not status:
+        return None
+    ok = True
+    for p in nossos:
+        t = status.get(p.name)
+        if not isinstance(t, dict):
+            return None                      # ainda nao processou este arquivo
+        quando = t.get("quando")
+        if not isinstance(quando, (int, float)) or quando < desde:
+            return None                      # registro de um lote anterior
+        ok = ok and bool(t.get("ok"))
+    return "impresso" if ok else "falhou"
+
+
 def _ainda_na_pasta(nossos: set[Path]) -> bool:
     """True se algum arquivo continua la. Na duvida (OSError: arquivo preso pelo
     antivirus/OneDrive), responde TRUE: e melhor nao avisar nada do que afirmar
@@ -1532,12 +1593,25 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
     """Espera um sinal do monitor da Zebra sobre `nossos` arquivos.
 
     Devolve:
-      "impresso"  — todos sumiram: o monitor consumiu e apagou (certeza);
+      "impresso"  — o monitor confirmou (pelo status publicado, ou porque os
+                    arquivos sumiram: ele apaga o que imprimiu);
+      "falhou"    — o monitor publicou FALHA num dos nossos arquivos;
       "imprimindo"— o monitor esta vivo, mas ainda nao da para afirmar que O
                     NOSSO arquivo saiu;
       "sem_sinal" — o log EXISTE e provadamente nao avancou (evidencia de que o
                     monitor esta parado);
       "sem_saida" — nao da para afirmar nada: fica CALADO.
+
+    TRES FONTES, em ordem de forca. A 1a e uma RESPOSTA, as outras duas sao
+    PISTAS, e por isso ela e consultada primeiro:
+      1. o STATUS publicado pelo monitor (`_veredito_do_status`) — ele diz qual
+         arquivo processou e se deu certo. E a unica fonte que distingue "falhou"
+         de "ainda nao terminou", e a unica que funciona com a opcao "Excluir
+         apos imprimir" DESLIGADA (sem ela o arquivo nunca some e a pista 2
+         nunca fecha). So existe com o monitor >= v1.26.0;
+      2. o ARQUIVO SUMIR — o monitor apaga apos imprimir;
+      3. o LOG DO MONITOR AVANCAR — prova que ele esta VIVO, util no lote grande
+         em que o arquivo so some na ultima etiqueta.
 
     Retorna assim que houver certeza, entao lote pequeno nao espera nada. O teto
     e curto de proposito: isto informa a confirmacao, nao pode virar espera longa
@@ -1571,6 +1645,12 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
     fim = inicio + espera
     vivo: bool | None = False
     while True:
+        # A resposta do monitor vem primeiro: ela e a unica que sabe dizer
+        # "falhou", e um arquivo que falhou NAO e apagado — sem consultar o
+        # status antes, a falha ficaria indistinguivel de um lote demorado.
+        veredito = _veredito_do_status(nossos, inicio)
+        if veredito:
+            return veredito
         if not _ainda_na_pasta(nossos):
             return "impresso"
         atual = _vivo()
@@ -1587,6 +1667,9 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
 
 _TEXTO_SINAL = {
     "impresso": "✅ O monitor da Zebra confirmou: o arquivo foi impresso.",
+    "falhou": ("⚠️ O monitor da Zebra reportou FALHA ao imprimir este lote.\n"
+               "Confira a impressora (papel, fila) e o log de erros do app "
+               "antes de responder."),
     "imprimindo": "⏳ O monitor da Zebra está ativo e ainda imprimindo o lote.",
     "sem_sinal": ("⚠️ O monitor da Zebra NÃO deu sinal — o arquivo continua na pasta "
                   "Downloads.\nVerifique se o app da impressora está aberto e "

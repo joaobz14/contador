@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785425855.908323,
-  "ast_hash": "d6fcc7522c21afc97eb4cd584dd4210a06253845",
-  "semantic_hash": "d6fcc7522c21afc97eb4cd584dd4210a06253845"
+  "mtime": 1785429441.5539021,
+  "ast_hash": "fd745ed3b3f6de29c1122e7043086a29b4c7695a",
+  "semantic_hash": "fd745ed3b3f6de29c1122e7043086a29b4c7695a"
  },
  "CLAUDE.md": {
-  "mtime": 1785425855.9074953,
-  "ast_hash": "2d6daa67c5ee0c6ce3dd3104e2a5390f5e04e7fe",
-  "semantic_hash": "2d6daa67c5ee0c6ce3dd3104e2a5390f5e04e7fe"
+  "mtime": 1785429430.4347124,
+  "ast_hash": "f30ef09bda6f851e4303c2a770f537c1799a7df3",
+  "semantic_hash": "f30ef09bda6f851e4303c2a770f537c1799a7df3"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785352885.5545878,
-  "ast_hash": "b958d8b41ae8a35512d63ae17f7c11fa8e5a7d2f",
-  "semantic_hash": "b958d8b41ae8a35512d63ae17f7c11fa8e5a7d2f"
+  "mtime": 1785429490.3107111,
+  "ast_hash": "f4a8f49f6106c3ec5e44ebd5e49ba9f225a94ac5",
+  "semantic_hash": "f4a8f49f6106c3ec5e44ebd5e49ba9f225a94ac5"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785428068.8285527,
-  "ast_hash": "8ae23c8f40c3e3d8826363b4b102b9840e1a9419",
-  "semantic_hash": "8ae23c8f40c3e3d8826363b4b102b9840e1a9419"
+  "mtime": 1785429503.9787107,
+  "ast_hash": "0e01c9086477ff1beb5a88a54b7ed71bc06e4192",
+  "semantic_hash": "0e01c9086477ff1beb5a88a54b7ed71bc06e4192"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -340,14 +340,14 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785412172.4253445,
-  "ast_hash": "6cca7cbc43fd6e3b616462314630f7eea5d2d6ec",
-  "semantic_hash": "6cca7cbc43fd6e3b616462314630f7eea5d2d6ec"
+  "mtime": 1785429373.3427138,
+  "ast_hash": "a1acf07f8d184b17fcab6a2fd0eeb8dad0ae987d",
+  "semantic_hash": "a1acf07f8d184b17fcab6a2fd0eeb8dad0ae987d"
  },
  "separador_gui.py": {
-  "mtime": 1785412335.4173543,
-  "ast_hash": "98c8c35141667f767b0ee7e68f5610bc7833c06e",
-  "semantic_hash": "98c8c35141667f767b0ee7e68f5610bc7833c06e"
+  "mtime": 1785429267.110716,
+  "ast_hash": "c997acc31237d50a4f18a518260d89adf94ea5eb",
+  "semantic_hash": "c997acc31237d50a4f18a518260d89adf94ea5eb"
  },
  "shopee_api.py": {
   "mtime": 1785345571.1193204,
@@ -425,9 +425,9 @@
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
  "tests/test_confirmacao_monitor.py": {
-  "mtime": 1785412277.859218,
-  "ast_hash": "b123c688698d149cb888e52232e9c8452f755e80",
-  "semantic_hash": "b123c688698d149cb888e52232e9c8452f755e80"
+  "mtime": 1785429321.974715,
+  "ast_hash": "90fa7cbf2aaf307c0b85807cd9e27687e8b2659d",
+  "semantic_hash": "90fa7cbf2aaf307c0b85807cd9e27687e8b2659d"
  },
  "tests/test_contas.py": {
   "mtime": 1785347160.5106921,

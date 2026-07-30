@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 337,
- "edge_count": 594,
+ "node_count": 341,
+ "edge_count": 601,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3891,6 +3891,62 @@
    "community": 0,
    "norm_label": "confirmacao de impressao: o retorno do app da zebra (2026-07-29). a entrega das etiquetas e por arquivo -- o contador grava um .zip na downloads e o impressora_zebra_usb.py (repo separado, mesmo dono) o consome. o contrato do nome e do conteudo estava documentado e validado dos dois lados, mas nao havia canal de retorno: a tela nao sabia se o monitor estava aberto. monitor fechado = zips se acumulando na downloads e o operador so descobrindo pelo papel que nao sai. nada se perdia (a marcacao so acontece depois do 'saiu certo?', invariante 1), mas ele descobria tarde. solucao sem mudar nada do outro lado, usando duas coisas que o monitor ja fazia: (1) com 'excluir apos imprimir' ligado o arquivo some quando imprime -- sumiu = imprimiu; (2) o log dele (~/zebra_usb_log.txt) avanca a cada arquivo processado -- serve para lote grande, em que o zip so some na ultima etiqueta, provando que ele esta vivo antes de terminar. sem nenhum dos dois, o provavel e que esteja fechado. como a tela sabe quais arquivos sao dela: dois instantaneos da pasta (saidas_na_pasta antes/depois de gerar) e a diferenca -- gerar_zip_lotes devolve os pendentes, nao o caminho, e propagar o caminho ate a tela mexeria em nucleo, provedores, bot e cli de uma vez. corrida conhecida (achada por teste, nao em producao): o monitor varre a cada 1s e pode consumir o zip antes do segundo instantaneo -- a diferenca vem vazia, indistinguivel de 'nada gerado'. nesse caso o veredito e 'imprimindo' (o log prova vida), nunca 'impresso': o log tambem avanca por um lote anterior, e afirmar que o nosso saiu sem ter visto o arquivo sumir seria o erro que esta tela nao pode cometer. mesma regra em _ainda_na_pasta: oserror ao checar (antivirus/onedrive segurando) responde 'ainda esta la' -- na duvida, calado. o sinal informa e nunca decide: quem responde 'as etiquetas sairam corretamente?' continua sendo o operador olhando o papel, porque o monitor confirma que mandou imprimir, nao que a etiqueta saiu legivel e no lugar. teste-guarda test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa. a checagem roda na thread de trabalho (nunca na do tk) e e best-effort: falha vira aviso a menos, jamais impressao a menos.",
    "_origin": "manual"
+  },
+  {
+   "label": "CANAL DE VOLTA COM O APP DA ZEBRA (2026-07-30, v1.26.0 do outro repo): a entrega entre os dois apps e por ARQUIVO (ZIP na pasta Downloads) e nao havia resposta nenhuma -- com o monitor fechado os ZIPs se acumulavam e o dono so descobria pelo papel que nao saia. Ate aqui a tela ADIVINHAVA por duas pistas indiretas: o ZIP sumir (o monitor apaga o que imprime) e o mtime do log dele avancar. Duas limitacoes reais dessas pistas: (1) 'sumir' so acontece com a opcao 'Excluir apos imprimir' LIGADA -- com ela desligada a tela NUNCA conseguia afirmar 'impresso'; (2) nenhuma das duas distingue FALHA de 'ainda imprimindo', porque o monitor NAO apaga o arquivo que falhou, entao um lote quebrado fica identico a um lote grande em curso. A solucao foi um mural publicado pelo proprio monitor (~/zebra_usb_status.json, registrar_status_trabalho no repo impressora-zebra-usb): {arquivo, quando, etiquetas, ok} por arquivo processado, escrita atomica, ultimos 50, FORA da pasta vigiada (la viraria mais um arquivo a processar -- teste-guardiao dos dois lados). Isto foi feito SEM fundir os dois apps: era o unico ganho real que a fusao traria.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "canal_de_volta_status_zebra",
+   "community": 0,
+   "norm_label": "canal de volta com o app da zebra (2026-07-30, v1.26.0 do outro repo): a entrega entre os dois apps e por arquivo (zip na pasta downloads) e nao havia resposta nenhuma -- com o monitor fechado os zips se acumulavam e o dono so descobria pelo papel que nao saia. ate aqui a tela adivinhava por duas pistas indiretas: o zip sumir (o monitor apaga o que imprime) e o mtime do log dele avancar. duas limitacoes reais dessas pistas: (1) 'sumir' so acontece com a opcao 'excluir apos imprimir' ligada -- com ela desligada a tela nunca conseguia afirmar 'impresso'; (2) nenhuma das duas distingue falha de 'ainda imprimindo', porque o monitor nao apaga o arquivo que falhou, entao um lote quebrado fica identico a um lote grande em curso. a solucao foi um mural publicado pelo proprio monitor (~/zebra_usb_status.json, registrar_status_trabalho no repo impressora-zebra-usb): {arquivo, quando, etiquetas, ok} por arquivo processado, escrita atomica, ultimos 50, fora da pasta vigiada (la viraria mais um arquivo a processar -- teste-guardiao dos dois lados). isto foi feito sem fundir os dois apps: era o unico ganho real que a fusao traria.",
+   "_origin": "manual"
+  },
+  {
+   "label": "RESPOSTA ANTES DE PISTA (ordem de consulta em aguardar_impressao): _veredito_do_status e consultado no TOPO do laco, antes de _ainda_na_pasta e do mtime do log. Nao e preferencia estetica: um arquivo que FALHOU nao e apagado pelo monitor, entao ele continua na pasta com o log avancando -- exatamente o quadro de um lote demorado. So consultando o mural primeiro a falha aparece; nas pistas ela e invisivel por construcao. Duas salvaguardas no leitor: corte por `desde` (o mural guarda os ultimos trabalhos, e um registro ANTERIOR de mesmo nome nao pode responder por esta impressao -- o nome ja carrega carimbo unico via nome_saida_unico, mas depender disso seria confiar numa propriedade de OUTRA funcao para nao mentir aqui) e exigencia de pronunciamento sobre TODOS os nossos arquivos (parcial = lote em curso, nao terminado). Mural ausente/ilegivel/parcial degrada para as pistas de sempre: compatibilidade para tras com monitor antigo sai de graca, e este canal so pode ADICIONAR certeza, nunca tirar.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "veredito_resposta_antes_de_pista",
+   "community": 0,
+   "norm_label": "resposta antes de pista (ordem de consulta em aguardar_impressao): _veredito_do_status e consultado no topo do laco, antes de _ainda_na_pasta e do mtime do log. nao e preferencia estetica: um arquivo que falhou nao e apagado pelo monitor, entao ele continua na pasta com o log avancando -- exatamente o quadro de um lote demorado. so consultando o mural primeiro a falha aparece; nas pistas ela e invisivel por construcao. duas salvaguardas no leitor: corte por `desde` (o mural guarda os ultimos trabalhos, e um registro anterior de mesmo nome nao pode responder por esta impressao -- o nome ja carrega carimbo unico via nome_saida_unico, mas depender disso seria confiar numa propriedade de outra funcao para nao mentir aqui) e exigencia de pronunciamento sobre todos os nossos arquivos (parcial = lote em curso, nao terminado). mural ausente/ilegivel/parcial degrada para as pistas de sempre: compatibilidade para tras com monitor antigo sai de graca, e este canal so pode adicionar certeza, nunca tirar.",
+   "_origin": "manual"
+  },
+  {
+   "label": "O try/except OSError em volta do ler_json NAO e redundante (achado 2026-07-30): estado.ler_json chama caminho.exists() FORA do proprio try, e Path.exists() so engole OSError de errno conhecido (ENOENT/ENOTDIR/...) -- um arquivo preso pelo OneDrive/antivirus levanta e escapa. Pego pelo teste test_arquivo_preso_nao_e_confundido_com_impresso, que ja existia e faz Path.stat levantar. Aqui isso NAO pode virar excecao: a checagem inteira e best-effort e roda DEPOIS de a etiqueta ja ter saido -- falha vira aviso a menos, jamais impressao a menos. Fragilidade latente do ler_json compartilhado, nao introduzida por este codigo; guardada aqui porque quem 'simplificar' o except reintroduz o problema em silencio.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "status_ler_json_exists_fora_do_try",
+   "community": 0,
+   "norm_label": "o try/except oserror em volta do ler_json nao e redundante (achado 2026-07-30): estado.ler_json chama caminho.exists() fora do proprio try, e path.exists() so engole oserror de errno conhecido (enoent/enotdir/...) -- um arquivo preso pelo onedrive/antivirus levanta e escapa. pego pelo teste test_arquivo_preso_nao_e_confundido_com_impresso, que ja existia e faz path.stat levantar. aqui isso nao pode virar excecao: a checagem inteira e best-effort e roda depois de a etiqueta ja ter saido -- falha vira aviso a menos, jamais impressao a menos. fragilidade latente do ler_json compartilhado, nao introduzida por este codigo; guardada aqui porque quem 'simplificar' o except reintroduz o problema em silencio.",
+   "_origin": "manual"
+  },
+  {
+   "label": "POR QUE OS DOIS APPS NAO SAO UM SO (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb NAO e back-end do contador. Evidencia decisiva: MonitorEtiquetas.PREFIXOS inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o PROPRIO SITE do Mercado Livre da ao baixar etiqueta na mao. Ou seja, ele imprime sem o contador existir, e e o plano B no dia em que o contador estiver quebrado. Alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + PopupSeparadora, com lista de produtos e busca proprias). Tres impedimentos tecnicos: (1) ele roda ELEVADO (elevar_privilegios/UAC, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o UAC; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo Agendador; (3) plataforma -- pywin32/pystray/pillow sao Windows-only, enquanto o nucleo daqui e portatil e o CI roda no Linux. E a separacao PAGA: a pasta Downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). O unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "nao_fundir_contador_e_zebra",
+   "community": 0,
+   "norm_label": "por que os dois apps nao sao um so (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb nao e back-end do contador. evidencia decisiva: monitoretiquetas.prefixos inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o proprio site do mercado livre da ao baixar etiqueta na mao. ou seja, ele imprime sem o contador existir, e e o plano b no dia em que o contador estiver quebrado. alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + popupseparadora, com lista de produtos e busca proprias). tres impedimentos tecnicos: (1) ele roda elevado (elevar_privilegios/uac, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o uac; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo agendador; (3) plataforma -- pywin32/pystray/pillow sao windows-only, enquanto o nucleo daqui e portatil e o ci roda no linux. e a separacao paga: a pasta downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). o unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4677,6 +4733,16 @@
   },
   {
    "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "veredito_resposta_antes_de_pista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
    "confidence": "INFERRED",
    "confidence_score": 0.75,
    "source_file": ".github/workflows/testes.yml",
@@ -5097,6 +5163,16 @@
    "weight": 1.0,
    "source": "modo_ident",
    "target": "separador_etiquetas_ml_texto_carimbo_nome"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "nao_fundir_contador_e_zebra",
+   "target": "canal_de_volta_status_zebra",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -6339,6 +6415,26 @@
    "weight": 1.0,
    "source": "bot_vendas_apos_resumo",
    "target": "relatorio_texto_resumo_vendas_apos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "separador_etiquetas_ml_status_do_monitor",
    "confidence_score": 1.0
   },
   {
@@ -8765,6 +8861,16 @@
   },
   {
    "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "status_ler_json_exists_fora_do_try",
+   "target": "separador_etiquetas_ml_status_do_monitor",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
    "confidence": "EXTRACTED",
    "source_file": "tests/conftest.py",
    "source_location": "L1",
@@ -9191,6 +9297,26 @@
    "weight": 1.0,
    "source": "validar_obsidian_ci",
    "target": "tools_validar_obsidian_validar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "veredito_resposta_antes_de_pista",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "veredito_resposta_antes_de_pista",
+   "target": "separador_etiquetas_ml_veredito_do_status",
    "confidence_score": 1.0
   },
   {
