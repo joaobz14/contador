@@ -35,6 +35,7 @@ repo) monitora e imprime.
 | `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
+| `pegar_token_tiktok.py` | OAuth inicial do TikTok Shop. **Escrito, mas nunca rodou com sucesso** — a integração está ARQUIVADA (ver `docs/TIKTOK_SHOP_API.md`). |
 | `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify) e `validar_obsidian.py` (validador do cofre `obsidian/`). |
 | `api-monitor/` | Rotina **semanal** que checa mudanças nas docs/políticas públicas das APIs (ML+Shopee), sem dados de conta (Playwright/Edge + `claude -p`; saídas gitignoradas). |
 | `ads-monitor/` | Monitor **determinístico** (sem IA no núcleo) do Product Ads (Mercado Ads), 3 camadas: **coleta** (`coletar.py`, agendada diariamente — `registrar-tarefa.ps1`, mesmo padrão do `api-monitor/`) grava snapshot de campanha **e de ad_group/item dentro dela** (atribuição por SKU, best-effort) num SQLite local, incluindo o detalhe por campanha (`lost_impression_share_by_budget`/`_by_ad_rank`); **recomendação** (`recomendar.py`) gera ações a partir do histórico usando só os sinais que não dependem de margem (orçamento/ranking/ROAS vs. alvo). Falta a fonte de custo/margem por SKU para as recomendações condicionadas a ela (ver `ads-monitor/README.md`). **Camada 4 opcional (`narrar.py`)** narra em português, via `claude -p`, o que as camadas 1-3 já calcularam — aditiva, não muda o motor de regras. |
@@ -75,12 +76,14 @@ em 2º plano.
   sugerido (ordem recomendada de evolução). **`docs/AMAZON_SP_API.md`**:
   levantamento (pesquisa, nada implementado) de como a Amazon SP-API encaixaria
   no app no futuro — o risco decisivo é de negócio/BR (só FBM/MFN gera etiqueta).
-  **`docs/TIKTOK_SHOP_API.md`**: idem para o TikTok Shop (pesquisa, nada
-  implementado). **O objetivo imediato do dono é SÓ aviso de venda no Telegram**
-  — não imprimir —, o que contorna as perguntas em aberto sobre etiqueta; o resto
-  do levantamento fica para quando/se a impressão entrar. A doc oficial é
-  **inacessível** do ambiente de sessão; leia a seção "Força da evidência" antes
-  de tratar qualquer item como fato.
+  **`docs/TIKTOK_SHOP_API.md`**: idem para o TikTok Shop — **ARQUIVADO em
+  30/07/2026** (pausa, não desistência). O objetivo era **só aviso de venda no
+  Telegram**, não imprimir. Travou antes do 1º byte de API: o **Service ID** não
+  aparece no painel e o link de autorização responde "This service does not
+  exist". O documento diz **onde parou** e **qual é o passo que destrava** —
+  leia-o inteiro antes de mexer, inclusive a "Força da evidência" (a doc oficial
+  é **inacessível** do ambiente de sessão) e a "armadilha dos portais parecidos".
+  Já existem `pegar_token_tiktok.py` e a página de retorno: **não refaça**.
 - **`obsidian/` é a base de contexto humano e operacional** (cofre versionado):
   decisões, conceitos, estado atual, incidentes, runbooks, funcionalidades e
   orientação para agentes. **Graphify continua sendo a base estrutural/semântica**;

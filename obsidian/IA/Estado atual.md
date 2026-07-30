@@ -43,6 +43,7 @@ verified_at_commit: bcab879
 
 ## 🔬 Pesquisa futura (nada implementado)
 - **Amazon SP-API** (`docs/AMAZON_SP_API.md`) — levantamento; o risco decisivo é de negócio/BR (só FBM/MFN gera etiqueta). [[Amazon (pesquisa)]].
+- **TikTok Shop** (`docs/TIKTOK_SHOP_API.md`) — **ARQUIVADO 30/07/2026** (pausa, não desistência). Objetivo era **só aviso de venda no Telegram**, não imprimir. Travou **antes do 1º byte de API**: o **Service ID** não aparece no painel (e não é a "Chave do aplicativo"), então o link de autorização responde *"This service does not exist"*. **Já prontos, não refazer:** levantamento, `pegar_token_tiktok.py`, página de retorno do OAuth servindo aos 2 marketplaces, e o app criado no painel (chave + segredo + URL de redirecionamento). **Passo que destrava:** rodar `POST /order/202309/orders/search` na Ferramenta de teste de API do painel — prova se a API responde **e** entrega a forma real do payload. Confirmado em produção que a etiqueta sai em **ZPL** no BR, se a impressão entrar um dia.
 - **MCP Server do Mercado Livre** — avaliado; é **assistente de documentação** (`search_documentation`/`get_documentation_page`), **não** acessa dados/operações da conta. Não integrado. Candidato a apoio do `api-monitor`.
 
 ## ⚠️ Limitações conhecidas

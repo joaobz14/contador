@@ -1,8 +1,54 @@
 # TikTok Shop Open API — levantamento para futura integração
 
-> **Status: pesquisa, nada implementado.** Registra como a API do TikTok Shop
-> funciona e como ela encaixaria neste app, ao lado de Mercado Livre e Shopee.
-> Levantado em **30/07/2026**.
+> ## 🗄️ ARQUIVADO em 30/07/2026 — retomar mais para frente
+>
+> **Decisão do dono: parar aqui.** Não é abandono nem "não fazer" — é uma pausa.
+> O que segue abaixo está preservado justamente para a retomada **não recomeçar
+> do zero**: boa parte do custo desta pesquisa foi descobrir onde as coisas
+> ficam, e isso não se refaz de graça.
+>
+> ### O que já está pronto (NÃO refazer)
+>
+> | Item | Onde |
+> |---|---|
+> | Levantamento da API (endpoints, assinatura, token) | este documento |
+> | `pegar_token_tiktok.py` — bootstrap do OAuth | raiz do repo |
+> | Página de retorno do OAuth, servindo aos 2 marketplaces | `docs/index.html` |
+> | App criado no Partner Center, com **App Key** e **App Secret** | painel do dono |
+> | URL de redirecionamento cadastrada (`joaobz14.github.io/contador/`) | painel do dono |
+>
+> ### Onde parou, exatamente
+>
+> **Não há como autorizar a loja ainda.** O link
+> `services.tiktokshop.com/open/authorize?service_id=…` responde
+> **"This service does not exist"**, porque o **Service ID não aparece** na
+> página do app — e ele **não é** a "Chave do aplicativo" (foi o que se tentou).
+> As duas hipóteses vivas, nenhuma verificada:
+>
+> 1. o Service ID só é liberado **depois da avaliação de segurança e privacidade**
+>    que o painel exige para acessar dados via API; ou
+> 2. para **vendedor direto** (integração da própria loja) o caminho não é o
+>    `authorize` de parceiro, e sim a **Ferramenta de teste de API** do painel,
+>    que costuma emitir token direto.
+>
+> ### O passo que destrava (fazer PRIMEIRO na retomada)
+>
+> Na **Ferramenta de teste de API** do painel, rodar
+> **`POST /order/202309/orders/search`** (versão **202309**, não a 202305 que vem
+> pré-selecionada) e **guardar a resposta**. Esse endpoint não pede ID nenhum.
+>
+> Isso resolve os dois problemas de uma vez: prova se a API já responde para esta
+> loja, e entrega **a forma real do payload** — que é o que falta para escrever o
+> `tiktok_api.py` sem adivinhar. Ao guardar, **remova os dados do comprador**
+> (nome, endereço, telefone, e-mail, CPF): para o alerta só interessam os nomes
+> dos campos, o ID do pedido, o status, a data e o SKU/quantidade.
+>
+> Se der erro, **a mensagem também informa** — ela diz se falta escopo,
+> autorização ou aprovação.
+
+> **Status do conteúdo: pesquisa, nada implementado.** Registra como a API do
+> TikTok Shop funciona e como ela encaixaria neste app, ao lado de Mercado Livre
+> e Shopee. Levantado em **30/07/2026**.
 >
 > **Leia a seção "Força da evidência" antes de codar.** A doc oficial
 > (`partner.tiktokshop.com`) **não pôde ser lida** durante este levantamento — o

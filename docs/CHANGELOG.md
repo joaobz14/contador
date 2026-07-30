@@ -38,6 +38,18 @@ Histórico das principais mudanças do projeto.
   registra os becos sem saída, inclusive uma IA de suporte que respondeu pela
   documentação de outro produto.
 
+  **ARQUIVADO no mesmo dia, a pedido do dono — pausa, não desistência.** A
+  integração travou **antes do primeiro byte de API**: não há como autorizar a
+  loja porque o **Service ID não aparece** no painel (e não é a "Chave do
+  aplicativo"), e o link de autorização responde *"This service does not exist"*.
+  Ficaram prontos e **não devem ser refeitos**: o levantamento,
+  `pegar_token_tiktok.py`, a página de retorno do OAuth (que agora serve à Shopee
+  **e** ao TikTok) e o app criado no painel com chave, segredo e URL de
+  redirecionamento. O documento registra **onde parou** e **qual é o passo que
+  destrava** — rodar `POST /order/202309/orders/search` na Ferramenta de teste de
+  API do painel, que de uma vez prova se a API responde e entrega a forma real do
+  payload.
+
 ### Decidido
 - **Os dois apps continuam separados** (avaliado a pedido do dono). O app da
   Zebra não é back-end deste: ele também imprime o que você baixa **na mão** pelo
