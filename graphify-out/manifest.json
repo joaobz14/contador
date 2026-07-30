@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785426739.9724936,
-  "ast_hash": "c56ca96f3b7191825a3e8c4f6ef4625a8c24edc1",
-  "semantic_hash": "c56ca96f3b7191825a3e8c4f6ef4625a8c24edc1"
+  "mtime": 1785426953.5196276,
+  "ast_hash": "823a0ea5cbb9dc16688bfc9f40d2dbdae436208e",
+  "semantic_hash": "823a0ea5cbb9dc16688bfc9f40d2dbdae436208e"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -390,9 +390,9 @@
   "semantic_hash": "7049a2a84210d329ef35abbe4c04c5f53fdc056c"
  },
  "tests/test_bot_alerta.py": {
-  "mtime": 1785426629.6403682,
-  "ast_hash": "4913f91587652f9ca426b3e1541e0f629eaf62ed",
-  "semantic_hash": "4913f91587652f9ca426b3e1541e0f629eaf62ed"
+  "mtime": 1785427341.6507602,
+  "ast_hash": "5c571d113b99f42a41fdc8535d8eadd40734838c",
+  "semantic_hash": "5c571d113b99f42a41fdc8535d8eadd40734838c"
  },
  "tests/test_bot_impressao.py": {
   "mtime": 1784935664.5831094,

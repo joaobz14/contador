@@ -20379,6 +20379,34 @@
    "id": "tests_test_relatorio_test_total_por_sku_ignora_conta_sem_venda",
    "community": 3,
    "norm_label": "test_total_por_sku_ignora_conta_sem_venda()"
+  },
+  {
+   "label": "test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L520",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando",
+   "community": 72,
+   "norm_label": "test_botao_vendas_apos_entrega_o_mesmo_formato_do_comando()"
+  },
+  {
+   "label": "_botao()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L551",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_botao",
+   "community": 72,
+   "norm_label": "_botao()"
   }
  ],
  "links": [
@@ -26345,6 +26373,36 @@
    "weight": 1.0,
    "source": "tests_test_ambas_test_status_e_pendentes_compostos",
    "target": "tests_test_ambas_g",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L540",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando",
+   "target": "tests_test_bot_alerta_botao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L535",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando",
+   "target": "tests_test_bot_alerta_ctx",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L539",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando",
+   "target": "tests_test_bot_alerta_update",
    "confidence_score": 1.0
   },
   {
@@ -36508,6 +36566,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L551",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_botao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
    "source_location": "L168",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
@@ -36542,6 +36610,16 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_alerta_no_horario_janela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L520",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando",
    "confidence_score": 1.0
   },
   {
@@ -49570,5 +49648,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "4fb86310a6752c079c8478f0ccea63e039e024c0"
+ "built_at_commit": "89736003ad2b45f42e2e154ab54935044528ef79"
 }
