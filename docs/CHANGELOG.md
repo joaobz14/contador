@@ -4,6 +4,29 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Melhorado
+- **Resumo de vendas do bot (`/vendasapos`) com layout legível no celular.** Era
+  uma lista crua de "SKU - quantidade", uma linha embaixo da outra, em ordem de
+  chegada. Agora:
+  - cabeçalho com a janela (`desde 08h30`) e o horário do envio;
+  - **um bloco por conta**, com subtotal no título (`COZILATTI · 59 unidades ·
+    26 SKUs`) e divisor entre eles;
+  - lista **alinhada** — quantidade encostada à direita, largura da coluna vinda
+    do SKU mais longo daquele bloco;
+  - **ordenado pelo que mais vendeu**, não mais pela ordem em que a venda caiu;
+  - conta sem venda aparece como "nenhuma venda" em vez de sumir — ausência
+    também é informação;
+  - total geral no rodapé.
+
+  A mensagem vai **sempre em uma só**: se a lista passar do limite do Telegram,
+  mostra os maiores e acrescenta "… e mais X SKUs (Y un)".
+  - bloco **📦 TOTAL POR SKU** somando as contas, antes do rodapé: é a lista de
+    reposição (sem ele, um SKU que vendeu nas duas contas obriga a somar de
+    cabeça). Aparece só quando há mais de uma conta com venda — com uma só,
+    repetiria a lista dela.
+  Novo comando `python bot_telegram.py testar-resumo` manda o resumo para os
+  chats liberados na hora, para conferir o layout sem esperar uma venda.
+
 ### Investigado e descartado
 - **Detectar sozinho se o motorista da coleta é o mesmo nas duas contas ML: não
   é possível pela API pública.** A ideia era o app avisar (sem selecionar nada)
@@ -41,6 +64,22 @@ Histórico das principais mudanças do projeto.
   quem responde se as etiquetas saíram corretamente continua sendo você, olhando
   o papel — o monitor confirma que *mandou* imprimir, não que a etiqueta saiu
   legível e no lugar.
+
+### Segurança
+- **O token do bot parou de ser gravado no `bot.log` e no console.** A URL da API
+  do Telegram carrega o token no próprio caminho
+  (`https://api.telegram.org/bot<TOKEN>/getUpdates`), e a biblioteca HTTP
+  registrava cada requisição em INFO — com o log do bot em INFO, o token ia
+  inteiro para o arquivo e para a tela, a cada chamada, para sempre. Bastava
+  colar um trecho do log pedindo ajuda para entregar o token junto (foi o que
+  aconteceu em 30/07/2026). O `sem_segredos` do `registro.py` não cobria isso:
+  esses registros nascem dentro da biblioteca, sem passar pelo código do
+  projeto.
+  Agora `httpx` e `httpcore` ficam em WARNING — **erro de rede continua
+  aparecendo** (é o que importa para diagnóstico), só o INFO de requisição sai.
+  Nada do que o bot registra mudou.
+  Um token que apareceu num log deve ser trocado no BotFather (`/revoke`) por
+  precaução; esta correção garante que o novo não vaze do mesmo jeito.
 
 ### Corrigido
 - **O aviso do app da Zebra dava falso alarme em lote grande.** Num lote de 12 a

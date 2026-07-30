@@ -1,5 +1,8 @@
 """Formatacao dos textos do bot (puro, sem Telegram nem rede)."""
+from datetime import datetime
+
 import relatorio
+import separador_etiquetas_ml as core_mod
 from conftest import make_grupo
 
 
@@ -98,44 +101,173 @@ def test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico(core):
 
 
 # ------------------------------------------------------------ texto_resumo_vendas_apos
+# O resumo e HTML do Telegram (parse_mode="HTML"). Regras que os testes guardam:
+# so tags b/i/u/s/a/code/pre/blockquote/tg-spoiler; & < > escapados em TODO texto
+# dinamico (senao a API devolve 400 e a mensagem nao chega); alinhamento de
+# coluna SO dentro de <pre>; teto de 4096 caracteres.
+AGORA = datetime(2026, 7, 30, 12, 33, tzinfo=core_mod.TZ_BR)
+
+
+def _itens(d: dict) -> list:
+    return [{"chave": k, "quantidade": v} for k, v in d.items()]
+
+
+def _resumo(dados, **kw):
+    return relatorio.texto_resumo_vendas_apos(dados, agora=AGORA, **kw)
+
+
 def test_texto_resumo_vendas_apos_vazio(core):
-    assert relatorio.texto_resumo_vendas_apos({}) == "Nenhuma venda avisada hoje ainda."
-    assert relatorio.texto_resumo_vendas_apos({"Cozilatti": []}) == "Nenhuma venda avisada hoje ainda."
+    assert _resumo({}) == "Nenhuma venda avisada hoje ainda."
+    assert _resumo({"Cozilatti": []}) == "Nenhuma venda avisada hoje ainda."
 
 
-def test_texto_resumo_vendas_apos_por_conta_e_total(core):
-    itens_por_conta = {
-        "Cozilatti": [{"chave": "A01 - 2L 110", "quantidade": 1},
-                      {"chave": "A05 - 6L 110 FAK", "quantidade": 3}],
-        "Gastromaq": [{"chave": "A01 - 2L 110", "quantidade": 5},
-                      {"chave": "A02 - 4L 110", "quantidade": 5}],
-    }
-    txt = relatorio.texto_resumo_vendas_apos(itens_por_conta)
-    linhas = txt.split("\n")
-    assert linhas[0] == "RESUMO VENDAS APOS 8:30"
-    assert "COZILATTI" in linhas
-    assert "GASTROMAQ" in linhas
-    assert "A01 - 2L 110 - 1" in txt   # secao Cozilatti
-    assert "A01 - 2L 110 - 5" in txt   # secao Gastromaq
-    assert "TOTAL:" in linhas
-    assert txt.rsplit("TOTAL:", 1)[1].count("A01 - 2L 110 - 6") == 1  # soma das 2 contas
+def test_cabecalho_traz_a_janela_e_o_horario(core):
+    txt = _resumo({"Cozilatti": _itens({"A01": 1})})
+    assert "<b>RESUMO DE VENDAS</b>" in txt
+    assert "desde 08h30" in txt
+    assert "30/07, 12:33" in txt
 
 
-def test_texto_resumo_vendas_apos_ignora_conta_sem_venda(core):
-    txt = relatorio.texto_resumo_vendas_apos({
-        "Cozilatti": [{"chave": "A01", "quantidade": 1}],
-        "Gastromaq": [],
-    })
-    assert "GASTROMAQ" not in txt
+def test_ordena_por_quantidade_decrescente(core):
+    """O que mais vendeu tem de aparecer primeiro — era o motivo do pedido."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "A11": 10, "A05": 6})})
+    assert [ln.split()[0] for ln in _linhas_pre(txt)] == ["A11", "A05", "A01"]
 
 
-def test_texto_resumo_vendas_apos_sem_nome_de_conta(core):
-    # Setup legado (uma so conta, sem contas/): nao mostra cabecalho vazio
-    # (nao gera uma linha em branco extra so por causa do nome ausente).
-    txt = relatorio.texto_resumo_vendas_apos({"": [{"chave": "A01", "quantidade": 1}]})
-    assert "A01 - 1" in txt
-    assert "\n\n\n" not in txt
+def test_empate_desempata_pelo_sku(core):
+    """Ordem estavel: sem isso, dois SKUs de mesma quantidade trocariam de lugar
+    entre dois envios do mesmo dia e o dono leria como "mudou alguma coisa"."""
+    dados = {"Cozilatti": _itens({"B": 2, "A": 2, "C": 2})}
+    assert _linhas_pre(_resumo(dados)) == _linhas_pre(_resumo(dados))
+    assert [ln.split()[0] for ln in _linhas_pre(_resumo(dados))] == ["A", "B", "C"]
 
+
+def test_quantidade_alinhada_a_direita(core):
+    """Coluna so bate dentro de <pre> — e a largura vem do SKU mais longo do
+    bloco, nao de um numero fixo."""
+    linhas = _linhas_pre(_resumo({"Cozilatti": _itens({"A11": 10, "M120INX": 3})}))
+    # Propriedade, nao string escrita a mao: toda linha com o mesmo comprimento e
+    # a quantidade encostada na direita — e o que faz a coluna bater na tela.
+    assert len({len(ln) for ln in linhas}) == 1, f"colunas desalinhadas: {linhas}"
+    assert [ln.split()[-1] for ln in linhas] == ["10", "3"]
+    assert all(ln.rstrip() == ln for ln in linhas), "sobrou espaco depois do numero"
+
+
+def test_subtotal_por_conta_e_total_geral(core):
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "A05": 3}),
+                   "Gastromaq": _itens({"A02": 5})})
+    assert "<b>COZILATTI · 4 unidades · 2 SKUs</b>" in txt
+    assert "<b>GASTROMAQ · 5 unidades · 1 SKU</b>" in txt
+    assert "<b>TOTAL: 9 unidades</b>" in txt
+
+
+def test_singular_e_plural(core):
+    txt = _resumo({"Cozilatti": _itens({"A01": 1})})
+    assert "1 unidade ·" in txt and "1 SKU<" in txt
+    assert "unidades" not in txt.split("TOTAL:")[0].split("·")[1]
+
+
+def test_conta_sem_venda_aparece_como_nenhuma_venda(core):
+    """Ausencia tambem e informacao: o bloco nao pode sumir."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1}), "Gastromaq": []})
+    assert "<b>GASTROMAQ</b>" in txt
+    assert "nenhuma venda" in txt
+
+
+def test_conta_conhecida_sem_registro_tambem_aparece(core):
+    """Conta que nem chave tem no estado (nenhuma venda o dia todo)."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1})}, contas=["Cozilatti", "Shopee"])
+    assert "<b>SHOPEE</b>" in txt and "nenhuma venda" in txt
+
+
+# ---- total por SKU (a lista de reposicao) ----
+
+def test_total_por_sku_soma_as_contas(core):
+    """O numero que responde "quanto preciso repor": sem ele, o dono somaria de
+    cabeca o mesmo SKU que aparece em duas contas."""
+    txt = _resumo({"Cozilatti": _itens({"M120INX": 3, "A11": 10}),
+                   "Gastromaq": _itens({"M120INX": 2, "A03": 1})})
+    consolidado = txt.split("TOTAL POR SKU")[1]
+    assert "<b>TOTAL POR SKU · 16 unidades · 3 SKUs</b>" in txt
+    assert "M120INX   5" in consolidado          # 3 + 2
+    assert "A11      10" in consolidado
+
+
+def test_total_por_sku_tambem_ordena_por_quantidade(core):
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "B": 2}),
+                   "Gastromaq": _itens({"A01": 9})})
+    bloco = txt.split("TOTAL POR SKU")[1]
+    linhas = bloco.split("<pre>")[1].split("</pre>")[0].split("\n")
+    assert [ln.split()[0] for ln in linhas] == ["A01", "B"]
+
+
+def test_total_por_sku_nao_aparece_com_uma_conta_so(core):
+    """Com uma conta, o bloco repetiria a lista dela — viraria ruido."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "A05": 3})})
+    assert "TOTAL POR SKU" not in txt
+    assert "<b>TOTAL: 4 unidades</b>" in txt
+
+
+def test_total_por_sku_ignora_conta_sem_venda(core):
+    """Conta vazia nao pode fazer o consolidado aparecer sozinho."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1})}, contas=["Cozilatti", "Shopee"])
+    assert "TOTAL POR SKU" not in txt
+
+
+# ---- HTML: escapar errado nao quebra local, so devolve 400 no envio ----
+
+def test_escapa_texto_dinamico(core):
+    txt = _resumo({"Loja & Cia <x>": _itens({"A&B": 5, "X<Y": 2})})
+    assert "A&amp;B" in txt and "X&lt;Y" in txt
+    assert "LOJA &amp; CIA &lt;X&gt;" in txt
+
+
+def test_nao_gera_entidade_quebrada_ao_maiusculizar(core):
+    """Bug real: escapar ANTES do .upper() produzia "&AMP;" — entidade invalida,
+    400 na API. Maiuscula vem primeiro."""
+    txt = _resumo({"a & b": _itens({"A01": 1})})
+    assert "&AMP;" not in txt and "&amp;" in txt
+
+
+def test_alinhamento_medido_no_texto_CRU(core):
+    """O Telegram renderiza "&amp;" como 1 caractere. Se a largura fosse medida
+    no texto ja escapado, a coluna sairia torta na tela apesar de "parecer"
+    certa no codigo."""
+    import html as _html
+    linhas = [_html.unescape(ln) for ln in _linhas_pre(_resumo(
+        {"C": _itens({"A&B": 1, "LONGO": 2})}))]
+    assert len({len(ln) for ln in linhas}) == 1
+
+
+# ---- teto do Telegram ----
+
+def test_corta_pelos_maiores_e_avisa_o_corte(core):
+    muitos = {f"SKU-BEM-LONGO-DE-VERDADE-{i:04d}": 900 - i for i in range(300)}
+    txt = _resumo({"Cozilatti": _itens(muitos), "Gastromaq": _itens(muitos)})
+    assert len(txt) <= 4096, "estourou o limite do Telegram"
+    assert "… e mais" in txt
+    assert "SKU-BEM-LONGO-DE-VERDADE-0000" in txt, "o maior tem de sobreviver ao corte"
+
+
+def test_pre_nunca_fica_aberto(core):
+    """Mensagem UNICA de proposito: dividir o texto partiria um <pre> no meio e
+    a API devolveria 400. O corte acontece antes, por SKU."""
+    muitos = {f"SKU-BEM-LONGO-DE-VERDADE-{i:04d}": 900 - i for i in range(300)}
+    txt = _resumo({"Cozilatti": _itens(muitos), "Gastromaq": _itens(muitos)})
+    # Balanceamento, nao a contagem: o numero de blocos muda conforme as contas
+    # e o consolidado; o que nao pode mudar e ficar uma tag aberta.
+    assert txt.count("<pre>") == txt.count("</pre>") > 0
+    assert not txt.rstrip().endswith("<pre>")
+
+
+def _linhas_pre(txt: str) -> list[str]:
+    """Linhas do primeiro bloco <pre> (onde as colunas vivem)."""
+    return txt.split("<pre>")[1].split("</pre>")[0].split("\n")
+
+
+# ------------------------------------------------------------ dividir_mensagem
+# Continua em uso pelos OUTROS comandos do bot (texto puro, sem HTML). O resumo
+# de vendas nao usa: la o texto tem <pre>, e dividir partiria a tag no meio.
 
 def test_dividir_mensagem_curta_nao_divide(core):
     assert relatorio.dividir_mensagem("linha1\nlinha2") == ["linha1\nlinha2"]

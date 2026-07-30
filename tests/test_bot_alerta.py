@@ -165,10 +165,15 @@ def test_dados_alerta_usa_janela_curta_de_busca(monkeypatch):
 
 
 # ------------------------------------------------------------------- job_alerta
-def _ctx(chat_ids, send):
+def _ctx(chat_ids, send, extras=None):
+    """`extras` (opcional) coleta os kwargs de cada envio — e assim que os testes
+    do resumo conferem parse_mode/disable_web_page_preview, que sao tao
+    obrigatorios quanto o texto: sem parse_mode="HTML" as tags aparecem cruas."""
     class _Bot:
-        async def send_message(self, chat_id, texto, **k):
-            return send(chat_id, texto)
+        async def send_message(self, chat_id, texto=None, **k):
+            if extras is not None:
+                extras.append(k)
+            return send(chat_id, texto if texto is not None else k.get("text", ""))
 
     class _Ctx:
         bot_data = {"cfg": {"chat_ids": chat_ids}}
@@ -436,24 +441,62 @@ def _update(chat_id):
 
 
 def test_cmd_vendas_apos_junta_tudo_que_ja_foi_avisado(monkeypatch):
+    monkeypatch.setattr(core, "listar_contas", lambda: ["Cozilatti"])
     monkeypatch.setattr(bot, "_carregar_alertas", lambda: {
         "dia": "2026-07-24",
         "avisados": {"Cozilatti": [1]},
         "itens": {"Cozilatti": [{"chave": "A01", "quantidade": 1}]},
     })
-    enviados = []
-    ctx = _ctx([1], lambda cid, txt: enviados.append((cid, txt)))
+    enviados, extras = [], []
+    ctx = _ctx([1], lambda cid, txt: enviados.append((cid, txt)), extras)
 
     asyncio.run(bot.cmd_vendas_apos(_update(1), ctx))
 
-    assert len(enviados) == 1
-    assert "RESUMO VENDAS APOS 8:30" in enviados[0][1]
-    assert "A01 - 1" in enviados[0][1]
+    assert len(enviados) == 1, "o resumo vai em UMA mensagem (dividir partiria o <pre>)"
+    assert "<b>RESUMO DE VENDAS</b>" in enviados[0][1]
+    assert "A01" in enviados[0][1]
+
+
+def test_cmd_vendas_apos_envia_como_html(monkeypatch):
+    """Sem parse_mode="HTML" as tags aparecem cruas na tela; sem
+    disable_web_page_preview o Telegram pode pendurar um cartao de link."""
+    monkeypatch.setattr(core, "listar_contas", lambda: ["Cozilatti"])
+    monkeypatch.setattr(bot, "_carregar_alertas", lambda: {
+        "dia": "2026-07-24", "avisados": {},
+        "itens": {"Cozilatti": [{"chave": "A01", "quantidade": 1}]},
+    })
+    extras = []
+    ctx = _ctx([1], lambda cid, txt: None, extras)
+
+    asyncio.run(bot.cmd_vendas_apos(_update(1), ctx))
+
+    assert extras[0]["parse_mode"] == "HTML"
+    assert extras[0]["disable_web_page_preview"] is True
+
+
+def test_resumo_inclui_conta_sem_venda_do_dia(monkeypatch):
+    """A conta que nao vendeu nada hoje nem chave tem no estado — quem a coloca
+    na mensagem e `_contas_do_resumo`, lendo as contas cadastradas."""
+    monkeypatch.setattr(core, "listar_contas", lambda: ["Cozilatti", "Gastromaq"])
+    envio = bot._resumo_para_envio({"Cozilatti": [{"chave": "A01", "quantidade": 1}]})
+    assert "GASTROMAQ" in envio["text"] and "nenhuma venda" in envio["text"]
+
+
+def test_falha_ao_listar_contas_nao_derruba_o_resumo(monkeypatch):
+    """O bloco "nenhuma venda" e enfeite util; o resumo em si nao pode depender
+    de conseguir ler a pasta de contas."""
+    def _explode():
+        raise OSError("disco fora do ar")
+
+    monkeypatch.setattr(core, "listar_contas", _explode)
+    envio = bot._resumo_para_envio({"Cozilatti": [{"chave": "A01", "quantidade": 1}]})
+    assert "COZILATTI" in envio["text"]
 
 
 def test_cmd_vendas_apos_sem_nada_avisado(monkeypatch):
     monkeypatch.setattr(bot, "_carregar_alertas",
                         lambda: {"dia": "2026-07-24", "avisados": {}, "itens": {}})
+    monkeypatch.setattr(core, "listar_contas", lambda: [])
     enviados = []
     ctx = _ctx([1], lambda cid, txt: enviados.append((cid, txt)))
 
