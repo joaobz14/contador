@@ -28,6 +28,17 @@ def _zip(pasta, nome: str):
     return alvo
 
 
+def _log_parado(core, quando_atras: float = 3600.0):
+    """Cria o log do monitor com mtime ANTIGO — o unico caso em que o ⚠️ pode
+    aparecer: log encontrado E provadamente sem avanco."""
+    import os
+    import time as _t
+
+    core.ARQUIVO_LOG_MONITOR.write_text("[08:00:00] sessao anterior", encoding="utf-8")
+    velho = _t.time() - quando_atras
+    os.utime(core.ARQUIVO_LOG_MONITOR, (velho, velho))
+
+
 # ── Reconhecer as nossas saídas na pasta ─────────────────────────────────────
 
 def test_reconhece_os_zips_de_etiqueta(core, saida):
@@ -69,10 +80,25 @@ def test_arquivo_sumiu_e_impresso(core, saida):
     assert core.aguardar_impressao({nosso}) == "impresso"
 
 
-def test_arquivo_parado_e_log_parado_e_sem_sinal(core, saida):
-    """Nem consumiu, nem o monitor escreveu: provavelmente está fechado."""
+def test_arquivo_parado_e_log_PARADO_e_sem_sinal(core, saida):
+    """O ⚠️ exige PROVA: log encontrado e provadamente sem avanço."""
     nosso = _zip(saida, "etiqueta de envio - x.zip")
+    _log_parado(core)
     assert core.aguardar_impressao({nosso}, espera=0) == "sem_sinal"
+
+
+def test_sem_log_para_consultar_fica_CALADO(core, saida):
+    """INCIDENTE 2026-07-30: um lote de 12 avisou "o monitor NÃO deu sinal" com a
+    impressora trabalhando normal. Dois fatos somados: em lote grande o arquivo
+    não some dentro do teto (o monitor só o apaga na última etiqueta) E o log não
+    pôde ser lido — a versão anterior tratava "não sei" como "monitor parado".
+
+    Falso alarme é pior que aviso nenhum: ensina a ignorar o ⚠️, e aí ele perde a
+    utilidade justamente no dia em que estiver certo.
+    """
+    nosso = _zip(saida, "etiqueta de envio - x.zip")
+    assert not core.ARQUIVO_LOG_MONITOR.exists()
+    assert core.aguardar_impressao({nosso}, espera=0) == "sem_saida"
 
 
 def test_log_avancando_com_arquivo_parado_e_imprimindo(core, saida):
@@ -112,6 +138,7 @@ def test_parte_do_lote_consumida_ainda_nao_e_impresso(core, saida):
     a = _zip(saida, "etiqueta de envio - a.zip")
     b = _zip(saida, "etiqueta de envio - b.zip")
     a.unlink()
+    _log_parado(core)
     assert core.aguardar_impressao({a, b}, espera=0) == "sem_sinal"
 
 
@@ -139,7 +166,8 @@ def test_arquivo_preso_nao_e_confundido_com_impresso(core, saida, monkeypatch):
         raise OSError("arquivo preso")
 
     monkeypatch.setattr(core.Path, "stat", _explode)
-    assert core.aguardar_impressao({nosso}, espera=0) == "sem_sinal"
+    # nem "impresso" (nao vimos sumir) nem ⚠️ (nao lemos o log): fica calado
+    assert core.aguardar_impressao({nosso}, espera=0) == "sem_saida"
 
 
 # ── Texto mostrado na confirmação ────────────────────────────────────────────

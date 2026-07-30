@@ -48,6 +48,16 @@ não o caminho.
 > tela não pode cometer. Mesma regra se o `exists()` levantar (arquivo preso pelo
 > antivírus/OneDrive): responde "ainda está lá".
 
+> [!bug] O ⚠️ exige PROVA (incidente 2026-07-30)
+> Um lote de 12 avisou "o monitor NÃO deu sinal" **imprimindo normalmente**; lotes
+> pequenos acertavam. Dois fatos somados: em lote grande o arquivo não some dentro
+> do teto (só é apagado na última etiqueta) **e** o log não pôde ser lido — e a
+> versão anterior colapsava "não sei" e "log parado" num booleano.
+> Agora `_mtime_log_monitor` devolve `None` para "não sei" → `sem_saida`
+> (silêncio); só log **encontrado e sem avanço** vira `sem_sinal`.
+> **Falso alarme é pior que aviso nenhum:** ensina o operador a ignorar o ⚠️, e ele
+> perde a utilidade justamente no dia em que estiver certo.
+
 > [!danger] O sinal informa, nunca decide
 > Quem responde "as etiquetas saíram corretamente?" continua sendo o operador,
 > olhando o papel → [[Invariantes críticas]]. O monitor confirma que **mandou**

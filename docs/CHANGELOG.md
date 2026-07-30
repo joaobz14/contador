@@ -43,6 +43,20 @@ Histórico das principais mudanças do projeto.
   legível e no lugar.
 
 ### Corrigido
+- **O aviso do app da Zebra dava falso alarme em lote grande.** Num lote de 12 a
+  confirmação dizia "⚠️ o monitor da Zebra NÃO deu sinal" com a impressora
+  trabalhando normalmente; em lotes pequenos acertava. Dois fatos se somavam: em
+  lote grande o ZIP **não** desaparece dentro do tempo de espera (o app da
+  impressora só o apaga depois da última etiqueta), e o segundo sinal — o log
+  dele — não pôde ser lido. A versão anterior tratava "não consegui ler o log"
+  como "o monitor está parado".
+  Agora o ⚠️ **exige prova**: só aparece quando o log é encontrado E
+  provadamente não avançou. Se não há log para consultar, o app fica **calado** —
+  que é o comportamento de antes desta funcionalidade, com você conferindo o
+  papel. Falso alarme é pior que aviso nenhum: ensina a ignorar o aviso, e aí ele
+  perde a utilidade justamente no dia em que estiver certo.
+  O `separador.log` passou a registrar se o log do monitor foi encontrado e em
+  qual caminho, para diagnóstico futuro sem precisar reproduzir.
 - **Contas do ML sumiam da tela depois da reorganização de pastas** (incidente
   real, 2026-07-29). Na primeira abertura após a atualização, o seletor de conta
   e o modo **🌐 Ambas** desapareciam: a tela abria como se não houvesse nenhuma

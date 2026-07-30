@@ -312,6 +312,14 @@ em 2º plano.
   sendo o operador (invariante 1), porque o monitor confirma que MANDOU
   imprimir, não que a etiqueta saiu legível. Roda na thread de trabalho (nunca
   na do Tk) e é best-effort: falha vira aviso a menos, jamais impressão a menos.
+  **O ⚠️ exige PROVA (incidente 2026-07-30):** `_mtime_log_monitor` devolve
+  `None` para "não sei" (log ausente/ilegível) — distinto de "log parado". Um
+  lote de 12 avisou "monitor NÃO deu sinal" imprimindo normal, porque em lote
+  grande o arquivo não some dentro do teto (só é apagado na última etiqueta) e
+  o log não pôde ser lido; a versão anterior colapsava os dois casos num
+  booleano. `None` → `sem_saida` (silêncio); só log **encontrado e sem avanço**
+  vira `sem_sinal`. **Falso alarme é pior que aviso nenhum:** ensina o operador
+  a ignorar o ⚠️, e ele perde a utilidade no dia em que estiver certo.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).

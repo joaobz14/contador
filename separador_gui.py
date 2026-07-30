@@ -934,7 +934,13 @@ class SeparadorApp:
         except Exception as e:                      # noqa: BLE001 - aviso best-effort
             log.warning("Checagem do monitor da Zebra falhou (%s)", sem_segredos(str(e)))
             sinal = "sem_saida"
-        log.info("Monitor da Zebra: %s", sinal)
+        # Registra tambem SE o log do monitor foi encontrado: sem isso, um
+        # "sem_saida" nao diz se o monitor estava vivo ou se o caminho do log
+        # esta errado — e foi justamente essa ambiguidade que gerou o falso
+        # alarme de 2026-07-30.
+        log.info("Monitor da Zebra: %s (log %s em %s)", sinal,
+                 "encontrado" if core.ARQUIVO_LOG_MONITOR.exists() else "AUSENTE",
+                 core.ARQUIVO_LOG_MONITOR)
         self.root.after(0, lambda: self._confirmar_e_marcar(impressos, falhas, sinal))
 
     def _confirmar_e_marcar(self, impressos: list, falhas: list | None = None,

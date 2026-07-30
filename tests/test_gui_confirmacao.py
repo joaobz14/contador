@@ -153,11 +153,27 @@ def _prov_que_gera(pasta, nome="etiqueta de envio - LOTES x1 - 143012.zip"):
 
 
 def test_sinal_do_monitor_chega_na_confirmacao(tmp_path):
-    """O arquivo continua na pasta e o log nao mexeu: o monitor nao deu sinal —
-    e a confirmacao precisa dizer isso ao operador."""
+    """O arquivo continua na pasta e o log EXISTE sem avançar: o monitor não deu
+    sinal — e a confirmação precisa dizer isso ao operador."""
+    import os
+    import time as _t
+
+    core.ARQUIVO_LOG_MONITOR.write_text("[08:00:00] sessao anterior", encoding="utf-8")
+    velho = _t.time() - 3600
+    os.utime(core.ARQUIVO_LOG_MONITOR, (velho, velho))
+
     app, cap = _app_fake(_prov_que_gera(tmp_path), {})
     gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
     assert cap["sinal"] == "sem_sinal"
+
+
+def test_sem_log_do_monitor_a_tela_fica_calada(tmp_path):
+    """Espelha o incidente de 2026-07-30 no nível da tela: sem log para
+    consultar, a confirmação não pode acusar o monitor de estar parado."""
+    app, cap = _app_fake(_prov_que_gera(tmp_path), {})
+    gui.SeparadorApp._gerar_sem_marcar_thread(app, [_g("A")])
+    assert cap["sinal"] == "sem_saida"
+    assert core.texto_sinal_monitor(cap["sinal"]) == "", "não pode aparecer aviso"
 
 
 def test_monitor_rapido_demais_ainda_da_sinal_de_vida(tmp_path):
