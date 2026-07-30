@@ -120,9 +120,9 @@
   "semantic_hash": "4709ea937bfd0c156a12443832c2926f117e8a2f"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1785409930.2874358,
-  "ast_hash": "cfcfc75e767a7809082e59675e15690114e4fa93",
-  "semantic_hash": "cfcfc75e767a7809082e59675e15690114e4fa93"
+  "mtime": 1785410352.0520315,
+  "ast_hash": "5b9718b4931372f1259ecf2e7c8ad0af7afd63c6",
+  "semantic_hash": "5b9718b4931372f1259ecf2e7c8ad0af7afd63c6"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -540,9 +540,9 @@
   "semantic_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798"
  },
  "tools/diag_coleta.py": {
-  "mtime": 1785409883.0754359,
-  "ast_hash": "04f91ae2bc917244a71e6cf9246a285358a1bac9",
-  "semantic_hash": "04f91ae2bc917244a71e6cf9246a285358a1bac9"
+  "mtime": 1785410313.5794349,
+  "ast_hash": "78cd5062b02ee2fc73cac8ba1fb30d14a70f4823",
+  "semantic_hash": "78cd5062b02ee2fc73cac8ba1fb30d14a70f4823"
  },
  "tools/diag_seller_sku.py": {
   "mtime": 1784830839.0648768,

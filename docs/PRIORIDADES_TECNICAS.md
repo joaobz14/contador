@@ -414,8 +414,51 @@ E despeja a resposta crua com nome/placa/telefone **mascarados**
 (`_mascarar_fundo` preserva a ESTRUTURA e esconde a pessoa), entao a saida pode
 ser colada numa conversa sem expor dado pessoal.
 
-**Este item NAO morreu** — o resultado negativo e do endpoint, nao da ideia. Ele
-volta a andar quando o `--cru` disser qual dos quatro casos e o nosso.
+### VEREDITO DO `--cru` (2026-07-30): o endpoint e um GABARITO semanal
+
+O despejo cru fechou a questao. O `schedule/{logistic_type}` devolve o **molde
+das janelas recorrentes**, nao a coleta do dia:
+
+| Vem preenchido | Vem VAZIO em TODOS os 7 dias |
+|---|---|
+| `from`, `to`, `cutoff` | `date: ""` |
+| `facility_id` (`BRXSP14`) | `carrier.id`, `carrier.name` |
+| `work`, `logistic_type` | `vehicle.id`, `license_plate`, `vehicle_type` |
+| `milkrun_same_day` | **`driver.id`, `driver.name`** |
+
+(Seg-sex 13h45-15h45 com corte 08h45; seg e ter com 2a janela 14h45-16h45;
+sab/dom `work: false`. Bate com o horario do card do painel — e a mesma coleta,
+sem a identificacao de quem vem.)
+
+A estrutura TEM `driver`, mas o ML nunca a popula ai. **Nenhum ajuste de campo
+resolve** — a fonte esta errada, ponto.
+
+**A pista do "codigo de autorizacao" tambem caiu.** A doc oficial diz que ele e
+um codigo **fixo do vendedor** (Configuracoes > Preferencias de venda > Codigos
+de autorizacao) que o motorista digita — nao e por motorista nem por envio.
+
+### Ultimo candidato barato: `GET /shipments/{id}`
+
+O nucleo **ja chama** esse endpoint para todo pedido nao-terminal em
+`filtrar_para_imprimir`. Se o motorista estiver no detalhe do envio, a
+funcionalidade sai de **graca** (zero requisicao nova).
+
+```
+python tools/diag_coleta.py --envio Cozilatti
+```
+
+`_caminhos_de_interesse` varre o payload e reporta so as chaves de
+coleta/motorista. **Nao despeja o payload inteiro de proposito:** envio carrega
+nome e endereco do COMPRADOR, e um despejo cru ali vazaria dado pessoal de
+terceiro. Nome do motorista, placa e o codigo de autorizacao saem mascarados; o
+`driver.id` sai em claro, porque e o que precisamos comparar.
+
+**Se o `--envio` tambem nao trouxer motorista:** o painel usa endpoint interno,
+fora da API publica, e este item vira **"nao fazer"** — com dois caminhos
+registrados para quem reabrir a questao um dia: (1) perguntar ao suporte/IA do
+ML se ha endpoint publico para o motorista da coleta do dia (funcionou bem na
+rodada da Shopee, item 11); (2) aceitar que a deteccao automatica nao e
+possivel e manter o 🌐 Ambas como escolha manual, que e o que sempre foi.
 
 ### FASE 1 (o que construir primeiro): so avisar, nunca selecionar
 

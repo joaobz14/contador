@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1475 nodes · 2721 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1477 nodes · 2727 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -62,6 +62,15 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   resposta com nome/placa **mascarados** por `_mascarar_fundo`, que preserva a
   estrutura e esconde a pessoa). O item 12 **não morreu** — está esperando o
   `--cru` dizer qual dos 4 casos é o nosso.
+  **VEREDITO do `--cru` (mesmo dia):** o endpoint é um GABARITO semanal —
+  `driver`, `carrier` e `vehicle` existem na estrutura mas vêm vazios em TODOS
+  os 7 dias (`date: ""` também). Nenhum ajuste de campo resolve: a fonte está
+  errada. A pista do "código de autorização" também caiu — a doc oficial diz que
+  é um código FIXO do vendedor (Preferências de venda), não por motorista.
+  Último candidato barato: `GET /shipments/{id}`, que o núcleo JÁ chama —
+  `--envio` + `_caminhos_de_interesse` varrem o payload sem despejá-lo inteiro
+  (envio carrega nome e endereço do COMPRADOR; despejo cru ali vazaria dado de
+  terceiro). Se também não vier, o item 12 vira "não fazer".
 - **2026-07-29 — Confirmação de impressão: o retorno do app da Zebra.** A
   entrega das etiquetas é por arquivo (ZIP na Downloads) e não havia canal de
   volta: com o monitor fechado, os ZIPs se acumulavam e o dono só descobria pelo

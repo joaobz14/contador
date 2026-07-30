@@ -260,8 +260,91 @@ def _despejo_cru(conta: str) -> int:
     return 0
 
 
+# Chaves que interessam a pergunta "quem vem buscar hoje?"
+_INTERESSE = ("driver", "pickup", "coleta", "authorization", "carrier", "vehicle",
+              "plate", "milkrun", "facility", "node", "schedule", "cutoff", "agency")
+# Cabecalhos/valores que NAO podem sair daqui: o payload de envio carrega o
+# endereco e o nome do COMPRADOR. Mascara por padrao e libera so o que e
+# claramente logistico.
+_SEGURO_MOSTRAR = ("id", "type", "status", "logistic_type", "mode", "site_id",
+                   "from", "to", "cutoff", "work", "vehicle_type",
+                   "only_for_today", "new_driver", "milkrun_same_day",
+                   "facility_id", "node_id", "sla")
+
+
+def _caminhos_de_interesse(valor, prefixo="", dentro=False):
+    """Percorre o JSON e devolve [(caminho, valor_seguro)] do que pode responder
+    "quem vem buscar hoje".
+
+    NAO despeja o payload inteiro: envio tem nome e endereco do COMPRADOR, e um
+    despejo cru ali vazaria dado pessoal de terceiro — nao do dono.
+
+    `dentro=True` significa "ja estamos numa subarvore de interesse": a partir
+    dali TODA folha e reportada. Sem isso, `carrier_info.driver.id` se perdia —
+    "id" e "name" nao casam com as palavras-chave, e justamente os dois campos
+    que importam ficavam de fora (bug pego no teste desta funcao).
+    """
+    achados = []
+    if isinstance(valor, dict):
+        for k, v in valor.items():
+            caminho = f"{prefixo}.{k}" if prefixo else k
+            interessa = dentro or any(p in k.lower() for p in _INTERESSE)
+            if isinstance(v, (dict, list)):
+                if interessa and not v:
+                    achados.append((caminho, "(vazio)"))
+                else:
+                    achados += _caminhos_de_interesse(v, caminho, interessa)
+            elif interessa:
+                achados.append((caminho, v if k in _SEGURO_MOSTRAR else _mask(v)))
+    elif isinstance(valor, list):
+        for i, v in enumerate(valor):
+            achados += _caminhos_de_interesse(v, f"{prefixo}[{i}]", dentro)
+    return achados
+
+
+def _envio_de_interesse(conta: str) -> int:
+    """Procura o motorista/coleta DENTRO do detalhe do envio.
+
+    Motivo (2026-07-30): o schedule/{logistic_type} provou ser um GABARITO
+    semanal — driver/carrier/vehicle existem na estrutura mas vem SEMPRE vazios.
+    O GET /shipments/{id} e o proximo candidato e sai de GRACA: o nucleo ja o
+    chama para todo pedido nao-terminal em filtrar_para_imprimir. Se o motorista
+    estiver ali, a funcionalidade nao custa nenhuma requisicao nova.
+    """
+    rotulo = conta or core.conta_ativa() or "(padrao)"
+    token, seller = _token_seller(conta)
+    print(f"conta: {rotulo}  |  seller: {seller}\n")
+    try:
+        pedidos = core.buscar_pedidos(token, seller)
+    except Exception as e:                       # noqa: BLE001 - diagnostico
+        print(f"nao deu pra buscar pedidos: {type(e).__name__}")
+        return 1
+    for p in pedidos:
+        sid = (p.get("shipping") or {}).get("id")
+        if not sid:
+            continue
+        env = core.buscar_envio(token, sid)
+        if not env:
+            continue
+        print(f"envio {sid}: status={env.get('status')} "
+              f"logistic_type={env.get('logistic_type')}")
+        achados = _caminhos_de_interesse(env)
+        if not achados:
+            print("  NENHUMA chave de coleta/motorista no detalhe do envio.")
+        for caminho, v in achados:
+            print(f"  {caminho} = {v!r}")
+        print("\nSe nao apareceu driver/plate com valor, o /shipments tambem nao "
+              "responde a pergunta -> o painel usa endpoint interno, fora da API "
+              "publica, e o item 12 vira 'nao fazer'.")
+        return 0
+    print("Nenhum envio com id encontrado na janela atual.")
+    return 1
+
+
 def main() -> int:
     args = sys.argv[1:]
+    if args and args[0] == "--envio":
+        return _envio_de_interesse(args[1] if len(args) > 1 else "")
     if args and args[0] == "--comparar":
         if len(args) < 3:
             print("uso: python tools/diag_coleta.py --comparar contaA contaB")

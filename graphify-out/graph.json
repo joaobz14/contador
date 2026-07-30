@@ -16184,7 +16184,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L263",
+   "source_location": "L344",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19763,6 +19763,34 @@
    "id": "tools_diag_coleta_despejo_cru",
    "community": 63,
    "norm_label": "_despejo_cru()"
+  },
+  {
+   "label": "_caminhos_de_interesse()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L275",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_caminhos_de_interesse",
+   "community": 63,
+   "norm_label": "_caminhos_de_interesse()"
+  },
+  {
+   "label": "_envio_de_interesse()",
+   "file_type": "code",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L305",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_coleta_envio_de_interesse",
+   "community": 63,
+   "norm_label": "_envio_de_interesse()"
   }
  ],
  "links": [
@@ -29055,6 +29083,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L298",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_caminhos_de_interesse",
+   "target": "tools_diag_coleta_mask",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L106",
    "weight": 1.0,
    "source": "tools_diag_coleta_coletar_conta",
@@ -29195,6 +29233,26 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L331",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_envio_de_interesse",
+   "target": "tools_diag_coleta_caminhos_de_interesse",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L315",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_envio_de_interesse",
+   "target": "tools_diag_coleta_token_seller",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L109",
    "weight": 1.0,
    "source": "tools_diag_coleta_main",
@@ -29219,6 +29277,16 @@
    "weight": 1.0,
    "source": "tools_diag_coleta_main",
    "target": "tools_diag_coleta_despejo_cru",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
+   "source_location": "L347",
+   "weight": 1.0,
+   "source": "tools_diag_coleta_main",
+   "target": "tools_diag_coleta_envio_de_interesse",
    "confidence_score": 1.0
   },
   {
@@ -39982,6 +40050,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L275",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_caminhos_de_interesse",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L131",
    "weight": 1.0,
    "source": "tools_diag_coleta",
@@ -40032,6 +40110,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
+   "source_location": "L305",
+   "weight": 1.0,
+   "source": "tools_diag_coleta",
+   "target": "tools_diag_coleta_envio_de_interesse",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_coleta.py",
    "source_location": "L36",
    "weight": 1.0,
    "source": "tools_diag_coleta",
@@ -40052,7 +40140,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L263",
+   "source_location": "L344",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_main",
@@ -47744,5 +47832,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "9cf425ea88fd4b68702fb5eaf368161f4b5bdddb"
+ "built_at_commit": "517ba4e18f79c774229e3b5c39aa3a862f94eaa5"
 }
