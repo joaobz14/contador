@@ -371,19 +371,51 @@ python tools/diag_coleta.py --comparar Cozilatti Gastromaq
 
 Responde `MESMO MOTORISTA hoje (driver.id X)` ou `MOTORISTAS DIFERENTES`.
 
-### O BLOQUEIO
+### O BLOQUEIO — TESTE FEITO em 2026-07-30, resultado NEGATIVO neste endpoint
 
-**Ninguem registrou o resultado desse comando nas contas reais.** A ferramenta
-foi construida e o dono chegou a roda-la (um bug de rotulo foi achado e
-corrigido no teste dele, commit `49cc91d`), mas se o `driver.id` vem preenchido
-nas DUAS contas nunca foi anotado — e sem isso nao ha o que automatizar. Rodar
-tambem depende do dia: fora de um dia com coleta programada o comando responde
-"hoje sem coleta programada" e nao serve de teste.
+```
+comparando coleta de HOJE (thursday) entre 'Cozilatti' e 'Gastromaq'
+  Cozilatti: seller=560338057 logistica=cross_docking HTTP=200 driver.id=None carrier.id=None
+  Gastromaq: seller=769139323 logistica=cross_docking HTTP=200 driver.id=None carrier.id=None
+```
 
-**Proximo passo, unico:** rodar o `--comparar` num dia com coleta nas duas contas
-e **anotar o resultado aqui**. Se o `driver.id` nao vier (conta sem coleta nessa
-logistica, logistic_type diferente ou token sem permissao pro recurso), a ideia
-morre e este item vira "nao fazer" — com o motivo escrito, pra nao ressuscitar.
+**O dado EXISTE — nossa consulta e que nao o traz.** No mesmo dia, o painel do ML
+das DUAS contas mostrava o card "Proximo envio" com coleta programada
+(13h45-15h45) e o **mesmo motorista** e a **mesma placa** nas duas. Ou seja: a
+premissa de negocio esta **confirmada** (o mesmo motorista atende as duas contas
+no mesmo dia, e o ML sabe disso); o que falhou foi a fonte que escolhemos.
+
+O `GET /users/{id}/shipping/schedule/{logistic_type}` respondeu **200** no
+`cross_docking` nas duas contas, mas sem `driver.id` nem `carrier.id`.
+
+**Pista do proximo passo:** o card do painel diz **"Requer o codigo de
+autorizacao"**. Codigo de autorizacao de coleta e dado que costuma viver no
+**envio/coleta**, nao no cronograma SEMANAL da conta. Hipotese principal: o
+motorista do dia esta numa API por envio (ou de coleta agendada), e o
+`schedule/{logistic_type}` so descreve as JANELAS recorrentes da semana.
+
+**Diagnostico que fecha a questao** (`--cru`, acrescentado em 2026-07-30):
+
+```
+python tools/diag_coleta.py --cru Cozilatti
+```
+
+Ele imprime o veredito de `_porque_sem_driver` — que separa as causas, porque
+cada uma pede acao diferente:
+
+| Veredito | O que significa | Acao |
+|---|---|---|
+| `detail[]` VAZIO | o cronograma semanal nao reflete a coleta do dia | endpoint errado → procurar a API por envio/coleta |
+| `detail[]` sem a chave `driver` | o campo mudou de nome/lugar | achar o novo nome (o despejo cru lista as chaves) |
+| `driver` sem `id` | vem o nome mas nao o ID | casar por nome + carrier (pior, mas possivel) |
+| nao respondeu 200 | permissao/logistica | conferir escopo do token |
+
+E despeja a resposta crua com nome/placa/telefone **mascarados**
+(`_mascarar_fundo` preserva a ESTRUTURA e esconde a pessoa), entao a saida pode
+ser colada numa conversa sem expor dado pessoal.
+
+**Este item NAO morreu** — o resultado negativo e do endpoint, nao da ideia. Ele
+volta a andar quando o `--cru` disser qual dos quatro casos e o nosso.
 
 ### FASE 1 (o que construir primeiro): so avisar, nunca selecionar
 
