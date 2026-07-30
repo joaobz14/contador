@@ -4,6 +4,33 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Adicionado
+- **Canal de volta com o app da Zebra: ele responde, a tela para de adivinhar.**
+  A entrega entre os dois apps é por arquivo (ZIP na Downloads) e não havia
+  resposta nenhuma. A tela deduzia o que tinha acontecido por dois sinais
+  indiretos — o ZIP sumir e o log do monitor avançar —, e "sumir" só funciona com
+  a opção **"Excluir após imprimir" ligada**: com ela desligada, a tela nunca
+  conseguia confirmar uma impressão. Agora o app da Zebra (**v1.26.0**) publica o
+  resultado de cada arquivo processado, e a tela lê essa resposta antes de
+  recorrer aos palpites. Ganhos concretos:
+  - a confirmação passa a dizer **"o monitor confirmou"** com base num fato, e
+    funciona independente daquela opção;
+  - existe um aviso novo para **falha de impressão**, que antes era invisível: um
+    arquivo que falha **não é apagado** pelo monitor, então ele ficava
+    indistinguível de um lote grande ainda imprimindo.
+  Com um app da Zebra anterior à v1.26.0 nada muda — a tela cai exatamente no
+  comportamento de antes.
+
+### Decidido
+- **Os dois apps continuam separados** (avaliado a pedido do dono). O app da
+  Zebra não é back-end deste: ele também imprime o que você baixa **na mão** pelo
+  painel do ML, tem funcionalidade própria (etiquetas separadoras), roda como
+  administrador (para limpar a fila de impressão) e fica ligado o dia todo na
+  bandeja. Juntar mataria o download manual, arrastaria a tela e o bot para o
+  UAC e fundiria três ciclos de vida diferentes. A pasta Downloads ainda serve
+  de fila: a tela pode fechar no meio do lote que a impressão continua. O único
+  ganho real da fusão era o canal de volta — obtido acima, sem fundir.
+
 ### Melhorado
 - **`Atualizar programa.bat` reinicia o bot sozinho.** O `git pull` troca os
   arquivos, mas o bot que já está no ar continua com o código que carregou no

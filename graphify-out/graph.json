@@ -3074,7 +3074,7 @@
    "label": "_gerar_zip()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1607",
+   "source_location": "L1690",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_gerar_zip",
    "community": 9,
@@ -3088,7 +3088,7 @@
    "label": "gerar_zip_etiquetas()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1628",
+   "source_location": "L1711",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_gerar_zip_etiquetas",
    "community": 8,
@@ -3112,7 +3112,7 @@
    "label": "carregar_estado()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1647",
+   "source_location": "L1730",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_carregar_estado",
    "community": 17,
@@ -3126,7 +3126,7 @@
    "label": "salvar_estado()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1651",
+   "source_location": "L1734",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_salvar_estado",
    "community": 17,
@@ -3180,7 +3180,7 @@
    "label": "marcar_impresso()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1655",
+   "source_location": "L1738",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_marcar_impresso",
    "community": 8,
@@ -3194,7 +3194,7 @@
    "label": "imprimir_pendentes()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1671",
+   "source_location": "L1754",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_imprimir_pendentes",
    "community": 8,
@@ -3208,7 +3208,7 @@
    "label": "reimprimir()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1690",
+   "source_location": "L1773",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_reimprimir",
    "community": 10,
@@ -3222,7 +3222,7 @@
    "label": "preparar_lotes()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1708",
+   "source_location": "L1791",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_preparar_lotes",
    "community": 9,
@@ -3236,7 +3236,7 @@
    "label": "gerar_zip_lotes()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1738",
+   "source_location": "L1821",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_gerar_zip_lotes",
    "community": 9,
@@ -3250,7 +3250,7 @@
    "label": "listar()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1752",
+   "source_location": "L1835",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_listar",
    "community": 8,
@@ -3264,7 +3264,7 @@
    "label": "imprimir_grupo()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1770",
+   "source_location": "L1853",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_imprimir_grupo",
    "community": 8,
@@ -3278,7 +3278,7 @@
    "label": "achar_grupo()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1786",
+   "source_location": "L1869",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_achar_grupo",
    "community": 12,
@@ -3292,7 +3292,7 @@
    "label": "detalhar()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1794",
+   "source_location": "L1877",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_detalhar",
    "community": 12,
@@ -3306,7 +3306,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1812",
+   "source_location": "L1895",
    "_origin": "ast",
    "id": "separador_etiquetas_ml_main",
    "community": 12,
@@ -4432,7 +4432,7 @@
    "label": "._confirmar_e_marcar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L946",
+   "source_location": "L947",
    "_origin": "ast",
    "id": "separador_gui_separadorapp_pos_lotes",
    "community": 0,
@@ -4446,7 +4446,7 @@
    "label": ".imprimir_proximo()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1027",
+   "source_location": "L1028",
    "_origin": "ast",
    "id": "separador_gui_separadorapp_imprimir_proximo",
    "community": 0,
@@ -4460,7 +4460,7 @@
    "label": ".abrir_editor_nomes()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1047",
+   "source_location": "L1048",
    "_origin": "ast",
    "id": "separador_gui_separadorapp_abrir_editor_nomes",
    "community": 26,
@@ -4474,7 +4474,7 @@
    "label": "EditorNomes",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1164",
+   "source_location": "L1165",
    "_origin": "ast",
    "id": "separador_gui_editornomes",
    "community": 26,
@@ -4488,7 +4488,7 @@
    "label": ".__init__()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1167",
+   "source_location": "L1168",
    "_origin": "ast",
    "id": "separador_gui_editornomes_init",
    "community": 26,
@@ -4502,7 +4502,7 @@
    "label": "._preencher_lista()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1235",
+   "source_location": "L1236",
    "_origin": "ast",
    "id": "separador_gui_editornomes_preencher_lista",
    "community": 26,
@@ -4516,7 +4516,7 @@
    "label": "._selecionar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1267",
+   "source_location": "L1268",
    "_origin": "ast",
    "id": "separador_gui_editornomes_selecionar",
    "community": 26,
@@ -4530,7 +4530,7 @@
    "label": "._salvar_um()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1275",
+   "source_location": "L1276",
    "_origin": "ast",
    "id": "separador_gui_editornomes_salvar_um",
    "community": 26,
@@ -4544,7 +4544,7 @@
    "label": "._remover()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1289",
+   "source_location": "L1290",
    "_origin": "ast",
    "id": "separador_gui_editornomes_remover",
    "community": 26,
@@ -4558,7 +4558,7 @@
    "label": "._gravar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1305",
+   "source_location": "L1306",
    "_origin": "ast",
    "id": "separador_gui_editornomes_gravar",
    "community": 26,
@@ -4572,7 +4572,7 @@
    "label": "._fechar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1311",
+   "source_location": "L1312",
    "_origin": "ast",
    "id": "separador_gui_editornomes_fechar",
    "community": 26,
@@ -4586,7 +4586,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1488",
+   "source_location": "L1489",
    "_origin": "ast",
    "id": "separador_gui_main",
    "community": 0,
@@ -11418,7 +11418,7 @@
    "label": "._mover()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1245",
+   "source_location": "L1246",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -11551,7 +11551,7 @@
    "label": "_marcar_lote_tolerante()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1461",
+   "source_location": "L1462",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -12024,7 +12024,7 @@
    },
    "norm_label": "_focar_editor_aberto()",
    "source_file": "separador_gui.py",
-   "source_location": "L1037"
+   "source_location": "L1038"
   },
   {
    "_origin": "manual",
@@ -12038,7 +12038,7 @@
    },
    "norm_label": "_confirmar_e_marcar_corpo()",
    "source_file": "separador_gui.py",
-   "source_location": "L963"
+   "source_location": "L964"
   },
   {
    "author": null,
@@ -12176,7 +12176,7 @@
    "label": "SeparadorApp.abrir_resumo_dia()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1063",
+   "source_location": "L1064",
    "_origin": "manual",
    "id": "separador_gui_separadorapp_abrir_resumo_dia",
    "community": 4,
@@ -12190,7 +12190,7 @@
    "label": "JanelaResumo",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1081",
+   "source_location": "L1082",
    "_origin": "manual",
    "id": "separador_gui_janelaresumo",
    "community": 4,
@@ -12502,7 +12502,7 @@
    "label": ".abrir_editor_skus()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1055",
+   "source_location": "L1056",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12516,7 +12516,7 @@
    "label": ".__init__()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1086",
+   "source_location": "L1087",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12530,7 +12530,7 @@
    "label": "._abrir_para_imprimir()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1111",
+   "source_location": "L1112",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12544,7 +12544,7 @@
    "label": "._salvar_txt()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1120",
+   "source_location": "L1121",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12558,7 +12558,7 @@
    "label": "._salvar_pdf()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1139",
+   "source_location": "L1140",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12572,7 +12572,7 @@
    "label": "EditorSkusAnuncio",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1327",
+   "source_location": "L1328",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -12586,7 +12586,7 @@
    "label": ".__init__()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1332",
+   "source_location": "L1333",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12600,7 +12600,7 @@
    "label": "._escolher_anuncio()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1396",
+   "source_location": "L1397",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12614,7 +12614,7 @@
    "label": "._preencher_lista()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1401",
+   "source_location": "L1402",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12628,7 +12628,7 @@
    "label": "._selecionar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1406",
+   "source_location": "L1407",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12642,7 +12642,7 @@
    "label": "._salvar_um()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1414",
+   "source_location": "L1415",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12656,7 +12656,7 @@
    "label": "._remover()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1428",
+   "source_location": "L1429",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12670,7 +12670,7 @@
    "label": "._gravar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1444",
+   "source_location": "L1445",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -12684,7 +12684,7 @@
    "label": "._fechar()",
    "file_type": "code",
    "source_file": "separador_gui.py",
-   "source_location": "L1450",
+   "source_location": "L1451",
    "metadata": {
     "language": "python",
     "kind": "method"
@@ -19250,7 +19250,7 @@
    "label": "saidas_na_pasta()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1481",
+   "source_location": "L1487",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19264,7 +19264,7 @@
    "label": "_ainda_na_pasta()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1516",
+   "source_location": "L1577",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19278,7 +19278,7 @@
    "label": "aguardar_impressao()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1529",
+   "source_location": "L1590",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19292,7 +19292,7 @@
    "label": "texto_sinal_monitor()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1597",
+   "source_location": "L1680",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19320,7 +19320,7 @@
    "label": "saida()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L17",
+   "source_location": "L24",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19334,7 +19334,7 @@
    "label": "_zip()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L25",
+   "source_location": "L49",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19348,7 +19348,7 @@
    "label": "test_reconhece_os_zips_de_etiqueta()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L44",
+   "source_location": "L68",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19362,7 +19362,7 @@
    "label": "test_ignora_o_que_nao_e_nosso()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L50",
+   "source_location": "L74",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19376,7 +19376,7 @@
    "label": "test_pasta_inexistente_nao_levanta()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L58",
+   "source_location": "L82",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19390,7 +19390,7 @@
    "label": "test_diferenca_entre_instantaneos_isola_o_lote_novo()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L63",
+   "source_location": "L87",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19404,7 +19404,7 @@
    "label": "test_arquivo_sumiu_e_impresso()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L76",
+   "source_location": "L100",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19418,7 +19418,7 @@
    "label": "test_log_avancando_com_arquivo_parado_e_imprimindo()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L104",
+   "source_location": "L128",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19432,7 +19432,7 @@
    "label": "test_log_velho_nao_conta_como_vida()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L119",
+   "source_location": "L143",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19446,7 +19446,7 @@
    "label": "test_sem_arquivo_nenhum_nao_ha_o_que_observar()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L132",
+   "source_location": "L156",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19460,7 +19460,7 @@
    "label": "test_parte_do_lote_consumida_ainda_nao_e_impresso()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L136",
+   "source_location": "L160",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19474,7 +19474,7 @@
    "label": "test_sai_assim_que_o_arquivo_some()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L145",
+   "source_location": "L169",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19488,7 +19488,7 @@
    "label": "test_arquivo_preso_nao_e_confundido_com_impresso()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L159",
+   "source_location": "L183",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19502,7 +19502,7 @@
    "label": "test_cada_sinal_tem_texto()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L176",
+   "source_location": "L336",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19516,7 +19516,7 @@
    "label": "test_sem_saida_nao_polui_a_pergunta()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L180",
+   "source_location": "L340",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19530,7 +19530,7 @@
    "label": "test_aviso_de_monitor_parado_diz_o_que_fazer()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L186",
+   "source_location": "L346",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19544,7 +19544,7 @@
    "label": "test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L191",
+   "source_location": "L351",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19754,7 +19754,7 @@
    "label": "_mtime_log_monitor()",
    "file_type": "code",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1498",
+   "source_location": "L1504",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19768,7 +19768,7 @@
    "label": "_log_parado()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L31",
+   "source_location": "L55",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19782,7 +19782,7 @@
    "label": "test_arquivo_parado_e_log_PARADO_e_sem_sinal()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L83",
+   "source_location": "L107",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19796,7 +19796,7 @@
    "label": "test_sem_log_para_consultar_fica_CALADO()",
    "file_type": "code",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L90",
+   "source_location": "L114",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20645,6 +20645,272 @@
    "id": "tests_test_bot_alerta_update_msg",
    "community": 72,
    "norm_label": "_update_msg()"
+  },
+  {
+   "label": "_status_do_monitor()",
+   "file_type": "code",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1522",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "separador_etiquetas_ml_status_do_monitor",
+   "community": 16,
+   "norm_label": "_status_do_monitor()"
+  },
+  {
+   "label": "_veredito_do_status()",
+   "file_type": "code",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1551",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "separador_etiquetas_ml_veredito_do_status",
+   "community": 16,
+   "norm_label": "_veredito_do_status()"
+  },
+  {
+   "label": "_publicar()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L33",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_publicar",
+   "community": 73,
+   "norm_label": "_publicar()"
+  },
+  {
+   "label": "_trabalho()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L43",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_trabalho",
+   "community": 73,
+   "norm_label": "_trabalho()"
+  },
+  {
+   "label": "test_status_confirma_sem_o_arquivo_precisar_sumir()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L199",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_confirma_sem_o_arquivo_precisar_sumir",
+   "community": 73,
+   "norm_label": "test_status_confirma_sem_o_arquivo_precisar_sumir()"
+  },
+  {
+   "label": "test_status_de_falha_vira_aviso()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L211",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_de_falha_vira_aviso",
+   "community": 73,
+   "norm_label": "test_status_de_falha_vira_aviso()"
+  },
+  {
+   "label": "test_uma_falha_no_lote_contamina_o_veredito()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L221",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_uma_falha_no_lote_contamina_o_veredito",
+   "community": 73,
+   "norm_label": "test_uma_falha_no_lote_contamina_o_veredito()"
+  },
+  {
+   "label": "test_status_parcial_ainda_nao_e_veredito()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L231",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_parcial_ainda_nao_e_veredito",
+   "community": 73,
+   "norm_label": "test_status_parcial_ainda_nao_e_veredito()"
+  },
+  {
+   "label": "test_registro_de_lote_ANTERIOR_nao_responde_por_este()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L243",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "community": 73,
+   "norm_label": "test_registro_de_lote_anterior_nao_responde_por_este()"
+  },
+  {
+   "label": "test_monitor_antigo_cai_nas_pistas_de_sempre()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L255",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_monitor_antigo_cai_nas_pistas_de_sempre",
+   "community": 73,
+   "norm_label": "test_monitor_antigo_cai_nas_pistas_de_sempre()"
+  },
+  {
+   "label": "test_status_ilegivel_nao_atrapalha()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L273",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_ilegivel_nao_atrapalha",
+   "community": 73,
+   "norm_label": "test_status_ilegivel_nao_atrapalha()"
+  },
+  {
+   "label": "test_status_de_arquivo_alheio_nao_e_nosso()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L284",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "community": 73,
+   "norm_label": "test_status_de_arquivo_alheio_nao_e_nosso()"
+  },
+  {
+   "label": "test_sem_arquivo_nosso_o_status_nao_e_consultado()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L295",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_sem_arquivo_nosso_o_status_nao_e_consultado",
+   "community": 73,
+   "norm_label": "test_sem_arquivo_nosso_o_status_nao_e_consultado()"
+  },
+  {
+   "label": "test_status_e_consultado_antes_das_pistas()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L306",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_status_e_consultado_antes_das_pistas",
+   "community": 73,
+   "norm_label": "test_status_e_consultado_antes_das_pistas()"
+  },
+  {
+   "label": "test_sai_assim_que_o_status_responde()",
+   "file_type": "code",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L318",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_confirmacao_monitor_test_sai_assim_que_o_status_responde",
+   "community": 73,
+   "norm_label": "test_sai_assim_que_o_status_responde()"
+  },
+  {
+   "label": "CANAL DE VOLTA COM O APP DA ZEBRA (2026-07-30, v1.26.0 do outro repo): a entrega entre os dois apps e por ARQUIVO (ZIP na pasta Downloads) e nao havia resposta nenhuma -- com o monitor fechado os ZIPs se acumulavam e o dono so descobria pelo papel que nao saia. Ate aqui a tela ADIVINHAVA por duas pistas indiretas: o ZIP sumir (o monitor apaga o que imprime) e o mtime do log dele avancar. Duas limitacoes reais dessas pistas: (1) 'sumir' so acontece com a opcao 'Excluir apos imprimir' LIGADA -- com ela desligada a tela NUNCA conseguia afirmar 'impresso'; (2) nenhuma das duas distingue FALHA de 'ainda imprimindo', porque o monitor NAO apaga o arquivo que falhou, entao um lote quebrado fica identico a um lote grande em curso. A solucao foi um mural publicado pelo proprio monitor (~/zebra_usb_status.json, registrar_status_trabalho no repo impressora-zebra-usb): {arquivo, quando, etiquetas, ok} por arquivo processado, escrita atomica, ultimos 50, FORA da pasta vigiada (la viraria mais um arquivo a processar -- teste-guardiao dos dois lados). Isto foi feito SEM fundir os dois apps: era o unico ganho real que a fusao traria.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "canal_de_volta_status_zebra",
+   "community": 0,
+   "norm_label": "canal de volta com o app da zebra (2026-07-30, v1.26.0 do outro repo): a entrega entre os dois apps e por arquivo (zip na pasta downloads) e nao havia resposta nenhuma -- com o monitor fechado os zips se acumulavam e o dono so descobria pelo papel que nao saia. ate aqui a tela adivinhava por duas pistas indiretas: o zip sumir (o monitor apaga o que imprime) e o mtime do log dele avancar. duas limitacoes reais dessas pistas: (1) 'sumir' so acontece com a opcao 'excluir apos imprimir' ligada -- com ela desligada a tela nunca conseguia afirmar 'impresso'; (2) nenhuma das duas distingue falha de 'ainda imprimindo', porque o monitor nao apaga o arquivo que falhou, entao um lote quebrado fica identico a um lote grande em curso. a solucao foi um mural publicado pelo proprio monitor (~/zebra_usb_status.json, registrar_status_trabalho no repo impressora-zebra-usb): {arquivo, quando, etiquetas, ok} por arquivo processado, escrita atomica, ultimos 50, fora da pasta vigiada (la viraria mais um arquivo a processar -- teste-guardiao dos dois lados). isto foi feito sem fundir os dois apps: era o unico ganho real que a fusao traria.",
+   "_origin": "manual"
+  },
+  {
+   "label": "RESPOSTA ANTES DE PISTA (ordem de consulta em aguardar_impressao): _veredito_do_status e consultado no TOPO do laco, antes de _ainda_na_pasta e do mtime do log. Nao e preferencia estetica: um arquivo que FALHOU nao e apagado pelo monitor, entao ele continua na pasta com o log avancando -- exatamente o quadro de um lote demorado. So consultando o mural primeiro a falha aparece; nas pistas ela e invisivel por construcao. Duas salvaguardas no leitor: corte por `desde` (o mural guarda os ultimos trabalhos, e um registro ANTERIOR de mesmo nome nao pode responder por esta impressao -- o nome ja carrega carimbo unico via nome_saida_unico, mas depender disso seria confiar numa propriedade de OUTRA funcao para nao mentir aqui) e exigencia de pronunciamento sobre TODOS os nossos arquivos (parcial = lote em curso, nao terminado). Mural ausente/ilegivel/parcial degrada para as pistas de sempre: compatibilidade para tras com monitor antigo sai de graca, e este canal so pode ADICIONAR certeza, nunca tirar.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "veredito_resposta_antes_de_pista",
+   "community": 0,
+   "norm_label": "resposta antes de pista (ordem de consulta em aguardar_impressao): _veredito_do_status e consultado no topo do laco, antes de _ainda_na_pasta e do mtime do log. nao e preferencia estetica: um arquivo que falhou nao e apagado pelo monitor, entao ele continua na pasta com o log avancando -- exatamente o quadro de um lote demorado. so consultando o mural primeiro a falha aparece; nas pistas ela e invisivel por construcao. duas salvaguardas no leitor: corte por `desde` (o mural guarda os ultimos trabalhos, e um registro anterior de mesmo nome nao pode responder por esta impressao -- o nome ja carrega carimbo unico via nome_saida_unico, mas depender disso seria confiar numa propriedade de outra funcao para nao mentir aqui) e exigencia de pronunciamento sobre todos os nossos arquivos (parcial = lote em curso, nao terminado). mural ausente/ilegivel/parcial degrada para as pistas de sempre: compatibilidade para tras com monitor antigo sai de graca, e este canal so pode adicionar certeza, nunca tirar.",
+   "_origin": "manual"
+  },
+  {
+   "label": "O try/except OSError em volta do ler_json NAO e redundante (achado 2026-07-30): estado.ler_json chama caminho.exists() FORA do proprio try, e Path.exists() so engole OSError de errno conhecido (ENOENT/ENOTDIR/...) -- um arquivo preso pelo OneDrive/antivirus levanta e escapa. Pego pelo teste test_arquivo_preso_nao_e_confundido_com_impresso, que ja existia e faz Path.stat levantar. Aqui isso NAO pode virar excecao: a checagem inteira e best-effort e roda DEPOIS de a etiqueta ja ter saido -- falha vira aviso a menos, jamais impressao a menos. Fragilidade latente do ler_json compartilhado, nao introduzida por este codigo; guardada aqui porque quem 'simplificar' o except reintroduz o problema em silencio.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "status_ler_json_exists_fora_do_try",
+   "community": 0,
+   "norm_label": "o try/except oserror em volta do ler_json nao e redundante (achado 2026-07-30): estado.ler_json chama caminho.exists() fora do proprio try, e path.exists() so engole oserror de errno conhecido (enoent/enotdir/...) -- um arquivo preso pelo onedrive/antivirus levanta e escapa. pego pelo teste test_arquivo_preso_nao_e_confundido_com_impresso, que ja existia e faz path.stat levantar. aqui isso nao pode virar excecao: a checagem inteira e best-effort e roda depois de a etiqueta ja ter saido -- falha vira aviso a menos, jamais impressao a menos. fragilidade latente do ler_json compartilhado, nao introduzida por este codigo; guardada aqui porque quem 'simplificar' o except reintroduz o problema em silencio.",
+   "_origin": "manual"
+  },
+  {
+   "label": "POR QUE OS DOIS APPS NAO SAO UM SO (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb NAO e back-end do contador. Evidencia decisiva: MonitorEtiquetas.PREFIXOS inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o PROPRIO SITE do Mercado Livre da ao baixar etiqueta na mao. Ou seja, ele imprime sem o contador existir, e e o plano B no dia em que o contador estiver quebrado. Alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + PopupSeparadora, com lista de produtos e busca proprias). Tres impedimentos tecnicos: (1) ele roda ELEVADO (elevar_privilegios/UAC, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o UAC; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo Agendador; (3) plataforma -- pywin32/pystray/pillow sao Windows-only, enquanto o nucleo daqui e portatil e o CI roda no Linux. E a separacao PAGA: a pasta Downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). O unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "nao_fundir_contador_e_zebra",
+   "community": 0,
+   "norm_label": "por que os dois apps nao sao um so (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb nao e back-end do contador. evidencia decisiva: monitoretiquetas.prefixos inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o proprio site do mercado livre da ao baixar etiqueta na mao. ou seja, ele imprime sem o contador existir, e e o plano b no dia em que o contador estiver quebrado. alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + popupseparadora, com lista de produtos e busca proprias). tres impedimentos tecnicos: (1) ele roda elevado (elevar_privilegios/uac, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o uac; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo agendador; (3) plataforma -- pywin32/pystray/pillow sao windows-only, enquanto o nucleo daqui e portatil e o ci roda no linux. e a separacao paga: a pasta downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). o unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
+   "_origin": "manual"
   }
  ],
  "links": [
@@ -22453,6 +22719,16 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1651",
+   "weight": 1.0,
+   "source": "separador_etiquetas_ml_aguardar_impressao",
+   "target": "separador_etiquetas_ml_veredito_do_status",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
@@ -24079,6 +24355,16 @@
    "weight": 1.0,
    "source": "separador_etiquetas_ml_texto_carimbo_nome",
    "target": "separador_etiquetas_ml_carregar_nomes",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1562",
+   "weight": 1.0,
+   "source": "separador_etiquetas_ml_veredito_do_status",
+   "target": "separador_etiquetas_ml_status_do_monitor",
    "confidence_score": 1.0
   },
   {
@@ -27657,6 +27943,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L259",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_monitor_antigo_cai_nas_pistas_de_sempre",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
    "source_location": "L141",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor_test_parte_do_lote_consumida_ainda_nao_e_impresso",
@@ -27687,6 +27983,46 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L250",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "target": "tests_test_confirmacao_monitor_log_parado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L249",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L249",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L248",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
    "source_location": "L120",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor_test_sai_assim_que_o_arquivo_some",
@@ -27697,9 +28033,259 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L326",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_sai_assim_que_o_status_responde",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L326",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_sai_assim_que_o_status_responde",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L321",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_sai_assim_que_o_status_responde",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L300",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_sem_arquivo_nosso_o_status_nao_e_consultado",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L300",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_sem_arquivo_nosso_o_status_nao_e_consultado",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
    "source_location": "L99",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor_test_sem_log_para_consultar_fica_CALADO",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L205",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_confirma_sem_o_arquivo_precisar_sumir",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L205",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_confirma_sem_o_arquivo_precisar_sumir",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L204",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_confirma_sem_o_arquivo_precisar_sumir",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L290",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "target": "tests_test_confirmacao_monitor_log_parado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L289",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L289",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L288",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L216",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_falha_vira_aviso",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L216",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_falha_vira_aviso",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L215",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_de_falha_vira_aviso",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L312",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_e_consultado_antes_das_pistas",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L312",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_e_consultado_antes_das_pistas",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L311",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_e_consultado_antes_das_pistas",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L277",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_ilegivel_nao_atrapalha",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L237",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_parcial_ainda_nao_e_veredito",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L237",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_parcial_ainda_nao_e_veredito",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L235",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_status_parcial_ainda_nao_e_veredito",
+   "target": "tests_test_confirmacao_monitor_zip",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L226",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_uma_falha_no_lote_contamina_o_veredito",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L226",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_uma_falha_no_lote_contamina_o_veredito",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L224",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor_test_uma_falha_no_lote_contamina_o_veredito",
    "target": "tests_test_confirmacao_monitor_zip",
    "confidence_score": 1.0
   },
@@ -32046,6 +32632,16 @@
   },
   {
    "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "veredito_resposta_antes_de_pista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
    "confidence": "INFERRED",
    "confidence_score": 0.75,
    "source_file": ".github/workflows/testes.yml",
@@ -32466,6 +33062,16 @@
    "weight": 1.0,
    "source": "modo_ident",
    "target": "separador_etiquetas_ml_texto_carimbo_nome"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "nao_fundir_contador_e_zebra",
+   "target": "canal_de_volta_status_zebra",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -34464,7 +35070,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1786",
+   "source_location": "L1869",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_achar_grupo",
@@ -34484,7 +35090,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1529",
+   "source_location": "L1590",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_aguardar_impressao",
@@ -34494,7 +35100,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1516",
+   "source_location": "L1577",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_ainda_na_pasta",
@@ -34694,7 +35300,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1647",
+   "source_location": "L1730",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_carregar_estado",
@@ -34804,7 +35410,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1794",
+   "source_location": "L1877",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_detalhar",
@@ -34874,7 +35480,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1607",
+   "source_location": "L1690",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_gerar_zip",
@@ -34884,7 +35490,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1628",
+   "source_location": "L1711",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_gerar_zip_etiquetas",
@@ -34894,7 +35500,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1738",
+   "source_location": "L1821",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_gerar_zip_lotes",
@@ -34974,7 +35580,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1770",
+   "source_location": "L1853",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_imprimir_grupo",
@@ -34984,7 +35590,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1671",
+   "source_location": "L1754",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_imprimir_pendentes",
@@ -35054,7 +35660,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1752",
+   "source_location": "L1835",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_listar",
@@ -35084,7 +35690,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1812",
+   "source_location": "L1895",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_main",
@@ -35094,7 +35700,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1655",
+   "source_location": "L1738",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_marcar_impresso",
@@ -35144,7 +35750,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1498",
+   "source_location": "L1504",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_mtime_log_monitor",
@@ -35214,7 +35820,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1708",
+   "source_location": "L1791",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_preparar_lotes",
@@ -35244,7 +35850,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1690",
+   "source_location": "L1773",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_reimprimir",
@@ -35314,7 +35920,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1481",
+   "source_location": "L1487",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_saidas_na_pasta",
@@ -35364,7 +35970,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1651",
+   "source_location": "L1734",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_salvar_estado",
@@ -35424,6 +36030,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1522",
+   "weight": 1.0,
+   "source": "separador_etiquetas_ml",
+   "target": "separador_etiquetas_ml_status_do_monitor",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "separador_etiquetas_ml.py",
    "source_location": "L1156",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
@@ -35454,7 +36070,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_etiquetas_ml.py",
-   "source_location": "L1597",
+   "source_location": "L1680",
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_texto_sinal_monitor",
@@ -35478,6 +36094,16 @@
    "weight": 1.0,
    "source": "separador_etiquetas_ml",
    "target": "separador_etiquetas_ml_token_valido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": "L1551",
+   "weight": 1.0,
+   "source": "separador_etiquetas_ml",
+   "target": "separador_etiquetas_ml_veredito_do_status",
    "confidence_score": 1.0
   },
   {
@@ -35514,7 +36140,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1164",
+   "source_location": "L1165",
    "weight": 1.0,
    "source": "separador_gui",
    "target": "separador_gui_editornomes",
@@ -35524,7 +36150,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1327",
+   "source_location": "L1328",
    "weight": 1.0,
    "source": "separador_gui",
    "target": "separador_gui_editorskusanuncio",
@@ -35534,7 +36160,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1081",
+   "source_location": "L1082",
    "weight": 1.0,
    "source": "separador_gui",
    "target": "separador_gui_janelaresumo",
@@ -35544,7 +36170,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1488",
+   "source_location": "L1489",
    "weight": 1.0,
    "source": "separador_gui",
    "target": "separador_gui_main",
@@ -38354,7 +38980,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L31",
+   "source_location": "L55",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_log_parado",
@@ -38364,7 +38990,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L17",
+   "source_location": "L33",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_publicar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L24",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_saida",
@@ -38374,7 +39010,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L83",
+   "source_location": "L107",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_arquivo_parado_e_log_PARADO_e_sem_sinal",
@@ -38384,7 +39020,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L159",
+   "source_location": "L183",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_arquivo_preso_nao_e_confundido_com_impresso",
@@ -38394,7 +39030,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L76",
+   "source_location": "L100",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_arquivo_sumiu_e_impresso",
@@ -38404,7 +39040,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L186",
+   "source_location": "L346",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_aviso_de_monitor_parado_diz_o_que_fazer",
@@ -38414,7 +39050,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L176",
+   "source_location": "L336",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_cada_sinal_tem_texto",
@@ -38424,7 +39060,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L191",
+   "source_location": "L351",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_confirmacao_nunca_afirma_que_a_etiqueta_saiu_certa",
@@ -38434,7 +39070,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L63",
+   "source_location": "L87",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_diferenca_entre_instantaneos_isola_o_lote_novo",
@@ -38444,7 +39080,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L50",
+   "source_location": "L74",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_ignora_o_que_nao_e_nosso",
@@ -38454,7 +39090,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L104",
+   "source_location": "L128",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_log_avancando_com_arquivo_parado_e_imprimindo",
@@ -38464,7 +39100,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L119",
+   "source_location": "L143",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_log_velho_nao_conta_como_vida",
@@ -38474,7 +39110,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L136",
+   "source_location": "L255",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_monitor_antigo_cai_nas_pistas_de_sempre",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L160",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_parte_do_lote_consumida_ainda_nao_e_impresso",
@@ -38484,7 +39130,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L58",
+   "source_location": "L82",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_pasta_inexistente_nao_levanta",
@@ -38494,7 +39140,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L44",
+   "source_location": "L68",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_reconhece_os_zips_de_etiqueta",
@@ -38504,7 +39150,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L145",
+   "source_location": "L243",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_registro_de_lote_ANTERIOR_nao_responde_por_este",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L169",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_sai_assim_que_o_arquivo_some",
@@ -38514,7 +39170,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L132",
+   "source_location": "L318",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_sai_assim_que_o_status_responde",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L156",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_sem_arquivo_nenhum_nao_ha_o_que_observar",
@@ -38524,7 +39190,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L90",
+   "source_location": "L295",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_sem_arquivo_nosso_o_status_nao_e_consultado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L114",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_sem_log_para_consultar_fica_CALADO",
@@ -38534,7 +39210,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L180",
+   "source_location": "L340",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_test_sem_saida_nao_polui_a_pergunta",
@@ -38544,7 +39220,87 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_confirmacao_monitor.py",
-   "source_location": "L25",
+   "source_location": "L199",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_confirma_sem_o_arquivo_precisar_sumir",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L284",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_de_arquivo_alheio_nao_e_nosso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L211",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_de_falha_vira_aviso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L306",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_e_consultado_antes_das_pistas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L273",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_ilegivel_nao_atrapalha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L231",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_status_parcial_ainda_nao_e_veredito",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L221",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_test_uma_falha_no_lote_contamina_o_veredito",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L43",
+   "weight": 1.0,
+   "source": "tests_test_confirmacao_monitor",
+   "target": "tests_test_confirmacao_monitor_trabalho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_confirmacao_monitor.py",
+   "source_location": "L49",
    "weight": 1.0,
    "source": "tests_test_confirmacao_monitor",
    "target": "tests_test_confirmacao_monitor_zip",
@@ -44226,7 +44982,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1311",
+   "source_location": "L1312",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_fechar",
@@ -44236,7 +44992,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1305",
+   "source_location": "L1306",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_gravar",
@@ -44246,7 +45002,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1167",
+   "source_location": "L1168",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_init",
@@ -44256,7 +45012,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1245",
+   "source_location": "L1246",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_mover",
@@ -44266,7 +45022,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1235",
+   "source_location": "L1236",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_preencher_lista",
@@ -44276,7 +45032,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1289",
+   "source_location": "L1290",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_remover",
@@ -44286,7 +45042,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1275",
+   "source_location": "L1276",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_salvar_um",
@@ -44296,7 +45052,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1267",
+   "source_location": "L1268",
    "weight": 1.0,
    "source": "separador_gui_editornomes",
    "target": "separador_gui_editornomes_selecionar",
@@ -44306,7 +45062,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1396",
+   "source_location": "L1397",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_escolher_anuncio",
@@ -44316,7 +45072,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1450",
+   "source_location": "L1451",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_fechar",
@@ -44326,7 +45082,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1444",
+   "source_location": "L1445",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_gravar",
@@ -44336,7 +45092,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1332",
+   "source_location": "L1333",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_init",
@@ -44346,7 +45102,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1401",
+   "source_location": "L1402",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_preencher_lista",
@@ -44356,7 +45112,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1428",
+   "source_location": "L1429",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_remover",
@@ -44366,7 +45122,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1414",
+   "source_location": "L1415",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_salvar_um",
@@ -44376,7 +45132,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1406",
+   "source_location": "L1407",
    "weight": 1.0,
    "source": "separador_gui_editorskusanuncio",
    "target": "separador_gui_editorskusanuncio_selecionar",
@@ -44386,7 +45142,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1111",
+   "source_location": "L1112",
    "weight": 1.0,
    "source": "separador_gui_janelaresumo",
    "target": "separador_gui_janelaresumo_abrir_para_imprimir",
@@ -44396,7 +45152,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1086",
+   "source_location": "L1087",
    "weight": 1.0,
    "source": "separador_gui_janelaresumo",
    "target": "separador_gui_janelaresumo_init",
@@ -44406,7 +45162,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1139",
+   "source_location": "L1140",
    "weight": 1.0,
    "source": "separador_gui_janelaresumo",
    "target": "separador_gui_janelaresumo_salvar_pdf",
@@ -44416,7 +45172,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1120",
+   "source_location": "L1121",
    "weight": 1.0,
    "source": "separador_gui_janelaresumo",
    "target": "separador_gui_janelaresumo_salvar_txt",
@@ -44426,7 +45182,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1047",
+   "source_location": "L1048",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_abrir_editor_nomes",
@@ -44436,7 +45192,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1055",
+   "source_location": "L1056",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_abrir_editor_skus",
@@ -44446,7 +45202,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1063",
+   "source_location": "L1064",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_abrir_resumo_dia",
@@ -44566,7 +45322,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L963",
+   "source_location": "L964",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_confirmar_e_marcar_corpo",
@@ -44606,7 +45362,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1037",
+   "source_location": "L1038",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_focar_editor_aberto",
@@ -44646,7 +45402,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L1027",
+   "source_location": "L1028",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_imprimir_proximo",
@@ -44736,7 +45492,7 @@
    "relation": "method",
    "confidence": "EXTRACTED",
    "source_file": "separador_gui.py",
-   "source_location": "L946",
+   "source_location": "L947",
    "weight": 1.0,
    "source": "separador_gui_separadorapp",
    "target": "separador_gui_separadorapp_pos_lotes",
@@ -45760,6 +46516,26 @@
    "weight": 1.0,
    "source": "bot_vendas_apos_resumo",
    "target": "relatorio_texto_resumo_vendas_apos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "canal_de_volta_status_zebra",
+   "target": "separador_etiquetas_ml_status_do_monitor",
    "confidence_score": 1.0
   },
   {
@@ -48186,6 +48962,16 @@
   },
   {
    "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "status_ler_json_exists_fora_do_try",
+   "target": "separador_etiquetas_ml_status_do_monitor",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
    "confidence": "EXTRACTED",
    "source_file": "tests/conftest.py",
    "source_location": "L1",
@@ -48612,6 +49398,26 @@
    "weight": 1.0,
    "source": "validar_obsidian_ci",
    "target": "tools_validar_obsidian_validar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "veredito_resposta_antes_de_pista",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "veredito_resposta_antes_de_pista",
+   "target": "separador_etiquetas_ml_veredito_do_status",
    "confidence_score": 1.0
   },
   {
@@ -50306,5 +51112,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "eb8131fc67c3838e2acede0084be9ceba46a0c03"
+ "built_at_commit": "7cf993ee7fb1f6426e7f64767f2e5e7e77670b3c"
 }

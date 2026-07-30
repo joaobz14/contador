@@ -28,14 +28,32 @@ Polling de 1s; aceita `*.zip` (prefixos) e `*.plain` (DANFE); **duplicata** por
 > 2026-07-29 tem **teste do contrato do lado dele também** — contrato documentado
 > só de um lado é meio contrato.
 
-## Retorno do monitor (desde 2026-07-29)
+## Retorno do monitor: 3 fontes, resposta antes de pista
 A entrega é por arquivo e não havia canal de volta: com o monitor fechado, os ZIPs
 só se acumulavam e o dono descobria pelo papel que não saía. `aguardar_impressao`
-observa dois sinais que o monitor **já produzia**:
-- o arquivo **some** (ele apaga após imprimir) → `impresso`;
-- o **log dele avança** (`~/zebra_usb_log.txt`) → `imprimindo` (cobre o lote grande,
-  em que o ZIP só some na última etiqueta);
-- nenhum dos dois → `sem_sinal` (provavelmente fechado).
+consulta, **nesta ordem**:
+
+1. **A resposta** (desde 2026-07-30, app Zebra **≥ v1.26.0**): o mural
+   `~/zebra_usb_status.json`, que o monitor publica a cada arquivo processado
+   (`registrar_status_trabalho`, no outro repo) com `{arquivo, quando, etiquetas,
+   ok}` → `impresso` ou **`falhou`**;
+2. **Pista** — o arquivo **some** (ele apaga após imprimir) → `impresso`;
+3. **Pista** — o **log dele avança** (`~/zebra_usb_log.txt`) → `imprimindo` (cobre o
+   lote grande, em que o ZIP só some na última etiqueta);
+- nenhum dos três → `sem_sinal` (provavelmente fechado) ou `sem_saida` (não sei).
+
+> [!tip] Por que a resposta vem primeiro
+> Um arquivo que **falhou não é apagado** pelo monitor: ele fica na pasta com o log
+> avançando — o retrato exato de um lote demorado. Só o mural distingue os dois.
+> Ele também é a única fonte que funciona com a opção **"Excluir após imprimir"
+> DESLIGADA**, em que o arquivo nunca some e as pistas nunca fecham.
+>
+> Duas salvaguardas na leitura: corte por `desde` (o mural guarda os últimos 50
+> trabalhos, e um registro **anterior** de mesmo nome não pode responder por esta
+> impressão) e exigência de pronunciamento sobre **todos** os nossos arquivos
+> (parcial = ainda em curso). Mural ausente, ilegível ou parcial **degrada para as
+> pistas** — compatibilidade com monitor antigo sai de graça, e este canal só pode
+> **adicionar** certeza, nunca tirar.
 
 A tela sabe quais arquivos são dela por **diferença de dois instantâneos**
 (`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes` devolve os pendentes,
@@ -61,7 +79,14 @@ não o caminho.
 > [!danger] O sinal informa, nunca decide
 > Quem responde "as etiquetas saíram corretamente?" continua sendo o operador,
 > olhando o papel → [[Invariantes críticas]]. O monitor confirma que **mandou**
-> imprimir, não que a etiqueta saiu legível e no lugar.
+> imprimir, não que a etiqueta saiu legível e no lugar. Vale inclusive para o
+> mural: `impresso` ali é fato sobre o **envio ao spooler**, não sobre o papel.
+
+## Por que os dois apps não viraram um só
+Avaliado a pedido do dono em 2026-07-30 e **recusado** →
+[[Não fundir o contador e o app da Zebra]]. Resumo: o app da Zebra também imprime o
+que se baixa **na mão** pelo painel do ML, roda **elevado** (UAC) e é Windows-only.
+O único ganho real da fusão era o canal de volta — obtido acima, sem fundir.
 
 ## Relacionado
 - [[Sistemas externos]] · [[Escrita atômica de JSON]] · [[Identificação na impressão (carimbo)]] · [[separador_etiquetas_ml (núcleo)]]

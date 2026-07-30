@@ -143,6 +143,7 @@ quem sobe o bot.
 | `*.corrupto` | estado ilegível preservado por `ler_estado` (ver risco abaixo) | Não | por evento | ❌ Não |
 | **`nomes_sku.json`** | `carregar_nomes` (SKU→nome) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
 | **`skus_por_anuncio.json`** | `carregar_skus_anuncio` (código do anúncio ML sem SKU → SKU) | Não | compartilhado | ✅ **Sim** (sincroniza via Git) |
+| `~/zebra_usb_status.json`, `~/zebra_usb_log.txt` | **produzidos pelo app Zebra**, só **lidos** aqui (`aguardar_impressao`). Ficam em `~`, fora de `dados/` — quem os escreve é o outro app. Ausência é normal (monitor antigo/fechado) e nunca é erro | Não | por máquina | ❌ Não (outro repo) |
 
 ## Limitações conhecidas (decisões documentadas, não bugs abertos)
 
@@ -301,9 +302,20 @@ quem sobe o bot.
   envio ML é gráfico `^GFA`, a Shopee é imagem Z64 e o nosso carimbo é
   auto-encapsulado `^CI28…^CI0`). Nenhuma mudança exigida de nenhum dos lados;
   o `tmp_saida` daqui é defesa em profundidade além do exigido.
-  **Retorno do monitor (desde 2026-07-29):** a entrega é por arquivo e não havia
-  canal de volta — monitor fechado significava ZIPs se acumulando, descobertos
-  só pelo papel que não saía. `aguardar_impressao` observa dois sinais que o
+  **Retorno do monitor (desde 2026-07-29; canal direto desde 2026-07-30):** a
+  entrega é por arquivo e não havia canal de volta — monitor fechado significava
+  ZIPs se acumulando, descobertos só pelo papel que não saía.
+  `aguardar_impressao` consulta **três fontes, resposta antes de pista**.
+  A **resposta** é o mural `~/zebra_usb_status.json`, que o app Zebra
+  **≥ v1.26.0** publica a cada arquivo processado (`registrar_status_trabalho`,
+  no outro repo): `{arquivo, quando, etiquetas, ok}`, escrita atômica, últimos 50,
+  fora da pasta vigiada (lá viraria mais um arquivo a processar). Só ela distingue
+  **`falhou`** de "ainda não terminou" — o monitor **não apaga** o arquivo que
+  falhou, então sem o mural a falha era idêntica a um lote demorado — e só ela
+  funciona com **"Excluir após imprimir" DESLIGADA**. É lida com corte por
+  `desde` (registro de lote anterior de mesmo nome não responde por este) e exige
+  pronunciamento sobre **todos** os nossos arquivos. Sem mural (monitor antigo),
+  ou com mural ilegível/parcial, tudo degrada para as **pistas** de antes, que o
   monitor **já produzia**: o arquivo **sumir** (ele apaga após imprimir, opção
   "Excluir após imprimir") e o **log dele avançar** (`~/zebra_usb_log.txt`),
   que cobre o lote grande em que o ZIP só some na última etiqueta. A tela
@@ -317,7 +329,21 @@ quem sobe o bot.
   antivírus/OneDrive): responde "ainda está lá". O sinal **informa e nunca
   decide** — a resposta ao "saíram certo?" continua sendo do operador
   (invariante 1). O outro lado tem teste do contrato desde 2026-07-29
-  (`tests/test_contrato_com_o_contador.py` no repo `impressora-zebra-usb`).
+  (`tests/test_contrato_com_o_contador.py` no repo `impressora-zebra-usb`), e o
+  **formato do mural está preso pelos testes de lá** — renomear uma chave
+  naquele repo quebra esta leitura em produção sem nenhum aviso.
+- **Não funda os dois apps (decisão de 2026-07-30).** Avaliado e recusado: o app
+  Zebra **não** é back-end deste. Ele aceita prefixos que este app nunca gera
+  (`etiqueta mercadoenvios`, `shipping-label`, `danfe-simplificado-` — os nomes
+  do **download manual** pelo painel do ML), tem funcionalidade própria
+  (separadoras), roda **elevado** (UAC, para limpar a fila do spooler), é
+  instância única de bandeja ligada o dia todo e depende de
+  `pywin32`/`pystray`/`pillow` (Windows), enquanto o núcleo daqui é portátil com
+  CI no Linux. Fundir custaria: matar o caminho de download manual, herdar UAC na
+  tela e no bot, fundir três ciclos de vida e arrastar dependência Windows-only
+  para o CI. A pasta Downloads também é uma **fila com persistência de graça** —
+  a tela pode cair no meio do lote que a impressão continua. O único ganho da
+  fusão era o canal de volta, resolvido acima **sem** fundir.
 
 ## Desempenho da impressão Shopee (medido em produção)
 
