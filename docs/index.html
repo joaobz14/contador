@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Autorização Shopee — Separador de Etiquetas</title>
+  <title>Autorização — Separador de Etiquetas</title>
   <style>
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
@@ -42,7 +42,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>Autorização da Shopee</h1>
+    <h1 id="titulo">Autorização</h1>
     <p class="sub">Esta página recebe o retorno da autorização. Copie os valores
       abaixo e cole no programa <strong>Separador de Etiquetas</strong>.</p>
 
@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div class="campo">
+    <div class="campo" id="campo-shop">
       <div class="rotulo">shop_id (número da loja)</div>
       <div class="valor-linha">
         <div class="valor" id="shop"></div>
@@ -72,7 +72,7 @@
     function preencher(id, valor) {
       var el = document.getElementById(id);
       if (valor) { el.textContent = valor; }
-      else { el.innerHTML = '<span class="vazio">(vazio — abra esta página pelo link de autorização da Shopee)</span>'; }
+      else { el.innerHTML = '<span class="vazio">(vazio — abra esta página pelo link de autorização)</span>'; }
     }
     function copiar(id) {
       var txt = document.getElementById(id).textContent;
@@ -82,13 +82,26 @@
           '<span class="ok">Copiado!</span> Cole no programa.';
       });
     }
-    var code = param("code");
+    // O TikTok Shop devolve o codigo como `code` em umas telas e `auth_code`
+    // em outras; a Shopee sempre manda `code` + `shop_id`. Aceita as duas
+    // formas pra ninguem ter que adivinhar qual copiar.
+    var code = param("code") || param("auth_code");
     var shop = param("shop_id");
     preencher("code", code);
-    preencher("shop", shop);
+    if (shop) {
+      preencher("shop", shop);
+      document.getElementById("titulo").textContent = "Autorização da Shopee";
+    } else {
+      // Sem shop_id o retorno nao e da Shopee: esconde o campo em vez de
+      // mostrar um vazio confuso (o code expira em minutos — nao e hora de
+      // o operador ficar procurando um valor que nao existe).
+      document.getElementById("campo-shop").style.display = "none";
+      if (code) document.getElementById("titulo").textContent = "Autorização do TikTok Shop";
+    }
     if (code) {
       document.getElementById("status").innerHTML =
-        '<span class="ok">Autorização recebida.</span> Copie o code e o shop_id acima.';
+        '<span class="ok">Autorização recebida.</span> Copie o code acima'
+        + (shop ? ' e o shop_id.' : '.');
     } else {
       document.getElementById("status").textContent =
         "Aguardando uma autorização. Esta é a página de retorno (Redirect URL) do app.";
