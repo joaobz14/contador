@@ -738,10 +738,23 @@ def _resumo_para_envio(itens_por_conta: dict) -> dict:
     """
     return {
         "text": relatorio.texto_resumo_vendas_apos(
-            itens_por_conta, contas=_contas_do_resumo()),
+            itens_por_conta, contas=_contas_do_resumo(), ordem=_ordem_de_separacao()),
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
+
+
+def _ordem_de_separacao() -> list[str]:
+    """SKUs na ordem da aba Nomes — a ordem em que o dono anda pelo estoque.
+
+    O bloco TOTAL POR SKU e uma lista de SEPARACAO, entao segue a mesma ordem
+    da tela e do PDF do resumo do dia (`historico.resumo_do_dia(ordem=...)`).
+    Falha de leitura nao pode derrubar o resumo: sem a ordem, o bloco cai em
+    quantidade decrescente, que e util do mesmo jeito."""
+    try:
+        return list(core.carregar_nomes())
+    except OSError:
+        return []
 
 
 async def cmd_loja(update: Update, context: ContextTypes.DEFAULT_TYPE):

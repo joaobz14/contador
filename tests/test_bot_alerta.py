@@ -515,3 +515,48 @@ def test_cmd_vendas_apos_nao_autorizado(monkeypatch):
 
     assert len(enviados) == 1
     assert "Nao autorizado" in enviados[0][1]
+
+
+def test_botao_vendas_apos_entrega_o_MESMO_formato_do_comando(monkeypatch):
+    """O menu tem o botao "🔔 Vendas apos" (callback_data="vendas_apos") e o
+    chat tem o /vendasapos. Sao dois caminhos ATE a mesma funcao — este teste
+    fixa isso: se alguem um dia responder o botao por outro caminho, o formato
+    divergiria em silencio e so o dono descobriria, no celular.
+    """
+    monkeypatch.setattr(core, "listar_contas", lambda: ["Cozilatti", "Gastromaq"])
+    monkeypatch.setattr(bot, "_carregar_alertas", lambda: {
+        "dia": "2026-07-30", "avisados": {},
+        "itens": {"Cozilatti": [{"chave": "A11", "quantidade": 10}],
+                  "Gastromaq": [{"chave": "A11", "quantidade": 1}]},
+    })
+
+    def _rodar(update):
+        enviados, extras = [], []
+        ctx = _ctx([1], lambda cid, txt: enviados.append(txt), extras)
+        asyncio.run(bot.cmd_vendas_apos(update, ctx))
+        return enviados, extras
+
+    por_comando, extras_cmd = _rodar(_update(1))
+    por_botao, extras_bt = _rodar(_botao(1))
+
+    assert por_comando == por_botao, "botao e comando divergiram no texto"
+    assert extras_cmd == extras_bt, "botao e comando divergiram no parse_mode"
+    assert "<b>RESUMO DE VENDAS</b>" in por_botao[0]
+    assert "TOTAL POR SKU" in por_botao[0]          # consolidado tambem vem
+    # a soma, sem depender do espacamento (que varia com o SKU mais longo)
+    consolidado = por_botao[0].split("TOTAL POR SKU")[1]
+    assert consolidado.split("<pre>")[1].split("</pre>")[0].split() == ["A11", "11"]
+
+
+def _botao(chat_id):
+    """Update de clique em botao: nao tem `message`, so `effective_chat` — por
+    isso `cmd_vendas_apos` envia por chat_id em vez de `reply_text`."""
+    class _Chat:
+        id = chat_id
+
+    class _Update:
+        effective_chat = _Chat()
+        message = None
+        callback_query = object()
+
+    return _Update()
