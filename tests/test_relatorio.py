@@ -214,6 +214,62 @@ def test_total_por_sku_ignora_conta_sem_venda(core):
     assert "TOTAL POR SKU" not in txt
 
 
+# ---- ordem de separacao (aba Nomes) no consolidado ----
+
+ORDEM = ["A01", "A02F", "A05", "A08", "A11", "M120INX"]   # a prateleira
+
+
+def _consolidado(txt: str) -> list[str]:
+    bloco = txt.split("TOTAL POR SKU")[1]
+    return [ln.split()[0] for ln in
+            bloco.split("<pre>")[1].split("</pre>")[0].split("\n")]
+
+
+def test_consolidado_segue_a_ordem_da_aba_nomes(core):
+    """O TOTAL POR SKU e lista de SEPARACAO: segue a ordem em que o dono anda
+    pelo estoque, a mesma da tela e do PDF do resumo do dia."""
+    txt = _resumo({"Cozilatti": _itens({"A11": 10, "A01": 1}),
+                   "Gastromaq": _itens({"A05": 2, "A02F": 3})}, ordem=ORDEM)
+    assert _consolidado(txt) == ["A01", "A02F", "A05", "A11"]
+
+
+def test_sku_fora_da_aba_nomes_vai_pro_fim(core):
+    """Mesma regra de core.ordenar_grupos e historico.resumo_do_dia: quem nao
+    esta cadastrado vai pro fim, em ordem natural."""
+    txt = _resumo({"Cozilatti": _itens({"A11": 1, "Z9": 1, "Z10": 1}),
+                   "Gastromaq": _itens({"A01": 1})}, ordem=ORDEM)
+    assert _consolidado(txt) == ["A01", "A11", "Z9", "Z10"]   # Z9 antes de Z10
+
+
+def test_sem_ordem_o_consolidado_cai_em_quantidade(core):
+    """Falha ao ler a aba Nomes nao pode derrubar o resumo — so muda a ordem."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1}), "Gastromaq": _itens({"A11": 9})})
+    assert _consolidado(txt) == ["A11", "A01"]
+
+
+def test_blocos_por_conta_seguem_por_quantidade_mesmo_com_ordem(core):
+    """Sao perguntas diferentes: a conta responde "o que mais vendeu", o
+    consolidado responde "por onde eu passo pra separar"."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "A11": 10}),
+                   "Gastromaq": _itens({"A05": 1})}, ordem=ORDEM)
+    assert [ln.split()[0] for ln in _linhas_pre(txt)] == ["A11", "A01"]
+
+
+def test_corte_escolhe_pelos_MAIORES_e_exibe_na_ordem_da_prateleira(core):
+    """Quem aparece e escolhido pela quantidade; a ordem de exibicao continua a
+    da prateleira. Cortar por POSICAO jogaria fora o fim da caminhada — e o
+    maior de todos pode estar na ultima prateleira."""
+    ordem = [f"P{i:03d}" for i in range(300)]
+    # o maior volume esta no FIM da prateleira
+    vendas = {f"P{i:03d}": (1 if i < 299 else 999) for i in range(300)}
+    txt = _resumo({"Cozilatti": _itens(vendas), "Gastromaq": _itens({"P000": 1})},
+                  ordem=ordem)
+    mostrados = _consolidado(txt)
+    assert "P299" in mostrados, "o maior sumiu por estar na ultima prateleira"
+    sem_aviso = [s for s in mostrados if s != "…"]
+    assert sem_aviso == sorted(sem_aviso, key=ordem.index), "saiu da ordem da prateleira"
+
+
 # ---- HTML: escapar errado nao quebra local, so devolve 400 no envio ----
 
 def test_escapa_texto_dinamico(core):

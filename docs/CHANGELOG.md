@@ -23,7 +23,9 @@ Histórico das principais mudanças do projeto.
   - bloco **📦 TOTAL POR SKU** somando as contas, antes do rodapé: é a lista de
     reposição (sem ele, um SKU que vendeu nas duas contas obriga a somar de
     cabeça). Aparece só quando há mais de uma conta com venda — com uma só,
-    repetiria a lista dela.
+    repetiria a lista dela. Ele segue a **ordem da aba ✏ Nomes** (a mesma da
+    tela e do PDF do resumo do dia), porque é uma lista de separação: a ordem
+    em que você anda pelo estoque. SKU não cadastrado na aba vai ao fim.
   Novo comando `python bot_telegram.py testar-resumo` manda o resumo para os
   chats liberados na hora, para conferir o layout sem esperar uma venda.
 

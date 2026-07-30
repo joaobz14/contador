@@ -114,7 +114,7 @@ def texto_alerta_pos_horario(conta: str, itens: list) -> str:
 
 
 def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
-                             contas=None) -> str:
+                             contas=None, ordem=None) -> str:
     """Junta TUDO que o alerta pos-horario ja avisou HOJE (todas as contas)
     numa mensagem so. Motivado por: varias vendas caindo depois das 8:30 no
     mesmo dia viram um alerta separado cada uma, poluindo o chat — este resumo
@@ -131,6 +131,11 @@ def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
     ausencia tambem e informacao ("nenhuma venda" e diferente de "sumiu o
     bloco"). Sem ela, so aparecem as que tem venda.
 
+    `ordem` (opcional) e a lista de SKUs da aba Nomes: ordena o bloco TOTAL POR
+    SKU na ordem de separacao (a mesma da tela e do PDF do resumo do dia). Os
+    blocos por conta seguem por quantidade — sao coisas diferentes: um responde
+    "o que mais vendeu", o outro "por onde eu passo pra separar".
+
     A mensagem SEMPRE cabe em uma so: o que passar do limite vira
     "… e mais X SKUs (Y un)". Isso e requisito, nao conveniencia — dividir o
     texto partiria um `<pre>` no meio e a API devolveria 400.
@@ -146,7 +151,7 @@ def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
     cabecalho = (f"🧾 <b>RESUMO DE VENDAS</b>\n"
                  f"<i>desde {HORA_CORTE} · {agora:%d/%m}, {agora:%H:%M}</i>")
     rodape = f"{DIVISOR}\n<b>TOTAL: {_un(total_geral)}</b>"
-    consolidado = _consolidar(por_conta)
+    consolidado = _consolidar(por_conta, ordem)
 
     # Corta pelos maiores ate caber: o teto vale para a mensagem INTEIRA, entao
     # o limite por bloco vai baixando ate o texto entrar no limite.
@@ -160,12 +165,19 @@ def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
     return texto            # ja no teto minimo: melhor curto que nao enviar
 
 
-def _consolidar(por_conta: dict) -> dict[str, int]:
+def _consolidar(por_conta: dict, ordem=None) -> dict[str, int]:
     """Soma o mesmo SKU entre as contas — vazio quando so ha uma com venda.
 
     E o numero que responde "quanto preciso repor deste produto": com duas
     contas, `M120INX 3` numa e `2` na outra obriga a somar de cabeca. Com uma
     conta so, o bloco repetiria a lista dela e viraria ruido.
+
+    `ordem` (lista de SKUs da aba Nomes) manda na ordenacao deste bloco: ele e
+    uma lista de SEPARACAO, e a aba Nomes e a ordem em que o dono anda pelo
+    estoque. Os blocos POR CONTA continuam por quantidade — la a pergunta e
+    "o que mais vendeu", nao "por onde eu passo". SKU fora da lista vai pro
+    fim em ordem natural (mesma regra de `core.ordenar_grupos` e
+    `historico.resumo_do_dia`).
     """
     com_venda = [s for s in por_conta.values() if s]
     if len(com_venda) < 2:
@@ -174,7 +186,13 @@ def _consolidar(por_conta: dict) -> dict[str, int]:
     for s in com_venda:
         for sku, qtd in s.items():
             somas[sku] += qtd
-    return dict(sorted(somas.items(), key=lambda kv: (-kv[1], kv[0])))
+    if ordem:
+        pos = {sku: i for i, sku in enumerate(ordem)}
+        fim = len(ordem)
+        chave = lambda kv: (pos.get(kv[0], fim), core._natural(kv[0]))  # noqa: E731
+    else:
+        chave = lambda kv: (-kv[1], kv[0])  # noqa: E731 - sem ordem: maior primeiro
+    return dict(sorted(somas.items(), key=chave))
 
 
 def _bloco_total_sku(somas: dict[str, int], teto: int | None) -> str:
@@ -223,7 +241,17 @@ def _tabela(somas: dict[str, int], teto: int | None) -> str:
     """A lista SKU/quantidade dentro de `<pre>` — o unico lugar do Telegram onde
     coluna alinha (fonte monoespacada)."""
     itens = list(somas.items())
-    mostrados = itens if teto is None else itens[:teto]
+    if teto is None or len(itens) <= teto:
+        mostrados, resto = itens, []
+    else:
+        # QUEM aparece e escolhido pela QUANTIDADE; a ORDEM de exibicao e a que
+        # veio. Nos blocos por conta da no mesmo (ja vem por quantidade), mas no
+        # TOTAL POR SKU — que vem na ordem da aba Nomes — cortar por posicao
+        # jogaria fora o fim da caminhada, que pode ter os maiores. Perder o
+        # maior de todos por ele estar na ultima prateleira seria absurdo.
+        maiores = {s for s, _ in sorted(itens, key=lambda kv: (-kv[1], kv[0]))[:teto]}
+        mostrados = [kv for kv in itens if kv[0] in maiores]
+        resto = [kv for kv in itens if kv[0] not in maiores]
     # Largura vinda do SKU mais longo MOSTRADO (nao um numero fixo): SKU curto
     # nao deixa buraco e SKU longo nao empurra a coluna para fora.
     larg_sku = max(len(s) for s, _ in mostrados)
@@ -234,8 +262,7 @@ def _tabela(somas: dict[str, int], teto: int | None) -> str:
     # coluna na tela, apesar de o codigo "parecer" alinhado.
     linhas = [f"{esc(s.ljust(larg_sku))}  {q:>{larg_qtd}}" for s, q in mostrados]
 
-    if len(mostrados) < len(itens):
-        resto = itens[len(mostrados):]
+    if resto:
         linhas.append(f"… e mais {_sku(len(resto))} ({sum(q for _, q in resto)} un)")
     return f"<pre>{chr(10).join(linhas)}</pre>"
 
