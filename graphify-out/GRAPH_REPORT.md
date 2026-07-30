@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1512 nodes · 2819 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1519 nodes · 2842 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -93,6 +93,10 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   `dividir_mensagem` partiria um `<pre>` no meio. O corte por limite mostra os
   maiores + "… e mais X SKUs (Y un)". Novo CLI `bot_telegram.py testar-resumo`
   para conferir no celular sem esperar venda.
+  Traz também o bloco **📦 TOTAL POR SKU** somando as contas (a lista de
+  reposição — sem ele o dono somaria de cabeça o mesmo SKU que aparece em duas
+  contas). Só aparece com **2+ contas com venda**: com uma só, repetiria a
+  lista dela e viraria ruído.
 - **2026-07-30 — O token do bot saiu do log (segredo por dentro de biblioteca).**
   A URL da API do Telegram carrega o token no próprio caminho e o `httpx`
   registra cada requisição em INFO — com o log do bot em INFO, o token ia

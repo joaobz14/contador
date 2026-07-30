@@ -146,15 +146,42 @@ def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,
     cabecalho = (f"🧾 <b>RESUMO DE VENDAS</b>\n"
                  f"<i>desde {HORA_CORTE} · {agora:%d/%m}, {agora:%H:%M}</i>")
     rodape = f"{DIVISOR}\n<b>TOTAL: {_un(total_geral)}</b>"
+    consolidado = _consolidar(por_conta)
 
     # Corta pelos maiores ate caber: o teto vale para a mensagem INTEIRA, entao
     # o limite por bloco vai baixando ate o texto entrar no limite.
     for teto in (None, 25, 15, 10, 6, 3):
-        corpo = "\n".join(_bloco(conta, somas, teto) for conta, somas in por_conta.items())
-        texto = f"{cabecalho}\n\n{corpo}\n{rodape}"
+        partes = [_bloco(conta, somas, teto) for conta, somas in por_conta.items()]
+        if consolidado:
+            partes.append(_bloco_total_sku(consolidado, teto))
+        texto = f"{cabecalho}\n\n" + "\n".join(partes) + f"\n{rodape}"
         if len(texto) <= LIMITE_SEGURO:
             return texto
     return texto            # ja no teto minimo: melhor curto que nao enviar
+
+
+def _consolidar(por_conta: dict) -> dict[str, int]:
+    """Soma o mesmo SKU entre as contas — vazio quando so ha uma com venda.
+
+    E o numero que responde "quanto preciso repor deste produto": com duas
+    contas, `M120INX 3` numa e `2` na outra obriga a somar de cabeca. Com uma
+    conta so, o bloco repetiria a lista dela e viraria ruido.
+    """
+    com_venda = [s for s in por_conta.values() if s]
+    if len(com_venda) < 2:
+        return {}
+    somas: dict[str, int] = defaultdict(int)
+    for s in com_venda:
+        for sku, qtd in s.items():
+            somas[sku] += qtd
+    return dict(sorted(somas.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+def _bloco_total_sku(somas: dict[str, int], teto: int | None) -> str:
+    """Soma de todas as contas por SKU — a lista de reposicao."""
+    titulo = (f"{DIVISOR}\n📦 <b>TOTAL POR SKU · "
+              f"{_un(sum(somas.values()))} · {_sku(len(somas))}</b>")
+    return f"{titulo}\n{_tabela(somas, teto)}\n"
 
 
 def _ordem_contas(itens_por_conta: dict, contas) -> list:
@@ -189,7 +216,12 @@ def _bloco(conta, somas: dict[str, int], teto: int | None) -> str:
 
     unidades = sum(somas.values())
     titulo = f"{DIVISOR}\n🏪 <b>{nome} · {_un(unidades)} · {_sku(len(somas))}</b>"
+    return f"{titulo}\n{_tabela(somas, teto)}\n"
 
+
+def _tabela(somas: dict[str, int], teto: int | None) -> str:
+    """A lista SKU/quantidade dentro de `<pre>` — o unico lugar do Telegram onde
+    coluna alinha (fonte monoespacada)."""
     itens = list(somas.items())
     mostrados = itens if teto is None else itens[:teto]
     # Largura vinda do SKU mais longo MOSTRADO (nao um numero fixo): SKU curto
@@ -205,7 +237,7 @@ def _bloco(conta, somas: dict[str, int], teto: int | None) -> str:
     if len(mostrados) < len(itens):
         resto = itens[len(mostrados):]
         linhas.append(f"… e mais {_sku(len(resto))} ({sum(q for _, q in resto)} un)")
-    return f"{titulo}\n<pre>{chr(10).join(linhas)}</pre>\n"
+    return f"<pre>{chr(10).join(linhas)}</pre>"
 
 
 def texto_detalhe(itens: list, chave: str) -> str:

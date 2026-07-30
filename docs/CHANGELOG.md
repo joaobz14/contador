@@ -20,8 +20,10 @@ Histórico das principais mudanças do projeto.
 
   A mensagem vai **sempre em uma só**: se a lista passar do limite do Telegram,
   mostra os maiores e acrescenta "… e mais X SKUs (Y un)".
-  **O total por SKU somando as contas saiu** — o rodapé agora traz só o total
-  geral em unidades. Se fizer falta para repor estoque, é fácil trazer de volta.
+  - bloco **📦 TOTAL POR SKU** somando as contas, antes do rodapé: é a lista de
+    reposição (sem ele, um SKU que vendeu nas duas contas obriga a somar de
+    cabeça). Aparece só quando há mais de uma conta com venda — com uma só,
+    repetiria a lista dela.
   Novo comando `python bot_telegram.py testar-resumo` manda o resumo para os
   chats liberados na hora, para conferir o layout sem esperar uma venda.
 

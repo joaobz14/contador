@@ -1974,7 +1974,7 @@
    "label": "texto_detalhe()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L211",
+   "source_location": "L243",
    "_origin": "ast",
    "id": "relatorio_texto_detalhe",
    "community": 24,
@@ -1988,7 +1988,7 @@
    "label": "dividir_mensagem()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L228",
+   "source_location": "L260",
    "_origin": "ast",
    "id": "relatorio_dividir_mensagem",
    "community": 24,
@@ -8874,7 +8874,7 @@
    "label": "test_dividir_mensagem_curta_nao_divide()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L235",
+   "source_location": "L272",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_curta_nao_divide",
    "community": 3,
@@ -8888,7 +8888,7 @@
    "label": "test_dividir_mensagem_respeita_limite()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L239",
+   "source_location": "L276",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_respeita_limite",
    "community": 3,
@@ -8902,7 +8902,7 @@
    "label": "test_dividir_mensagem_linha_gigante()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L246",
+   "source_location": "L283",
    "_origin": "ast",
    "id": "tests_test_relatorio_test_dividir_mensagem_linha_gigante",
    "community": 3,
@@ -19978,7 +19978,7 @@
    "label": "_ordem_contas()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L160",
+   "source_location": "L187",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19992,7 +19992,7 @@
    "label": "_somar()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L169",
+   "source_location": "L196",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20006,7 +20006,7 @@
    "label": "_bloco()",
    "file_type": "code",
    "source_file": "relatorio.py",
-   "source_location": "L182",
+   "source_location": "L209",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20202,7 +20202,7 @@
    "label": "test_escapa_texto_dinamico()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L185",
+   "source_location": "L219",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20216,7 +20216,7 @@
    "label": "test_nao_gera_entidade_quebrada_ao_maiusculizar()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L191",
+   "source_location": "L225",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20230,7 +20230,7 @@
    "label": "test_alinhamento_medido_no_texto_CRU()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L198",
+   "source_location": "L232",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20244,7 +20244,7 @@
    "label": "test_corta_pelos_maiores_e_avisa_o_corte()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L210",
+   "source_location": "L244",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20258,7 +20258,7 @@
    "label": "test_pre_nunca_fica_aberto()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L218",
+   "source_location": "L252",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20272,7 +20272,7 @@
    "label": "_linhas_pre()",
    "file_type": "code",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L226",
+   "source_location": "L263",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20281,6 +20281,104 @@
    "id": "tests_test_relatorio_linhas_pre",
    "community": 3,
    "norm_label": "_linhas_pre()"
+  },
+  {
+   "label": "_consolidar()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L163",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_consolidar",
+   "community": 24,
+   "norm_label": "_consolidar()"
+  },
+  {
+   "label": "_bloco_total_sku()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L180",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_bloco_total_sku",
+   "community": 24,
+   "norm_label": "_bloco_total_sku()"
+  },
+  {
+   "label": "_tabela()",
+   "file_type": "code",
+   "source_file": "relatorio.py",
+   "source_location": "L222",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "relatorio_tabela",
+   "community": 24,
+   "norm_label": "_tabela()"
+  },
+  {
+   "label": "test_total_por_sku_soma_as_contas()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L185",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_total_por_sku_soma_as_contas",
+   "community": 3,
+   "norm_label": "test_total_por_sku_soma_as_contas()"
+  },
+  {
+   "label": "test_total_por_sku_tambem_ordena_por_quantidade()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L196",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_total_por_sku_tambem_ordena_por_quantidade",
+   "community": 3,
+   "norm_label": "test_total_por_sku_tambem_ordena_por_quantidade()"
+  },
+  {
+   "label": "test_total_por_sku_nao_aparece_com_uma_conta_so()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L204",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_total_por_sku_nao_aparece_com_uma_conta_so",
+   "community": 3,
+   "norm_label": "test_total_por_sku_nao_aparece_com_uma_conta_so()"
+  },
+  {
+   "label": "test_total_por_sku_ignora_conta_sem_venda()",
+   "file_type": "code",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L211",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_relatorio_test_total_por_sku_ignora_conta_sem_venda",
+   "community": 3,
+   "norm_label": "test_total_por_sku_ignora_conta_sem_venda()"
   }
  ],
  "links": [
@@ -21860,10 +21958,70 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
+   "source_location": "L219",
+   "weight": 1.0,
+   "source": "relatorio_bloco",
+   "target": "relatorio_tabela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
    "source_location": "L191",
    "weight": 1.0,
    "source": "relatorio_bloco",
    "target": "relatorio_un",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L183",
+   "weight": 1.0,
+   "source": "relatorio_bloco_total_sku",
+   "target": "relatorio_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L184",
+   "weight": 1.0,
+   "source": "relatorio_bloco_total_sku",
+   "target": "relatorio_tabela",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L183",
+   "weight": 1.0,
+   "source": "relatorio_bloco_total_sku",
+   "target": "relatorio_un",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L235",
+   "weight": 1.0,
+   "source": "relatorio_tabela",
+   "target": "relatorio_esc",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L239",
+   "weight": 1.0,
+   "source": "relatorio_tabela",
+   "target": "relatorio_sku",
    "confidence_score": 1.0
   },
   {
@@ -21905,6 +22063,26 @@
    "weight": 1.0,
    "source": "relatorio_texto_resumo_vendas_apos",
    "target": "relatorio_bloco",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L156",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_bloco_total_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L149",
+   "weight": 1.0,
+   "source": "relatorio_texto_resumo_vendas_apos",
+   "target": "relatorio_consolidar",
    "confidence_score": 1.0
   },
   {
@@ -29114,6 +29292,86 @@
   },
   {
    "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L213",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_ignora_conta_sem_venda",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L213",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_ignora_conta_sem_venda",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L206",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_nao_aparece_com_uma_conta_so",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L206",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_nao_aparece_com_uma_conta_so",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L188",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_soma_as_contas",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L188",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_soma_as_contas",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L197",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_tambem_ordena_por_quantidade",
+   "target": "tests_test_relatorio_itens",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L197",
+   "weight": 1.0,
+   "source": "tests_test_relatorio_test_total_por_sku_tambem_ordena_por_quantidade",
+   "target": "tests_test_relatorio_resumo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
    "context": "call",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_resumo.py",
@@ -33440,7 +33698,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L182",
+   "source_location": "L209",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_bloco",
@@ -33450,7 +33708,27 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L228",
+   "source_location": "L180",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_bloco_total_sku",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L163",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_consolidar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L260",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_dividir_mensagem",
@@ -33480,7 +33758,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L160",
+   "source_location": "L187",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_ordem_contas",
@@ -33500,10 +33778,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L169",
+   "source_location": "L196",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_somar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "relatorio.py",
+   "source_location": "L222",
+   "weight": 1.0,
+   "source": "relatorio",
+   "target": "relatorio_tabela",
    "confidence_score": 1.0
   },
   {
@@ -33530,7 +33818,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
-   "source_location": "L211",
+   "source_location": "L243",
    "weight": 1.0,
    "source": "relatorio",
    "target": "relatorio_texto_detalhe",
@@ -39670,7 +39958,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L226",
+   "source_location": "L263",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_linhas_pre",
@@ -39690,7 +39978,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L198",
+   "source_location": "L232",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_alinhamento_medido_no_texto_CRU",
@@ -39730,7 +40018,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L210",
+   "source_location": "L244",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_corta_pelos_maiores_e_avisa_o_corte",
@@ -39740,7 +40028,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L235",
+   "source_location": "L272",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_dividir_mensagem_curta_nao_divide",
@@ -39750,7 +40038,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L246",
+   "source_location": "L283",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_dividir_mensagem_linha_gigante",
@@ -39760,7 +40048,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L239",
+   "source_location": "L276",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_dividir_mensagem_respeita_limite",
@@ -39780,7 +40068,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L185",
+   "source_location": "L219",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_escapa_texto_dinamico",
@@ -39790,7 +40078,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L191",
+   "source_location": "L225",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_nao_gera_entidade_quebrada_ao_maiusculizar",
@@ -39810,7 +40098,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_relatorio.py",
-   "source_location": "L218",
+   "source_location": "L252",
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_pre_nunca_fica_aberto",
@@ -39964,6 +40252,46 @@
    "weight": 1.0,
    "source": "tests_test_relatorio",
    "target": "tests_test_relatorio_test_texto_resumo_vendas_apos_vazio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L211",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_total_por_sku_ignora_conta_sem_venda",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L204",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_total_por_sku_nao_aparece_com_uma_conta_so",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L185",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_total_por_sku_soma_as_contas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_relatorio.py",
+   "source_location": "L196",
+   "weight": 1.0,
+   "source": "tests_test_relatorio",
+   "target": "tests_test_relatorio_test_total_por_sku_tambem_ordena_por_quantidade",
    "confidence_score": 1.0
   },
   {
@@ -49242,5 +49570,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "fa044247350cd7a5eb02f4aa3a1db4c8b30b70a0"
+ "built_at_commit": "4fb86310a6752c079c8478f0ccea63e039e024c0"
 }

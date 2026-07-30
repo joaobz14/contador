@@ -180,6 +180,40 @@ def test_conta_conhecida_sem_registro_tambem_aparece(core):
     assert "<b>SHOPEE</b>" in txt and "nenhuma venda" in txt
 
 
+# ---- total por SKU (a lista de reposicao) ----
+
+def test_total_por_sku_soma_as_contas(core):
+    """O numero que responde "quanto preciso repor": sem ele, o dono somaria de
+    cabeca o mesmo SKU que aparece em duas contas."""
+    txt = _resumo({"Cozilatti": _itens({"M120INX": 3, "A11": 10}),
+                   "Gastromaq": _itens({"M120INX": 2, "A03": 1})})
+    consolidado = txt.split("TOTAL POR SKU")[1]
+    assert "<b>TOTAL POR SKU · 16 unidades · 3 SKUs</b>" in txt
+    assert "M120INX   5" in consolidado          # 3 + 2
+    assert "A11      10" in consolidado
+
+
+def test_total_por_sku_tambem_ordena_por_quantidade(core):
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "B": 2}),
+                   "Gastromaq": _itens({"A01": 9})})
+    bloco = txt.split("TOTAL POR SKU")[1]
+    linhas = bloco.split("<pre>")[1].split("</pre>")[0].split("\n")
+    assert [ln.split()[0] for ln in linhas] == ["A01", "B"]
+
+
+def test_total_por_sku_nao_aparece_com_uma_conta_so(core):
+    """Com uma conta, o bloco repetiria a lista dela — viraria ruido."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1, "A05": 3})})
+    assert "TOTAL POR SKU" not in txt
+    assert "<b>TOTAL: 4 unidades</b>" in txt
+
+
+def test_total_por_sku_ignora_conta_sem_venda(core):
+    """Conta vazia nao pode fazer o consolidado aparecer sozinho."""
+    txt = _resumo({"Cozilatti": _itens({"A01": 1})}, contas=["Cozilatti", "Shopee"])
+    assert "TOTAL POR SKU" not in txt
+
+
 # ---- HTML: escapar errado nao quebra local, so devolve 400 no envio ----
 
 def test_escapa_texto_dinamico(core):
@@ -220,7 +254,10 @@ def test_pre_nunca_fica_aberto(core):
     a API devolveria 400. O corte acontece antes, por SKU."""
     muitos = {f"SKU-BEM-LONGO-DE-VERDADE-{i:04d}": 900 - i for i in range(300)}
     txt = _resumo({"Cozilatti": _itens(muitos), "Gastromaq": _itens(muitos)})
-    assert txt.count("<pre>") == txt.count("</pre>") == 2
+    # Balanceamento, nao a contagem: o numero de blocos muda conforme as contas
+    # e o consolidado; o que nao pode mudar e ficar uma tag aberta.
+    assert txt.count("<pre>") == txt.count("</pre>") > 0
+    assert not txt.rstrip().endswith("<pre>")
 
 
 def _linhas_pre(txt: str) -> list[str]:
