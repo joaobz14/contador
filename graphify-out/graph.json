@@ -721,7 +721,7 @@
    "label": "cmd_loja()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L760",
+   "source_location": "L815",
    "_origin": "ast",
    "id": "bot_telegram_cmd_loja",
    "community": 1,
@@ -735,7 +735,7 @@
    "label": "cmd_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L772",
+   "source_location": "L827",
    "_origin": "ast",
    "id": "bot_telegram_cmd_dia",
    "community": 1,
@@ -749,7 +749,7 @@
    "label": "cmd_detalhar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L781",
+   "source_location": "L836",
    "_origin": "ast",
    "id": "bot_telegram_cmd_detalhar",
    "community": 1,
@@ -763,7 +763,7 @@
    "label": "cb_botao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L791",
+   "source_location": "L846",
    "_origin": "ast",
    "id": "bot_telegram_cb_botao",
    "community": 1,
@@ -777,7 +777,7 @@
    "label": "cmd_desconhecido()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L850",
+   "source_location": "L905",
    "_origin": "ast",
    "id": "bot_telegram_cmd_desconhecido",
    "community": 1,
@@ -791,7 +791,7 @@
    "label": "job_bom_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L855",
+   "source_location": "L910",
    "_origin": "ast",
    "id": "bot_telegram_job_bom_dia",
    "community": 1,
@@ -805,7 +805,7 @@
    "label": "_agendar_aviso()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L876",
+   "source_location": "L931",
    "_origin": "ast",
    "id": "bot_telegram_agendar_aviso",
    "community": 1,
@@ -819,7 +819,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L893",
+   "source_location": "L948",
    "_origin": "ast",
    "id": "bot_telegram_main",
    "community": 1,
@@ -833,7 +833,7 @@
    "label": "_pausar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L957",
+   "source_location": "L1013",
    "_origin": "ast",
    "id": "bot_telegram_pausar",
    "community": 1,
@@ -18368,7 +18368,7 @@
    "label": "_testar_alerta_pos_horario_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L927",
+   "source_location": "L983",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19894,7 +19894,7 @@
    "label": "_contas_do_resumo()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L722",
+   "source_location": "L777",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19908,7 +19908,7 @@
    "label": "_resumo_para_envio()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L731",
+   "source_location": "L786",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19922,7 +19922,7 @@
    "label": "_testar_resumo_vendas_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L971",
+   "source_location": "L1027",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20412,7 +20412,7 @@
    "label": "_ordem_de_separacao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L747",
+   "source_location": "L802",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20505,6 +20505,146 @@
    "id": "tests_test_relatorio_test_corte_escolhe_pelos_MAIORES_e_exibe_na_ordem_da_prateleira",
    "community": 3,
    "norm_label": "test_corte_escolhe_pelos_maiores_e_exibe_na_ordem_da_prateleira()"
+  },
+  {
+   "label": "_commit_do_disco()",
+   "file_type": "code",
+   "source_file": "bot_telegram.py",
+   "source_location": "L722",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "bot_telegram_commit_do_disco",
+   "community": 1,
+   "norm_label": "_commit_do_disco()"
+  },
+  {
+   "label": "cmd_versao()",
+   "file_type": "code",
+   "source_file": "bot_telegram.py",
+   "source_location": "L752",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "bot_telegram_cmd_versao",
+   "community": 1,
+   "norm_label": "cmd_versao()"
+  },
+  {
+   "label": "_repo_falso()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L570",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_repo_falso",
+   "community": 72,
+   "norm_label": "_repo_falso()"
+  },
+  {
+   "label": "test_commit_do_disco_le_o_ref()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L578",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_commit_do_disco_le_o_ref",
+   "community": 72,
+   "norm_label": "test_commit_do_disco_le_o_ref()"
+  },
+  {
+   "label": "test_commit_do_disco_aceita_head_solto()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L583",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_commit_do_disco_aceita_head_solto",
+   "community": 72,
+   "norm_label": "test_commit_do_disco_aceita_head_solto()"
+  },
+  {
+   "label": "test_commit_do_disco_le_packed_refs()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L591",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_commit_do_disco_le_packed_refs",
+   "community": 72,
+   "norm_label": "test_commit_do_disco_le_packed_refs()"
+  },
+  {
+   "label": "test_commit_do_disco_sem_git_nao_levanta()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L602",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_commit_do_disco_sem_git_nao_levanta",
+   "community": 72,
+   "norm_label": "test_commit_do_disco_sem_git_nao_levanta()"
+  },
+  {
+   "label": "test_versao_avisa_quando_o_bot_esta_desatualizado()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L608",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_versao_avisa_quando_o_bot_esta_desatualizado",
+   "community": 72,
+   "norm_label": "test_versao_avisa_quando_o_bot_esta_desatualizado()"
+  },
+  {
+   "label": "test_versao_confirma_quando_esta_em_dia()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L620",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
+   "community": 72,
+   "norm_label": "test_versao_confirma_quando_esta_em_dia()"
+  },
+  {
+   "label": "_update_msg()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L631",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_alerta_update_msg",
+   "community": 72,
+   "norm_label": "_update_msg()"
   }
  ],
  "links": [
@@ -21100,6 +21240,26 @@
    "weight": 1.0,
    "source": "bot_telegram_cmd_vendas_apos",
    "target": "bot_telegram_resumo_para_envio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L759",
+   "weight": 1.0,
+   "source": "bot_telegram_cmd_versao",
+   "target": "bot_telegram_autorizado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L762",
+   "weight": 1.0,
+   "source": "bot_telegram_cmd_versao",
+   "target": "bot_telegram_commit_do_disco",
    "confidence_score": 1.0
   },
   {
@@ -26597,6 +26757,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L579",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_commit_do_disco_le_o_ref",
+   "target": "tests_test_bot_alerta_repo_falso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
    "source_location": "L52",
    "weight": 1.0,
    "source": "tests_test_bot_alerta_test_dados_alerta_filtra_por_hoje_e_dedup",
@@ -26781,6 +26951,66 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta_test_job_alerta_shopee_sem_novidade_nao_envia",
    "target": "tests_test_bot_alerta_ctx",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L613",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_avisa_quando_o_bot_esta_desatualizado",
+   "target": "tests_test_bot_alerta_ctx",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L609",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_avisa_quando_o_bot_esta_desatualizado",
+   "target": "tests_test_bot_alerta_repo_falso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L613",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_avisa_quando_o_bot_esta_desatualizado",
+   "target": "tests_test_bot_alerta_update_msg",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L625",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
+   "target": "tests_test_bot_alerta_ctx",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L621",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
+   "target": "tests_test_bot_alerta_repo_falso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L625",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
+   "target": "tests_test_bot_alerta_update_msg",
    "confidence_score": 1.0
   },
   {
@@ -33024,7 +33254,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L876",
+   "source_location": "L931",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_agendar_aviso",
@@ -33074,7 +33304,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L791",
+   "source_location": "L846",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cb_botao",
@@ -33104,7 +33334,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L850",
+   "source_location": "L905",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_desconhecido",
@@ -33114,7 +33344,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L781",
+   "source_location": "L836",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_detalhar",
@@ -33124,7 +33354,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L772",
+   "source_location": "L827",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_dia",
@@ -33154,7 +33384,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L760",
+   "source_location": "L815",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_loja",
@@ -33204,6 +33434,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
+   "source_location": "L752",
+   "weight": 1.0,
+   "source": "bot_telegram",
+   "target": "bot_telegram_cmd_versao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
    "source_location": "L117",
    "weight": 1.0,
    "source": "bot_telegram",
@@ -33218,6 +33458,16 @@
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_coletar_grupos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "bot_telegram.py",
+   "source_location": "L722",
+   "weight": 1.0,
+   "source": "bot_telegram",
+   "target": "bot_telegram_commit_do_disco",
    "confidence_score": 1.0
   },
   {
@@ -33244,7 +33494,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L722",
+   "source_location": "L777",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_contas_do_resumo",
@@ -33364,7 +33614,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L855",
+   "source_location": "L910",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_job_bom_dia",
@@ -33414,7 +33664,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L893",
+   "source_location": "L948",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_main",
@@ -33424,7 +33674,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L747",
+   "source_location": "L802",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_ordem_de_separacao",
@@ -33444,7 +33694,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L957",
+   "source_location": "L1013",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_pausar",
@@ -33474,7 +33724,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L731",
+   "source_location": "L786",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_resumo_para_envio",
@@ -33544,7 +33794,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L927",
+   "source_location": "L983",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_alerta_pos_horario_agora",
@@ -33554,7 +33804,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L971",
+   "source_location": "L1027",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_resumo_vendas_agora",
@@ -36874,6 +37124,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L570",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_repo_falso",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
    "source_location": "L135",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
@@ -36958,6 +37218,46 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_cmd_vendas_apos_sem_nada_avisado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L583",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_commit_do_disco_aceita_head_solto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L578",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_commit_do_disco_le_o_ref",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L591",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_commit_do_disco_le_packed_refs",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L602",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_commit_do_disco_sem_git_nao_levanta",
    "confidence_score": 1.0
   },
   {
@@ -37164,10 +37464,40 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L608",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_versao_avisa_quando_o_bot_esta_desatualizado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L620",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
    "source_location": "L433",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_update",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_alerta.py",
+   "source_location": "L631",
+   "weight": 1.0,
+   "source": "tests_test_bot_alerta",
+   "target": "tests_test_bot_alerta_update_msg",
    "confidence_score": 1.0
   },
   {
@@ -49976,5 +50306,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "2bd276c9df6675a9a496b5196732fe204aaa100e"
+ "built_at_commit": "eb8131fc67c3838e2acede0084be9ceba46a0c03"
 }

@@ -269,6 +269,7 @@ Preencha o `bot_config.json` com o **token** do bot (obtido no `@BotFather`).
 | `/loja` | Alterna entre Mercado Livre e Shopee |
 | `/id` | Mostra o seu chat id |
 | `/menu` | Abre o menu de botões |
+| `/versao` | Diz qual versão o bot está rodando e avisa se a pasta já tem outra |
 
 - **Impressão pelo bot é apenas Mercado Livre** (na Shopee é só consulta).
 - A impressão sai **na máquina onde o bot roda** (o `.zip` cai no Downloads dela) —

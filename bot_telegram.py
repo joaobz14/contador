@@ -719,6 +719,61 @@ async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id, **_resumo_para_envio(dados["itens"]))
 
 
+def _commit_do_disco() -> str:
+    """Commit que esta NA PASTA agora, lido direto do `.git` (sem `subprocess`).
+
+    Nada de `git rev-parse`: o bot roda por `pythonw`, sem console, e todo
+    subprocesso disparado dali herda handles de stdin/stdout/stderr invalidos
+    (WinError 6) — foi o que derrubou o auto-start pela tela em 2026-07. Ler
+    dois arquivos de texto resolve e nao pode falhar desse jeito.
+    """
+    try:
+        cabeca = (core.PASTA_SCRIPT / ".git" / "HEAD").read_text(encoding="utf-8").strip()
+        if not cabeca.startswith("ref:"):
+            return cabeca[:7]                     # HEAD solto (detached)
+        ref = cabeca.split(None, 1)[1]
+        solto = core.PASTA_SCRIPT / ".git" / ref
+        if solto.exists():
+            return solto.read_text(encoding="utf-8").strip()[:7]
+        empacotado = (core.PASTA_SCRIPT / ".git" / "packed-refs")
+        for linha in empacotado.read_text(encoding="utf-8").splitlines():
+            if linha.endswith(f" {ref}"):
+                return linha.split()[0][:7]
+    except (OSError, IndexError):
+        pass
+    return ""
+
+
+# Commit que o PROCESSO carregou. Fica aqui, no import: depois disso o arquivo
+# do disco pode mudar (git pull) sem que este processo perceba.
+COMMIT_EM_USO = _commit_do_disco()
+
+
+async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Diz qual versao o bot esta RODANDO e avisa se a pasta ja tem outra.
+
+    Existe por um problema real e repetido: `git pull` troca os arquivos, mas o
+    bot que ja esta no ar continua com o codigo que carregou no logon. O sintoma
+    e "a mudanca nao pegou", sem nenhum sinal do porque — aconteceu duas vezes
+    (o /vendasapos e o layout do resumo). Aqui a diferenca fica explicita."""
+    if not _autorizado(update, context.bot_data["cfg"]):
+        await update.message.reply_text("Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    no_disco = _commit_do_disco()
+    linhas = [f"Bot rodando a versao: {COMMIT_EM_USO or '(desconhecida)'}"]
+    if no_disco and COMMIT_EM_USO and no_disco != COMMIT_EM_USO:
+        linhas += [
+            f"A pasta ja esta em: {no_disco}",
+            "",
+            "⚠️ O bot esta DESATUALIZADO — reinicie para pegar a versao nova:",
+            'schtasks /end /tn "Contador - Bot do Telegram (login)"',
+            'schtasks /run /tn "Contador - Bot do Telegram (login)"',
+        ]
+    else:
+        linhas.append("✅ Em dia com a pasta.")
+    await update.message.reply_text("\n".join(linhas))
+
+
 def _contas_do_resumo() -> list[str]:
     """Contas que DEVEM aparecer no resumo, mesmo sem venda — ausencia tambem e
     informacao ("nenhuma venda" e diferente de o bloco sumir)."""
@@ -912,6 +967,7 @@ def main() -> None:
     app.add_handler(CommandHandler("todos", cmd_todos))
     app.add_handler(CommandHandler("resumo", cmd_resumo))
     app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
+    app.add_handler(CommandHandler("versao", cmd_versao))
     app.add_handler(CommandHandler("dia", cmd_dia))
     app.add_handler(CommandHandler("detalhar", cmd_detalhar))
     app.add_handler(CallbackQueryHandler(cb_botao))

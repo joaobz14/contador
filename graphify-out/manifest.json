@@ -40,9 +40,9 @@
   "semantic_hash": "2d6daa67c5ee0c6ce3dd3104e2a5390f5e04e7fe"
  },
  "README.md": {
-  "mtime": 1785345877.7947216,
-  "ast_hash": "aa826fcbb764db783e4580286830d36c0fdedb95",
-  "semantic_hash": "aa826fcbb764db783e4580286830d36c0fdedb95"
+  "mtime": 1785428068.827218,
+  "ast_hash": "c2bf831806b90a05e1dde31c8846818223b20c0a",
+  "semantic_hash": "c2bf831806b90a05e1dde31c8846818223b20c0a"
  },
  "ads-monitor/README.md": {
   "mtime": 1784916367.2070236,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785427605.7227542,
-  "ast_hash": "170ee14ad27d9e4f47493ba97f8c42094bf5e238",
-  "semantic_hash": "170ee14ad27d9e4f47493ba97f8c42094bf5e238"
+  "mtime": 1785428012.018745,
+  "ast_hash": "6dd8dea837ac8dfc81fe4651cfd0aca0039ad723",
+  "semantic_hash": "6dd8dea837ac8dfc81fe4651cfd0aca0039ad723"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785347101.9826937,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785426953.5196276,
-  "ast_hash": "823a0ea5cbb9dc16688bfc9f40d2dbdae436208e",
-  "semantic_hash": "823a0ea5cbb9dc16688bfc9f40d2dbdae436208e"
+  "mtime": 1785428068.8285527,
+  "ast_hash": "8ae23c8f40c3e3d8826363b4b102b9840e1a9419",
+  "semantic_hash": "8ae23c8f40c3e3d8826363b4b102b9840e1a9419"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -390,9 +390,9 @@
   "semantic_hash": "7049a2a84210d329ef35abbe4c04c5f53fdc056c"
  },
  "tests/test_bot_alerta.py": {
-  "mtime": 1785427412.3867586,
-  "ast_hash": "5c571d113b99f42a41fdc8535d8eadd40734838c",
-  "semantic_hash": "5c571d113b99f42a41fdc8535d8eadd40734838c"
+  "mtime": 1785428034.4987442,
+  "ast_hash": "6249d116a1a38a321a81f81157a7fabc2bd84621",
+  "semantic_hash": "6249d116a1a38a321a81f81157a7fabc2bd84621"
  },
  "tests/test_bot_impressao.py": {
   "mtime": 1784935664.5831094,

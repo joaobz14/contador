@@ -420,6 +420,17 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **Código novo só vale depois de REINICIAR o processo:** `git pull` troca os
+  arquivos; o bot que já está no ar segue com o que carregou no logon. O sintoma
+  é "a mudança não pegou", sem sinal nenhum do porquê — aconteceu **duas vezes**
+  (o `/vendasapos` e o layout do resumo de vendas). Duas defesas: o
+  `Atualizar programa.bat` compara o commit antes/depois e reinicia a tarefa do
+  Agendador quando algo mudou; e o **`/versao`** compara o commit que o processo
+  carregou (`COMMIT_EM_USO`, fixado no import) com o que está na pasta agora,
+  avisando quando divergem. O leitor de commit lê o `.git` **direto** (dois
+  arquivos de texto) — nunca `subprocess`, que sob `pythonw` herda handles
+  inválidos (WinError 6, ver "Áreas de risco"). A **tela** tem o mesmo problema,
+  mas se resolve fechando e abrindo.
 - **O bot sobe sozinho no login do Windows (Agendador de Tarefas), não pela
   tela:** o alerta acima só funciona com o bot rodando. A 1ª versão fazia a
   tela (`separador_gui.py`) subir o bot sozinha ao abrir — **abandonada**
