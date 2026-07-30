@@ -115,14 +115,14 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785352885.5545878,
-  "ast_hash": "4709ea937bfd0c156a12443832c2926f117e8a2f",
-  "semantic_hash": "4709ea937bfd0c156a12443832c2926f117e8a2f"
+  "mtime": 1785410881.7034488,
+  "ast_hash": "e28884fed0b83258a2e06f6df875a8ab133f2a31",
+  "semantic_hash": "e28884fed0b83258a2e06f6df875a8ab133f2a31"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1785410352.0520315,
-  "ast_hash": "5b9718b4931372f1259ecf2e7c8ad0af7afd63c6",
-  "semantic_hash": "5b9718b4931372f1259ecf2e7c8ad0af7afd63c6"
+  "mtime": 1785410836.4202924,
+  "ast_hash": "f6ed11372091899cb63d15dec4e01f61a59c4297",
+  "semantic_hash": "f6ed11372091899cb63d15dec4e01f61a59c4297"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -210,9 +210,9 @@
   "semantic_hash": "6df4b1facdaebac42c081d1cc5311905204b35c1"
  },
  "obsidian/Conceitos/Modo Ambas (ML).md": {
-  "mtime": 1785348519.478661,
-  "ast_hash": "7aaebb1f6ba33d5a489c911a4aedde967e9c166c",
-  "semantic_hash": "7aaebb1f6ba33d5a489c911a4aedde967e9c166c"
+  "mtime": 1785410865.9674335,
+  "ast_hash": "3f177efe265014fdded650e047db8d8bad105903",
+  "semantic_hash": "3f177efe265014fdded650e047db8d8bad105903"
  },
  "obsidian/Conceitos/Multi-conta (ML).md": {
   "mtime": 1784923251.5902355,
@@ -540,9 +540,9 @@
   "semantic_hash": "0be679ad7c14aed35d865e8b64558a81a4c9f798"
  },
  "tools/diag_coleta.py": {
-  "mtime": 1785410313.5794349,
-  "ast_hash": "78cd5062b02ee2fc73cac8ba1fb30d14a70f4823",
-  "semantic_hash": "78cd5062b02ee2fc73cac8ba1fb30d14a70f4823"
+  "mtime": 1785410793.0354335,
+  "ast_hash": "78c99d32ba4c09e5567d9ace1c1424318422ae66",
+  "semantic_hash": "78c99d32ba4c09e5567d9ace1c1424318422ae66"
  },
  "tools/diag_seller_sku.py": {
   "mtime": 1784830839.0648768,

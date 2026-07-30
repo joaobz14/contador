@@ -4,6 +4,24 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Investigado e descartado
+- **Detectar sozinho se o motorista da coleta é o mesmo nas duas contas ML: não
+  é possível pela API pública.** A ideia era o app avisar (sem selecionar nada)
+  quando o mesmo motorista atende as duas contas, sinal de que o modo 🌐 Ambas
+  faz sentido no dia. A premissa estava certa — no mesmo dia, os painéis das
+  duas contas mostraram o mesmo motorista e a mesma placa. Mas as duas fontes
+  plausíveis foram testadas com dado real e nenhuma entrega o dado: o
+  cronograma de coleta é um **gabarito semanal** (os campos de motorista,
+  transportadora e veículo existem na estrutura mas vêm vazios em todos os
+  dias), e o detalhe do envio **não tem nem esses campos**. O painel do
+  vendedor mostra a informação, então ela existe do lado do Mercado Livre —
+  por endpoint interno, fora da API pública.
+  **Nada muda na operação:** o 🌐 Ambas continua sendo escolha manual, como
+  sempre foi. O percurso completo, o desenho que teria sido usado e o que
+  reabriria a questão ficaram registrados no item 12 do
+  `docs/PRIORIDADES_TECNICAS.md`, para a ideia não voltar do zero a cada
+  poucos meses.
+
 ### Adicionado
 - **A tela agora sabe se o app da Zebra pegou o lote.** A entrega das etiquetas
   é por arquivo (o `.zip` vai para a Downloads e o app da impressora o consome),
