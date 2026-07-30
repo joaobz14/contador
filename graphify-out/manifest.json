@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785436643.2899013,
-  "ast_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e",
-  "semantic_hash": "534c34ace831c915b3ae95ef1eac00301eff6a5e"
+  "mtime": 1785439252.7803586,
+  "ast_hash": "f1f7ad0754db8d55e3e5174fa3c036ee77a93d84",
+  "semantic_hash": "f1f7ad0754db8d55e3e5174fa3c036ee77a93d84"
  },
  "CLAUDE.md": {
-  "mtime": 1785436643.2890642,
-  "ast_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1",
-  "semantic_hash": "db7c472768398b1973d5a3d5801022c3576bf5b1"
+  "mtime": 1785439252.7797961,
+  "ast_hash": "b1ed4562992bd08baf47a16c504c2c22f24ca2d8",
+  "semantic_hash": "b1ed4562992bd08baf47a16c504c2c22f24ca2d8"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785436655.0333607,
-  "ast_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e",
-  "semantic_hash": "3fd9b71dd69a638099ea4e09c38317fe2790430e"
+  "mtime": 1785439269.2080522,
+  "ast_hash": "461cecfea92d8df0f5f47d065413ec64ad578464",
+  "semantic_hash": "461cecfea92d8df0f5f47d065413ec64ad578464"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -125,9 +125,9 @@
   "semantic_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80"
  },
  "docs/TIKTOK_SHOP_API.md": {
-  "mtime": 1785437144.788088,
-  "ast_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82",
-  "semantic_hash": "322d71e4478db30be5e411fe599d74dfbeeb7d82"
+  "mtime": 1785439227.0697117,
+  "ast_hash": "830508ca766e86b5596a7efb5c7bdeaeb4251530",
+  "semantic_hash": "830508ca766e86b5596a7efb5c7bdeaeb4251530"
  },
  "docs/img/tela.png": {
   "mtime": 1783442165.692305,
@@ -245,9 +245,9 @@
   "semantic_hash": "3205a24fb353953b415a0f2c6a203e9f08d6d775"
  },
  "obsidian/IA/Estado atual.md": {
-  "mtime": 1784959549.9061759,
-  "ast_hash": "115c99979c90bbc49bea66b1c51525b10819efa6",
-  "semantic_hash": "115c99979c90bbc49bea66b1c51525b10819efa6"
+  "mtime": 1785439292.0233026,
+  "ast_hash": "ac3c06d850c950348ba3eb3ea0def02ef148d7a0",
+  "semantic_hash": "ac3c06d850c950348ba3eb3ea0def02ef148d7a0"
  },
  "obsidian/IA/Fontes de verdade.md": {
   "mtime": 1784736682.269462,
@@ -305,7 +305,7 @@
   "semantic_hash": "aeb2ec0b3bd1505a8f3ef9335bc3e585e162835f"
  },
  "pegar_token_tiktok.py": {
-  "mtime": 1785438404.0559118,
+  "mtime": 1785438465.8079154,
   "ast_hash": "0bec4a9c08ec9804cfd80f52b43f2ed197528587",
   "semantic_hash": "0bec4a9c08ec9804cfd80f52b43f2ed197528587"
  },

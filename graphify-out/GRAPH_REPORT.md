@@ -67,6 +67,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-07-30 (fim do dia) — TikTok Shop ARQUIVADO.** Pausa a pedido do dono,
+  não desistência. Travou **antes do 1º byte de API**: o **Service ID** não
+  aparece no painel (e não é a "Chave do aplicativo"), então
+  `services.tiktokshop.com/open/authorize` responde *"This service does not
+  exist"*. Ficam prontos e **não devem ser refeitos**: levantamento,
+  `pegar_token_tiktok.py`, a página de retorno do OAuth (serve à Shopee **e** ao
+  TikTok) e o app no painel. **Passo que destrava na retomada:**
+  `POST /order/202309/orders/search` na Ferramenta de teste de API — prova se a
+  API responde e entrega a forma real do payload. Estado registrado em
+  `docs/TIKTOK_SHOP_API.md`, `CLAUDE.md`/`AGENTS.md` e no cofre
+  (`obsidian/IA/Estado atual.md`). Depois do `--update`: **1562 nós, 2950 arestas,
+  0 órfãs**.
+
 - **2026-07-30 — TikTok Shop: levantamento + bootstrap do OAuth.** O dono quer,
   **por agora, só aviso de venda nova no Telegram** — não imprimir —, o que
   contorna as perguntas em aberto sobre etiqueta (ZPL? NF-e?) e reduz o trabalho
