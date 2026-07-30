@@ -5,6 +5,20 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Melhorado
+- **`Atualizar programa.bat` reinicia o bot sozinho.** O `git pull` troca os
+  arquivos, mas o bot que já está no ar continua com o código que carregou no
+  logon — o sintoma é "a atualização não pegou", sem nenhum sinal do porquê.
+  Aconteceu duas vezes (o `/vendasapos` e o layout do resumo de vendas). Agora
+  o atualizador detecta se o `pull` trouxe algo novo e, em caso positivo,
+  reinicia a tarefa do Agendador. Se o bot não estiver registrado lá, avisa que
+  ele segue com a versão antiga e diz como registrar.
+- **Comando `/versao` no bot.** Mostra a versão que o processo está rodando e a
+  que está na pasta; se forem diferentes, avisa que está desatualizado e dá o
+  comando de reinício. Cobre o caso de você atualizar com `git pull` na mão, em
+  que o `.bat` não entra na história. Lê o commit direto do `.git` (dois
+  arquivos de texto) — nada de `subprocess`, que sob `pythonw` herda handles
+  inválidos e falha com WinError 6.
+
 - **Resumo de vendas do bot (`/vendasapos`) com layout legível no celular.** Era
   uma lista crua de "SKU - quantidade", uma linha embaixo da outra, em ordem de
   chegada. Agora:

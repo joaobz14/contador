@@ -560,3 +560,85 @@ def _botao(chat_id):
         callback_query = object()
 
     return _Update()
+
+
+# ---------------------------------------------------------------- /versao
+# `git pull` troca os ARQUIVOS; o bot no ar segue com o codigo que carregou no
+# logon. O sintoma e "a mudanca nao pegou", sem sinal do porque -- aconteceu
+# duas vezes (o /vendasapos e o layout do resumo de vendas).
+
+def _repo_falso(tmp_path, sha: str, ref="refs/heads/main"):
+    git = tmp_path / ".git"
+    (git / "refs" / "heads").mkdir(parents=True)
+    (git / "HEAD").write_text(f"ref: {ref}\n", encoding="utf-8")
+    (git / ref).write_text(f"{sha}\n", encoding="utf-8")
+    return tmp_path
+
+
+def test_commit_do_disco_le_o_ref(monkeypatch, tmp_path):
+    monkeypatch.setattr(core, "PASTA_SCRIPT", _repo_falso(tmp_path, "abc1234def567"))
+    assert bot._commit_do_disco() == "abc1234"
+
+
+def test_commit_do_disco_aceita_head_solto(monkeypatch, tmp_path):
+    git = tmp_path / ".git"
+    git.mkdir()
+    (git / "HEAD").write_text("abc1234def567\n", encoding="utf-8")
+    monkeypatch.setattr(core, "PASTA_SCRIPT", tmp_path)
+    assert bot._commit_do_disco() == "abc1234"
+
+
+def test_commit_do_disco_le_packed_refs(monkeypatch, tmp_path):
+    """Repo com `git gc` guarda o ref em packed-refs, nao em refs/heads/."""
+    git = tmp_path / ".git"
+    git.mkdir()
+    (git / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (git / "packed-refs").write_text(
+        "# pack-refs with: peeled\nabc1234def567 refs/heads/main\n", encoding="utf-8")
+    monkeypatch.setattr(core, "PASTA_SCRIPT", tmp_path)
+    assert bot._commit_do_disco() == "abc1234"
+
+
+def test_commit_do_disco_sem_git_nao_levanta(monkeypatch, tmp_path):
+    """Diagnostico nao pode derrubar o bot: sem `.git`, devolve vazio."""
+    monkeypatch.setattr(core, "PASTA_SCRIPT", tmp_path)
+    assert bot._commit_do_disco() == ""
+
+
+def test_versao_avisa_quando_o_bot_esta_desatualizado(monkeypatch, tmp_path):
+    monkeypatch.setattr(core, "PASTA_SCRIPT", _repo_falso(tmp_path, "9999999aaa"))
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")     # o que o processo carregou
+    respostas = []
+
+    asyncio.run(bot.cmd_versao(_update_msg(1, respostas), _ctx([1], lambda *a: None)))
+
+    assert "abc1234" in respostas[0] and "9999999" in respostas[0]
+    assert "DESATUALIZADO" in respostas[0]
+    assert "schtasks" in respostas[0], "tem de dizer COMO resolver"
+
+
+def test_versao_confirma_quando_esta_em_dia(monkeypatch, tmp_path):
+    monkeypatch.setattr(core, "PASTA_SCRIPT", _repo_falso(tmp_path, "abc1234def"))
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
+    respostas = []
+
+    asyncio.run(bot.cmd_versao(_update_msg(1, respostas), _ctx([1], lambda *a: None)))
+
+    assert "Em dia" in respostas[0]
+    assert "DESATUALIZADO" not in respostas[0]
+
+
+def _update_msg(chat_id, respostas):
+    """Update de comando: tem `message` (o /versao responde com reply_text)."""
+    class _Msg:
+        async def reply_text(self, texto, **k):
+            respostas.append(texto)
+
+    class _Chat:
+        id = chat_id
+
+    class _Update:
+        effective_chat = _Chat()
+        message = _Msg()
+
+    return _Update()
