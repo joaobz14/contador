@@ -487,13 +487,20 @@ forma suportada.
 dono ja sabe, olhando o painel, se o motorista e o mesmo — e clica. O custo de
 nao ter a automacao e um clique consciente por dia de motorista unico.
 
-### O que reabriria este item
+### O que reabriria este item (o 1o ja foi descartado)
 
-1. **`python tools/diag_coleta.py --chaves <conta>`** — lista TODAS as chaves do
-   envio (sem valores; nome de chave nao e dado pessoal). Fecha a ultima lacuna
-   do `--envio`, que procura por PALAVRA: se o ML batizou o campo de `courier`,
-   `collector` ou `operator`, o filtro anterior passaria batido. Se aparecer
-   candidato, este item volta.
+1. ~~`--chaves`~~ **JA RODADO em 2026-07-30 — nao reabre.** O despejo das
+   **181 chaves** do envio nao tem `driver`, `vehicle`, `plate`, `courier`,
+   `collector`, `operator` nem `motorista`. Os 3 "candidatos" que o filtro
+   levantou nao servem:
+   - `origin/destination.shipping_address.agency.carrier_id` — e a **agencia**
+     (o Place/ponto), nao quem dirige; e vem vazio;
+   - `lead_time.pickup_promise.from`/`.to` — e **janela de horario**, nao pessoa;
+     e veio `None`.
+
+   Ou seja: **nao ha campo de motorista com nome nenhum** no payload do envio.
+   Nao precisa rodar de novo — este caminho esta fechado por evidencia, nao por
+   suposicao.
 2. **Perguntar ao suporte/IA do ML** se existe endpoint publico para o motorista
    da coleta do dia. Funcionou bem na rodada da Shopee (item 11) — a resposta
    deles derrubou uma conclusao nossa que estava errada.

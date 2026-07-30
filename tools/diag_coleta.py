@@ -326,8 +326,11 @@ def _envio_de_interesse(conta: str) -> int:
         env = core.buscar_envio(token, sid)
         if not env:
             continue
-        print(f"envio {sid}: status={env.get('status')} "
-              f"logistic_type={env.get('logistic_type')}")
+        # `x-format-new: true` move o tipo para `logistic.type` — ler so a chave
+        # de topo imprimia "logistic_type=None" com o campo ali do lado
+        # (imprecisao vista no despejo de chaves de 2026-07-30).
+        lt = env.get("logistic_type") or (env.get("logistic") or {}).get("type")
+        print(f"envio {sid}: status={env.get('status')} logistic_type={lt}")
         achados = _caminhos_de_interesse(env)
         if not achados:
             print("  NENHUMA chave de coleta/motorista no detalhe do envio.")

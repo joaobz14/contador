@@ -16184,7 +16184,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L403",
+   "source_location": "L406",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19796,7 +19796,7 @@
    "label": "_todas_as_chaves()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L344",
+   "source_location": "L347",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19810,7 +19810,7 @@
    "label": "_chaves_do_envio()",
    "file_type": "code",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L364",
+   "source_location": "L367",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -40118,7 +40118,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L364",
+   "source_location": "L367",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_chaves_do_envio",
@@ -40208,7 +40208,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L403",
+   "source_location": "L406",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_main",
@@ -40268,7 +40268,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_coleta.py",
-   "source_location": "L344",
+   "source_location": "L347",
    "weight": 1.0,
    "source": "tools_diag_coleta",
    "target": "tools_diag_coleta_todas_as_chaves",
@@ -47910,5 +47910,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "515848c2d32acab60602b091e9e952f34f2198b4"
+ "built_at_commit": "0741775a2718889e8bc444ddd05aeb57977b3fd9"
 }
