@@ -80,7 +80,21 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   uma falha **transitória virava permanente** — item sem GTIN (logo chave
   `{item_id}:{var}` em vez de `GTIN:…`) e sem `seller_sku`, derrubando a adoção
   feita em `skus_por_anuncio.json`. Só limpando o cache na mão para consertar.
-  Agora falha não é gravada. Depois do `--update`: **1571 nós, 2960 arestas, 0 órfãs**.
+  Agora falha não é gravada.
+  **Segunda passada (mesmo dia), atrás de outros formatos de erro:**
+  (3) **401/403 viravam "não sei"** — com o token revogado TODA consulta falha e
+  a tela dizia "a API não respondeu sobre 150 envios, clique em Atualizar de
+  novo", conselho que nunca funcionaria, com a causa real escondida.
+  `_propagar_se_auth` re-levanta credencial recusada dizendo o que fazer;
+  transitório segue virando `None`. Nota: esse *conselho enganoso* foi
+  **introduzido pelo próprio aviso do #205** — corrigir uma falha silenciosa
+  criou uma falha ruidosa e errada.
+  (4) **`baixar_zpl` conferia o HTTP 200 mas não a QUANTIDADE**: um lote com
+  menos etiquetas que envios saía do jeito que veio e `preparar_lotes` devolvia
+  todos os envios como impressos — o que a **invariante 1** proíbe, e no caminho
+  do bot/CLI (que marcam sem confirmação humana) essa guarda é a única defesa.
+  Comparação `>=`, não `==`, para não amarrar no formato do ML.
+  Depois do `--update`: **1576 nós, 2968 arestas, 0 órfãs**.
 
 - **2026-07-31 — INCIDENTE: lote incompleto em silêncio (envio não verificado).**
   Num dia de API do ML instável, o operador imprimiu **5 de 7** vendas do mesmo

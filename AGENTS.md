@@ -229,6 +229,26 @@ em 2º plano.
   "Outras datas"; hoje devolve `None`, o pedido **continua entrando** marcado com
   `data_incerta` e a tela avisa — excluí-lo seria pior que datá-lo errado) e
   **`_detalhe_item`** (ver abaixo).
+- **Erro de CREDENCIAL (401/403) estoura; erro transitório vira "não sei":**
+  as duas coisas pedem ações opostas, e tratar credencial recusada como "não
+  sei" fazia a tela dar um conselho que **nunca** funcionaria — com o token
+  revogado toda consulta falha, e o operador lia "a API não respondeu sobre 150
+  envios, clique em Atualizar de novo" e clicaria para sempre, com a causa real
+  escondida atrás do aviso. `_propagar_se_auth` re-levanta 401/403 como
+  `SeparadorError` dizendo **o que fazer** (`pegar_token.py`); o resto continua
+  virando `None`. É a mesma lógica do `_STATUS_RETRY`, que já não re-tenta
+  401/403 porque re-tentar não ajuda. Aplicado em `buscar_envio`, `_sla` e
+  `_detalhe_item`.
+- **Lote de etiquetas é conferido pela QUANTIDADE, não só pelo HTTP 200
+  (achado 2026-08-03):** `baixar_zpl` aceitava um 200 com **menos etiquetas do
+  que envios pedidos** — o ZIP saía curto e `preparar_lotes` devolvia **todos**
+  os envios como impressos. Etiqueta que não existe constando como impressa é
+  exatamente o que a **invariante 1** proíbe, e no caminho do **bot/CLI** (que
+  marcam sem confirmação humana) esta guarda é a única defesa. A comparação é
+  `blocos ^XA >= nº de envios`, **não** igualdade: o ML manda 1 etiqueta + 1
+  DANFE por venda, e amarrar no número exato tornaria o app refém de um formato
+  que ele não controla — menos blocos que envios, porém, é erro em qualquer
+  formato.
 - **Falha de rede NUNCA pode ser gravada em cache (achado 2026-08-03):**
   `_detalhe_item` devolvia entrada vazia no erro e `buscar_detalhes` a gravava no
   `itens_cache.json`. Como o cache só busca o que **ainda não está nele**, uma

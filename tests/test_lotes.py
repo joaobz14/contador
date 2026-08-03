@@ -173,3 +173,65 @@ def test_tmp_saida_nao_casa_o_que_o_monitor_vigia(core, tmp_path):
         assert not fnmatch.fnmatch(tmp.name, "*.zip")
         assert not fnmatch.fnmatch(tmp.name, "*.plain")
         assert tmp.parent == destino.parent          # mesmo diretorio (rename atomico)
+
+
+# ── Guardas da varredura de 2026-08-03 ───────────────────────────────────────
+
+def test_lote_curto_do_ml_aborta_em_vez_de_marcar_a_mais(core, monkeypatch):
+    """ACHADO: `baixar_zpl` conferia o HTTP 200 mas NAO a quantidade. Um lote com
+    menos etiquetas do que envios saia do jeito que veio, e `preparar_lotes`
+    devolvia TODOS os envios como impressos — etiqueta que nao existe constando
+    como impressa e exatamente o que a invariante 1 proibe.
+    """
+    class Resp:
+        status_code = 200
+        content = b"^XA um ^XZ\n^XA dois ^XZ"      # 2 blocos para 3 envios
+
+    monkeypatch.setattr(core, "_requisicao_get", lambda *a, **k: Resp())
+
+    with pytest.raises(core.SeparadorError) as e:
+        core.baixar_zpl("tok", [101, 102, 103])
+    assert "3 envio" in str(e.value), "a mensagem tem de dizer quantos faltaram"
+
+
+def test_lote_completo_passa(core, monkeypatch):
+    """1 etiqueta + 1 DANFE por venda = 2 blocos por envio. A guarda e `>=`, nao
+    `==`: amarrar no numero exato tornaria o app refem de um formato do ML."""
+    class Resp:
+        status_code = 200
+        content = b"^XA envio1 ^XZ\n^XA danfe1 ^XZ\n^XA envio2 ^XZ\n^XA danfe2 ^XZ"
+
+    monkeypatch.setattr(core, "_requisicao_get", lambda *a, **k: Resp())
+    zpl = core.baixar_zpl("tok", [101, 102])
+    assert zpl.count("^XA") == 4
+
+
+def test_credencial_recusada_nao_vira_nao_sei(core, monkeypatch):
+    """ACHADO: com o token revogado, TODA consulta falha -> a tela dizia
+    'a API nao respondeu sobre 150 envios, clique em Atualizar de novo' e o
+    operador clicaria para sempre. 401/403 tem de estourar, alto e claro."""
+    import requests
+
+    def get_401(*a, **k):
+        resp = requests.Response()
+        resp.status_code = 401
+        raise requests.HTTPError("401 Unauthorized", response=resp)
+
+    monkeypatch.setattr(core, "_get", get_401)
+
+    with pytest.raises(core.SeparadorError) as e:
+        core.buscar_envio("tok_revogado", 1)
+    assert "pegar_token" in str(e.value), "a mensagem tem de dizer o que FAZER"
+
+
+def test_erro_transitorio_continua_sendo_nao_sei(core, monkeypatch):
+    """500 e transitorio: continua virando None (o operador tenta de novo)."""
+    import requests
+
+    def get_500(*a, **k):
+        resp = requests.Response()
+        resp.status_code = 500
+        raise requests.HTTPError("500", response=resp)
+
+    monkeypatch.setattr(core, "_get", get_500)
+    assert core.buscar_envio("tok", 1) is None

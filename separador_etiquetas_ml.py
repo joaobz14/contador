@@ -627,6 +627,26 @@ def _get(url: str, token: str, params: dict | None = None, extra: dict | None = 
             "Tente de novo.") from None
 
 
+def _propagar_se_auth(e: requests.HTTPError) -> None:
+    """Re-levanta erros de AUTORIZACAO (401/403) em vez de deixar virar "nao sei".
+
+    Falha transitoria e falha de credencial pedem acoes opostas, e tratar as duas
+    como "nao sei" faz a tela dar um conselho que NUNCA vai funcionar: com o token
+    revogado, TODA consulta falha, o operador le "a API nao respondeu sobre 150
+    envios, clique em Atualizar de novo" e clica para sempre. A causa real fica
+    escondida atras do aviso.
+
+    401/403 nao entram no `_STATUS_RETRY` justamente porque re-tentar nao ajuda —
+    aqui vale a mesma logica: erro de credencial tem de estourar, alto e claro."""
+    resp = getattr(e, "response", None)
+    if resp is not None and resp.status_code in (401, 403):
+        raise SeparadorError(
+            f"Mercado Livre recusou a credencial (HTTP {resp.status_code}). "
+            "O token pode ter sido revogado ou a conta perdeu permissao — "
+            "rode `python pegar_token.py` para autorizar de novo."
+        ) from None
+
+
 # ---------------------------------------------------------------------------
 # MODELO
 # ---------------------------------------------------------------------------
@@ -699,7 +719,8 @@ def _detalhe_item(token: str, item_id: str) -> tuple[str, dict | None]:
     pedido, o seller_sku ja vem embutido no order_item)."""
     try:
         det = _get(f"{API}/items/{item_id}", token, params={"include_attributes": "all"})
-    except requests.HTTPError:
+    except requests.HTTPError as e:
+        _propagar_se_auth(e)
         return item_id, None
     variacoes: dict[str, str] = {}
     for v in det.get("variations", []):
@@ -884,7 +905,8 @@ def buscar_envio(token: str, shipment_id: int) -> dict | None:
     errado. E de o app ter a informacao e joga-la fora."""
     try:
         return _get(f"{API}/shipments/{shipment_id}", token, extra={"x-format-new": "true"})
-    except requests.HTTPError:
+    except requests.HTTPError as e:
+        _propagar_se_auth(e)        # credencial recusada nao e "nao sei"
         return None
 
 
@@ -1275,7 +1297,8 @@ def _sla(token: str, shipment_id: int) -> dict | None:
     mais discreta (o pedido continua visivel, so no balde errado)."""
     try:
         return _get(f"{API}/shipments/{shipment_id}/sla", token)
-    except requests.HTTPError:
+    except requests.HTTPError as e:
+        _propagar_se_auth(e)
         return None
 
 
@@ -1486,9 +1509,27 @@ def baixar_zpl(token: str, shipment_ids: list[int]) -> str:
             )
         conteudo = resp.content
         if conteudo[:2] == b"PK":          # resposta e um ZIP
-            partes.append(_zpl_de_zip(conteudo))
+            parte = _zpl_de_zip(conteudo)
         else:                               # resposta e ZPL em texto
-            partes.append(conteudo.decode("utf-8", errors="ignore"))
+            parte = conteudo.decode("utf-8", errors="ignore")
+        # CONFERE A QUANTIDADE: um HTTP 200 pode vir com MENOS etiquetas do que
+        # os envios pedidos (envio que deixou de ser imprimivel entre a coleta e
+        # agora, por exemplo). Sem esta checagem o lote saia curto e o app
+        # marcava TODOS os envios como impressos — etiqueta que nao existe
+        # constando como impressa e exatamente o que a invariante 1 proibe.
+        # `>=` e nao `==` de proposito: o ML manda 1 etiqueta + 1 DANFE por
+        # venda (2 blocos), e amarrar no numero exato tornaria o app refem de
+        # um formato que ele nao controla. Menos blocos que envios, porem, e
+        # erro em qualquer formato.
+        blocos = parte.count("^XA")
+        if blocos < len(lote):
+            raise SeparadorError(
+                f"O Mercado Livre devolveu {blocos} etiqueta(s) para {len(lote)} "
+                f"envio(s) ({ids}). Nada foi gerado — nenhum envio foi marcado "
+                "como impresso. Tente de novo; se persistir, confira esses "
+                "envios no painel do ML."
+            )
+        partes.append(parte)
     return "\n".join(partes)
 
 

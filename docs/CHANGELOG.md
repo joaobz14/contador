@@ -6,7 +6,7 @@ Histórico das principais mudanças do projeto.
 
 ### Corrigido
 - **Varredura atrás de outras falhas silenciosas** (pedido do dono depois do
-  incidente abaixo). Duas encontradas, ambas reproduzidas antes de corrigir:
+  incidente abaixo). Quatro encontradas, todas reproduzidas antes de corrigir:
   - **Venda de hoje indo parar em "Outras datas".** Quando o Mercado Livre
     recusava informar o *prazo* de um envio, o app tratava como "sem data" — e a
     venda sumia do dia selecionado, aparecendo num balde onde ninguém olha na
@@ -20,6 +20,16 @@ Histórico das principais mudanças do projeto.
     adotado num SKU voltava a aparecer como grupo separado, sem SKU. Só limpando
     o cache na mão resolvia. Agora falha não é gravada — a próxima busca tenta
     de novo.
+  - **Token revogado dando o conselho errado.** Se a credencial do Mercado Livre
+    perdesse a validade, *todas* as consultas falhavam e a tela dizia "a API não
+    respondeu sobre 150 envios, clique em Atualizar de novo" — e Atualizar de
+    novo nunca ia resolver. Agora credencial recusada aparece como erro claro,
+    dizendo para rodar o `pegar_token.py`.
+  - **Lote de etiquetas vindo curto sem ninguém notar.** O app conferia se o
+    Mercado Livre respondeu, mas não **quantas etiquetas** vieram. Se viessem
+    menos que os pedidos, o lote saía curto e todos eram marcados como impressos.
+    Na tela você perceberia ao conferir o papel; no **bot**, que marca sozinho,
+    não. Agora o app confere a quantidade e recusa o lote curto sem marcar nada.
 - **Vendas sumindo do lote quando a API do Mercado Livre falha.** Num dia de API
   instável, a tela mostrou **5 de 7** vendas do mesmo SKU; imprimiu as 5, e as
   outras 2 só apareceram depois de clicar em Atualizar de novo. A causa era do

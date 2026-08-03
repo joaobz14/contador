@@ -204,6 +204,22 @@ quem sobe o bot.
   entrando marcado com `data_incerta`, e a tela avisa) e **`_detalhe_item`**,
   abaixo. O prejuízo aqui não é de duplicidade (nada é marcado errado);
   é o app ter a informação e jogá-la fora, e o operador despachar a menos.
+- **Lote de etiquetas aceito só pelo HTTP 200** (achado 2026-08-03):
+  `baixar_zpl` não conferia a **quantidade**. Um 200 com menos etiquetas do que
+  envios pedidos saía do jeito que veio, e `preparar_lotes` devolvia **todos** os
+  envios como impressos — etiqueta inexistente constando como impressa é o que a
+  **invariante 1** proíbe. Na GUI o operador ainda pegaria (ele confere o papel),
+  mas **bot e CLI marcam sem confirmação humana**: ali esta guarda é a única
+  defesa. Comparação `blocos ^XA >= nº de envios`, nunca igualdade — o ML manda
+  etiqueta + DANFE por venda e o formato não é nosso.
+- **Credencial recusada tratada como falha transitória** (achado 2026-08-03):
+  401/403 viravam "não sei" e, com o token revogado, **toda** consulta falhava —
+  a tela dizia "a API não respondeu sobre N envios, clique em Atualizar de novo",
+  conselho que nunca funcionaria. `_propagar_se_auth` re-levanta 401/403 com a
+  ação certa (`pegar_token.py`). Vale notar a lição: **o aviso criado para
+  corrigir a falha silenciosa de 31/07 foi o que criou este conselho enganoso** —
+  ao dar voz a um erro, verifique se ela diz a coisa certa em todos os casos que
+  passam por ali.
 - **Cache guardando "ausência de resposta"** (achado 2026-08-03): `_detalhe_item`
   devolvia entrada vazia no erro e `buscar_detalhes` a gravava no
   `itens_cache.json`. Como o cache só busca o que **ainda não está nele**, uma
