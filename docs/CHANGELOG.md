@@ -5,6 +5,21 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Corrigido
+- **Duas brechas na redação de segredos do log** (varredura dos módulos que as
+  auditorias nunca olharam — todas entravam pelo núcleo). O `registro.py` tem 64
+  linhas e é a **última** defesa contra token em arquivo de log:
+  - o **`app_secret` do TikTok** não estava na lista de chaves — e o
+    `pegar_token_tiktok.py`, escrito hoje, manda ele na URL. Um erro de conexão
+    imprimiria o segredo no console;
+  - o **token do Telegram** fica no *caminho* da URL (`/bot<ID>:<TOKEN>/`), onde
+    a regra de `chave=valor` não alcança.
+  Somado o cabeçalho `Bearer` do Mercado Livre, por precaução. O que **não** é
+  segredo (`app_key`, `shop_id`) continua aparecendo, para dar diagnóstico.
+- **Screenshots da tela podiam ser commitados.** `out.png` (documentado no
+  `CLAUDE.md`) e os `tela_*.png` da CI mostram **pedidos e SKUs reais** e não
+  estavam no `.gitignore`. Os snapshots do `api-monitor` também passaram a ser
+  ignorados por inteiro, e não só os `.md` — mesma regra invertida que já protege
+  a pasta `dados/`, para arquivo novo não escapar por esquecimento.
 - **Bot podia usar a conta ERRADA** (varredura por blocos). O bot faz várias
   coisas ao mesmo tempo: o alerta de vendas percorre **todas** as suas contas do
   Mercado Livre a cada 5 minutos, e você pode mandar `/imprimir` no meio disso.

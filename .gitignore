@@ -83,7 +83,7 @@ api-monitor/fetched/
 # fazia todo git pull colidir na maquina de operacao)
 api-monitor/relatorios/*
 !api-monitor/relatorios/.gitkeep
-api-monitor/snapshots/*.md
+api-monitor/snapshots/*
 !api-monitor/snapshots/README.md
 
 # Base historica local do coletor de Product Ads (dado de campanha, nao segredo,
@@ -95,3 +95,9 @@ ads-monitor/logs/
 # run (mesmo padrao do api-monitor/relatorios/).
 ads-monitor/relatorios/*
 !ads-monitor/relatorios/.gitkeep
+
+# Screenshots da GUI (tools/gui_screenshot.py): mostram pedidos/SKUs REAIS da
+# operacao. O CLAUDE.md documenta gerar 'out.png' na raiz e a CI gera as duas
+# 'tela_*.png' — nenhum pode ser commitado por engano.
+out.png
+tela_*.png

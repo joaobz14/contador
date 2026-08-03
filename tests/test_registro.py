@@ -58,3 +58,38 @@ def test_logger_tem_handler_e_nao_propaga():
     # setup idempotente do modulo: ao menos 1 handler e sem propagar pro root.
     assert registro.log.handlers
     assert registro.log.propagate is False
+
+
+# ── Formas de segredo que a query/JSON NAO alcancam (varredura 2026-08-03) ───
+#
+# `registro.py` e a ULTIMA linha de defesa contra vazamento em log. As
+# auditorias anteriores entraram sempre pelo nucleo e nunca olharam este modulo
+# de 64 linhas — e havia duas brechas, uma delas aberta no MESMO dia.
+
+def test_app_secret_do_tiktok_e_redigido():
+    """`pegar_token_tiktok.py` manda app_key + app_secret na QUERY. Um erro de
+    transporte carrega a URL inteira, e o script imprime traceback no console.
+    `app_secret` nao estava na lista de chaves — brecha aberta hoje mesmo."""
+    txt = ("ConnectionError: https://auth.tiktok-shops.com/api/v2/token/get"
+           "?app_key=6kq&app_secret=SUPERSEGREDO&auth_code=AC1")
+    out = registro.sem_segredos(txt)
+    assert "SUPERSEGREDO" not in out
+    assert "app_key=6kq" in out, "o que NAO e segredo fica, para diagnosticar"
+
+
+def test_token_do_telegram_no_CAMINHO_da_url():
+    """A API do Telegram poe o token no PATH (/bot<ID>:<TOKEN>/), nao na query —
+    a regex de chave=valor nao alcanca. O httpx ja e silenciado no bot, mas isto
+    e a rede de baixo: qualquer texto de excecao com essa URL sai redigido."""
+    out = registro.sem_segredos("httpx: https://api.telegram.org/bot8123456:AAH-SEGREDO/getUpdates")
+    assert "AAH-SEGREDO" not in out and "8123456" not in out
+    assert "getUpdates" in out
+
+
+def test_bearer_do_ml_e_redigido():
+    """O token do ML viaja em 'Authorization: Bearer ...' (nao na query).
+    Nenhum caminho de hoje loga headers — defesa em profundidade para um repr
+    de request futuro."""
+    out = registro.sem_segredos("headers={'Authorization': 'Bearer APP_USR-SEGREDO-123'}")
+    assert "APP_USR-SEGREDO-123" not in out
+    assert "Authorization" in out

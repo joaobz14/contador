@@ -636,10 +636,13 @@ em 2º plano.
   `log.exception` não arrasta a URL no traceback). Defesa em profundidade nos
   limites: a GUI redige com `sem_segredos` o que mostra (`_erro`, avisos de falha
   parcial) e o bot redige o que manda pro chat. Mantenha as duas camadas.
-  `sem_segredos` cobre a forma **query** (`chave=valor`) **e** a forma **JSON/repr
-  de dict** (`"chave": "valor"`), e as chaves incluem `client_secret`/`partner_key`
-  além de token/sign/code (5.11) — assim um corpo de request serializado por
-  engano num texto de erro também é redigido.
+  `sem_segredos` cobre **quatro formas** (varredura 2026-08-03): **query**
+  (`chave=valor`), **JSON/repr de dict** (`"chave": "valor"`), **segredo no
+  CAMINHO da URL** e o cabeçalho **Bearer**. As duas últimas existem porque a
+  regex de `chave=valor` não as alcança: o token do **Telegram** viaja em
+  `/bot<ID>:<TOKEN>/` (por isso o `httpx` é silenciado no bot — isto é a rede de
+  baixo) e o do **ML** em `Authorization: Bearer …`. As chaves incluem
+  `client_secret`/`partner_key`/**`app_secret`** além de token/sign/code.
 
 ## Antes de fechar uma mudança (mantenha o repertório em dia)
 

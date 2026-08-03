@@ -67,6 +67,22 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-08-03 (periferia) — o que as auditorias nunca olharam.** Pergunta do
+  dono: todas as auditorias entraram pelo NÚCLEO; ~3.000 linhas de periferia
+  (`tools/`, `ads-monitor/`, `pegar_token*`, `registro.py`, `.gitignore`, CI)
+  nunca foram vistas. Priorizado por **dano irreversível**, não por tamanho.
+  Achados: (a) **`registro.sem_segredos` tinha 2 brechas** — `app_secret` (do
+  TikTok, aberta no mesmo dia) e o token do **Telegram no CAMINHO** da URL
+  (`/bot<ID>:<TOKEN>/`), que a regex de `chave=valor` não alcança; somado o
+  `Bearer` do ML por precaução. São 64 linhas que são a ÚLTIMA defesa contra
+  token em log. (b) **screenshots da GUI não gitignorados** (`out.png`,
+  `tela_*.png`) — mostram pedidos/SKUs reais; e `api-monitor/snapshots/` só
+  ignorava `.md`, padrão permissivo ao contrário do `dados/*` endurecido.
+  **Verificados OK:** nenhum segredo rastreado no git, todos os arquivos de
+  credencial/estado/log ignorados (teste empírico com `git check-ignore`), e o CI
+  barra de verdade (pytest em 3.11+3.12, lint, cofre, smoke da GUI).
+  Depois do `--update`: **1584 nós, 2978 arestas, 0 órfãs**.
+
 - **2026-08-03 (por blocos) — CORRIDA DE CONTA no bot.** Varredura completa
   dividida por dano potencial (estado/marcação, agrupamento, token, GUI, bot,
   Shopee) + passada automática de lint com regras além das do CI. Achado grave:

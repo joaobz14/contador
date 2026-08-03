@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785777018.0940795,
-  "ast_hash": "ce5fcbe686c9310c29bed1f6e1951f9e877b9a97",
-  "semantic_hash": "ce5fcbe686c9310c29bed1f6e1951f9e877b9a97"
+  "mtime": 1785781579.127641,
+  "ast_hash": "909658f07dd38023b0e07551d0de4a2ccd1f7efa",
+  "semantic_hash": "909658f07dd38023b0e07551d0de4a2ccd1f7efa"
  },
  "CLAUDE.md": {
-  "mtime": 1785777018.0930681,
-  "ast_hash": "48bd99ea350c3f1d6007f6103d8f61b83c9db9c7",
-  "semantic_hash": "48bd99ea350c3f1d6007f6103d8f61b83c9db9c7"
+  "mtime": 1785781579.126297,
+  "ast_hash": "a483f320b27f428c51478a60bef64c298ced40a5",
+  "semantic_hash": "a483f320b27f428c51478a60bef64c298ced40a5"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785777044.0819383,
-  "ast_hash": "1b86a856b48de000df8c3801dcbd6872ff0cee94",
-  "semantic_hash": "1b86a856b48de000df8c3801dcbd6872ff0cee94"
+  "mtime": 1785781579.1309032,
+  "ast_hash": "a2a8b962e2c79ad5b3af6512171bee80c5977b23",
+  "semantic_hash": "a2a8b962e2c79ad5b3af6512171bee80c5977b23"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -320,9 +320,9 @@
   "semantic_hash": "fd245039ad81535741d89f2683b8256b42837cf4"
  },
  "registro.py": {
-  "mtime": 1785345600.046728,
-  "ast_hash": "983015ea4145d12196e30692c192bfa12ad364c9",
-  "semantic_hash": "983015ea4145d12196e30692c192bfa12ad364c9"
+  "mtime": 1785781482.4713209,
+  "ast_hash": "ae19e9e3d674021e749c2e24bd2edc5b4f6abeb2",
+  "semantic_hash": "ae19e9e3d674021e749c2e24bd2edc5b4f6abeb2"
  },
  "relatorio.py": {
   "mtime": 1785427596.3547544,
@@ -525,9 +525,9 @@
   "semantic_hash": "4bdf195f40ff2359557924d85dca50b39b4a9268"
  },
  "tests/test_registro.py": {
-  "mtime": 1784229860.1942687,
-  "ast_hash": "22b2c9b2237872add5017068d849fc8dd6bc6d3c",
-  "semantic_hash": "22b2c9b2237872add5017068d849fc8dd6bc6d3c"
+  "mtime": 1785781548.1529293,
+  "ast_hash": "a58710121cdbc62413606f6e76b86d5679343c9f",
+  "semantic_hash": "a58710121cdbc62413606f6e76b86d5679343c9f"
  },
  "tests/test_relatorio.py": {
   "mtime": 1785427641.6967587,

@@ -11136,7 +11136,7 @@
    "label": "sem_segredos()",
    "file_type": "code",
    "source_file": "registro.py",
-   "source_location": "L59",
+   "source_location": "L68",
    "_origin": "ast",
    "id": "registro_sem_segredos",
    "community": 10,
@@ -21247,6 +21247,48 @@
    "id": "tests_test_bot_trava_conta_test_caminhos_que_dependem_da_conta_estao_travados",
    "community": 76,
    "norm_label": "test_caminhos_que_dependem_da_conta_estao_travados()"
+  },
+  {
+   "label": "test_app_secret_do_tiktok_e_redigido()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L69",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_app_secret_do_tiktok_e_redigido",
+   "community": 58,
+   "norm_label": "test_app_secret_do_tiktok_e_redigido()"
+  },
+  {
+   "label": "test_token_do_telegram_no_CAMINHO_da_url()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_token_do_telegram_no_CAMINHO_da_url",
+   "community": 58,
+   "norm_label": "test_token_do_telegram_no_caminho_da_url()"
+  },
+  {
+   "label": "test_bearer_do_ml_e_redigido()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L89",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_bearer_do_ml_e_redigido",
+   "community": 58,
+   "norm_label": "test_bearer_do_ml_e_redigido()"
   }
  ],
  "links": [
@@ -35346,7 +35388,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "registro.py",
-   "source_location": "L59",
+   "source_location": "L68",
    "weight": 1.0,
    "source": "registro",
    "target": "registro_sem_segredos",
@@ -41946,6 +41988,26 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_registro.py",
+   "source_location": "L69",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_app_secret_do_tiktok_e_redigido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L89",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_bearer_do_ml_e_redigido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
    "source_location": "L57",
    "weight": 1.0,
    "source": "tests_test_registro",
@@ -41990,6 +42052,16 @@
    "weight": 1.0,
    "source": "tests_test_registro",
    "target": "tests_test_registro_test_texto_sem_segredo_fica_intacto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_token_do_telegram_no_CAMINHO_da_url",
    "confidence_score": 1.0
   },
   {
@@ -51768,5 +51840,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "606bb28b12c1109197e2fd109fa9cd42fb79e5aa"
+ "built_at_commit": "922f707f2284f6416b7098a838c87af619fb1434"
 }
