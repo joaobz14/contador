@@ -186,6 +186,20 @@ quem sobe o bot.
 
 ## Áreas de risco (o que quebra se mexer sem cuidado)
 
+- **Consulta de API que falha e devolve dicionário vazio** (incidente
+  2026-07-31): um `{}` de erro é **indistinguível** de uma resposta legítima e
+  some dentro do fluxo, sem log nem aviso. `buscar_envio` fazia isso — e o `{}`
+  passava por `_avaliar_pedido` exatamente como um envio que não está pronto, e o
+  pedido saía do lote **em silêncio**. Num dia de API do ML instável o operador
+  imprimiu **5 de 7** vendas do mesmo SKU e só percebeu conferindo o painel; o
+  2º "Atualizar" trazia as faltantes (a consulta dá certo na segunda vez, e
+  status vazio não entra no cache de terminais). Hoje: `buscar_envio` → `None`
+  ("não sei"), `_avaliar_pedido` → `verificado=False`, `filtrar_para_imprimir`
+  conta em `stats["nao_verificados"]`, `Coleta`/provedores propagam (o modo
+  **Ambas soma** as contas) e a **tela avisa antes de imprimir**. Ao adicionar
+  consulta nova, **erro nunca pode virar vazio** — sinalize "não sei" e deixe o
+  chamador decidir. O prejuízo aqui não é de duplicidade (nada é marcado errado);
+  é o app ter a informação e jogá-la fora, e o operador despachar a menos.
 - **`marcar_impresso`**: perder o merge com o disco OU remover a trava (`arquivo=` →
   `estado.trava`) → GUI e bot apagam a marcação um do outro (inv. 5; sem a trava,
   duas leituras simultâneas perdem a última gravação — reproduzido em teste).

@@ -211,6 +211,19 @@ em 2º plano.
   `.bak` é gitignorado. O `.bak` só vale **ao lado do principal** (a migração de
   conta o leva junto e remove órfãos da raiz) — um `.bak` desgarrado tem
   refresh_token já rotacionado (morto).
+- **Falha de API é "NÃO SEI", nunca "não está pronto" (incidente 2026-07-31):**
+  `buscar_envio` devolve **`None`** quando o ML recusa a consulta (depois das
+  re-tentativas do `_com_retry`) — antes devolvia `{}`, e o `{}` percorria o
+  fluxo **igual a um envio que não está pronto**: `_avaliar_pedido` descartava o
+  pedido **em silêncio** e a tela mostrava o lote como completo. Num dia de API
+  instável o operador despachou **5 de 7** vendas do mesmo SKU. Hoje
+  `_avaliar_pedido` devolve `verificado=False`, `filtrar_para_imprimir` conta em
+  `stats["nao_verificados"]`, `Coleta` e os provedores propagam (o modo **Ambas
+  soma** as contas) e a **tela avisa antes de imprimir**. É a mesma regra do
+  `_mtime_log_monitor` (`None` = não sei), aplicada ao contrário: lá o risco era
+  avisar sem prova, aqui era **calar com prova na mão**. Ao adicionar consulta
+  nova à API, **não devolva dicionário vazio em erro** — o vazio é
+  indistinguível de uma resposta legítima e some dentro do fluxo.
 - **Estado de impressão lê por `estado.ler_estado`, não `ler_json`:** `ler_json`
   silencia qualquer falha como `{}` (certo p/ config → `_sanear_config`, cred →
   `.bak`, caches → refazer). No **estado** isso é perigoso: corrompido lido como

@@ -330,3 +330,60 @@ def test_confirmar_e_marcar_libera_a_trava_mesmo_com_excecao(monkeypatch):
     with pytest.raises(RuntimeError):
         gui.SeparadorApp._confirmar_e_marcar(app, [(_g("A"), ["S1"])], [])
     assert app.ocupado is False
+
+
+# ── Aviso de lote possivelmente incompleto (incidente 2026-07-31) ────────────
+
+def test_atualizar_avisa_quando_a_api_nao_verificou_tudo(monkeypatch):
+    """A tela TEM de avisar quando a coleta deixou envios sem verificar.
+
+    Sem isso o lote aparece completo e o operador imprime a menos: aconteceu em
+    producao (5 de 7 vendas do mesmo SKU), e o unico sinal era conferir o painel
+    do ML na mao. O aviso nao bloqueia — so devolve a decisao a quem opera.
+    """
+    app = gui.SeparadorApp.__new__(gui.SeparadorApp)     # sem Tk: nada de display
+    avisos = []
+    chamadas = []
+
+    class ProvFake:
+        nao_verificados = 2
+        def coletar(self, **kw):
+            return []
+        def carregar_estado(self):
+            return {}
+
+    app.prov = ProvFake()
+    app._ctx_log = lambda: "teste"
+    app._render = lambda: None
+    app._avisar_nao_verificados = lambda n: avisos.append(n)
+    # O root da GUI so agenda callbacks na thread do Tk; aqui roda na hora.
+    app.root = type("R", (), {"after": staticmethod(
+        lambda _ms, fn: chamadas.append(fn()) )})()
+
+    app._atualizar_thread("2026-07-31")
+
+    assert avisos == [2], "o operador precisa ser avisado dos 2 nao verificados"
+
+
+def test_atualizar_nao_avisa_quando_verificou_tudo(monkeypatch):
+    """Sem falha nenhuma, a tela fica exatamente como era — aviso que aparece
+    a toa ensina o operador a ignora-lo (mesma licao do ⚠️ do monitor)."""
+    app = gui.SeparadorApp.__new__(gui.SeparadorApp)
+    avisos = []
+
+    class ProvFake:
+        nao_verificados = 0
+        def coletar(self, **kw):
+            return []
+        def carregar_estado(self):
+            return {}
+
+    app.prov = ProvFake()
+    app._ctx_log = lambda: "teste"
+    app._render = lambda: None
+    app._avisar_nao_verificados = lambda n: avisos.append(n)
+    app.root = type("R", (), {"after": staticmethod(lambda _ms, fn: fn())})()
+
+    app._atualizar_thread("2026-07-31")
+
+    assert avisos == []

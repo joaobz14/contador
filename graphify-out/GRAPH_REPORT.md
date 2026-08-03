@@ -67,6 +67,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-07-31 — INCIDENTE: lote incompleto em silêncio (envio não verificado).**
+  Num dia de API do ML instável, o operador imprimiu **5 de 7** vendas do mesmo
+  SKU; um 2º "Atualizar" trazia as faltantes. Causa: `buscar_envio` devolvia
+  `{}` quando a API recusava (depois das re-tentativas do `_com_retry`), e o
+  `{}` percorria o fluxo **exatamente como um envio que não está pronto** —
+  `_avaliar_pedido` descartava o pedido sem uma linha de aviso. Mesma família do
+  falso alarme do monitor (2026-07-30), ao contrário: lá avisava sem prova, aqui
+  calava **com** prova na mão. Corrigido com `None` = "não sei" (como o
+  `_mtime_log_monitor` já fazia), `verificado` no retorno de `_avaliar_pedido`,
+  contagem em `filtrar_para_imprimir`/`Coleta`/provedores (o modo Ambas **soma**
+  as contas) e aviso na tela antes de imprimir. Depois do `--update`:
+  **1567 nós, 2956 arestas, 0 órfãs**.
+
 - **2026-07-30 (fim do dia) — TikTok Shop ARQUIVADO.** Pausa a pedido do dono,
   não desistência. Travou **antes do 1º byte de API**: o **Service ID** não
   aparece no painel (e não é a "Chave do aplicativo"), então

@@ -61,7 +61,8 @@ def test_filtrar_preenche_stats_diagnostico(core, tmp_path, monkeypatch):
     core.filtrar_para_imprimir("tok", [{"shipping": {"id": s}} for s in (10, 20, 30)],
                                stats=stats)
     # 10 e 20 re-consultados; 30 pulado pelo cache; so o 20 fica pronto.
-    assert stats == {"checados": 2, "cache_hits": 1, "prontos": 1}
+    assert stats == {"checados": 2, "cache_hits": 1, "prontos": 1,
+                     "nao_verificados": 0}
 
 
 def test_filtrar_nao_cacheia_ready_to_print(core, tmp_path, monkeypatch):
@@ -70,3 +71,23 @@ def test_filtrar_nao_cacheia_ready_to_print(core, tmp_path, monkeypatch):
                         lambda token, sid: _envio("ready_to_ship", core.SUBSTATUS_IMPRIMIR))
     core.filtrar_para_imprimir("tok", [{"shipping": {"id": 7}}])
     assert core._carregar_envios_cache() == {}   # nada terminal -> cache vazio
+
+
+def test_envio_que_a_api_recusou_nao_e_cacheado_nem_silenciado(core, tmp_path, monkeypatch):
+    """O envio que a API nao respondeu (1) nao entra nos prontos, (2) NAO e
+    cacheado como terminal — senao ficaria escondido para sempre — e (3) e
+    CONTADO, para a tela poder avisar antes de imprimir (incidente 2026-07-31).
+    """
+    monkeypatch.setattr(core, "ARQUIVO_ENVIOS_CACHE", tmp_path / "cache.json")
+    env_por_sid = {10: None,                                    # API recusou
+                   20: _envio("ready_to_ship", core.SUBSTATUS_IMPRIMIR)}
+    monkeypatch.setattr(core, "buscar_envio", lambda token, sid: env_por_sid[sid])
+
+    stats: dict = {}
+    prontos = core.filtrar_para_imprimir(
+        "tok", [{"shipping": {"id": s}} for s in (10, 20)], stats=stats)
+
+    assert len(prontos) == 1, "o nao-verificado nao pode entrar no lote"
+    assert stats["nao_verificados"] == 1
+    assert "10" not in core._carregar_envios_cache(), \
+        "cachear como terminal esconderia o envio nas proximas buscas"

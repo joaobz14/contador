@@ -4,6 +4,20 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Corrigido
+- **Vendas sumindo do lote quando a API do Mercado Livre falha.** Num dia de API
+  instável, a tela mostrou **5 de 7** vendas do mesmo SKU; imprimiu as 5, e as
+  outras 2 só apareceram depois de clicar em Atualizar de novo. A causa era do
+  app: quando o ML recusava a consulta de um envio (mesmo depois das
+  re-tentativas), o programa tratava a falha como *"esse envio não está pronto"*
+  e descartava o pedido **sem avisar nada** — o lote aparecia completo.
+  Agora "a API não respondeu" é uma coisa distinta de "não está pronto". Esses
+  envios são contados e, se houver algum, a tela **avisa antes de você
+  imprimir**: *"A API do Mercado Livre não respondeu sobre N envios nesta busca.
+  Clique em Atualizar de novo ANTES de imprimir."* Vale para o modo 🌐 Ambas
+  também, somando as duas contas. O aviso não bloqueia nada — só devolve a
+  decisão a quem está operando.
+
 ### Adicionado
 - **Canal de volta com o app da Zebra: ele responde, a tela para de adivinhar.**
   A entrega entre os dois apps é por arquivo (ZIP na Downloads) e não havia

@@ -526,9 +526,34 @@ class SeparadorApp:
         self.grupos = grupos
         self.estado = estado
         etiquetas = sum(g.total_etiquetas for g in grupos)
-        log.info("Atualizar: %s dia=%s -> %d grupo(s), %d etiqueta(s)",
-                 self._ctx_log(), dia or "(sem data)", len(grupos), etiquetas)
+        # Envios que a API nao conseguiu verificar: eles NAO estao nos grupos
+        # acima e nao da para saber se deveriam estar. Silenciar isso ja custou
+        # um lote incompleto (2026-07-31) — ver `buscar_envio` no nucleo.
+        faltando = getattr(self.prov, "nao_verificados", 0)
+        log.info("Atualizar: %s dia=%s -> %d grupo(s), %d etiqueta(s), "
+                 "%d envio(s) nao verificado(s)",
+                 self._ctx_log(), dia or "(sem data)", len(grupos), etiquetas, faltando)
         self.root.after(0, self._render)
+        if faltando:
+            self.root.after(0, lambda n=faltando: self._avisar_nao_verificados(n))
+
+    def _avisar_nao_verificados(self, quantos: int) -> None:
+        """A API do ML nao respondeu sobre alguns envios nesta coleta.
+
+        Aviso, nao bloqueio: o lote pode estar completo assim mesmo (o envio nao
+        verificado pode nem ser de hoje). Mas o operador precisa poder decidir —
+        antes disto, ele imprimia um lote incompleto sem nenhum sinal. Um novo
+        Atualizar costuma resolver, porque a consulta que falhou dá certo na
+        segunda vez (e status vazio nao entra no cache de finalizados)."""
+        plural = "s" if quantos > 1 else ""
+        messagebox.showwarning(
+            "Lote pode estar incompleto",
+            f"A API do Mercado Livre não respondeu sobre {quantos} envio{plural} "
+            f"nesta busca.\n\n"
+            f"Esse{plural} envio{plural} NÃO {'entraram' if quantos > 1 else 'entrou'} "
+            "na lista acima, e não dá para saber se deveriam entrar.\n\n"
+            "Clique em Atualizar de novo ANTES de imprimir — normalmente a "
+            "segunda tentativa funciona.")
 
     def _erro(self, msg: str) -> None:
         # Ponto unico de erro da GUI: TODA falha passa por sem_segredos — no log
