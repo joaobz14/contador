@@ -505,6 +505,20 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **No BOT, tudo que depende da conta ativa roda sob `TRAVA_CONTA`
+  (achado 2026-08-03):** `core.definir_conta()` troca **globais** do núcleo, e o
+  bot roda várias coisas em paralelo via `asyncio.to_thread` — o job do alerta
+  percorre **todas** as contas (trocando os globais a cada uma) enquanto o dono
+  pode mandar `/imprimir` de outra. Sem trava, o comando lia a credencial e o
+  estado da conta que o **job** apontou naquele instante: imprimia com o token
+  errado e gravava no `estado_grupos.json` da **outra conta**. Reproduzido: **39
+  de 40** leituras pegaram a conta errada. `TRAVA_CONTA` é um **RLock** (não
+  `Lock`): `_dados_alerta_da_conta` roda dentro dela e chama funções que também a
+  pegam. Estão sob ela: `_coletar`, `_imprimir_grupo`, `_prontos`,
+  `_trocar_conta` e o bloco de troca do alerta. **Caminho novo que leia ou grave
+  por conta entra na trava** — o teste `test_caminhos_que_dependem_da_conta_estao_travados`
+  falha se esquecerem. A GUI não precisa: ela roda uma operação por vez
+  (`ocupado`), e entre PROCESSOS quem protege são as travas de arquivo.
 - **Código novo só vale depois de REINICIAR o processo:** `git pull` troca os
   arquivos; o bot que já está no ar segue com o que carregou no logon. O sintoma
   é "a mudança não pegou", sem sinal nenhum do porquê — aconteceu **duas vezes**

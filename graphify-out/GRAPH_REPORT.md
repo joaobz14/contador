@@ -67,6 +67,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-08-03 (por blocos) — CORRIDA DE CONTA no bot.** Varredura completa
+  dividida por dano potencial (estado/marcação, agrupamento, token, GUI, bot,
+  Shopee) + passada automática de lint com regras além das do CI. Achado grave:
+  `core.definir_conta()` troca **globais** do núcleo, e o bot roda em paralelo via
+  `asyncio.to_thread` — o job do alerta percorre todas as contas enquanto o dono
+  pode mandar `/imprimir` de outra. O comando lia credencial/estado da conta que o
+  JOB apontou: token errado e marcação no `estado_grupos.json` da outra conta
+  (reproduzido: **39 de 40** leituras erradas). Corrigido com
+  `bot_telegram.TRAVA_CONTA` (RLock) em `_coletar`, `_imprimir_grupo`, `_prontos`,
+  `_trocar_conta` e o bloco do alerta, com teste-guardião que falha se um caminho
+  novo esquecer a trava. **Julgados OK na mesma varredura:** disciplina de fuso
+  (todos os `datetime.now()` sem tz são de log/exibição — nenhuma decisão),
+  thread-safety da GUI (as 5 threads voltam por `root.after`), a trava
+  ponta-a-ponta do `ocupado` (liberada em todos os caminhos de erro),
+  `fundir_grupos`, `estado.marcar_impresso` e `historico.registrar`.
+  Depois do `--update`: **1577 nós, 2971 arestas, 0 órfãs**.
+
 - **2026-08-03 — Varredura atrás do mesmo padrão: mais 2 falhas silenciosas.**
   Pedido do dono depois do incidente de 31/07 ("procure outros erros silenciosos").
   Achados e corrigidos, ambos **reproduzidos antes**:

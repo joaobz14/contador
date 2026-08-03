@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785763494.8263764,
-  "ast_hash": "1a8488e0932f2d5462d8401196952f5f72ada0a9",
-  "semantic_hash": "1a8488e0932f2d5462d8401196952f5f72ada0a9"
+  "mtime": 1785777018.0940795,
+  "ast_hash": "ce5fcbe686c9310c29bed1f6e1951f9e877b9a97",
+  "semantic_hash": "ce5fcbe686c9310c29bed1f6e1951f9e877b9a97"
  },
  "CLAUDE.md": {
-  "mtime": 1785763494.8253725,
-  "ast_hash": "bfa7f8f0b4ce8255503ae9393c5efdc3f42ed40b",
-  "semantic_hash": "bfa7f8f0b4ce8255503ae9393c5efdc3f42ed40b"
+  "mtime": 1785777018.0930681,
+  "ast_hash": "48bd99ea350c3f1d6007f6103d8f61b83c9db9c7",
+  "semantic_hash": "48bd99ea350c3f1d6007f6103d8f61b83c9db9c7"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785428012.018745,
-  "ast_hash": "6dd8dea837ac8dfc81fe4651cfd0aca0039ad723",
-  "semantic_hash": "6dd8dea837ac8dfc81fe4651cfd0aca0039ad723"
+  "mtime": 1785776942.308643,
+  "ast_hash": "9282d29e0383d4db846940966d08ff9d2eaf7ad2",
+  "semantic_hash": "9282d29e0383d4db846940966d08ff9d2eaf7ad2"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785347101.9826937,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785763575.1470876,
-  "ast_hash": "9a1ed7840e59096bbae0cad37412fc7c73d1a66e",
-  "semantic_hash": "9a1ed7840e59096bbae0cad37412fc7c73d1a66e"
+  "mtime": 1785777018.0948875,
+  "ast_hash": "46f24ab922d358c6b2cf9c720049a6ecaffa28ea",
+  "semantic_hash": "46f24ab922d358c6b2cf9c720049a6ecaffa28ea"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785763588.3943858,
-  "ast_hash": "a465293d8a62043a9c787f060db0154dfedfdd20",
-  "semantic_hash": "a465293d8a62043a9c787f060db0154dfedfdd20"
+  "mtime": 1785777044.0819383,
+  "ast_hash": "1b86a856b48de000df8c3801dcbd6872ff0cee94",
+  "semantic_hash": "1b86a856b48de000df8c3801dcbd6872ff0cee94"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
