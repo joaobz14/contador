@@ -414,6 +414,11 @@
   "ast_hash": "5e43b2c37a76bd66a8a99fa2fe8cd1c2702ce2ca",
   "semantic_hash": "5e43b2c37a76bd66a8a99fa2fe8cd1c2702ce2ca"
  },
+ "tests/test_bot_trava_conta.py": {
+  "mtime": 1785777104.531433,
+  "ast_hash": "4a3be8918602160f7ef66c934e7f41ddcb396201",
+  "semantic_hash": "4a3be8918602160f7ef66c934e7f41ddcb396201"
+ },
  "tests/test_busca_pedidos.py": {
   "mtime": 1785340799.9126282,
   "ast_hash": "570b024b8ff605723e6285a853104a96383eff13",

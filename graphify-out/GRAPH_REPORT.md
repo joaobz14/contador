@@ -82,7 +82,7 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   thread-safety da GUI (as 5 threads voltam por `root.after`), a trava
   ponta-a-ponta do `ocupado` (liberada em todos os caminhos de erro),
   `fundir_grupos`, `estado.marcar_impresso` e `historico.registrar`.
-  Depois do `--update`: **1577 nós, 2971 arestas, 0 órfãs**.
+  Depois do `--update`: **1581 nós, 2975 arestas, 0 órfãs**.
 
 - **2026-08-03 — Varredura atrás do mesmo padrão: mais 2 falhas silenciosas.**
   Pedido do dono depois do incidente de 31/07 ("procure outros erros silenciosos").

@@ -10,8 +10,16 @@ from __future__ import annotations
 
 import threading
 
-import bot_telegram as bot
-import separador_etiquetas_ml as core
+import pytest
+
+# Mesmo padrao de tests/test_bot_alerta.py: pula se o telegram nao importar
+# (o python3.12 do sistema, usado nos testes de GUI, nao tem o pacote).
+try:
+    import bot_telegram as bot
+except Exception as e:  # noqa: BLE001
+    pytest.skip(f"bot_telegram indisponivel: {e}", allow_module_level=True)
+
+import separador_etiquetas_ml as core  # noqa: E402
 
 
 def test_trava_existe_e_e_reentrante():

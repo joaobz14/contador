@@ -21191,6 +21191,62 @@
    "id": "bot_telegram_dados_alerta_da_conta_travado",
    "community": 1,
    "norm_label": "_dados_alerta_da_conta_travado()"
+  },
+  {
+   "label": "test_bot_trava_conta.py",
+   "file_type": "code",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_trava_conta",
+   "community": 76,
+   "norm_label": "test_bot_trava_conta.py"
+  },
+  {
+   "label": "test_trava_existe_e_e_reentrante()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L25",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_trava_conta_test_trava_existe_e_e_reentrante",
+   "community": 76,
+   "norm_label": "test_trava_existe_e_e_reentrante()"
+  },
+  {
+   "label": "test_comando_nao_le_a_conta_que_o_job_apontou()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L33",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_trava_conta_test_comando_nao_le_a_conta_que_o_job_apontou",
+   "community": 76,
+   "norm_label": "test_comando_nao_le_a_conta_que_o_job_apontou()"
+  },
+  {
+   "label": "test_caminhos_que_dependem_da_conta_estao_travados()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L72",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_trava_conta_test_caminhos_que_dependem_da_conta_estao_travados",
+   "community": 76,
+   "norm_label": "test_caminhos_que_dependem_da_conta_estao_travados()"
   }
  ],
  "links": [
@@ -38969,6 +39025,36 @@
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L72",
+   "weight": 1.0,
+   "source": "tests_test_bot_trava_conta",
+   "target": "tests_test_bot_trava_conta_test_caminhos_que_dependem_da_conta_estao_travados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L33",
+   "weight": 1.0,
+   "source": "tests_test_bot_trava_conta",
+   "target": "tests_test_bot_trava_conta_test_comando_nao_le_a_conta_que_o_job_apontou",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L25",
+   "weight": 1.0,
+   "source": "tests_test_bot_trava_conta",
+   "target": "tests_test_bot_trava_conta_test_trava_existe_e_e_reentrante",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
    "source_file": "tests/test_busca_pedidos.py",
    "source_location": "L4",
    "weight": 1.0,
@@ -44593,6 +44679,16 @@
    "source_location": "L1",
    "weight": 1.0,
    "source": "tests_test_bot_impressao",
+   "target": "separador_etiquetas_ml",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "imports",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_trava_conta.py",
+   "source_location": "L1",
+   "weight": 1.0,
+   "source": "tests_test_bot_trava_conta",
    "target": "separador_etiquetas_ml",
    "confidence_score": 1.0
   },
@@ -51672,5 +51768,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "4e7797a9a03be7436d254cd6099bd8f5961e87d2"
+ "built_at_commit": "606bb28b12c1109197e2fd109fa9cd42fb79e5aa"
 }
