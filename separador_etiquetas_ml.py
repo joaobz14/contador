@@ -839,21 +839,41 @@ def rastrear_sku(token: str, seller_id: str, sku: str) -> None:
     for ped, qtd in achados:
         sid = (ped.get("shipping") or {}).get("id")
         status = ped.get("status")
-        env = buscar_envio(token, sid) if sid else {}
-        sub = env.get("substatus")
+        env = (buscar_envio(token, sid) if sid else {})
+        # buscar_envio devolve None quando a API recusou: aqui isso vira um
+        # rotulo proprio, nao "fora" — este comando existe justamente para
+        # diagnosticar "por que esta venda nao aparece", e responder "fora"
+        # sem ter conseguido perguntar seria a pior resposta possivel.
+        sub = env.get("substatus") if env is not None else None
         sla = _sla(token, sid) if sid else {}
         exp = _data_despacho(sla.get("expected_date") or "")
         entra = status == "paid" and sub == SUBSTATUS_IMPRIMIR and exp == hoje
-        marca = "ENTRA HOJE" if entra else "fora"
+        marca = "ENTRA HOJE" if entra else ("NAO VERIFICADO (API recusou)"
+                                            if env is None else "fora")
         print(f"  pedido {ped.get('id')} | qtd {qtd} | status {status} | "
               f"envio {sub} | despacho {exp} | -> {marca}")
 
 
-def buscar_envio(token: str, shipment_id: int) -> dict:
+def buscar_envio(token: str, shipment_id: int) -> dict | None:
+    """Detalhe do envio, ou **None quando NAO DA PARA SABER** (a API do ML
+    recusou depois das re-tentativas do `_com_retry`).
+
+    None e "nao sei", NAO "nao esta pronto" — e a distincao custou um lote
+    incompleto em producao (2026-07-31). Antes isto devolvia `{}` na falha, e o
+    `{}` percorria o resto do fluxo exatamente como um envio que nao esta
+    ready_to_print: `_avaliar_pedido` descartava o pedido, EM SILENCIO, e a tela
+    apresentava o lote como se estivesse completo. Num dia de API instavel o
+    operador despachou 5 de 7 vendas do mesmo SKU e so descobriu por acaso, ao
+    conferir no painel. (O 2o "Atualizar" trazia as faltantes porque a consulta
+    dava certo na segunda vez — e porque status vazio nao entra no cache de
+    terminais.)
+
+    O prejuizo nao e de duplicidade: o pedido fica pendente, nada e marcado
+    errado. E de o app ter a informacao e joga-la fora."""
     try:
         return _get(f"{API}/shipments/{shipment_id}", token, extra={"x-format-new": "true"})
     except requests.HTTPError:
-        return {}
+        return None
 
 
 def _prazo_do_envio(env: dict) -> str:
@@ -887,17 +907,24 @@ def _limpar_envios_cache(cache: dict, dias: int = DIAS_JANELA) -> dict:
     return {sid: d for sid, d in cache.items() if isinstance(d, str) and d >= limite}
 
 
-def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str]:
-    """Avalia o envio do pedido. Retorna (pedido, shipment_id, status):
+def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str, bool]:
+    """Avalia o envio do pedido. Retorna (pedido, shipment_id, status, verificado):
     o pedido vem com _envio preenchido quando esta em ready_to_print; senao
-    vem None (mas com o status, para o cache de finalizados)."""
+    vem None (mas com o status, para o cache de finalizados).
+
+    `verificado` e False quando a API do ML nao respondeu sobre este envio —
+    "nao sei" em vez de "nao esta pronto" (ver `buscar_envio`). Quem chama TEM
+    de contar esses casos e avisar: um pedido nao-verificado sumindo do lote em
+    silencio faz o operador despachar menos do que vendeu."""
     sid = (ped.get("shipping") or {}).get("id")
     if not sid:
-        return None, None, ""
+        return None, None, "", True     # sem envio: sabemos que nao entra
     env = buscar_envio(token, sid)
+    if env is None:
+        return None, sid, "", False     # a API nao respondeu — NAO e "nao pronto"
     status = env.get("status") or ""
     if env.get("substatus") != SUBSTATUS_IMPRIMIR:
-        return None, sid, status
+        return None, sid, status, True
     # O prazo de despacho costuma vir no proprio detalhe do envio; so chama o
     # /sla (uma requisicao a mais) quando nao encontramos no detalhe.
     expected_raw = _prazo_do_envio(env)
@@ -906,7 +933,7 @@ def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str
     expected = _data_despacho(expected_raw)
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
     ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt}
-    return ped, sid, status
+    return ped, sid, status, True
 
 
 def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
@@ -918,7 +945,13 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
 
     Se `stats` (dict) for passado, preenche com contagens de diagnostico
     (`checados` = envios re-consultados, `cache_hits` = pulados pelo cache,
-    `prontos`). Default None nao muda nada para os chamadores existentes.
+    `prontos`, `nao_verificados`). Default None nao muda nada para os
+    chamadores existentes.
+
+    **`nao_verificados` nao e diagnostico opcional — e um aviso ao operador.**
+    E a contagem de envios sobre os quais a API do ML nao respondeu; eles NAO
+    entram no lote e nao da para saber se deveriam. Quem chama precisa mostrar
+    isso antes de imprimir (ver o incidente em `buscar_envio`).
     """
     cache = _carregar_envios_cache()
     hoje = _hoje_br()
@@ -933,13 +966,20 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
     # 20 workers (era 12): a fase mais cara e uma chamada /shipments por pedido
     # nao-terminal; mais concorrencia encurta o "Atualizar". Ha retry+Retry-After
     # (ver _com_retry) para absorver 429 se a API reclamar.
+    nao_verificados = 0
     with ThreadPoolExecutor(max_workers=20) as ex:
-        for ped, sid, status in ex.map(lambda p: _avaliar_pedido(token, p), a_checar):
+        for ped, sid, status, verificado in ex.map(lambda p: _avaliar_pedido(token, p), a_checar):
             feitos += 1
             if progresso:
                 progresso(feitos, total)
             else:
                 print(f"  Verificando envios: {feitos}/{total}", end="\r")
+            if not verificado:
+                # A API nao respondeu sobre este envio. NAO cacheia (status vazio
+                # nao e terminal) e NAO conta como "nao pronto": conta a parte,
+                # para o operador saber que o lote pode estar incompleto.
+                nao_verificados += 1
+                continue
             if ped is not None:
                 prontos.append(ped)
             elif sid and status in STATUS_TERMINAIS:
@@ -952,6 +992,7 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
         stats["checados"] = total
         stats["cache_hits"] = len(pedidos) - total
         stats["prontos"] = len(prontos)
+        stats["nao_verificados"] = nao_verificados
     return prontos
 
 
@@ -1127,6 +1168,10 @@ class Coleta:
     alvo: list[dict]                  # subconjunto considerado (hoje ou todos)
     itens: list[ItemPedido]
     grupos: list[Grupo]
+    # Envios sobre os quais a API do ML NAO respondeu nesta coleta. Nao entraram
+    # no lote e nao da para saber se deveriam -> a tela AVISA antes de imprimir.
+    # Default 0 para nao quebrar quem constroi Coleta sem esse dado.
+    nao_verificados: int = 0
 
 
 def _log_tempos(n_pedidos: int, busca: float, filtro: float, extrair: float,
@@ -1184,7 +1229,8 @@ def coletar_grupos(
         # impressao ser avaliado/gravado por dia de despacho.
         for g in grupos:
             g.dia = dia
-    return Coleta(prontos=prontos, alvo=alvo, itens=itens, grupos=grupos)
+    return Coleta(prontos=prontos, alvo=alvo, itens=itens, grupos=grupos,
+                  nao_verificados=stats.get("nao_verificados", 0))
 
 
 # ---------------------------------------------------------------------------

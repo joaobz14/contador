@@ -26,6 +26,11 @@ class Provedor:
     # cada coletar() a partir da MESMA busca (sem rede extra). A GUI usa para
     # mostrar a contagem no seletor de dias e oferecer datas fora de seg-sex.
     contagem_dias: dict
+    # Envios que a API NAO conseguiu verificar na ultima coleta. A tela AVISA
+    # quando > 0: eles nao entraram no lote e nao da para saber se deveriam
+    # (ver `buscar_envio` no nucleo — incidente de 2026-07-31). So o ML tem esse
+    # caminho; a Shopee mantem 0.
+    nao_verificados: int = 0
 
     # ---- selecao de conta (ML) -------------------------------------------
     def contas(self) -> list[str]:
@@ -109,6 +114,7 @@ class ProvedorML(Provedor):
             ("" if d == "(sem data)" else d): n
             for d, n in core.resumo_por_dia(getattr(coleta, "prontos", []))
         }
+        self.nao_verificados = getattr(coleta, "nao_verificados", 0)
         return coleta.grupos
 
     def carregar_estado(self) -> dict:
@@ -147,6 +153,7 @@ class ProvedorShopee(Provedor):
         grupos, _qtd, contagem = shopee.coletar_grupos(
             self._creds(), dia=dia, somente_hoje=somente_hoje)
         self.contagem_dias = contagem
+        self.nao_verificados = 0        # a Shopee nao tem esse caminho de falha
         # Rastreio (AWB) dos grupos de 1 pedido ja impresso, para conferencia.
         shopee.preencher_rastreios(self._creds(), grupos, shopee.carregar_estado())
         return grupos
@@ -229,6 +236,7 @@ class ProvedorMLAmbas(Provedor):
     def coletar(self, *, dia=None, somente_hoje=True, progresso=None) -> list:
         por_conta: dict[str, list] = {}
         contagem: dict[str, int] = {}
+        nao_verificados = 0
         for conta in self.contas():
             token = self._token(conta)
             coleta = core.coletar_grupos(
@@ -238,7 +246,11 @@ class ProvedorMLAmbas(Provedor):
             for d, n in core.resumo_por_dia(getattr(coleta, "prontos", [])):
                 d = "" if d == "(sem data)" else d
                 contagem[d] = contagem.get(d, 0) + n
+            # Soma as contas: uma pode falhar e a outra nao, e o operador
+            # precisa saber que ALGO ficou de fora do lote unido.
+            nao_verificados += getattr(coleta, "nao_verificados", 0)
         self.contagem_dias = contagem
+        self.nao_verificados = nao_verificados
         return fundir_grupos(por_conta)
 
     # ---- estado composto: {conta: estado_da_conta} -------------------------
