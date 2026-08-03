@@ -530,29 +530,47 @@ class SeparadorApp:
         # acima e nao da para saber se deveriam estar. Silenciar isso ja custou
         # um lote incompleto (2026-07-31) — ver `buscar_envio` no nucleo.
         faltando = getattr(self.prov, "nao_verificados", 0)
+        sem_data = getattr(self.prov, "data_incerta", 0)
         log.info("Atualizar: %s dia=%s -> %d grupo(s), %d etiqueta(s), "
-                 "%d envio(s) nao verificado(s)",
-                 self._ctx_log(), dia or "(sem data)", len(grupos), etiquetas, faltando)
+                 "%d nao verificado(s), %d sem data confirmada",
+                 self._ctx_log(), dia or "(sem data)", len(grupos), etiquetas,
+                 faltando, sem_data)
         self.root.after(0, self._render)
-        if faltando:
-            self.root.after(0, lambda n=faltando: self._avisar_nao_verificados(n))
+        if faltando or sem_data:
+            self.root.after(0, lambda a=faltando, b=sem_data:
+                            self._avisar_nao_verificados(a, b))
 
-    def _avisar_nao_verificados(self, quantos: int) -> None:
-        """A API do ML nao respondeu sobre alguns envios nesta coleta.
+    def _avisar_nao_verificados(self, quantos: int, sem_data: int = 0) -> None:
+        """A API do ML falhou em parte da coleta. Dois casos, causas diferentes:
 
-        Aviso, nao bloqueio: o lote pode estar completo assim mesmo (o envio nao
-        verificado pode nem ser de hoje). Mas o operador precisa poder decidir —
-        antes disto, ele imprimia um lote incompleto sem nenhum sinal. Um novo
-        Atualizar costuma resolver, porque a consulta que falhou dá certo na
-        segunda vez (e status vazio nao entra no cache de finalizados)."""
-        plural = "s" if quantos > 1 else ""
+        `quantos`  — nao deu para consultar o ENVIO: o pedido nao entrou em lugar
+                     nenhum, e nao da para saber se deveria.
+        `sem_data` — o envio esta pronto, mas a API recusou o PRAZO: o pedido
+                     entrou, porem em "Outras datas" e nao no dia escolhido.
+                     Some do lote de hoje sem parecer que sumiu.
+
+        Aviso, nao bloqueio: o lote pode estar completo assim mesmo. Mas o
+        operador precisa poder decidir — antes disto ele imprimia a menos sem
+        nenhum sinal. Um novo Atualizar costuma resolver: a consulta que falhou
+        da certo na segunda vez."""
+        linhas = []
+        if quantos:
+            p = "s" if quantos > 1 else ""
+            linhas.append(
+                f"• {quantos} envio{p} que a API não respondeu: "
+                f"NÃO {'entraram' if quantos > 1 else 'entrou'} na lista, e não dá "
+                "para saber se deveriam entrar.")
+        if sem_data:
+            p = "s" if sem_data > 1 else ""
+            linhas.append(
+                f"• {sem_data} envio{p} pronto{p} sem prazo confirmado: "
+                f"{'entraram' if sem_data > 1 else 'entrou'} em \"Outras datas\", "
+                "não no dia selecionado.")
         messagebox.showwarning(
             "Lote pode estar incompleto",
-            f"A API do Mercado Livre não respondeu sobre {quantos} envio{plural} "
-            f"nesta busca.\n\n"
-            f"Esse{plural} envio{plural} NÃO {'entraram' if quantos > 1 else 'entrou'} "
-            "na lista acima, e não dá para saber se deveriam entrar.\n\n"
-            "Clique em Atualizar de novo ANTES de imprimir — normalmente a "
+            "A API do Mercado Livre falhou em parte desta busca:\n\n"
+            + "\n\n".join(linhas)
+            + "\n\nClique em Atualizar de novo ANTES de imprimir — normalmente a "
             "segunda tentativa funciona.")
 
     def _erro(self, msg: str) -> None:

@@ -67,6 +67,21 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-08-03 — Varredura atrás do mesmo padrão: mais 2 falhas silenciosas.**
+  Pedido do dono depois do incidente de 31/07 ("procure outros erros silenciosos").
+  Achados e corrigidos, ambos **reproduzidos antes**:
+  (1) **`_sla` devolvia `{}`** ao falhar → `expected_date=""` → a venda de HOJE
+  não casa com o filtro do dia e cai em "Outras datas". Era o mesmo incidente por
+  uma segunda porta, mais discreta (o pedido continua visível, só no balde
+  errado). Agora `None` = "não sei", o pedido **continua entrando** (ele está
+  pronto — excluir seria pior) marcado com `data_incerta`, contado e avisado.
+  (2) **`_detalhe_item` gravava a falha no cache**: entrada vazia ia para o
+  `itens_cache.json`, e como `buscar_detalhes` só busca o que não está em cache,
+  uma falha **transitória virava permanente** — item sem GTIN (logo chave
+  `{item_id}:{var}` em vez de `GTIN:…`) e sem `seller_sku`, derrubando a adoção
+  feita em `skus_por_anuncio.json`. Só limpando o cache na mão para consertar.
+  Agora falha não é gravada. Depois do `--update`: **1571 nós, 2960 arestas, 0 órfãs**.
+
 - **2026-07-31 — INCIDENTE: lote incompleto em silêncio (envio não verificado).**
   Num dia de API do ML instável, o operador imprimiu **5 de 7** vendas do mesmo
   SKU; um 2º "Atualizar" trazia as faltantes. Causa: `buscar_envio` devolvia

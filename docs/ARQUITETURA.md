@@ -198,8 +198,20 @@ quem sobe o bot.
   conta em `stats["nao_verificados"]`, `Coleta`/provedores propagam (o modo
   **Ambas soma** as contas) e a **tela avisa antes de imprimir**. Ao adicionar
   consulta nova, **erro nunca pode virar vazio** — sinalize "não sei" e deixe o
-  chamador decidir. O prejuízo aqui não é de duplicidade (nada é marcado errado);
+  chamador decidir. A varredura de 2026-08-03 achou o mesmo padrão em mais dois
+  pontos: **`_sla`** (falha → `expected_date=""` → a venda de hoje ia para
+  "Outras datas" em vez do dia escolhido; hoje devolve `None`, o pedido continua
+  entrando marcado com `data_incerta`, e a tela avisa) e **`_detalhe_item`**,
+  abaixo. O prejuízo aqui não é de duplicidade (nada é marcado errado);
   é o app ter a informação e jogá-la fora, e o operador despachar a menos.
+- **Cache guardando "ausência de resposta"** (achado 2026-08-03): `_detalhe_item`
+  devolvia entrada vazia no erro e `buscar_detalhes` a gravava no
+  `itens_cache.json`. Como o cache só busca o que **ainda não está nele**, uma
+  falha **transitória virava permanente** — item sem GTIN (logo chave
+  `{item_id}:{var}` em vez de `GTIN:…`) e sem `seller_sku`, o que **derruba a
+  adoção** guardada em `skus_por_anuncio.json` e faz o produto reaparecer como
+  grupo separado, sem SKU. Só limpando o cache na mão para consertar. Regra:
+  **cache guarda resposta, nunca ausência de resposta.**
 - **`marcar_impresso`**: perder o merge com o disco OU remover a trava (`arquivo=` →
   `estado.trava`) → GUI e bot apagam a marcação um do outro (inv. 5; sem a trava,
   duas leituras simultâneas perdem a última gravação — reproduzido em teste).

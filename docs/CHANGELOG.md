@@ -5,6 +5,21 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Corrigido
+- **Varredura atrás de outras falhas silenciosas** (pedido do dono depois do
+  incidente abaixo). Duas encontradas, ambas reproduzidas antes de corrigir:
+  - **Venda de hoje indo parar em "Outras datas".** Quando o Mercado Livre
+    recusava informar o *prazo* de um envio, o app tratava como "sem data" — e a
+    venda sumia do dia selecionado, aparecendo num balde onde ninguém olha na
+    hora de imprimir. Era o mesmo problema por outra porta, mais discreta. Agora
+    o pedido continua na lista (ele **está** pronto) e a tela avisa que o prazo
+    não pôde ser confirmado.
+  - **Falha passageira do ML virando permanente.** Se a consulta de um produto
+    falhasse, o app gravava uma entrada **vazia** no cache — e como o cache só
+    busca o que ainda não tem, aquele produto ficava quebrado **para sempre**:
+    perdia o código de barras, perdia o SKU, e um anúncio que você já tinha
+    adotado num SKU voltava a aparecer como grupo separado, sem SKU. Só limpando
+    o cache na mão resolvia. Agora falha não é gravada — a próxima busca tenta
+    de novo.
 - **Vendas sumindo do lote quando a API do Mercado Livre falha.** Num dia de API
   instável, a tela mostrou **5 de 7** vendas do mesmo SKU; imprimiu as 5, e as
   outras 2 só apareceram depois de clicar em Atualizar de novo. A causa era do

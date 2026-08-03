@@ -224,6 +224,21 @@ em 2º plano.
   avisar sem prova, aqui era **calar com prova na mão**. Ao adicionar consulta
   nova à API, **não devolva dicionário vazio em erro** — o vazio é
   indistinguível de uma resposta legítima e some dentro do fluxo.
+  A varredura de 2026-08-03 achou o mesmo padrão em mais dois pontos, já
+  corrigidos: **`_sla`** (falha → `expected_date=""` → a venda de hoje caía em
+  "Outras datas"; hoje devolve `None`, o pedido **continua entrando** marcado com
+  `data_incerta` e a tela avisa — excluí-lo seria pior que datá-lo errado) e
+  **`_detalhe_item`** (ver abaixo).
+- **Falha de rede NUNCA pode ser gravada em cache (achado 2026-08-03):**
+  `_detalhe_item` devolvia entrada vazia no erro e `buscar_detalhes` a gravava no
+  `itens_cache.json`. Como o cache só busca o que **ainda não está nele**, uma
+  falha **transitória virava permanente**: o item ficava sem GTIN — logo com a
+  chave `{item_id}:{var}` em vez de `GTIN:…` — e sem `seller_sku`, o que
+  **derruba a adoção** guardada em `skus_por_anuncio.json` (ela está sob a chave
+  antiga) e faz o produto reaparecer como grupo separado sem SKU. Só limpando o
+  cache na mão para consertar. Hoje `_detalhe_item` devolve `None` e
+  `buscar_detalhes` **pula** — na próxima busca tenta de novo. Regra geral: cache
+  guarda **resposta**, nunca **ausência de resposta**.
 - **Estado de impressão lê por `estado.ler_estado`, não `ler_json`:** `ler_json`
   silencia qualquer falha como `{}` (certo p/ config → `_sanear_config`, cred →
   `.bak`, caches → refazer). No **estado** isso é perigoso: corrompido lido como

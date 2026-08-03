@@ -78,3 +78,37 @@ def test_avaliar_pedido_api_falhou_nao_e_nao_pronto(core, monkeypatch):
     assert ped is None, "sem resposta da API o pedido nao pode entrar no lote"
     assert sid == 7
     assert verificado is False, "'a API nao respondeu' nao pode virar 'nao esta pronto'"
+
+
+def test_sla_que_falhou_nao_vira_venda_sem_data_calada(core, monkeypatch):
+    """ACHADO da varredura de 2026-08-03: a mesma falha do incidente, por outra
+    porta. `_sla` devolvia {} quando a API recusava -> expected_date="" -> o
+    envio NAO casa com o filtro do dia e cai em "Outras datas". A venda de HOJE
+    sumia do lote sem nada indicar por que.
+
+    Agora o pedido continua entrando (ele ESTA pronto — excluir seria pior),
+    mas marcado: `data_incerta` faz a tela avisar.
+    """
+    env = {"status": "ready_to_ship", "substatus": core.SUBSTATUS_IMPRIMIR}
+    monkeypatch.setattr(core, "buscar_envio", lambda token, sid: env)
+    monkeypatch.setattr(core, "_sla", lambda token, sid: None)   # API recusou
+
+    ped, sid, status, verificado = core._avaliar_pedido("tok", {"shipping": {"id": 3}})
+
+    assert ped is not None, "o envio esta pronto: excluir seria pior que datar errado"
+    assert verificado is True, "o ENVIO foi verificado; o que faltou foi o prazo"
+    assert ped["_envio"]["data_incerta"] is True
+    assert ped["_envio"]["expected_date"] == ""
+
+
+def test_sla_normal_nao_marca_data_incerta(core, monkeypatch):
+    """Sem falha, nada muda — aviso a toa ensina o operador a ignorar."""
+    env = {"status": "ready_to_ship", "substatus": core.SUBSTATUS_IMPRIMIR}
+    monkeypatch.setattr(core, "buscar_envio", lambda token, sid: env)
+    monkeypatch.setattr(core, "_sla",
+                        lambda token, sid: {"expected_date": "2026-08-03T00:00:00.000-03:00"})
+
+    ped, _sid, _status, _ok = core._avaliar_pedido("tok", {"shipping": {"id": 3}})
+
+    assert ped["_envio"]["expected_date"] == "2026-08-03"
+    assert ped["_envio"]["data_incerta"] is False

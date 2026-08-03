@@ -682,15 +682,25 @@ def salvar_cache(cache: dict) -> None:
     _gravar_json(ARQUIVO_CACHE, cache)
 
 
-def _detalhe_item(token: str, item_id: str) -> tuple[str, dict]:
-    """Busca 1 item e extrai (titulo, {variacao: GTIN}, seller_sku). Falha vira
-    entrada vazia. seller_sku vem do mesmo GET (sem chamada extra) — usado pelo
-    ads-monitor pra resolver SKU de item_id anunciado (identidade() nao precisa
-    dele: quando ha pedido, o seller_sku ja vem embutido no order_item)."""
+def _detalhe_item(token: str, item_id: str) -> tuple[str, dict | None]:
+    """Busca 1 item e extrai (titulo, {variacao: GTIN}, seller_sku).
+
+    Devolve **None quando a API recusou** — e NAO uma entrada vazia. A entrada
+    vazia era gravada no `itens_cache.json` e, como `buscar_detalhes` so busca o
+    que ainda nao esta em cache, uma falha TRANSITORIA virava permanente: o item
+    ficava sem `variations` (logo sem GTIN, logo com a chave `{item_id}:{var}` em
+    vez de `GTIN:...`) e sem `seller_sku`, para sempre. Efeito pratico: um anuncio
+    ja ADOTADO num SKU pelo `skus_por_anuncio.json` deixava de ser reconhecido —
+    a adocao esta guardada sob a chave antiga — e o produto voltava a aparecer
+    como grupo separado, sem SKU. So limpando o cache na mao para consertar.
+
+    seller_sku vem do mesmo GET (sem chamada extra) — usado pelo ads-monitor pra
+    resolver SKU de item_id anunciado (identidade() nao precisa dele: quando ha
+    pedido, o seller_sku ja vem embutido no order_item)."""
     try:
         det = _get(f"{API}/items/{item_id}", token, params={"include_attributes": "all"})
     except requests.HTTPError:
-        return item_id, {"title": "", "variations": {}, "seller_sku": ""}
+        return item_id, None
     variacoes: dict[str, str] = {}
     for v in det.get("variations", []):
         gtin = ""
@@ -710,6 +720,8 @@ def buscar_detalhes(token: str, item_ids: set[str], cache: dict) -> None:
     # Em paralelo (antes era serial): so ocorre quando aparece produto novo.
     with ThreadPoolExecutor(max_workers=8) as ex:
         for item_id, entry in ex.map(lambda i: _detalhe_item(token, i), faltando):
+            if entry is None:
+                continue        # a API recusou: NAO grava. Tenta de novo depois.
             cache[item_id] = entry
     salvar_cache(cache)
 
@@ -845,7 +857,7 @@ def rastrear_sku(token: str, seller_id: str, sku: str) -> None:
         # diagnosticar "por que esta venda nao aparece", e responder "fora"
         # sem ter conseguido perguntar seria a pior resposta possivel.
         sub = env.get("substatus") if env is not None else None
-        sla = _sla(token, sid) if sid else {}
+        sla = (_sla(token, sid) if sid else {}) or {}
         exp = _data_despacho(sla.get("expected_date") or "")
         entra = status == "paid" and sub == SUBSTATUS_IMPRIMIR and exp == hoje
         marca = "ENTRA HOJE" if entra else ("NAO VERIFICADO (API recusou)"
@@ -928,11 +940,20 @@ def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str
     # O prazo de despacho costuma vir no proprio detalhe do envio; so chama o
     # /sla (uma requisicao a mais) quando nao encontramos no detalhe.
     expected_raw = _prazo_do_envio(env)
+    data_incerta = False
     if not expected_raw:
-        expected_raw = _sla(token, sid).get("expected_date") or ""
+        sla = _sla(token, sid)
+        if sla is None:
+            # A API recusou o prazo. O envio ESTA pronto (isso nos sabemos), mas
+            # sem data ele nao casa com o filtro do dia e cai em "Outras datas".
+            # Mantem o pedido (excluir seria pior) e MARCA, para a tela avisar.
+            data_incerta = True
+        else:
+            expected_raw = sla.get("expected_date") or ""
     expected = _data_despacho(expected_raw)
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
-    ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt}
+    ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt,
+                     "data_incerta": data_incerta}
     return ped, sid, status, True
 
 
@@ -993,6 +1014,11 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
         stats["cache_hits"] = len(pedidos) - total
         stats["prontos"] = len(prontos)
         stats["nao_verificados"] = nao_verificados
+        # Prontos que entraram no lote SEM data confirmada (o /sla recusou):
+        # aparecem em "Outras datas", nao no dia escolhido. Contados a parte
+        # porque a causa e outra e a acao do operador tambem.
+        stats["data_incerta"] = sum(
+            1 for p in prontos if (p.get("_envio") or {}).get("data_incerta"))
     return prontos
 
 
@@ -1172,6 +1198,8 @@ class Coleta:
     # no lote e nao da para saber se deveriam -> a tela AVISA antes de imprimir.
     # Default 0 para nao quebrar quem constroi Coleta sem esse dado.
     nao_verificados: int = 0
+    # Prontos cujo PRAZO a API recusou informar: entraram, mas em "Outras datas".
+    data_incerta: int = 0
 
 
 def _log_tempos(n_pedidos: int, busca: float, filtro: float, extrair: float,
@@ -1230,17 +1258,25 @@ def coletar_grupos(
         for g in grupos:
             g.dia = dia
     return Coleta(prontos=prontos, alvo=alvo, itens=itens, grupos=grupos,
-                  nao_verificados=stats.get("nao_verificados", 0))
+                  nao_verificados=stats.get("nao_verificados", 0),
+                  data_incerta=stats.get("data_incerta", 0))
 
 
 # ---------------------------------------------------------------------------
 # DIAGNOSTICO DE DATAS (hoje vs proximos dias)
 # ---------------------------------------------------------------------------
-def _sla(token: str, shipment_id: int) -> dict:
+def _sla(token: str, shipment_id: int) -> dict | None:
+    """Prazo de despacho do envio, ou **None quando a API recusou**.
+
+    Nao devolve `{}` na falha pelo mesmo motivo do `buscar_envio`: o `{}` daria
+    `expected_date=""`, e um envio SEM DATA nao casa com o filtro do dia — a
+    venda de HOJE ia parar em "Outras datas" e sumia do lote que o operador
+    imprime. Era a mesma falha do incidente de 2026-07-31 por uma segunda porta,
+    mais discreta (o pedido continua visivel, so no balde errado)."""
     try:
         return _get(f"{API}/shipments/{shipment_id}/sla", token)
     except requests.HTTPError:
-        return {}
+        return None
 
 
 def debug_envios(pedidos_prontos: list[dict], hoje: str) -> None:
