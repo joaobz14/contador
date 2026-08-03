@@ -505,6 +505,20 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **Todo handler do Telegram checa `_autorizado` (varredura de segurança
+  2026-08-03):** o bot é a **única superfície do projeto que qualquer pessoa na
+  internet alcança** — basta descobrir o @usuário. A checagem vive em dois pontos
+  de estrangulamento (`_responder` e `_listar_grupos`) e a maioria dos comandos
+  delega para eles; `cmd_start` (`/start`, `/menu`, `/ajuda`) **não checava** e
+  respondia a estranhos com a lista de comandos e a **loja ativa** — não dava
+  acesso a dado nem a ação (todo botão passa por `cb_botao`, que checa), mas era
+  reconhecimento de graça. O risco real não é o código de hoje e sim **o handler
+  de amanhã**: um comando novo que não delegue nasce **aberto** e nada acusaria.
+  Por isso o teste `test_todo_handler_registrado_checa_autorizacao` varre os
+  handlers do `main` por AST e falha em qualquer um desprotegido. Ficam abertos
+  de propósito, com o motivo escrito no `ABERTOS`: **`/id`** (porta de entrada —
+  devolve só o chat id de quem perguntou) e o catch-all de texto solto. Mexer
+  nessa lista é decisão de segurança, não atalho para teste vermelho.
 - **No BOT, tudo que depende da conta ativa roda sob `TRAVA_CONTA`
   (achado 2026-08-03):** `core.definir_conta()` troca **globais** do núcleo, e o
   bot roda várias coisas em paralelo via `asyncio.to_thread` — o job do alerta

@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785781579.127641,
-  "ast_hash": "909658f07dd38023b0e07551d0de4a2ccd1f7efa",
-  "semantic_hash": "909658f07dd38023b0e07551d0de4a2ccd1f7efa"
+  "mtime": 1785801121.3737168,
+  "ast_hash": "9bf64ea5881459e42d8cec3c87fa02779d512fd3",
+  "semantic_hash": "9bf64ea5881459e42d8cec3c87fa02779d512fd3"
  },
  "CLAUDE.md": {
-  "mtime": 1785781579.126297,
-  "ast_hash": "a483f320b27f428c51478a60bef64c298ced40a5",
-  "semantic_hash": "a483f320b27f428c51478a60bef64c298ced40a5"
+  "mtime": 1785801121.3717403,
+  "ast_hash": "aa9e79737164ec417028bb0c2709b871a1a19381",
+  "semantic_hash": "aa9e79737164ec417028bb0c2709b871a1a19381"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785776942.308643,
-  "ast_hash": "9282d29e0383d4db846940966d08ff9d2eaf7ad2",
-  "semantic_hash": "9282d29e0383d4db846940966d08ff9d2eaf7ad2"
+  "mtime": 1785800995.1262596,
+  "ast_hash": "874c1ea5757c44f4f03f3a28c6f4d30de84abbae",
+  "semantic_hash": "874c1ea5757c44f4f03f3a28c6f4d30de84abbae"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785347101.9826937,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785781579.1309032,
-  "ast_hash": "a2a8b962e2c79ad5b3af6512171bee80c5977b23",
-  "semantic_hash": "a2a8b962e2c79ad5b3af6512171bee80c5977b23"
+  "mtime": 1785801121.3755572,
+  "ast_hash": "3a80e907c1a0f40797772faf40b3e57c339b99f8",
+  "semantic_hash": "3a80e907c1a0f40797772faf40b3e57c339b99f8"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -320,7 +320,7 @@
   "semantic_hash": "fd245039ad81535741d89f2683b8256b42837cf4"
  },
  "registro.py": {
-  "mtime": 1785781482.4713209,
+  "mtime": 1785781678.0313163,
   "ast_hash": "ae19e9e3d674021e749c2e24bd2edc5b4f6abeb2",
   "semantic_hash": "ae19e9e3d674021e749c2e24bd2edc5b4f6abeb2"
  },
@@ -525,7 +525,7 @@
   "semantic_hash": "4bdf195f40ff2359557924d85dca50b39b4a9268"
  },
  "tests/test_registro.py": {
-  "mtime": 1785781548.1529293,
+  "mtime": 1785781678.0313163,
   "ast_hash": "a58710121cdbc62413606f6e76b86d5679343c9f",
   "semantic_hash": "a58710121cdbc62413606f6e76b86d5679343c9f"
  },

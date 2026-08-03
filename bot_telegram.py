@@ -676,6 +676,23 @@ AJUDA = (
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/start, /menu, /ajuda — o menu com o teclado.
+
+    CHECA AUTORIZACAO (varredura de seguranca 2026-08-03): antes respondia a
+    QUALQUER pessoa que achasse o bot, revelando a lista de comandos e a LOJA
+    ATIVA. Nao dava acesso a dado nem a acao (todo botao passa por `cb_botao`,
+    que checa), mas confirmava a um estranho que ali roda a ferramenta de um
+    vendedor — reconhecimento util para um ataque dirigido.
+
+    A porta de entrada legitima continua sendo `/id`, que so devolve o chat id
+    de quem perguntou (ver cmd_id)."""
+    cfg = context.bot_data["cfg"]
+    if not _autorizado(update, cfg):
+        chat_id = update.effective_chat.id if update.effective_chat else None
+        log.warning("Menu negado para chat %s", chat_id)
+        await update.message.reply_text(
+            "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
     await update.message.reply_text(
         f"{AJUDA}\n\nLoja ativa: {_loja(context)}", reply_markup=_teclado(_loja(context)))
 

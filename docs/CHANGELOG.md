@@ -5,6 +5,14 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Corrigido
+- **`/menu` respondia a qualquer pessoa** (varredura de segurança). O bot é a
+  única parte do projeto que alguém de fora alcança — basta achar o @usuário
+  dele. Os comandos que mostram pedidos já exigiam autorização, mas `/start`,
+  `/menu` e `/ajuda` respondiam a estranhos com a lista de comandos e **qual
+  loja está ativa**. Nenhum dado de venda vazava (todo botão continua exigindo
+  autorização), mas era informação de graça para quem estivesse sondando. Agora
+  também exigem autorização. `/id` continua aberto de propósito — é como você
+  descobre o próprio número para se liberar.
 - **Duas brechas na redação de segredos do log** (varredura dos módulos que as
   auditorias nunca olharam — todas entravam pelo núcleo). O `registro.py` tem 64
   linhas e é a **última** defesa contra token em arquivo de log:
