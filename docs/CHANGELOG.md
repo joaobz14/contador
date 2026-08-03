@@ -5,6 +5,16 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Corrigido
+- **Bot podia usar a conta ERRADA** (varredura por blocos). O bot faz várias
+  coisas ao mesmo tempo: o alerta de vendas percorre **todas** as suas contas do
+  Mercado Livre a cada 5 minutos, e você pode mandar `/imprimir` no meio disso.
+  Como trocar de conta mexe numa configuração compartilhada, o comando podia ler
+  a credencial e o histórico da conta que o **alerta** estava consultando naquele
+  instante — imprimindo com o login errado e anotando o "já impresso" na conta
+  errada. Simulado em bancada: **39 de 40** leituras pegaram a conta errada.
+  Agora as operações do bot esperam uma pela outra (são segundos), e um teste
+  falha se alguém adicionar um caminho novo que esqueça essa espera. **A tela
+  nunca teve esse problema** — ela faz uma coisa de cada vez.
 - **Varredura atrás de outras falhas silenciosas** (pedido do dono depois do
   incidente abaixo). Quatro encontradas, todas reproduzidas antes de corrigir:
   - **Venda de hoje indo parar em "Outras datas".** Quando o Mercado Livre

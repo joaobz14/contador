@@ -204,6 +204,14 @@ quem sobe o bot.
   entrando marcado com `data_incerta`, e a tela avisa) e **`_detalhe_item`**,
   abaixo. O prejuízo aqui não é de duplicidade (nada é marcado errado);
   é o app ter a informação e jogá-la fora, e o operador despachar a menos.
+- **`definir_conta` mexe em GLOBAIS e o bot é multi-thread** (achado
+  2026-08-03, corrigido): o job do alerta percorre todas as contas em
+  `asyncio.to_thread` enquanto um comando do dono pode rodar em outra thread. Sem
+  serialização, o comando lê a credencial/estado da conta que o job apontou —
+  imprime com o token errado e marca no arquivo da conta errada (reproduzido: 39
+  de 40 leituras erradas). Hoje `bot_telegram.TRAVA_CONTA` (RLock) serializa
+  `_coletar`, `_imprimir_grupo`, `_prontos`, `_trocar_conta` e o bloco de troca do
+  alerta. **Caminho novo que dependa da conta ativa entra na trava.**
 - **Lote de etiquetas aceito só pelo HTTP 200** (achado 2026-08-03):
   `baixar_zpl` não conferia a **quantidade**. Um 200 com menos etiquetas do que
   envios pedidos saía do jeito que veio, e `preparar_lotes` devolvia **todos** os

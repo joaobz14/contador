@@ -40,6 +40,7 @@ import asyncio
 import logging
 import os
 import sys
+import threading
 from datetime import datetime, time
 from types import SimpleNamespace
 
@@ -70,6 +71,25 @@ import relatorio
 import separador_etiquetas_ml as core
 from registro import sem_segredos
 import shopee_api as shopee
+
+# ---------------------------------------------------------------------------
+# TRAVA DA CONTA ATIVA (serializa tudo que depende dos globais do nucleo)
+# ---------------------------------------------------------------------------
+# `core.definir_conta()` troca GLOBAIS do nucleo (ARQUIVO_CRED, ARQUIVO_ESTADO,
+# ARQUIVO_CACHE, ARQUIVO_ENVIOS_CACHE). O bot roda varias coisas em paralelo via
+# `asyncio.to_thread`: o job do alerta percorre TODAS as contas (trocando os
+# globais a cada uma) enquanto o usuario pode mandar /imprimir de outra conta.
+#
+# Sem esta trava as duas threads disputam os mesmos globais, e o comando do
+# usuario le a credencial/estado da conta que o JOB apontou naquele instante —
+# imprimindo com o token errado e gravando no estado_grupos.json da OUTRA conta.
+# Reproduzido: 39 de 40 leituras pegaram a conta errada.
+#
+# RLock (nao Lock): `_dados_alerta_da_conta` ja roda dentro dela e chama funcoes
+# que tambem a pegam — reentrancia na mesma thread nao pode travar.
+# Custo: as operacoes do bot passam a ser uma de cada vez. Aceitavel — sao
+# segundos, e o bot atende um dono so.
+TRAVA_CONTA = threading.RLock()
 
 ARQUIVO_CONFIG = core.PASTA_DADOS / "bot_config.json"
 ARQUIVO_LOG = core.PASTA_LOGS / "bot.log"
@@ -115,9 +135,11 @@ def carregar_config() -> dict:
 
 # ---------------------------------------------------------------- coleta (rede)
 def _coletar(dia: str | None, somente_hoje: bool):
-    cred = core.carregar_credenciais()
-    token = core.obter_token(cred)
-    return core.coletar_grupos(token, cred["seller_id"], dia=dia, somente_hoje=somente_hoje)
+    with TRAVA_CONTA:                      # le os globais da conta ativa
+        cred = core.carregar_credenciais()
+        token = core.obter_token(cred)
+        return core.coletar_grupos(token, cred["seller_id"], dia=dia,
+                                   somente_hoje=somente_hoje)
 
 
 def _imprimir_grupo(grupo):
@@ -127,17 +149,19 @@ def _imprimir_grupo(grupo):
     impressos (vazia se o grupo ja estava todo impresso). Lanca SeparadorError
     em falha de download/ZPL invalido (nesse caso nada e marcado como impresso).
     """
-    cred = core.carregar_credenciais()
-    token = core.obter_token(cred)
-    estado = core.carregar_estado()
-    return core.imprimir_pendentes(token, grupo, estado)
+    with TRAVA_CONTA:                      # credencial, estado e marcacao: tudo
+        cred = core.carregar_credenciais()  # da MESMA conta, sem o job trocar no meio
+        token = core.obter_token(cred)
+        estado = core.carregar_estado()
+        return core.imprimir_pendentes(token, grupo, estado)
 
 
 def _prontos(dias: int | None = None):
-    cred = core.carregar_credenciais()
-    token = core.obter_token(cred)
-    pedidos = core.buscar_pedidos(token, cred["seller_id"], dias=dias)
-    return core.filtrar_para_imprimir(token, pedidos)
+    with TRAVA_CONTA:
+        cred = core.carregar_credenciais()
+        token = core.obter_token(cred)
+        pedidos = core.buscar_pedidos(token, cred["seller_id"], dias=dias)
+        return core.filtrar_para_imprimir(token, pedidos)
 
 
 # ---------------------------------------------------------- alerta pos-horario
@@ -197,6 +221,14 @@ def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
     chamada rodar ja com a conta ORIGINAL restaurada pelo primeiro bloco
     (bug sutil de conta errada). Roda em thread (rede) — ver job_alerta_pos_horario.
     """
+    with TRAVA_CONTA:
+        return _dados_alerta_da_conta_travado(conta, avisados, hoje)
+
+
+def _dados_alerta_da_conta_travado(conta: str, avisados: set, hoje: str):
+    """Corpo de `_dados_alerta_da_conta`, ja sob TRAVA_CONTA. Separado para a
+    troca de conta e TODO o trabalho que depende dela ficarem numa secao critica
+    so — um comando do usuario no meio disso leria a conta errada."""
     original = core.conta_ativa()
     try:
         if conta and conta != original:
@@ -339,10 +371,11 @@ def _garantir_conta_ativa() -> str:
 def _trocar_conta(nome: str) -> None:
     """Torna `nome` a conta ativa: aponta os arquivos e grava no config.json
     (compartilhado com a tela, para as duas ficarem na mesma conta)."""
-    core.definir_conta(nome)
-    cfg = core.carregar_config()
-    cfg["conta_ativa"] = nome
-    core.salvar_config(cfg)
+    with TRAVA_CONTA:                      # nao troca no meio de um job/comando
+        core.definir_conta(nome)
+        cfg = core.carregar_config()
+        cfg["conta_ativa"] = nome
+        core.salvar_config(cfg)
 
 
 def _data_valida(texto: str) -> bool:
