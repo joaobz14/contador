@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785759366.3178415,
-  "ast_hash": "6c1f5c82eca7cea394359a022a23927f5d19b8a9",
-  "semantic_hash": "6c1f5c82eca7cea394359a022a23927f5d19b8a9"
+  "mtime": 1785763494.8263764,
+  "ast_hash": "1a8488e0932f2d5462d8401196952f5f72ada0a9",
+  "semantic_hash": "1a8488e0932f2d5462d8401196952f5f72ada0a9"
  },
  "CLAUDE.md": {
-  "mtime": 1785759366.3168874,
-  "ast_hash": "01c2dfa863325539d0d5aaacb9864c791da261e7",
-  "semantic_hash": "01c2dfa863325539d0d5aaacb9864c791da261e7"
+  "mtime": 1785763494.8253725,
+  "ast_hash": "bfa7f8f0b4ce8255503ae9393c5efdc3f42ed40b",
+  "semantic_hash": "bfa7f8f0b4ce8255503ae9393c5efdc3f42ed40b"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785759385.2666023,
-  "ast_hash": "267b7afee824a97effc3d3aac12f12f8049e626e",
-  "semantic_hash": "267b7afee824a97effc3d3aac12f12f8049e626e"
+  "mtime": 1785763575.1470876,
+  "ast_hash": "9a1ed7840e59096bbae0cad37412fc7c73d1a66e",
+  "semantic_hash": "9a1ed7840e59096bbae0cad37412fc7c73d1a66e"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785759399.6682403,
-  "ast_hash": "83ee891cb1a13c3af4376d5c171e100fb825a723",
-  "semantic_hash": "83ee891cb1a13c3af4376d5c171e100fb825a723"
+  "mtime": 1785763588.3943858,
+  "ast_hash": "a465293d8a62043a9c787f060db0154dfedfdd20",
+  "semantic_hash": "a465293d8a62043a9c787f060db0154dfedfdd20"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -310,9 +310,9 @@
   "semantic_hash": "0bec4a9c08ec9804cfd80f52b43f2ed197528587"
  },
  "provedores.py": {
-  "mtime": 1785759200.3680763,
-  "ast_hash": "e0239f262545519c7e4cef612b2e2abb11b4c44f",
-  "semantic_hash": "e0239f262545519c7e4cef612b2e2abb11b4c44f"
+  "mtime": 1785762804.7377279,
+  "ast_hash": "2c04eb0c3047eff3f5e6089dbbc7cfccc16f3bbb",
+  "semantic_hash": "2c04eb0c3047eff3f5e6089dbbc7cfccc16f3bbb"
  },
  "pyproject.toml": {
   "mtime": 1783442165.6943207,
@@ -350,14 +350,14 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785759331.3666034,
-  "ast_hash": "72509ef82a774bf032ff7441f3f0f13c9bab7070",
-  "semantic_hash": "72509ef82a774bf032ff7441f3f0f13c9bab7070"
+  "mtime": 1785763478.4379628,
+  "ast_hash": "bf1ef4ad8e10f5afa99237d38d066a954e7146a5",
+  "semantic_hash": "bf1ef4ad8e10f5afa99237d38d066a954e7146a5"
  },
  "separador_gui.py": {
-  "mtime": 1785759215.8906062,
-  "ast_hash": "5c5e896c7e2f7bf9b0b1e25b778a2801bec48864",
-  "semantic_hash": "5c5e896c7e2f7bf9b0b1e25b778a2801bec48864"
+  "mtime": 1785762829.3379242,
+  "ast_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02",
+  "semantic_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02"
  },
  "shopee_api.py": {
   "mtime": 1785345571.1193204,
@@ -395,9 +395,9 @@
   "semantic_hash": "6a0fa149aed4d7f1fa0e98fd0f70781863711804"
  },
  "tests/test_avaliar_pedido.py": {
-  "mtime": 1785759265.551155,
-  "ast_hash": "b13013592fecbfe917fd2c0cfd85762c4b99b9d9",
-  "semantic_hash": "b13013592fecbfe917fd2c0cfd85762c4b99b9d9"
+  "mtime": 1785762861.0619261,
+  "ast_hash": "ba5b3daac7e708efb0964b53609670b9d1e8b233",
+  "semantic_hash": "ba5b3daac7e708efb0964b53609670b9d1e8b233"
  },
  "tests/test_bot_alerta.py": {
   "mtime": 1785428034.4987442,
@@ -420,9 +420,9 @@
   "semantic_hash": "570b024b8ff605723e6285a853104a96383eff13"
  },
  "tests/test_cache_envios.py": {
-  "mtime": 1785759265.5513508,
-  "ast_hash": "94823f5f3308c805bd45b1b7bac66ea343a80168",
-  "semantic_hash": "94823f5f3308c805bd45b1b7bac66ea343a80168"
+  "mtime": 1785762872.831604,
+  "ast_hash": "22d18046916a7c227ef01a0f7db3200b4afadaa1",
+  "semantic_hash": "22d18046916a7c227ef01a0f7db3200b4afadaa1"
  },
  "tests/test_carimbo.py": {
   "mtime": 1784160592.7088351,
@@ -470,9 +470,9 @@
   "semantic_hash": "45d9d8a2fd46da0bce1f33608c448cfdd1ca678b"
  },
  "tests/test_gui_confirmacao.py": {
-  "mtime": 1785759288.3506045,
-  "ast_hash": "92947c75ccbff0983f5b4fc92cbde3e6b72c2f33",
-  "semantic_hash": "92947c75ccbff0983f5b4fc92cbde3e6b72c2f33"
+  "mtime": 1785762935.6059306,
+  "ast_hash": "a6013dc019530fb5904d61552789905aa384a6da",
+  "semantic_hash": "a6013dc019530fb5904d61552789905aa384a6da"
  },
  "tests/test_gui_editores.py": {
   "mtime": 1784229860.1942687,
@@ -490,9 +490,9 @@
   "semantic_hash": "b55a3ecdaa3c738e4b4b55e95937bc0b8515e9c0"
  },
  "tests/test_lotes.py": {
-  "mtime": 1784649902.0514512,
-  "ast_hash": "c361a6e3ad42b223017e342789c916484f995714",
-  "semantic_hash": "c361a6e3ad42b223017e342789c916484f995714"
+  "mtime": 1785763394.0179577,
+  "ast_hash": "19a4e6e337ecf41194531ddb88311f30ef8db5a5",
+  "semantic_hash": "19a4e6e337ecf41194531ddb88311f30ef8db5a5"
  },
  "tests/test_nomes.py": {
   "mtime": 1783703262.242469,
@@ -515,9 +515,9 @@
   "semantic_hash": "636042da48939ad5d29caa3a4bd586ec977a864e"
  },
  "tests/test_rede.py": {
-  "mtime": 1783442165.7015514,
-  "ast_hash": "fcdf574856499ebb88081117a354162e671f8ebb",
-  "semantic_hash": "fcdf574856499ebb88081117a354162e671f8ebb"
+  "mtime": 1785763523.6514542,
+  "ast_hash": "4bdf195f40ff2359557924d85dca50b39b4a9268",
+  "semantic_hash": "4bdf195f40ff2359557924d85dca50b39b4a9268"
  },
  "tests/test_registro.py": {
   "mtime": 1784229860.1942687,

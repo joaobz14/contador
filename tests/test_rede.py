@@ -74,8 +74,13 @@ def test_zpl_de_zip_extrai_conteudo(core):
 
 
 def test_baixar_zpl_sucesso_texto(core, monkeypatch):
-    monkeypatch.setattr(core, "_requisicao_get",
-                        lambda url, headers, params=None: FakeResp(200, content=b"^XA OK ^XZ"))
+    # 1 bloco por envio (o ML manda etiqueta + DANFE; o minimo e 1 por envio).
+    # O duble antigo devolvia 1 bloco para 3 envios — resposta que a API nunca
+    # da, e que hoje a guarda de quantidade do baixar_zpl recusa de proposito.
+    monkeypatch.setattr(
+        core, "_requisicao_get",
+        lambda url, headers, params=None: FakeResp(
+            200, content=b"^XA OK1 ^XZ\n^XA OK2 ^XZ\n^XA OK3 ^XZ"))
     assert "^XA" in core.baixar_zpl("tok", [1, 2, 3])
 
 

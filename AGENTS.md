@@ -224,6 +224,41 @@ em 2º plano.
   avisar sem prova, aqui era **calar com prova na mão**. Ao adicionar consulta
   nova à API, **não devolva dicionário vazio em erro** — o vazio é
   indistinguível de uma resposta legítima e some dentro do fluxo.
+  A varredura de 2026-08-03 achou o mesmo padrão em mais dois pontos, já
+  corrigidos: **`_sla`** (falha → `expected_date=""` → a venda de hoje caía em
+  "Outras datas"; hoje devolve `None`, o pedido **continua entrando** marcado com
+  `data_incerta` e a tela avisa — excluí-lo seria pior que datá-lo errado) e
+  **`_detalhe_item`** (ver abaixo).
+- **Erro de CREDENCIAL (401/403) estoura; erro transitório vira "não sei":**
+  as duas coisas pedem ações opostas, e tratar credencial recusada como "não
+  sei" fazia a tela dar um conselho que **nunca** funcionaria — com o token
+  revogado toda consulta falha, e o operador lia "a API não respondeu sobre 150
+  envios, clique em Atualizar de novo" e clicaria para sempre, com a causa real
+  escondida atrás do aviso. `_propagar_se_auth` re-levanta 401/403 como
+  `SeparadorError` dizendo **o que fazer** (`pegar_token.py`); o resto continua
+  virando `None`. É a mesma lógica do `_STATUS_RETRY`, que já não re-tenta
+  401/403 porque re-tentar não ajuda. Aplicado em `buscar_envio`, `_sla` e
+  `_detalhe_item`.
+- **Lote de etiquetas é conferido pela QUANTIDADE, não só pelo HTTP 200
+  (achado 2026-08-03):** `baixar_zpl` aceitava um 200 com **menos etiquetas do
+  que envios pedidos** — o ZIP saía curto e `preparar_lotes` devolvia **todos**
+  os envios como impressos. Etiqueta que não existe constando como impressa é
+  exatamente o que a **invariante 1** proíbe, e no caminho do **bot/CLI** (que
+  marcam sem confirmação humana) esta guarda é a única defesa. A comparação é
+  `blocos ^XA >= nº de envios`, **não** igualdade: o ML manda 1 etiqueta + 1
+  DANFE por venda, e amarrar no número exato tornaria o app refém de um formato
+  que ele não controla — menos blocos que envios, porém, é erro em qualquer
+  formato.
+- **Falha de rede NUNCA pode ser gravada em cache (achado 2026-08-03):**
+  `_detalhe_item` devolvia entrada vazia no erro e `buscar_detalhes` a gravava no
+  `itens_cache.json`. Como o cache só busca o que **ainda não está nele**, uma
+  falha **transitória virava permanente**: o item ficava sem GTIN — logo com a
+  chave `{item_id}:{var}` em vez de `GTIN:…` — e sem `seller_sku`, o que
+  **derruba a adoção** guardada em `skus_por_anuncio.json` (ela está sob a chave
+  antiga) e faz o produto reaparecer como grupo separado sem SKU. Só limpando o
+  cache na mão para consertar. Hoje `_detalhe_item` devolve `None` e
+  `buscar_detalhes` **pula** — na próxima busca tenta de novo. Regra geral: cache
+  guarda **resposta**, nunca **ausência de resposta**.
 - **Estado de impressão lê por `estado.ler_estado`, não `ler_json`:** `ler_json`
   silencia qualquer falha como `{}` (certo p/ config → `_sanear_config`, cred →
   `.bak`, caches → refazer). No **estado** isso é perigoso: corrompido lido como

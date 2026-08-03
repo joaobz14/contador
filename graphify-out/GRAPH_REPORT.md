@@ -67,6 +67,35 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-08-03 — Varredura atrás do mesmo padrão: mais 2 falhas silenciosas.**
+  Pedido do dono depois do incidente de 31/07 ("procure outros erros silenciosos").
+  Achados e corrigidos, ambos **reproduzidos antes**:
+  (1) **`_sla` devolvia `{}`** ao falhar → `expected_date=""` → a venda de HOJE
+  não casa com o filtro do dia e cai em "Outras datas". Era o mesmo incidente por
+  uma segunda porta, mais discreta (o pedido continua visível, só no balde
+  errado). Agora `None` = "não sei", o pedido **continua entrando** (ele está
+  pronto — excluir seria pior) marcado com `data_incerta`, contado e avisado.
+  (2) **`_detalhe_item` gravava a falha no cache**: entrada vazia ia para o
+  `itens_cache.json`, e como `buscar_detalhes` só busca o que não está em cache,
+  uma falha **transitória virava permanente** — item sem GTIN (logo chave
+  `{item_id}:{var}` em vez de `GTIN:…`) e sem `seller_sku`, derrubando a adoção
+  feita em `skus_por_anuncio.json`. Só limpando o cache na mão para consertar.
+  Agora falha não é gravada.
+  **Segunda passada (mesmo dia), atrás de outros formatos de erro:**
+  (3) **401/403 viravam "não sei"** — com o token revogado TODA consulta falha e
+  a tela dizia "a API não respondeu sobre 150 envios, clique em Atualizar de
+  novo", conselho que nunca funcionaria, com a causa real escondida.
+  `_propagar_se_auth` re-levanta credencial recusada dizendo o que fazer;
+  transitório segue virando `None`. Nota: esse *conselho enganoso* foi
+  **introduzido pelo próprio aviso do #205** — corrigir uma falha silenciosa
+  criou uma falha ruidosa e errada.
+  (4) **`baixar_zpl` conferia o HTTP 200 mas não a QUANTIDADE**: um lote com
+  menos etiquetas que envios saía do jeito que veio e `preparar_lotes` devolvia
+  todos os envios como impressos — o que a **invariante 1** proíbe, e no caminho
+  do bot/CLI (que marcam sem confirmação humana) essa guarda é a única defesa.
+  Comparação `>=`, não `==`, para não amarrar no formato do ML.
+  Depois do `--update`: **1576 nós, 2968 arestas, 0 órfãs**.
+
 - **2026-07-31 — INCIDENTE: lote incompleto em silêncio (envio não verificado).**
   Num dia de API do ML instável, o operador imprimiu **5 de 7** vendas do mesmo
   SKU; um 2º "Atualizar" trazia as faltantes. Causa: `buscar_envio` devolvia

@@ -347,6 +347,7 @@ def test_atualizar_avisa_quando_a_api_nao_verificou_tudo(monkeypatch):
 
     class ProvFake:
         nao_verificados = 2
+        data_incerta = 1        # prazo que a API recusou (achado 2026-08-03)
         def coletar(self, **kw):
             return []
         def carregar_estado(self):
@@ -355,14 +356,14 @@ def test_atualizar_avisa_quando_a_api_nao_verificou_tudo(monkeypatch):
     app.prov = ProvFake()
     app._ctx_log = lambda: "teste"
     app._render = lambda: None
-    app._avisar_nao_verificados = lambda n: avisos.append(n)
+    app._avisar_nao_verificados = lambda n, sd=0: avisos.append((n, sd))
     # O root da GUI so agenda callbacks na thread do Tk; aqui roda na hora.
     app.root = type("R", (), {"after": staticmethod(
         lambda _ms, fn: chamadas.append(fn()) )})()
 
     app._atualizar_thread("2026-07-31")
 
-    assert avisos == [2], "o operador precisa ser avisado dos 2 nao verificados"
+    assert avisos == [(2, 1)], "o aviso tem de cobrir os DOIS casos"
 
 
 def test_atualizar_nao_avisa_quando_verificou_tudo(monkeypatch):
@@ -373,6 +374,7 @@ def test_atualizar_nao_avisa_quando_verificou_tudo(monkeypatch):
 
     class ProvFake:
         nao_verificados = 0
+        data_incerta = 0
         def coletar(self, **kw):
             return []
         def carregar_estado(self):
@@ -381,9 +383,27 @@ def test_atualizar_nao_avisa_quando_verificou_tudo(monkeypatch):
     app.prov = ProvFake()
     app._ctx_log = lambda: "teste"
     app._render = lambda: None
-    app._avisar_nao_verificados = lambda n: avisos.append(n)
+    app._avisar_nao_verificados = lambda n, sd=0: avisos.append((n, sd))
     app.root = type("R", (), {"after": staticmethod(lambda _ms, fn: fn())})()
 
     app._atualizar_thread("2026-07-31")
 
     assert avisos == []
+
+
+def test_aviso_menciona_so_o_caso_que_ocorreu():
+    """As duas falhas tem causas e consequencias diferentes — o texto precisa
+    dizer QUAL aconteceu, senao o operador nao sabe o que procurar."""
+    vistos = []
+    orig = gui.messagebox.showwarning
+    gui.messagebox.showwarning = lambda titulo, msg: vistos.append(msg)
+    try:
+        app = gui.SeparadorApp.__new__(gui.SeparadorApp)
+        app._avisar_nao_verificados(2, 0)
+        app._avisar_nao_verificados(0, 3)
+    finally:
+        gui.messagebox.showwarning = orig
+
+    so_envio, so_data = vistos
+    assert "não respondeu" in so_envio and "Outras datas" not in so_envio
+    assert "Outras datas" in so_data and "não respondeu" not in so_data

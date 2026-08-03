@@ -31,6 +31,9 @@ class Provedor:
     # (ver `buscar_envio` no nucleo — incidente de 2026-07-31). So o ML tem esse
     # caminho; a Shopee mantem 0.
     nao_verificados: int = 0
+    # Prontos que a API recusou datar: entraram no lote, mas em "Outras datas"
+    # em vez do dia escolhido. Tambem vira aviso na tela.
+    data_incerta: int = 0
 
     # ---- selecao de conta (ML) -------------------------------------------
     def contas(self) -> list[str]:
@@ -115,6 +118,7 @@ class ProvedorML(Provedor):
             for d, n in core.resumo_por_dia(getattr(coleta, "prontos", []))
         }
         self.nao_verificados = getattr(coleta, "nao_verificados", 0)
+        self.data_incerta = getattr(coleta, "data_incerta", 0)
         return coleta.grupos
 
     def carregar_estado(self) -> dict:
@@ -153,7 +157,8 @@ class ProvedorShopee(Provedor):
         grupos, _qtd, contagem = shopee.coletar_grupos(
             self._creds(), dia=dia, somente_hoje=somente_hoje)
         self.contagem_dias = contagem
-        self.nao_verificados = 0        # a Shopee nao tem esse caminho de falha
+        self.nao_verificados = 0        # a Shopee nao tem esses caminhos de falha
+        self.data_incerta = 0
         # Rastreio (AWB) dos grupos de 1 pedido ja impresso, para conferencia.
         shopee.preencher_rastreios(self._creds(), grupos, shopee.carregar_estado())
         return grupos
@@ -237,6 +242,7 @@ class ProvedorMLAmbas(Provedor):
         por_conta: dict[str, list] = {}
         contagem: dict[str, int] = {}
         nao_verificados = 0
+        data_incerta = 0
         for conta in self.contas():
             token = self._token(conta)
             coleta = core.coletar_grupos(
@@ -249,8 +255,10 @@ class ProvedorMLAmbas(Provedor):
             # Soma as contas: uma pode falhar e a outra nao, e o operador
             # precisa saber que ALGO ficou de fora do lote unido.
             nao_verificados += getattr(coleta, "nao_verificados", 0)
+            data_incerta += getattr(coleta, "data_incerta", 0)
         self.contagem_dias = contagem
         self.nao_verificados = nao_verificados
+        self.data_incerta = data_incerta
         return fundir_grupos(por_conta)
 
     # ---- estado composto: {conta: estado_da_conta} -------------------------
