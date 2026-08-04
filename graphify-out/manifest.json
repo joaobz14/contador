@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785859310.3207657,
-  "ast_hash": "d41d4d4de446df499486ea99a41fa47669834001",
-  "semantic_hash": "d41d4d4de446df499486ea99a41fa47669834001"
+  "mtime": 1785861935.9487393,
+  "ast_hash": "3d40077fe946439b868906c68f7c3d816ad962da",
+  "semantic_hash": "3d40077fe946439b868906c68f7c3d816ad962da"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -360,9 +360,9 @@
   "semantic_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02"
  },
  "shopee_api.py": {
-  "mtime": 1785861806.9203787,
-  "ast_hash": "cfd473c8c874692bbae19192c5a984ed99460449",
-  "semantic_hash": "cfd473c8c874692bbae19192c5a984ed99460449"
+  "mtime": 1785865903.3475442,
+  "ast_hash": "737c963db61e5b920a1ceb93f8b255849e088adb",
+  "semantic_hash": "737c963db61e5b920a1ceb93f8b255849e088adb"
  },
  "tests/conftest.py": {
   "mtime": 1783442165.6975513,

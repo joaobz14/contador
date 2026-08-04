@@ -1233,6 +1233,49 @@ def main() -> None:
         print("\nMande esta saida no chat: e ela que diz qual estado usar no alerta.")
         return
 
+    # Diagnostico: TUDO que a API sabe sobre UM pedido, inclusive os campos
+    # OPCIONAIS (que so vem quando pedidos pelo nome — por isso o `status` acima
+    # nao os mostra: a ausencia la nao prova nada).
+    #
+    # Serve para apontar num pedido que o PAINEL mostra como "aguardando NF-e" e
+    # descobrir onde esse estado aparece na API. Se a chamada larga for recusada,
+    # cai numa segunda com o conjunto minimo e diz quais campos a Shopee nao
+    # aceitou — a recusa tambem e informacao.
+    if comando == "detalhe" and len(args) >= 2:
+        order_sn = args[1]
+        largo = ("item_list,ship_by_date,order_status,invoice_data,package_list,"
+                 "note,fulfillment_flag,payment_method,total_amount,pay_time")
+        try:
+            cred = carregar_credenciais()
+            token = obter_token(cred)
+        except core.SeparadorError as e:
+            sys.exit(f"ERRO: {e}")
+
+        def _detalhe(campos: str):
+            return _get_shop(cred, token, "/api/v2/order/get_order_detail", {
+                "order_sn_list": order_sn, "response_optional_fields": campos,
+            })
+
+        try:
+            dados = _detalhe(largo)
+            print(f"\n(pedi os campos opcionais: {largo})")
+        except core.SeparadorError as e:
+            print(f"\nA Shopee recusou o conjunto largo: {e}")
+            print("Tentando so os basicos...")
+            try:
+                dados = _detalhe("item_list,ship_by_date,order_status")
+            except core.SeparadorError as e2:
+                sys.exit(f"ERRO: {e2}")
+
+        lista = dados.get("response", {}).get("order_list", [])
+        if not lista:
+            sys.exit(f"Pedido {order_sn} nao encontrado (confira o numero).")
+        import json as _json
+        print(f"\n--- {order_sn} ---")
+        print(_json.dumps(lista[0], ensure_ascii=False, indent=2)[:4000])
+        print("\nMande isto no chat. Procuramos onde aparece 'aguardando NF-e'.")
+        return
+
     # Tipos de documento disponiveis para um pedido (diagnostico).
     if comando == "parametros" and len(args) >= 2:
         try:
