@@ -356,21 +356,26 @@ def buscar_detalhes(cred: dict, token: str, order_sns: list[str]) -> list[dict]:
     return detalhes
 
 
-def nf_pendente(ped: dict) -> bool:
-    """True quando a Shopee ainda espera a NF-e ("Enviar NF-e" no painel).
+def nota_nao_validada(ped: dict) -> bool:
+    """True quando a Shopee ainda NAO validou a nota do pedido.
 
-    Confirmado com o suporte da Shopee (2026-08-04): o rotulo do painel e
-    exatamente `invoice_data.status == "pending"`, e esse estado **bloqueia o
-    `ship_order`** (erro `error_pending_invoice`) — ou seja, a venda NAO pode ser
-    despachada enquanto o XML nao subir.
+    O efeito e o que importa e esta verificado: nesse estado a Shopee **recusa o
+    `ship_order`** (erro `error_pending_invoice`, confirmado com o suporte deles
+    em 2026-08-04) — a venda nao pode ser despachada, ponto.
 
-    Sozinho o campo NAO serve de alerta: "pending" e o estado INICIAL de toda
-    venda paga, ate o faturador subir o XML (confirmado pelo suporte e visto na
-    pratica — um pedido do dono virou "valid" sozinho em minutos). Quem separa a
-    venda travada da recem-criada e o DIA (ver `dia_previsto`): pending no dia do
-    despacho e XML que ja devia ter subido.
+    **A CAUSA nao e unica, e por isso a funcao nao se chama `nf_pendente`.** O
+    suporte disse que `pending` = "Enviar NF-e" no painel, mas o painel do dono
+    desmentiu: as 20 `pending` da loja apareciam como **"Em processamento"** (a
+    Shopee ainda processando; a etiqueta libera num horario que ela anuncia) e as
+    3 `valid` como "Em aberto" — casamento exato, 20/20 e 3/3. Ou seja, `pending`
+    cobre pelo menos dois casos: processamento em andamento E nota faltando.
+    Afirmar "esperando a NF-e" mandaria o dono cobrar o faturador de uma venda
+    que so precisa de tempo.
+
+    Sozinho o campo tambem nao serve de alerta: `pending` e o estado inicial de
+    toda venda paga. Quem separa o que exige acao HOJE e o dia (`dia_previsto`).
     """
-    return ((ped.get("invoice_data") or {}).get("status") or "") == "pending"
+    return ((ped.get("invoice_data") or {}).get("status") or "") != "valid"
 
 
 def dia_previsto(ped: dict) -> str:
@@ -454,9 +459,9 @@ def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str,
     # entao chama-la de "pronta" seria dizer ao operador que esta pronto o que nao
     # esta — a mesma familia do incidente de 2026-07-31 no ML.
     novos = [d for d in do_dia
-             if not nf_pendente(d) and d.get("order_sn") not in avisados]
+             if not nota_nao_validada(d) and d.get("order_sn") not in avisados]
     novos_nf = [d for d in do_dia
-                if nf_pendente(d) and d.get("order_sn") not in (avisados_nf or set())]
+                if nota_nao_validada(d) and d.get("order_sn") not in (avisados_nf or set())]
     return (novos, _itens_de_detalhes(novos, None),
             novos_nf, _itens_de_detalhes(novos_nf, None))
 

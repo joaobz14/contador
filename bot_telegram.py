@@ -371,10 +371,15 @@ CHAVE_ALERTA_SHOPEE = "Shopee"
 SUFIXO_ALERTA_NF = " · falta NF-e"
 AVISO_NF_PENDENTE = ("⚠️ O ML esta esperando a NF-e — a etiqueta so libera "
                      "depois que o XML subir.")
-# A Shopee e mais dura que o ML aqui: com a nota pendente ela RECUSA o
-# ship_order (error_pending_invoice), entao nem organizar o envio da.
-AVISO_NF_SHOPEE = ("⚠️ A Shopee esta esperando a NF-e — nao da nem para organizar "
-                   "o envio enquanto o XML nao subir.")
+# NAO afirma a CAUSA, so o efeito — que e o que esta verificado. O painel do
+# dono mostrou que `invoice_data.status=pending` cobre tambem o "Em
+# processamento" (a Shopee ainda processando; a etiqueta libera num horario que
+# ela mesma anuncia), e nao so a nota faltando. Dizer "esperando a NF-e" ali
+# seria inventar um motivo: o operador iria cobrar o faturador de uma venda que
+# so precisa de tempo.
+AVISO_NF_SHOPEE = ("⚠️ A Shopee ainda nao liberou a etiqueta desta venda (nota "
+                   "nao validada). Nao da nem para organizar o envio: confira no "
+                   "painel se falta a NF-e ou se e so processamento.")
 
 
 def _dados_alerta_shopee(avisados: set, hoje: str, avisados_nf: set | None = None):

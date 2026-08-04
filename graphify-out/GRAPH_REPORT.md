@@ -109,7 +109,14 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   **contradiz o dado real** (havia pedido `pending` **com** `ship_by_date`), e o
   push `fbs_br_invoice_issued_push` é de FBS, enquanto os pedidos do dono são
   `fulfilled_by_local_seller`.
-  Depois do `--update`: **1713 nós, 3230 arestas, 0 órfãs**.
+  **Corrigido no mesmo dia, antes de mergear:** o painel do dono desmentiu o
+  suporte — as 20 `pending` apareciam como **"Em processamento"** e as 3 `valid`
+  como "Em aberto" (casamento exato, 20/20 e 3/3). Logo `pending` cobre **dois**
+  casos, a função virou `nota_nao_validada` (`!= "valid"`, errando para o lado de
+  não imprimir) e o aviso **parou de afirmar a causa**. Lição registrada:
+  resposta de suporte é evidência fraca perto do painel e da API da conta real;
+  quando divergem, vence o dado.
+  Depois do `--update`: **1713 nós, 3232 arestas, 0 órfãs**.
 
 - **2026-08-04 — diagnóstico de estados da Shopee (antes do alerta).** O dono
   pediu o mesmo alerta de NF-e para a Shopee. O sinal, porém, é **contrato

@@ -359,10 +359,14 @@ def test_dia_previsto_vazio_quando_nao_da_para_saber():
     assert sh.dia_previsto({"order_sn": "X"}) == ""
 
 
-def test_nf_pendente_so_para_pending():
-    assert sh.nf_pendente(_ped_shopee("A", nf="pending"))
-    assert not sh.nf_pendente(_ped_shopee("A", nf="valid"))
-    assert not sh.nf_pendente({"order_sn": "A"})          # sem invoice_data
+def test_nota_nao_validada_e_tudo_que_nao_e_valid():
+    """`!= "valid"` e nao `== "pending"`: o suporte disse que a lista de
+    valores nao e exaustiva, e um valor novo que NAO seja "valid" tambem
+    significa etiqueta bloqueada. Errar para o lado de nao imprimir."""
+    assert sh.nota_nao_validada(_ped_shopee("A", nf="pending"))
+    assert sh.nota_nao_validada(_ped_shopee("A", nf="qualquer_coisa_nova"))
+    assert sh.nota_nao_validada({"order_sn": "A"})     # sem invoice_data: nao sabemos
+    assert not sh.nota_nao_validada(_ped_shopee("A", nf="valid"))
 
 
 def test_invoice_data_vem_na_mesma_chamada(monkeypatch):

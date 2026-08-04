@@ -513,12 +513,20 @@ em 2º plano.
   alerta **já a chamava de "pronta"** — sendo que a Shopee **recusa o
   `ship_order`** com a nota pendente (`error_pending_invoice`, confirmado com o
   suporte deles em 2026-08-04). Era dizer que está pronto o que a própria Shopee
-  nega. Sinal: `invoice_data.status == "pending"` (campo **opcional** — só vem se
+  nega. Sinal: `invoice_data.status != "valid"` (campo **opcional** — só vem se
   pedido pelo nome; entrou no `CAMPOS_DETALHE` junto com `pay_time`, na chamada
   de detalhe que já era feita, **custo zero**). **`pending` sozinho NÃO serve de
   alerta**: é o estado inicial de toda venda paga até o faturador subir o XML
   (confirmado e observado — um pedido virou `valid` sozinho em minutos). Quem
-  separa a travada da recém-criada é o **dia**. **Armadilha da data:** a Shopee
+  separa a travada da recém-criada é o **dia**. **O suporte errou sobre a causa,
+  e o painel desmentiu:** as 20 `pending` da loja apareciam como **"Em
+  processamento"** (a Shopee ainda processando; a etiqueta libera num horário que
+  ela anuncia) e as 3 `valid` como "Em aberto" — casamento exato, 20/20 e 3/3.
+  Então `pending` cobre **pelo menos dois casos** (processando × nota faltando), e
+  por isso a função chama-se `nota_nao_validada`, testa `!= "valid"` (a lista de
+  valores não é exaustiva; errar para o lado de não imprimir) e **o aviso não
+  afirma a causa** — diz o efeito e manda conferir no painel. **Armadilha da
+  data:** a Shopee
   demora a atribuir `ship_by_date`, então venda recém-paga vem **sem prazo** e
   ficaria fora de qualquer filtro por dia — o aviso nasceria mudo. Daí
   `dia_previsto`: usa o `ship_by_date` quando existe, senão deriva de
