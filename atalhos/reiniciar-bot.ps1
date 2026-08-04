@@ -44,7 +44,15 @@ if ($bots.Count -gt 1) {
 
 foreach ($p in @($lanc) + @($bots)) {          # lancador primeiro: nao ressuscita
     try { Stop-Process -Id $p.ProcessId -Force -ErrorAction Stop }
-    catch { Write-Host "  nao consegui parar o PID $($p.ProcessId): $_" -ForegroundColor Yellow }
+    catch {
+        # Processo que JA saiu nao e falha -- e o caso tipico aqui: o python do
+        # bot cai junto com o cmd.exe do lancador, entao quando chega a vez dele
+        # na lista ele nao existe mais. Avisar nesse caso seria um alarme falso
+        # num caminho de SUCESSO, e alarme falso ensina a ignorar o alarme.
+        if (Get-Process -Id $p.ProcessId -ErrorAction SilentlyContinue) {
+            Write-Host "  nao consegui parar o PID $($p.ProcessId): $_" -ForegroundColor Yellow
+        }
+    }
 }
 
 # Espera a fila esvaziar de verdade antes de subir de novo: dois bots pollando
