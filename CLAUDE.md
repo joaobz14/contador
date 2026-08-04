@@ -533,7 +533,7 @@ em 2º plano.
   entrega os updates de um bot a **um consumidor só** — quem **lê** os comandos é
   este projeto (polling, em `main`), e o n8n entra apenas como **remetente**
   (`sendMessage`). Por isso o `/perguntas` **não responde com dado nenhum**: faz um
-  POST no webhook (`_disparar_perguntas`, `{"origem","comando"}`), manda um "🔎
+  POST no webhook (`_disparar_perguntas`, `{"origem","comando","chat_id"}`), manda um "🔎
   Consultando..." imediato (o fluxo leva ~4s) e sai de cena; a resposta chega
   depois, escrita pelo n8n no mesmo chat. **Não mexa na forma de RECEBER updates**
   (trocar polling por webhook aqui derruba um dos dois lados). Restrito a **um**

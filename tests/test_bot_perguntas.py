@@ -70,7 +70,7 @@ def _rodar(chat_id, cfg, disparo):
     duble = _Bot()
     chamadas: list[str] = []
 
-    def _falso(url):
+    def _falso(url, chat_id):
         chamadas.append(url)
         return disparo(url) if disparo else None
 
@@ -127,6 +127,7 @@ def _estourar(exc):
     return _f
 
 
+
 def test_falha_do_n8n_vira_aviso_e_nao_derruba_o_bot():
     enviadas, _ = _rodar(CHAT_DONO, _cfg(),
                          _estourar(core.SeparadorError("nao consegui falar com o n8n")))
@@ -157,17 +158,30 @@ def test_disparar_manda_o_corpo_combinado_com_o_n8n(monkeypatch):
         return type("R", (), {"status_code": 200})()
 
     monkeypatch.setattr(bot.requests, "post", _post)
-    bot._disparar_perguntas(URL)
-    assert visto["json"] == {"origem": "telegram", "comando": "/perguntas"}
+    bot._disparar_perguntas(URL, CHAT_DONO)
+    assert visto["json"] == {"origem": "telegram", "comando": "/perguntas",
+                             "chat_id": CHAT_DONO}
     assert visto["timeout"] == bot.TIMEOUT_PERGUNTAS
     assert visto["url"] == URL
+
+
+def test_chat_id_enviado_e_o_de_quem_disparou(monkeypatch):
+    """O fluxo do n8n responde a QUEM PERGUNTOU. Se o chat_id nao for o do
+    disparo, a resposta vai para o chat errado — e o dono so descobre quando
+    outra pessoa recebe o dado dele."""
+    visto = {}
+    monkeypatch.setattr(bot, "_disparar_perguntas",
+                        lambda url, chat_id: visto.update(url=url, chat_id=chat_id))
+    duble = _Bot()
+    asyncio.run(bot.cmd_perguntas(_Update(CHAT_DONO), _Ctx(_cfg(), duble)))
+    assert visto == {"url": URL, "chat_id": CHAT_DONO}
 
 
 def test_disparar_converte_erro_http_sem_vazar_a_url(monkeypatch):
     monkeypatch.setattr(bot.requests, "post",
                         lambda *a, **k: type("R", (), {"status_code": 404})())
     with pytest.raises(core.SeparadorError) as e:
-        bot._disparar_perguntas(URL)
+        bot._disparar_perguntas(URL, CHAT_DONO)
     assert "404" in str(e.value)
     assert "9f4c2a7be13d" not in str(e.value)
 
@@ -183,7 +197,7 @@ def test_disparar_converte_falha_de_transporte_sem_vazar_a_url(monkeypatch):
 
     monkeypatch.setattr(bot.requests, "post", _explodir)
     with pytest.raises(core.SeparadorError) as e:
-        bot._disparar_perguntas(URL)
+        bot._disparar_perguntas(URL, CHAT_DONO)
     assert "9f4c2a7be13d" not in str(e.value)
     # `from None`: e o __suppress_context__ que faz um traceback logado NAO
     # imprimir a original (o __context__ continua no objeto, so nao e exibido).

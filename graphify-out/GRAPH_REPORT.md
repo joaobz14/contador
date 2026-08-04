@@ -69,6 +69,18 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mesma intermitência por ordem-de-stage do #208, pela porta dos fundos).
   Depois do `--update`: **1631 nós, 3067 arestas, 0 órfãs**.
 
+- **2026-08-04 — `/perguntas` manda o `chat_id` (preparação para as próximas
+  integrações do n8n).** Sem ele, cada fluxo do n8n precisa ter um chat **fixo**
+  escrito por dentro — o que funciona com um comando e um chat, e vira dívida
+  assim que houver vários. É aditivo (campo a mais, o fluxo atual ignora).
+  Registradas no nó `bot_perguntas_n8n` as três armadilhas do crescimento:
+  **botão inline mandado pelo n8n não funciona** (o `callback_query` é um update
+  e vai para o consumidor do polling — este projeto —, que não conhece aquele
+  `callback_data`), teclado persistente idem (cai no catch-all "Não entendi"), e
+  **o n8n não consegue reagir a comando nenhum**: toda função nova precisa de um
+  handler deste lado, mesmo que o trabalho todo seja dele.
+  Depois do `--update`: **1694 nós, 3185 arestas, 0 órfãs**.
+
 - **2026-08-04 — alerta de venda parada em "Informe a NF-e".** O dono controla
   estoque: quando vende um item que não tem, o faturador não sobe o XML e o
   envio fica em `invoice_pending` — **nunca** chega a `ready_to_print`. Ou seja,
