@@ -1280,3 +1280,34 @@ def test_imprimir_grupo_parcial_preserva_awbs_antigos(monkeypatch):
     out = sh.imprimir_grupo({}, g, estado)
     assert out == ["SN2"]
     assert g.rastreios == ["BR-SN1", "BR-SN2"]
+
+
+# ------------------------------------------- diagnostico de estados (Shopee)
+def test_listar_pedidos_com_status_nao_filtra_por_estado(monkeypatch):
+    """O `listar_order_sns` pede SO READY_TO_SHIP — e por isso nao enxerga uma
+    venda travada em outro estado (ex.: esperando a NF-e). O diagnostico precisa
+    do oposto: ver todos, para descobrir qual estado a Shopee usa."""
+    vistos = []
+
+    def _get(cred, token, path, params):
+        vistos.append(params)
+        return {"response": {"order_list": [
+            {"order_sn": "A", "order_status": "READY_TO_SHIP"},
+            {"order_sn": "B", "order_status": "PROCESSED"},
+        ], "more": False}}
+
+    monkeypatch.setattr(sh, "_get_shop", _get)
+    pedidos = sh.listar_pedidos_com_status({}, "tok")
+
+    assert "order_status" not in vistos[0], "nao pode filtrar por estado"
+    assert vistos[0]["response_optional_fields"] == "order_status"
+    assert [p["order_status"] for p in pedidos] == ["READY_TO_SHIP", "PROCESSED"]
+
+
+def test_listar_pedidos_com_status_pagina_ate_o_fim(monkeypatch):
+    paginas = [
+        {"response": {"order_list": [{"order_sn": "A"}], "more": True, "next_cursor": "c1"}},
+        {"response": {"order_list": [{"order_sn": "B"}], "more": False}},
+    ]
+    monkeypatch.setattr(sh, "_get_shop", lambda *a, **k: paginas.pop(0))
+    assert len(sh.listar_pedidos_com_status({}, "tok")) == 2

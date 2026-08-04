@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785855720.415331,
-  "ast_hash": "5332885edfd6f32f4f43038a4a6f2bcc485337e9",
-  "semantic_hash": "5332885edfd6f32f4f43038a4a6f2bcc485337e9"
+  "mtime": 1785859310.3207657,
+  "ast_hash": "d41d4d4de446df499486ea99a41fa47669834001",
+  "semantic_hash": "d41d4d4de446df499486ea99a41fa47669834001"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -360,9 +360,9 @@
   "semantic_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02"
  },
  "shopee_api.py": {
-  "mtime": 1785345571.1193204,
-  "ast_hash": "8711e5695cf6155d49a45d5fa244d318f4faac53",
-  "semantic_hash": "8711e5695cf6155d49a45d5fa244d318f4faac53"
+  "mtime": 1785861806.9203787,
+  "ast_hash": "cfd473c8c874692bbae19192c5a984ed99460449",
+  "semantic_hash": "cfd473c8c874692bbae19192c5a984ed99460449"
  },
  "tests/conftest.py": {
   "mtime": 1783442165.6975513,
@@ -565,9 +565,9 @@
   "semantic_hash": "366f4b500e44c0d3afa08872c397f092b5b69dc9"
  },
  "tests/test_shopee.py": {
-  "mtime": 1785340789.5286279,
-  "ast_hash": "c7644a99220a95727034968a1aa091c513f536d1",
-  "semantic_hash": "c7644a99220a95727034968a1aa091c513f536d1"
+  "mtime": 1785861881.6760156,
+  "ast_hash": "49063e7e28d75a4aa397c0cb89f3e1ad835e70f3",
+  "semantic_hash": "49063e7e28d75a4aa397c0cb89f3e1ad835e70f3"
  },
  "tests/test_validar_obsidian.py": {
   "mtime": 1784737273.0854487,
