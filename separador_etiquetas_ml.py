@@ -2067,23 +2067,38 @@ def main() -> None:
         return
 
     if comando == "substatus":
-        # Diagnostico: QUAIS substatus existem hoje na conta, com a contagem.
-        # Existe porque o nome do substatus e um contrato do ML que so a conta
-        # real confirma — foi assim que se conferiu que "Informe a NF-e" e o
-        # `invoice_pending` do SUBSTATUS_NF_PENDENTE. Se um dia o alerta de
-        # NF-e parar de avisar, rode isto ANTES de mexer no codigo: o nome pode
-        # ter mudado do lado deles.
+        # Diagnostico: QUAIS substatus existem na conta agora, com a contagem, e
+        # o DESPACHO de cada envio parado em "Informe a NF-e".
+        #
+        # Duas perguntas, porque sao as duas duvidas reais: (1) o nome do
+        # substatus e contrato do ML, so a conta real confirma — foi assim que se
+        # conferiu que "Informe a NF-e" e o `invoice_pending`; (2) "sera que o
+        # alerta vai me avisar de venda de AMANHA?". O bloco de despacho responde
+        # a segunda mostrando, envio por envio, quem casa com HOJE (que e o unico
+        # que o alerta dispara — mesma regra do ready_to_print, ver
+        # `_de_hoje_e_novo` no bot).
+        #
+        # Se um dia o alerta de NF-e parar de avisar, rode isto ANTES de mexer no
+        # codigo: o nome pode ter mudado do lado deles.
         pedidos = buscar_pedidos(token, cred["seller_id"], dias=DIAS_JANELA_ALERTA_CLI)
         contagem: dict[str, int] = defaultdict(int)
+        pendentes_nf: list[tuple[int, dict]] = []
         print(f"Consultando o envio de {len(pedidos)} pedido(s)...")
+
+        def _envio_do(ped):
+            sid = (ped.get("shipping") or {}).get("id")
+            return (sid, buscar_envio(token, sid)) if sid else (None, None)
+
         with ThreadPoolExecutor(max_workers=20) as ex:
-            for env in ex.map(lambda p: buscar_envio(
-                    token, (p.get("shipping") or {}).get("id")) if (p.get("shipping") or {}).get("id") else None,
-                    pedidos):
+            for sid, env in ex.map(_envio_do, pedidos):
                 if env is None:
                     contagem["(a API nao respondeu)"] += 1
                     continue
-                contagem[f"{env.get('status') or '?'} / {env.get('substatus') or '(sem substatus)'}"] += 1
+                sub = env.get("substatus") or "(sem substatus)"
+                contagem[f"{env.get('status') or '?'} / {sub}"] += 1
+                if sub == SUBSTATUS_NF_PENDENTE:
+                    pendentes_nf.append((sid, env))
+
         print("\nsubstatus encontrados (status / substatus):")
         for rotulo, n in sorted(contagem.items(), key=lambda x: -x[1]):
             marca = ""
@@ -2092,6 +2107,17 @@ def main() -> None:
             elif rotulo.endswith(f"/ {SUBSTATUS_NF_PENDENTE}"):
                 marca = "   <- alerta de NF-e pendente"
             print(f"  {n:>4}  {rotulo}{marca}")
+
+        hoje = _hoje_br()
+        print(f'\ndespacho dos envios em "Informe a NF-e" (hoje = {hoje}):')
+        if not pendentes_nf:
+            print("  nenhum agora — nada a avisar (e nada a conferir aqui).")
+        for sid, env in pendentes_nf:
+            bruto = _prazo_do_envio(env) or ((_sla(token, sid) or {}).get("expected_date") or "")
+            dia = _data_despacho(bruto) or "(sem data)"
+            print(f"  envio {sid}  despacho {dia}"
+                  + ("   <- HOJE: o alerta avisaria" if dia == hoje
+                     else "   (outro dia: NAO avisa)"))
         return
 
     if comando in ("envios", "resumo"):
