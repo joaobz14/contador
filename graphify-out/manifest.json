@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785854787.459377,
-  "ast_hash": "0e7717ba8debf9b3834019dd234cb5c98d6d9bda",
-  "semantic_hash": "0e7717ba8debf9b3834019dd234cb5c98d6d9bda"
+  "mtime": 1785859242.6343625,
+  "ast_hash": "34083029138b3f75e4ddff2b8e7be19cc327cd2f",
+  "semantic_hash": "34083029138b3f75e4ddff2b8e7be19cc327cd2f"
  },
  "CLAUDE.md": {
-  "mtime": 1785854787.4585276,
-  "ast_hash": "af775dc8bfa4279d926de5450207c548e22bc929",
-  "semantic_hash": "af775dc8bfa4279d926de5450207c548e22bc929"
+  "mtime": 1785859242.6327152,
+  "ast_hash": "642bad5e5a18082306e4f15cd1e02a7d1d9e55c7",
+  "semantic_hash": "642bad5e5a18082306e4f15cd1e02a7d1d9e55c7"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785854787.4608831,
-  "ast_hash": "062ec472668ba374557b4b180858af9002c4ba49",
-  "semantic_hash": "062ec472668ba374557b4b180858af9002c4ba49"
+  "mtime": 1785855720.415331,
+  "ast_hash": "5332885edfd6f32f4f43038a4a6f2bcc485337e9",
+  "semantic_hash": "5332885edfd6f32f4f43038a4a6f2bcc485337e9"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,

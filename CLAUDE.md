@@ -541,6 +541,35 @@ em 2º plano.
   específica do dono; chat não autorizado é ignorado **em silêncio** (responder
   "não autorizado" já confirmaria que o comando existe). Falha de rede vira aviso
   no chat, nunca exceção subindo pelo handler.
+- **Contrato com o n8n (fechado com o outro lado em 2026-08-04).** O que ficou
+  acordado, para não se re-decidir daqui a um mês:
+  - **`chat_id` é uma CAPACIDADE, não um dado.** O n8n manda a resposta para o
+    chat que vier no corpo — e cai no chat do dono quando o campo falta. Logo
+    **a autorização é responsabilidade deste lado**: só pode ir para o POST um
+    `chat_id` que já passou por `_autorizado` (e pela restrição do comando).
+    Mandar um id não validado faria o n8n entregar dado da conta a um terceiro.
+    Guardião: `test_chat_id_enviado_e_o_de_quem_disparou`.
+  - **Um webhook POR FLUXO**, não um roteador — no n8n o webhook pertence ao
+    workflow, e rotear exigiria um monolito (uma função quebrada derrubaria as
+    outras). O campo `comando` continua indo no corpo, para log/conferência do
+    lado deles. Consequência aqui: **uma chave de config por comando**; passando
+    de ~3, trocar `webhook_perguntas` por um bloco `webhooks: {nome: url}`.
+  - **Nada de botão vindo do n8n.** Eles não mandam `InlineKeyboardMarkup` nem
+    `ReplyKeyboardMarkup`, porque o toque vira `callback_query` — que é update e
+    vai para o consumidor do polling (este projeto), que não conhece aquele
+    `callback_data` e não faz nada. Botão numa resposta do n8n exige handler
+    **deste lado**.
+  - **Parâmetro vai em `args`**: string crua com o que veio depois do comando,
+    já com `trim`, `""` quando não houver. Crua e não lista de propósito — a
+    sintaxe de um comando pode evoluir sem pedir mudança nos dois lados.
+  - **Um comando por função enquanto forem ≲5.** Submenu só compensa depois
+    disso (e aí exige tratar `callback_query` aqui — mais acoplamento).
+  - **Fluxo caro precisa de freio.** Os relatórios de Ads levam ~5 min e gastam
+    dinheiro (~US$ 0,04/conta, chamadas pagas de IA): o aviso imediato tem de
+    dizer que demora, o comando fica restrito ao chat do dono e o limite de
+    frequência é responsabilidade deste lado. **Esse limite tem de ser
+    PERSISTIDO** (arquivo, como o dedup do alerta) — em memória ele zera a cada
+    reinício, e o bot reinicia a cada `/atualizar`.
 - **URL de webhook é CREDENCIAL — e este repositório é público.** O webhook do
   n8n não pede token nem cabeçalho: quem tem o link dispara o fluxo (por isso o
   caminho leva um sufixo aleatório). Então a URL segue a regra dos segredos: mora

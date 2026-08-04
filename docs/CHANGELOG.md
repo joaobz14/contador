@@ -5,6 +5,12 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **Contrato com o n8n registrado** (só documentação, nada muda no que já roda).
+  Ficou acordado com o outro lado, antes de existir a 2ª função: um endereço de
+  webhook por fluxo, parâmetros num campo `args`, nada de botão vindo do n8n
+  (o toque não funcionaria), e — o que mais importa — **os relatórios de Ads
+  gastam dinheiro** (~US$ 0,04 e ~5 minutos por execução). Se um dia virarem
+  comando, ficam restritos ao seu chat e com limite de frequência.
 - **O `/perguntas` passou a mandar o seu chat id para o n8n.** Preparação para as
   próximas integrações: com o chat id no pedido, o fluxo do n8n responde a **quem
   perguntou**, em vez de ter um chat fixo escrito dentro dele. O fluxo de hoje
