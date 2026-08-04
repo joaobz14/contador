@@ -1230,6 +1230,43 @@ def main() -> None:
                 print(f"    campos: {', '.join(sorted(d.keys()))}")
         except core.SeparadorError as e:
             print(f"  nao consegui o detalhe: {e}")
+        # A pergunta decisiva: `invoice_data.status` DISTINGUE as vendas travadas
+        # das normais, ou e "pending" em toda venda nova? Se nao distinguir, usar
+        # esse campo como sinal marcaria o lote inteiro como travado — e um aviso
+        # que dispara sempre nao e aviso, e ruido.
+        prontos = [p.get("order_sn") for p in pedidos
+                   if p.get("order_status") == "READY_TO_SHIP"]
+        if prontos:
+            print(f"\ninvoice_data.status dos {len(prontos)} READY_TO_SHIP "
+                  f"(o que decide se o campo serve de sinal):")
+            por_nf: dict[str, list[str]] = {}
+            hoje = core._hoje_br()
+            for i in range(0, len(prontos), TAMANHO_LOTE):
+                try:
+                    dados = _get_shop(cred, token, "/api/v2/order/get_order_detail", {
+                        "order_sn_list": ",".join(prontos[i:i + TAMANHO_LOTE]),
+                        "response_optional_fields": "ship_by_date,invoice_data",
+                    })
+                except core.SeparadorError as e:
+                    print(f"  nao consegui o detalhe: {e}")
+                    break
+                for d in dados.get("response", {}).get("order_list", []):
+                    nf = (d.get("invoice_data") or {}).get("status") or "(sem invoice_data)"
+                    dia = _data_envio(d.get("ship_by_date"))
+                    marca = " [HOJE]" if dia == hoje else ""
+                    por_nf.setdefault(nf, []).append(f"{d.get('order_sn')} {dia}{marca}")
+            for nf, lista in sorted(por_nf.items(), key=lambda x: -len(x[1])):
+                print(f"\n  status={nf}  ({len(lista)} pedido(s))")
+                for linha in lista[:8]:
+                    print(f"    {linha}")
+                if len(lista) > 8:
+                    print(f"    ... e mais {len(lista) - 8}")
+            if len(por_nf) == 1:
+                print("\n  >> TODOS iguais: este campo NAO distingue venda travada "
+                      "de venda normal. Preciso de outro sinal.")
+            else:
+                print("\n  >> Valores DIFERENTES: o campo serve. Confira no painel "
+                      "quais estao como 'Enviar NF-e' e veja se batem.")
         print("\nMande esta saida no chat: e ela que diz qual estado usar no alerta.")
         return
 
