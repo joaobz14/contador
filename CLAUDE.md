@@ -588,6 +588,24 @@ em 2º plano.
   por conta entra na trava** — o teste `test_caminhos_que_dependem_da_conta_estao_travados`
   falha se esquecerem. A GUI não precisa: ela roda uma operação por vez
   (`ocupado`), e entre PROCESSOS quem protege são as travas de arquivo.
+- **Reiniciar o bot: NUNCA `schtasks /end` + `/run` (incidente 2026-08-04).**
+  Aquele par **não reiniciava nada**: o `rodar-bot-oculto.ps1` subia o `.bat` com
+  `Start-Process` **sem `-Wait`**, o Agendador dava a tarefa por terminada no 1º
+  segundo e o bot ficava **órfão** da árvore da tarefa — o `/end` não tinha o que
+  matar e o `/run` subia um **segundo** bot por cima do primeiro (409 do Telegram
+  não derruba nenhum dos dois, e o **antigo** seguia respondendo: "reiniciei e a
+  versão não mudou"). Hoje: `-Wait` no lançador **e** `atalhos/reiniciar-bot.ps1`
+  (+ `Reiniciar Bot.bat`), que não depende disso — identifica os processos pelo
+  **nome** (`python`/`pythonw` com `bot_telegram` na linha de comando; filtrar só
+  pela linha de comando faria o próprio PowerShell do script se matar), derruba
+  **o lançador primeiro** (senão o laço ressuscita o bot antigo em 15s), espera
+  a fila esvaziar e sobe **um** só. A receita vive em `RECEITA_REINICIO`, um
+  lugar só — ela estava duplicada em 3 e consertar um deixaria a armadilha viva
+  (guardião em `tests/test_bot_atualizar.py`). **Lição geral: "disparar e sair"
+  (`Start-Process` sem `-Wait`, `nohup`, `&`) quebra qualquer supervisor que
+  gerencie por árvore de processos** — e o sintoma não é erro, é um comando que
+  parece funcionar e não faz nada. O `/atualizar` não sofre disso porque não mata
+  ninguém: o próprio bot sai e o laço do `.bat` o traz de volta.
 - **`/atualizar` (git pull pelo Telegram) NÃO dispara processo para se
   reiniciar.** O bot roda sob o `Iniciar Bot (auto).bat`, que é um **laço**: se o
   processo morre, ele sobe de novo 15s depois, já com o código novo. Então o

@@ -87,6 +87,13 @@ duplicata eventual (ex.: tarefa do login + clique manual no `.bat`) é
 autolimitada pelo próprio Telegram (erro 409 ao pollar duas instâncias do
 mesmo bot).
 
+> [!warning] Reiniciar: use `atalhos\Reiniciar Bot.bat`
+> O par `schtasks /end` + `/run` **não reiniciava nada** (incidente 2026-08-04):
+> o lançador subia o `.bat` sem `-Wait`, a tarefa era dada por terminada e o bot
+> ficava **órfão** — o `/end` não matava nada e o `/run` subia um **segundo**
+> bot; os dois brigavam pelo `getUpdates` e o **antigo** continuava respondendo.
+> O script novo derruba o que estiver de pé (lançador primeiro) e sobe um só.
+
 > [!bug] Histórico: por que não é mais a tela quem sobe o bot
 > A 1ª versão fazia `separador_gui.py` subir o bot sozinho ao abrir (lock de
 > PID em `bot.lock`, checado via `tasklist`). Dois bugs reais de **mesma

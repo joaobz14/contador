@@ -255,7 +255,7 @@ def test_sem_lancador_automatico_nao_sai_do_ar(monkeypatch, tmp_path):
     saiu: list = []
     enviadas = _rodar(monkeypatch, (True, "Atualizado: a → b."), sem_pausa=None, saiu=saiu)
     assert saiu == [], "nao pode sair sem quem o reinicie"
-    assert "schtasks" in enviadas[-1][1]
+    assert bot.RECEITA_REINICIO in enviadas[-1][1]
     assert not (tmp_path / "reinicio.json").exists()
 
 
@@ -298,3 +298,37 @@ def test_falha_ao_avisar_nao_impede_o_bot_de_subir(monkeypatch, tmp_path):
 def test_atualizar_esta_no_menu_e_no_handler():
     nomes = {c for c, _ in bot.COMANDOS_MENU}
     assert "atualizar" in nomes
+
+
+# ------------------------------------------------- receita de reinicio manual
+def test_receita_de_reinicio_nao_volta_ao_par_schtasks():
+    """Regressao (2026-08-04): a receita antiga era `schtasks /end` + `/run`, e
+    ela NAO reiniciava o bot. O lancador subia o .bat sem `-Wait`, entao a
+    tarefa era dada por terminada no primeiro segundo e o bot ficava ORFAO: o
+    `/end` nao tinha o que matar e o `/run` subia um SEGUNDO bot por cima do
+    primeiro. Os dois brigavam pelo getUpdates (409) e o ANTIGO seguia
+    respondendo — o sintoma era "reiniciei e o /versao insiste na versao velha".
+    Voltar a ensinar isso reintroduz o bug para quem seguir a mensagem."""
+    from pathlib import Path
+
+    assert "schtasks" not in bot.RECEITA_REINICIO
+    assert "Reiniciar Bot.bat" in bot.RECEITA_REINICIO
+
+    raiz = Path(bot.__file__).resolve().parent
+    script = raiz / "atalhos" / "reiniciar-bot.ps1"
+    assert script.exists(), "a receita aponta para um script que precisa existir"
+    assert (raiz / "atalhos" / "Reiniciar Bot.bat").exists()
+
+    # o lancador precisa do -Wait: sem ele a tarefa "termina" e o bot fica orfao
+    lancador = (raiz / "atalhos" / "rodar-bot-oculto.ps1").read_text(encoding="utf-8")
+    start = [ln for ln in lancador.splitlines()
+             if ln.strip().startswith("Start-Process")]
+    assert start and all("-Wait" in ln for ln in start), \
+        "Start-Process sem -Wait deixa o bot orfao da tarefa do Agendador"
+
+    # e nenhuma instrucao viva (fora de comentario) pode ensinar o par antigo
+    for arq in (Path(bot.__file__), raiz / "Atualizar programa.bat"):
+        vivas = [ln for ln in arq.read_text(encoding="utf-8").splitlines()
+                 if "schtasks /end" in ln
+                 and not ln.strip().startswith(("#", "REM", "//"))]
+        assert not vivas, f"{arq.name} ainda ensina o par schtasks: {vivas}"

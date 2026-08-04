@@ -59,6 +59,16 @@ Histórico das principais mudanças do projeto.
   `/perguntas` só aparece no menu de quem pode usá-lo.
 
 ### Corrigido
+- **Reiniciar o bot não reiniciava nada.** O par de comandos que o `/versao`
+  mandava rodar (`schtasks /end` + `/run`) não funcionava: o lançador soltava o
+  bot e saía, então para o Agendador a tarefa já tinha terminado e o bot ficava
+  fora do alcance dela. O `/end` não matava nada e o `/run` subia um **segundo**
+  bot por cima do primeiro — os dois brigavam, e o **antigo** continuava
+  respondendo. Por isso a versão nunca mudava, mesmo "reiniciando".
+  - Agora existe **`atalhos\Reiniciar Bot.bat`**: um duplo clique derruba o que
+    estiver de pé (inclusive uma instância antiga perdida) e sobe **um** só.
+  - O `/versao` e o `/atualizar` passaram a indicar esse atalho, e o
+    `Atualizar programa.bat` usa ele para reiniciar.
 - **Sincronizador do grafo abortava com arquivo novo** (só afeta o
   desenvolvimento). A correção anterior ensinou o coletor a enxergar arquivo
   ainda não commitado, mas a *validação* continuou perguntando de outro jeito:

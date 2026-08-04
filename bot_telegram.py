@@ -1015,8 +1015,7 @@ async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"A pasta ja esta em: {no_disco}",
             "",
             "⚠️ O bot esta DESATUALIZADO — reinicie para pegar a versao nova:",
-            'schtasks /end /tn "Contador - Bot do Telegram (login)"',
-            'schtasks /run /tn "Contador - Bot do Telegram (login)"',
+            RECEITA_REINICIO,
         ]
     else:
         linhas.append("✅ Em dia com a pasta.")
@@ -1038,6 +1037,14 @@ async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # define a variavel). Sem ela, sair deixaria o bot FORA DO AR — entao o comando
 # atualiza e avisa que o reinicio tem de ser na mao.
 ARQUIVO_REINICIO = core.PASTA_DADOS / "reinicio_pendente.json"
+# Como reiniciar o bot NA MAO, quando o /atualizar nao pode fazer sozinho.
+# NAO e mais o par `schtasks /end` + `/run`: ele nao funcionava quando o bot
+# ficava orfao da tarefa (o lancador subia sem `-Wait`, ver
+# atalhos/rodar-bot-oculto.ps1) — o `/end` nao tinha o que matar e o `/run`
+# subia um SEGUNDO bot por cima do primeiro. Os dois brigavam pelo getUpdates e
+# o ANTIGO seguia respondendo: "reiniciei e a versao nao mudou". O script novo
+# identifica e derruba o que estiver de pe antes de subir um so.
+RECEITA_REINICIO = "De um duplo clique em: atalhos\\Reiniciar Bot.bat"
 TIMEOUT_GIT = 120
 
 
@@ -1164,9 +1171,7 @@ async def cmd_atualizar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             chat_id, f"{texto}\n\n⚠️ Eu NAO consigo me reiniciar sozinho (fui "
                      "aberto sem o lancador automatico), entao ainda estou "
-                     "rodando o codigo ANTIGO. Reinicie no PC:\n"
-                     'schtasks /end /tn "Contador - Bot do Telegram (login)"\n'
-                     'schtasks /run /tn "Contador - Bot do Telegram (login)"')
+                     f"rodando o codigo ANTIGO. Reinicie no PC:\n{RECEITA_REINICIO}")
         return
 
     # Deixa o recado para o EU DE DEPOIS do reinicio confirmar que voltou (ver

@@ -619,7 +619,10 @@ def test_versao_avisa_quando_o_bot_esta_desatualizado(monkeypatch, tmp_path):
 
     assert "abc1234" in respostas[0] and "9999999" in respostas[0]
     assert "DESATUALIZADO" in respostas[0]
-    assert "schtasks" in respostas[0], "tem de dizer COMO resolver"
+    assert bot.RECEITA_REINICIO in respostas[0], "tem de dizer COMO resolver"
+    assert "schtasks" not in respostas[0], (
+        "o par schtasks /end + /run nao reiniciava o bot (ele ficava orfao da "
+        "tarefa) — ver test_receita_de_reinicio_nao_volta_ao_par_schtasks")
 
 
 def test_versao_confirma_quando_esta_em_dia(monkeypatch, tmp_path):

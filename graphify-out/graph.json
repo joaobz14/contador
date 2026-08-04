@@ -721,7 +721,7 @@
    "label": "cmd_loja()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1246",
+   "source_location": "L1251",
    "_origin": "ast",
    "id": "bot_telegram_cmd_loja",
    "community": 1,
@@ -735,7 +735,7 @@
    "label": "cmd_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1258",
+   "source_location": "L1263",
    "_origin": "ast",
    "id": "bot_telegram_cmd_dia",
    "community": 1,
@@ -749,7 +749,7 @@
    "label": "cmd_detalhar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1267",
+   "source_location": "L1272",
    "_origin": "ast",
    "id": "bot_telegram_cmd_detalhar",
    "community": 1,
@@ -763,7 +763,7 @@
    "label": "cb_botao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1277",
+   "source_location": "L1282",
    "_origin": "ast",
    "id": "bot_telegram_cb_botao",
    "community": 1,
@@ -777,7 +777,7 @@
    "label": "cmd_desconhecido()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1341",
+   "source_location": "L1346",
    "_origin": "ast",
    "id": "bot_telegram_cmd_desconhecido",
    "community": 1,
@@ -791,7 +791,7 @@
    "label": "job_bom_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1346",
+   "source_location": "L1351",
    "_origin": "ast",
    "id": "bot_telegram_job_bom_dia",
    "community": 1,
@@ -805,7 +805,7 @@
    "label": "_agendar_aviso()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1367",
+   "source_location": "L1372",
    "_origin": "ast",
    "id": "bot_telegram_agendar_aviso",
    "community": 1,
@@ -819,7 +819,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1442",
+   "source_location": "L1447",
    "_origin": "ast",
    "id": "bot_telegram_main",
    "community": 1,
@@ -833,7 +833,7 @@
    "label": "_pausar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1509",
+   "source_location": "L1514",
    "_origin": "ast",
    "id": "bot_telegram_pausar",
    "community": 1,
@@ -18368,7 +18368,7 @@
    "label": "_testar_alerta_pos_horario_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1479",
+   "source_location": "L1484",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19894,7 +19894,7 @@
    "label": "_contas_do_resumo()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1208",
+   "source_location": "L1213",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19908,7 +19908,7 @@
    "label": "_resumo_para_envio()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1217",
+   "source_location": "L1222",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19922,7 +19922,7 @@
    "label": "_testar_resumo_vendas_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1523",
+   "source_location": "L1528",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20412,7 +20412,7 @@
    "label": "_ordem_de_separacao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1233",
+   "source_location": "L1238",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20622,7 +20622,7 @@
    "label": "test_versao_confirma_quando_esta_em_dia()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L625",
+   "source_location": "L628",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20636,7 +20636,7 @@
    "label": "_update_msg()",
    "file_type": "code",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L636",
+   "source_location": "L639",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -21868,7 +21868,7 @@
    "label": "_comandos_do_chat()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1405",
+   "source_location": "L1410",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -21882,7 +21882,7 @@
    "label": "_publicar_comandos()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1412",
+   "source_location": "L1417",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22418,7 +22418,7 @@
    "label": "_git()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1044",
+   "source_location": "L1051",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22432,7 +22432,7 @@
    "label": "_primeira_linha()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1059",
+   "source_location": "L1066",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22446,7 +22446,7 @@
    "label": "_puxar_atualizacao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1072",
+   "source_location": "L1079",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22460,7 +22460,7 @@
    "label": "_atualizar_sem_atropelar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1123",
+   "source_location": "L1130",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22474,7 +22474,7 @@
    "label": "cmd_atualizar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1139",
+   "source_location": "L1146",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22488,7 +22488,7 @@
    "label": "_avisar_reinicio()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1188",
+   "source_location": "L1193",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22502,7 +22502,7 @@
    "label": "_ao_iniciar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1433",
+   "source_location": "L1438",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -22787,6 +22787,28 @@
    "id": "tests_test_bot_perguntas_test_chat_id_enviado_e_o_de_quem_disparou",
    "community": 78,
    "norm_label": "test_chat_id_enviado_e_o_de_quem_disparou()"
+  },
+  {
+   "label": "test_receita_de_reinicio_nao_volta_ao_par_schtasks()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_atualizar.py",
+   "source_location": "L304",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_atualizar_test_receita_de_reinicio_nao_volta_ao_par_schtasks",
+   "community": 79,
+   "norm_label": "test_receita_de_reinicio_nao_volta_ao_par_schtasks()"
+  },
+  {
+   "label": "REINICIAR O BOT: O PAR schtasks /end + /run NAO FUNCIONAVA (incidente 2026-08-04). Sintoma relatado pelo dono: '/versao acusa desatualizado, rodei os comandos e mesmo assim nao atualizou'. Causa: `rodar-bot-oculto.ps1` subia o 'Iniciar Bot (auto).bat' com `Start-Process` SEM `-Wait` — o PowerShell saia no primeiro segundo, o Agendador dava a tarefa por TERMINADA e o cmd.exe do laco mais o python.exe do bot ficavam ORFAOS, fora da arvore da tarefa. Consequencia dupla: o `/end` nao tinha o que matar E o `/run` subia um SEGUNDO bot por cima do primeiro. Os dois pollavam o mesmo token (409 do Telegram, que NAO derruba nenhum dos dois) e o ANTIGO continuava respondendo — por isso a versao nunca mudava. A instrucao errada estava em TRES lugares (a mensagem do /versao, a do /atualizar sem lancador e o 'Atualizar programa.bat'), entao consertar so um deixaria a armadilha viva. Correcao: (a) `-Wait` no lancador, para a tarefa representar a vida do bot; (b) `atalhos/reiniciar-bot.ps1` + 'Reiniciar Bot.bat', que NAO dependem disso — identificam os processos por nome (python/pythonw com 'bot_telegram' na linha de comando) e pelo lancador, derrubam TUDO (lancador primeiro, senao o laco ressuscita o bot antigo em 15s), esperam a fila esvaziar e sobem UM so; (c) as tres mensagens passaram a apontar para o script (RECEITA_REINICIO, um lugar so). Detalhe que quase virou bug: filtrar processo por `CommandLine -like '*bot_telegram*'` sem restringir o NOME faria o proprio PowerShell do script entrar na lista (o filtro aparece na linha de comando dele) e ele se mataria. LICAO GERAL: 'disparar e sair' (Start-Process sem -Wait, nohup, &) quebra QUALQUER supervisor que gerencie por arvore de processos — e o sintoma nao e um erro, e um comando que parece funcionar e nao faz nada. O /atualizar nunca teve esse problema porque nao mata ninguem: o proprio bot sai e o laco do .bat o traz de volta.",
+   "file_type": "concept",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "id": "reinicio_do_bot_orfao",
+   "_origin": "manual"
   }
  ],
  "links": [
@@ -36050,6 +36072,28 @@
    "confidence_score": 0.85
   },
   {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_agendador_tarefas_logon",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o -Wait faltava no lancador da tarefa",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_atualizar_remoto",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o /atualizar nao sofre disso: o bot sai e o laco o traz de volta",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
    "relation": "conceptually_related_to",
    "confidence": "MANUAL",
    "source_file": "historico.py",
@@ -36645,7 +36689,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1367",
+   "source_location": "L1372",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_agendar_aviso",
@@ -36665,7 +36709,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1433",
+   "source_location": "L1438",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_ao_iniciar",
@@ -36675,7 +36719,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1123",
+   "source_location": "L1130",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_atualizar_sem_atropelar",
@@ -36695,7 +36739,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1188",
+   "source_location": "L1193",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_avisar_reinicio",
@@ -36725,7 +36769,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1277",
+   "source_location": "L1282",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cb_botao",
@@ -36745,7 +36789,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1139",
+   "source_location": "L1146",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_atualizar",
@@ -36765,7 +36809,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1341",
+   "source_location": "L1346",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_desconhecido",
@@ -36775,7 +36819,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1267",
+   "source_location": "L1272",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_detalhar",
@@ -36785,7 +36829,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1258",
+   "source_location": "L1263",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_dia",
@@ -36815,7 +36859,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1246",
+   "source_location": "L1251",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_loja",
@@ -36905,7 +36949,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1405",
+   "source_location": "L1410",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_comandos_do_chat",
@@ -36945,7 +36989,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1208",
+   "source_location": "L1213",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_contas_do_resumo",
@@ -37065,7 +37109,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1044",
+   "source_location": "L1051",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_git",
@@ -37115,7 +37159,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1346",
+   "source_location": "L1351",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_job_bom_dia",
@@ -37165,7 +37209,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1442",
+   "source_location": "L1447",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_main",
@@ -37175,7 +37219,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1233",
+   "source_location": "L1238",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_ordem_de_separacao",
@@ -37195,7 +37239,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1509",
+   "source_location": "L1514",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_pausar",
@@ -37215,7 +37259,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1059",
+   "source_location": "L1066",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_primeira_linha",
@@ -37235,7 +37279,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1412",
+   "source_location": "L1417",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_publicar_comandos",
@@ -37245,7 +37289,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1072",
+   "source_location": "L1079",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_puxar_atualizacao",
@@ -37265,7 +37309,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1217",
+   "source_location": "L1222",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_resumo_para_envio",
@@ -37335,7 +37379,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1479",
+   "source_location": "L1484",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_alerta_pos_horario_agora",
@@ -37345,7 +37389,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1523",
+   "source_location": "L1528",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_resumo_vendas_agora",
@@ -41265,7 +41309,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L625",
+   "source_location": "L628",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
@@ -41285,7 +41329,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_alerta.py",
-   "source_location": "L636",
+   "source_location": "L639",
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_update_msg",
@@ -41519,6 +41563,16 @@
    "weight": 1.0,
    "source": "tests_test_bot_atualizar",
    "target": "tests_test_bot_atualizar_test_pull_que_falha_explica_sem_derrubar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_atualizar.py",
+   "source_location": "L304",
+   "weight": 1.0,
+   "source": "tests_test_bot_atualizar",
+   "target": "tests_test_bot_atualizar_test_receita_de_reinicio_nao_volta_ao_par_schtasks",
    "confidence_score": 1.0
   },
   {
@@ -51794,6 +51848,28 @@
    "confidence_score": 1.0
   },
   {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_telegram_cmd_atualizar",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "mesma receita no caminho sem lancador",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_telegram_cmd_versao",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "a mensagem apontava para uma receita que nao funcionava",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
    "relation": "rationale_for",
    "confidence": "EXTRACTED",
    "source_file": "relatorio.py",
@@ -55438,5 +55514,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "9f5750748527910a82cbfd0b3ce828b07d01751f"
+ "built_at_commit": "4ce6f37e0bedbea2438e2859f2acbdd581d14448"
 }

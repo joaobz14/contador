@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 348,
- "edge_count": 631,
+ "node_count": 349,
+ "edge_count": 635,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4003,6 +4003,14 @@
    "source_location": null,
    "id": "alerta_nf_pendente",
    "_origin": "manual"
+  },
+  {
+   "label": "REINICIAR O BOT: O PAR schtasks /end + /run NAO FUNCIONAVA (incidente 2026-08-04). Sintoma relatado pelo dono: '/versao acusa desatualizado, rodei os comandos e mesmo assim nao atualizou'. Causa: `rodar-bot-oculto.ps1` subia o 'Iniciar Bot (auto).bat' com `Start-Process` SEM `-Wait` — o PowerShell saia no primeiro segundo, o Agendador dava a tarefa por TERMINADA e o cmd.exe do laco mais o python.exe do bot ficavam ORFAOS, fora da arvore da tarefa. Consequencia dupla: o `/end` nao tinha o que matar E o `/run` subia um SEGUNDO bot por cima do primeiro. Os dois pollavam o mesmo token (409 do Telegram, que NAO derruba nenhum dos dois) e o ANTIGO continuava respondendo — por isso a versao nunca mudava. A instrucao errada estava em TRES lugares (a mensagem do /versao, a do /atualizar sem lancador e o 'Atualizar programa.bat'), entao consertar so um deixaria a armadilha viva. Correcao: (a) `-Wait` no lancador, para a tarefa representar a vida do bot; (b) `atalhos/reiniciar-bot.ps1` + 'Reiniciar Bot.bat', que NAO dependem disso — identificam os processos por nome (python/pythonw com 'bot_telegram' na linha de comando) e pelo lancador, derrubam TUDO (lancador primeiro, senao o laco ressuscita o bot antigo em 15s), esperam a fila esvaziar e sobem UM so; (c) as tres mensagens passaram a apontar para o script (RECEITA_REINICIO, um lugar so). Detalhe que quase virou bug: filtrar processo por `CommandLine -like '*bot_telegram*'` sem restringir o NOME faria o proprio PowerShell do script entrar na lista (o filtro aparece na linha de comando dele) e ele se mataria. LICAO GERAL: 'disparar e sair' (Start-Process sem -Wait, nohup, &) quebra QUALQUER supervisor que gerencie por arvore de processos — e o sintoma nao e um erro, e um comando que parece funcionar e nao faz nada. O /atualizar nunca teve esse problema porque nao mata ninguem: o proprio bot sai e o laco do .bat o traz de volta.",
+   "file_type": "concept",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "id": "reinicio_do_bot_orfao",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -5519,6 +5527,28 @@
    "source": "registro_redige_segredos",
    "target": "separador_gui_separadorapp_erro",
    "confidence_score": 0.85
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_agendador_tarefas_logon",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o -Wait faltava no lancador da tarefa",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_atualizar_remoto",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o /atualizar nao sofre disso: o bot sai e o laco o traz de volta",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
   },
   {
    "relation": "conceptually_related_to",
@@ -7751,6 +7781,28 @@
    "source": "registro_redige_segredos",
    "target": "registro_sem_segredos",
    "confidence_score": 1.0
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_telegram_cmd_atualizar",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "mesma receita no caminho sem lancador",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
+  },
+  {
+   "source": "reinicio_do_bot_orfao",
+   "target": "bot_telegram_cmd_versao",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "a mensagem apontava para uma receita que nao funcionava",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null
   },
   {
    "relation": "rationale_for",

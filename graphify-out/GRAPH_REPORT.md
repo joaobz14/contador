@@ -69,6 +69,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mesma intermitência por ordem-de-stage do #208, pela porta dos fundos).
   Depois do `--update`: **1631 nós, 3067 arestas, 0 órfãs**.
 
+- **2026-08-04 (incidente) — reiniciar o bot não reiniciava nada.** Relato do
+  dono: *"mandei /versao e deu aviso de desatualizado, rodei os comandos e mesmo
+  assim não atualizou"*. O `rodar-bot-oculto.ps1` subia o `.bat` com
+  `Start-Process` **sem `-Wait`**: o PowerShell saía no primeiro segundo, o
+  Agendador dava a tarefa por terminada e o bot ficava **órfão** da árvore da
+  tarefa. Consequência dupla — o `/end` não tinha o que matar **e** o `/run`
+  subia um **segundo** bot por cima do primeiro; os dois pollavam o mesmo token
+  (409, que não derruba nenhum) e o **antigo** seguia respondendo. A receita
+  errada estava em **três** lugares (mensagem do `/versao`, do `/atualizar` sem
+  lançador, e o `Atualizar programa.bat`), então consertar um só deixaria a
+  armadilha viva. Nó novo: `reinicio_do_bot_orfao`. Lição geral registrada nele:
+  **"disparar e sair" quebra qualquer supervisor que gerencie por árvore de
+  processos** — e o sintoma não é um erro, é um comando que parece funcionar e
+  não faz nada. O `/atualizar` nunca sofreu disso porque não mata ninguém: o
+  próprio bot sai e o laço do `.bat` o traz de volta.
+  Depois do `--update`: **1696 nós, 3190 arestas, 0 órfãs**.
+
 - **2026-08-04 — `/perguntas` manda o `chat_id` (preparação para as próximas
   integrações do n8n).** Sem ele, cada fluxo do n8n precisa ter um chat **fixo**
   escrito por dentro — o que funciona com um comando e um chat, e vira dívida
