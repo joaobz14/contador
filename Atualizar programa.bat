@@ -75,14 +75,16 @@ if errorlevel 1 (
 )
 
 echo Reiniciando o bot para ele pegar a versao nova...
-schtasks /end /tn "%TAREFA%" >nul 2>&1
-schtasks /run /tn "%TAREFA%" >nul 2>&1
+REM NAO usar "schtasks /end + /run" aqui: quando o bot fica orfao da tarefa,
+REM o /end nao tem o que matar e o /run sobe um SEGUNDO bot por cima do
+REM primeiro -- os dois brigam pelo getUpdates e o ANTIGO continua
+REM respondendo ("reiniciei e a versao nao mudou", achado 2026-08-04). O
+REM script abaixo identifica e derruba o que estiver de pe antes de subir um so.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0atalhos\reiniciar-bot.ps1"
 if errorlevel 1 (
-    echo  Nao consegui reiniciar o bot automaticamente. Faca na mao:
-    echo    schtasks /end /tn "%TAREFA%"
-    echo    schtasks /run /tn "%TAREFA%"
+    echo  Nao consegui reiniciar o bot automaticamente. Veja a mensagem acima.
 ) else (
-    echo Bot reiniciado. Mande /menu no Telegram para confirmar.
+    echo Bot reiniciado. Mande /versao no Telegram para confirmar.
 )
 
 echo.
