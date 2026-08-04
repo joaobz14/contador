@@ -380,9 +380,16 @@ quem sobe o bot.
   `desde` (registro de lote anterior de mesmo nome não responde por este) e exige
   pronunciamento sobre **todos** os nossos arquivos. Sem mural (monitor antigo),
   ou com mural ilegível/parcial, tudo degrada para as **pistas** de antes, que o
-  monitor **já produzia**: o arquivo **sumir** (ele apaga após imprimir, opção
-  "Excluir após imprimir") e o **log dele avançar** (`~/zebra_usb_log.txt`),
-  que cobre o lote grande em que o ZIP só some na última etiqueta. A tela
+  monitor **já produzia**: o arquivo **sair da pasta** (o que ele imprime, ele
+  tira dali — opção "Excluir após imprimir") e o **log dele avançar**
+  (`~/zebra_usb_log.txt`), que cobre o lote grande em que o ZIP só some na última
+  etiqueta. **Sair da pasta ≠ ser apagado** (app Zebra ≥ v1.26.2): o sucesso é
+  **movido** para `~/zebra_usb_concluidos/AAAA-MM-DD/`, retenção para reimprimir
+  quando a impressora falha FISICAMENTE depois de o spooler aceitar o job. A
+  pista não muda (saiu = impresso), mas na investigação de um lote perdido **o
+  arquivo existe** — procure lá antes de dá-lo por perdido. O que a pista exige é
+  a **assimetria**, contratada dos dois lados: **sucesso sai, falha permanece**;
+  se a falha também saísse da pasta, seria lida aqui como impressa. A tela
   descobre quais arquivos são dela por **diferença de dois instantâneos da
   pasta** (`saidas_na_pasta` antes/depois) — `gerar_zip_lotes` devolve os
   pendentes, não o caminho. **Corrida conhecida:** o monitor varre a cada 1s e

@@ -369,9 +369,16 @@ em 2º plano.
   indistinguível de um lote demorado. Ele também é a única fonte que funciona com
   a opção **"Excluir após imprimir" DESLIGADA** (sem ela o arquivo nunca some).
   Sem o mural (**monitor antigo**), tudo degrada para as duas **pistas** de antes,
-  que o monitor **já produzia**: o arquivo **sumir** (ele apaga após imprimir) e o
-  **log dele avançar** (`ARQUIVO_LOG_MONITOR`), que cobre o lote grande em que o
-  ZIP só some na última etiqueta. O corte por `desde` no mural não é opcional:
+  que o monitor **já produzia**: o arquivo **sair da pasta** (o que ele imprime,
+  ele tira dali) e o **log dele avançar** (`ARQUIVO_LOG_MONITOR`), que cobre o
+  lote grande em que o ZIP só some na última etiqueta. **Sair da pasta ≠ ser
+  apagado** (app Zebra **≥ v1.26.2**): o que imprimiu com sucesso é **movido**
+  para `~/zebra_usb_concluidos/AAAA-MM-DD/` — retenção para reimprimir quando a
+  impressora falha FISICAMENTE depois de o spooler aceitar. Para a pista dá no
+  mesmo (saiu = impresso), mas ao investigar um lote perdido **o arquivo existe**:
+  procure lá antes de concluir que sumiu. O que a pista exige é a **assimetria**,
+  contratada dos dois lados: **sucesso sai da pasta, falha permanece nela** — se
+  a falha também saísse, ela viraria "impresso" aqui. O corte por `desde` no mural não é opcional:
   ele guarda os últimos trabalhos, e um registro **anterior** de mesmo nome não
   pode responder pela impressão atual. Descobre quais arquivos são dela por **diferença de dois
   instantâneos** (`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes`

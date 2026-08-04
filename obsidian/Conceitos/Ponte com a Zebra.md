@@ -37,7 +37,7 @@ consulta, **nesta ordem**:
    `~/zebra_usb_status.json`, que o monitor publica a cada arquivo processado
    (`registrar_status_trabalho`, no outro repo) com `{arquivo, quando, etiquetas,
    ok}` → `impresso` ou **`falhou`**;
-2. **Pista** — o arquivo **some** (ele apaga após imprimir) → `impresso`;
+2. **Pista** — o arquivo **sai da pasta** (o que ele imprime, ele tira dali) → `impresso`;
 3. **Pista** — o **log dele avança** (`~/zebra_usb_log.txt`) → `imprimindo` (cobre o
    lote grande, em que o ZIP só some na última etiqueta);
 - nenhum dos três → `sem_sinal` (provavelmente fechado) ou `sem_saida` (não sei).
@@ -54,6 +54,22 @@ consulta, **nesta ordem**:
 > (parcial = ainda em curso). Mural ausente, ilegível ou parcial **degrada para as
 > pistas** — compatibilidade com monitor antigo sai de graça, e este canal só pode
 > **adicionar** certeza, nunca tirar.
+
+> [!info] Sair da pasta ≠ ser apagado (app Zebra ≥ v1.26.2)
+> O sucesso não é mais apagado: é **movido** para `~/zebra_usb_concluidos/AAAA-MM-DD/`,
+> retenção para reimprimir quando a impressora falha **fisicamente** depois de o
+> spooler aceitar o job (papel preso, ribbon rasgado) — antes, nesse caso, o arquivo
+> já tinha sido apagado. Para a pista 2 dá no mesmo (saiu = impresso); muda **onde
+> procurar** o arquivo depois: num lote perdido, ele **existe** — veja lá antes de
+> dá-lo por perdido (atalho: bandeja do app → "Abrir pasta de concluídos").
+>
+> O que a pista exige é a **assimetria**, contratada dos dois lados: **sucesso sai
+> da pasta, falha permanece nela**. Se um dia a falha também passasse a ser movida
+> (a ideia de uma pasta `.erros/`, considerada e descartada lá), ela seria lida
+> aqui como **impressa** — lote falho aparecendo como concluído na tela.
+> A pasta fica **fora** da vigiada e na raiz do perfil de propósito: o OneDrive não
+> sincroniza (o *Known Folder Move* nunca redireciona `C:\Users\<você>`) e um
+> arquivo já impresso nunca pode ser reingerido pelo monitor.
 
 A tela sabe quais arquivos são dela por **diferença de dois instantâneos**
 (`saidas_na_pasta` antes/depois de gerar) — `gerar_zip_lotes` devolve os pendentes,

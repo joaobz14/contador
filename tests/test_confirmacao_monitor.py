@@ -98,7 +98,12 @@ def test_diferenca_entre_instantaneos_isola_o_lote_novo(core, saida):
 # ── Os três sinais ───────────────────────────────────────────────────────────
 
 def test_arquivo_sumiu_e_impresso(core, saida):
-    """O monitor apaga após imprimir: sumiu = imprimiu. É a confirmação forte."""
+    """O que o monitor imprime, ele tira da pasta: saiu = imprimiu.
+
+    Lemos o SUMIÇO do caminho, não o apagamento — desde a v1.26.2 o app da Zebra
+    MOVE o sucesso para `~/zebra_usb_concluidos/`, e a pista continua idêntica.
+    O que ela exige é a assimetria (falha permanece na pasta), contratada lá.
+    """
     nosso = _zip(saida, "etiqueta de envio - x.zip")
     nosso.unlink()
     assert core.aguardar_impressao({nosso}) == "impresso"
