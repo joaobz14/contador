@@ -46,9 +46,18 @@ if not log.handlers:
 # URL inteira ate o log — entao todo texto de excecao passa por aqui antes, para
 # o token NUNCA cair no separador.log.
 _CHAVES = (r"access_token|refresh_token|new_refresh_token|"
-           r"client_secret|partner_key|sign|code")
+           r"client_secret|partner_key|app_secret|sign|code")
 # Forma query-string:  chave=valor  (URL assinada da Shopee, redirect do OAuth).
 _QUERY_RE = re.compile(rf"({_CHAVES})=[^&\s\"']+", re.I)
+# Segredo NO CAMINHO da URL, nao na query — a regex acima nao alcanca.
+#   Telegram: https://api.telegram.org/bot<ID>:<TOKEN>/getUpdates
+# O httpx ja e silenciado no bot (ver bot_telegram), mas isso e a rede de baixo:
+# qualquer texto de excecao/diagnostico que carregue essa URL sai redigido.
+_PATH_RE = re.compile(r"(/bot)\d+:[\w-]+", re.I)
+# Cabecalho Authorization: o token do ML viaja em "Bearer <token>" (nao na
+# query). Nenhum caminho de hoje loga headers, mas um repr de request futuro
+# passaria batido pelas duas regexes acima.
+_BEARER_RE = re.compile(r"(Bearer\s+)[\w.\-]+", re.I)
 # Forma JSON / repr de dict:  "chave": "valor"  ou  'chave': 'valor'  (defesa em
 # profundidade — um caminho de erro futuro que serialize o corpo/credencial de um
 # request, ex.: f"Falha: {dados}", passaria batido pela regex de query). Valor sem
@@ -58,7 +67,10 @@ _JSON_RE = re.compile(rf'(["\'](?:{_CHAVES})["\']\s*:\s*)(["\'])[^"\']*\2', re.I
 
 def sem_segredos(texto) -> str:
     """Substitui o valor de parametros sensiveis por *** (mantendo a chave, util
-    para diagnostico). Cobre a forma query (chave=valor) E a forma JSON
-    ("chave": "valor"). Tolera qualquer entrada (converte para str)."""
+    para diagnostico). Cobre quatro formas: query (chave=valor), JSON
+    ("chave": "valor"), segredo NO CAMINHO da URL (token do Telegram) e o
+    cabecalho Bearer. Tolera qualquer entrada (converte para str)."""
     t = _QUERY_RE.sub(r"\1=***", str(texto))
-    return _JSON_RE.sub(r"\1\2***\2", t)
+    t = _JSON_RE.sub(r"\1\2***\2", t)
+    t = _PATH_RE.sub(r"\1***", t)
+    return _BEARER_RE.sub(r"\1***", t)

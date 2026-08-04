@@ -102,7 +102,10 @@ em 2º plano.
   semântica, corrige números de linha, remove nó de símbolo morto e reconecta
   âncora manual quebrada (nunca deixa aresta órfã); grava atômico. Fluxo:
   `python tools/graph_sync.py --check` (detecta defasagem; roda no CI via
-  `tests/test_graphify_sync.py`) → `--update` (aplica; re-emite `semantic.json` +
+  `tests/test_graphify_sync.py`; enxerga **arquivo novo ainda não commitado** —
+  antes usava só `git ls-files` e um arquivo novo ficava invisível até o `git
+  add`, o que fazia o guardião passar local e **quebrar na CI**, de forma
+  intermitente conforme a ordem de stage) → `--update` (aplica; re-emite `semantic.json` +
   `manifest.json`) → `--validate`. `built_at_commit` passa a ser o HEAD
   sincronizado. `graph.html` só o CLI regenera (fica defasado — pendência conhecida).
 - **SEMPRE atualize o grafo com o que aprender:** ao terminar uma tarefa, rode
@@ -505,6 +508,20 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **Todo handler do Telegram checa `_autorizado` (varredura de segurança
+  2026-08-03):** o bot é a **única superfície do projeto que qualquer pessoa na
+  internet alcança** — basta descobrir o @usuário. A checagem vive em dois pontos
+  de estrangulamento (`_responder` e `_listar_grupos`) e a maioria dos comandos
+  delega para eles; `cmd_start` (`/start`, `/menu`, `/ajuda`) **não checava** e
+  respondia a estranhos com a lista de comandos e a **loja ativa** — não dava
+  acesso a dado nem a ação (todo botão passa por `cb_botao`, que checa), mas era
+  reconhecimento de graça. O risco real não é o código de hoje e sim **o handler
+  de amanhã**: um comando novo que não delegue nasce **aberto** e nada acusaria.
+  Por isso o teste `test_todo_handler_registrado_checa_autorizacao` varre os
+  handlers do `main` por AST e falha em qualquer um desprotegido. Ficam abertos
+  de propósito, com o motivo escrito no `ABERTOS`: **`/id`** (porta de entrada —
+  devolve só o chat id de quem perguntou) e o catch-all de texto solto. Mexer
+  nessa lista é decisão de segurança, não atalho para teste vermelho.
 - **No BOT, tudo que depende da conta ativa roda sob `TRAVA_CONTA`
   (achado 2026-08-03):** `core.definir_conta()` troca **globais** do núcleo, e o
   bot roda várias coisas em paralelo via `asyncio.to_thread` — o job do alerta
@@ -636,10 +653,13 @@ em 2º plano.
   `log.exception` não arrasta a URL no traceback). Defesa em profundidade nos
   limites: a GUI redige com `sem_segredos` o que mostra (`_erro`, avisos de falha
   parcial) e o bot redige o que manda pro chat. Mantenha as duas camadas.
-  `sem_segredos` cobre a forma **query** (`chave=valor`) **e** a forma **JSON/repr
-  de dict** (`"chave": "valor"`), e as chaves incluem `client_secret`/`partner_key`
-  além de token/sign/code (5.11) — assim um corpo de request serializado por
-  engano num texto de erro também é redigido.
+  `sem_segredos` cobre **quatro formas** (varredura 2026-08-03): **query**
+  (`chave=valor`), **JSON/repr de dict** (`"chave": "valor"`), **segredo no
+  CAMINHO da URL** e o cabeçalho **Bearer**. As duas últimas existem porque a
+  regex de `chave=valor` não as alcança: o token do **Telegram** viaja em
+  `/bot<ID>:<TOKEN>/` (por isso o `httpx` é silenciado no bot — isto é a rede de
+  baixo) e o do **ML** em `Authorization: Bearer …`. As chaves incluem
+  `client_secret`/`partner_key`/**`app_secret`** além de token/sign/code.
 
 ## Antes de fechar uma mudança (mantenha o repertório em dia)
 

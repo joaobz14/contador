@@ -609,7 +609,7 @@
    "label": "cmd_id()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L683",
+   "source_location": "L700",
    "_origin": "ast",
    "id": "bot_telegram_cmd_id",
    "community": 1,
@@ -623,7 +623,7 @@
    "label": "_teclado_contas()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L687",
+   "source_location": "L704",
    "_origin": "ast",
    "id": "bot_telegram_teclado_contas",
    "community": 1,
@@ -637,7 +637,7 @@
    "label": "cmd_conta()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L695",
+   "source_location": "L712",
    "_origin": "ast",
    "id": "bot_telegram_cmd_conta",
    "community": 1,
@@ -651,7 +651,7 @@
    "label": "_listar_acao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L715",
+   "source_location": "L732",
    "_origin": "ast",
    "id": "bot_telegram_listar_acao",
    "community": 1,
@@ -665,7 +665,7 @@
    "label": "cmd_hoje()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L720",
+   "source_location": "L737",
    "_origin": "ast",
    "id": "bot_telegram_cmd_hoje",
    "community": 1,
@@ -679,7 +679,7 @@
    "label": "cmd_amanha()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L724",
+   "source_location": "L741",
    "_origin": "ast",
    "id": "bot_telegram_cmd_amanha",
    "community": 1,
@@ -693,7 +693,7 @@
    "label": "cmd_todos()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L728",
+   "source_location": "L745",
    "_origin": "ast",
    "id": "bot_telegram_cmd_todos",
    "community": 1,
@@ -707,7 +707,7 @@
    "label": "cmd_resumo()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L732",
+   "source_location": "L749",
    "_origin": "ast",
    "id": "bot_telegram_cmd_resumo",
    "community": 1,
@@ -721,7 +721,7 @@
    "label": "cmd_loja()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L848",
+   "source_location": "L865",
    "_origin": "ast",
    "id": "bot_telegram_cmd_loja",
    "community": 1,
@@ -735,7 +735,7 @@
    "label": "cmd_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L860",
+   "source_location": "L877",
    "_origin": "ast",
    "id": "bot_telegram_cmd_dia",
    "community": 1,
@@ -749,7 +749,7 @@
    "label": "cmd_detalhar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L869",
+   "source_location": "L886",
    "_origin": "ast",
    "id": "bot_telegram_cmd_detalhar",
    "community": 1,
@@ -763,7 +763,7 @@
    "label": "cb_botao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L879",
+   "source_location": "L896",
    "_origin": "ast",
    "id": "bot_telegram_cb_botao",
    "community": 1,
@@ -777,7 +777,7 @@
    "label": "cmd_desconhecido()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L938",
+   "source_location": "L955",
    "_origin": "ast",
    "id": "bot_telegram_cmd_desconhecido",
    "community": 1,
@@ -791,7 +791,7 @@
    "label": "job_bom_dia()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L943",
+   "source_location": "L960",
    "_origin": "ast",
    "id": "bot_telegram_job_bom_dia",
    "community": 1,
@@ -805,7 +805,7 @@
    "label": "_agendar_aviso()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L964",
+   "source_location": "L981",
    "_origin": "ast",
    "id": "bot_telegram_agendar_aviso",
    "community": 1,
@@ -819,7 +819,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L981",
+   "source_location": "L998",
    "_origin": "ast",
    "id": "bot_telegram_main",
    "community": 1,
@@ -833,7 +833,7 @@
    "label": "_pausar()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1046",
+   "source_location": "L1063",
    "_origin": "ast",
    "id": "bot_telegram_pausar",
    "community": 1,
@@ -11136,7 +11136,7 @@
    "label": "sem_segredos()",
    "file_type": "code",
    "source_file": "registro.py",
-   "source_location": "L59",
+   "source_location": "L68",
    "_origin": "ast",
    "id": "registro_sem_segredos",
    "community": 10,
@@ -15302,7 +15302,7 @@
    "label": "versioned_set()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L99",
+   "source_location": "L117",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15316,7 +15316,7 @@
    "label": "module_id()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L104",
+   "source_location": "L122",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15330,7 +15330,7 @@
    "label": "load_json()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L110",
+   "source_location": "L128",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15344,7 +15344,7 @@
    "label": "_loc_num()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L115",
+   "source_location": "L133",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15358,7 +15358,7 @@
    "label": "canonical_links()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L120",
+   "source_location": "L138",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15372,7 +15372,7 @@
    "label": "dump_atomic()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L126",
+   "source_location": "L144",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15386,7 +15386,7 @@
    "label": "Symbol",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L139",
+   "source_location": "L157",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15400,7 +15400,7 @@
    "label": "ParsedModule",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L152",
+   "source_location": "L170",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15414,7 +15414,7 @@
    "label": "gen_symbol_id()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L160",
+   "source_location": "L178",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15428,7 +15428,7 @@
    "label": "parse_python()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L173",
+   "source_location": "L191",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15442,7 +15442,7 @@
    "label": "parse_all()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L225",
+   "source_location": "L243",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15456,7 +15456,7 @@
    "label": "leaf_name()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L238",
+   "source_location": "L256",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15470,7 +15470,7 @@
    "label": "SyncResult",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L248",
+   "source_location": "L266",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15484,7 +15484,7 @@
    "label": "reconcile()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L260",
+   "source_location": "L278",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15498,7 +15498,7 @@
    "label": "validate()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L562",
+   "source_location": "L580",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15512,7 +15512,7 @@
    "label": "build_semantic_snapshot()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L592",
+   "source_location": "L610",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15526,7 +15526,7 @@
    "label": "report()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L647",
+   "source_location": "L665",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15540,7 +15540,7 @@
    "label": "measure()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L671",
+   "source_location": "L689",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15554,7 +15554,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L693",
+   "source_location": "L711",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15596,7 +15596,7 @@
    "label": "write_manifest()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L623",
+   "source_location": "L641",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18368,7 +18368,7 @@
    "label": "_testar_alerta_pos_horario_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1016",
+   "source_location": "L1033",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -18396,7 +18396,7 @@
    "label": "cmd_vendas_apos()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L736",
+   "source_location": "L753",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19894,7 +19894,7 @@
    "label": "_contas_do_resumo()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L810",
+   "source_location": "L827",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19908,7 +19908,7 @@
    "label": "_resumo_para_envio()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L819",
+   "source_location": "L836",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -19922,7 +19922,7 @@
    "label": "_testar_resumo_vendas_agora()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L1060",
+   "source_location": "L1077",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20412,7 +20412,7 @@
    "label": "_ordem_de_separacao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L835",
+   "source_location": "L852",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20510,7 +20510,7 @@
    "label": "_commit_do_disco()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L755",
+   "source_location": "L772",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -20524,7 +20524,7 @@
    "label": "cmd_versao()",
    "file_type": "code",
    "source_file": "bot_telegram.py",
-   "source_location": "L785",
+   "source_location": "L802",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -21247,6 +21247,132 @@
    "id": "tests_test_bot_trava_conta_test_caminhos_que_dependem_da_conta_estao_travados",
    "community": 76,
    "norm_label": "test_caminhos_que_dependem_da_conta_estao_travados()"
+  },
+  {
+   "label": "test_app_secret_do_tiktok_e_redigido()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L69",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_app_secret_do_tiktok_e_redigido",
+   "community": 58,
+   "norm_label": "test_app_secret_do_tiktok_e_redigido()"
+  },
+  {
+   "label": "test_token_do_telegram_no_CAMINHO_da_url()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_token_do_telegram_no_CAMINHO_da_url",
+   "community": 58,
+   "norm_label": "test_token_do_telegram_no_caminho_da_url()"
+  },
+  {
+   "label": "test_bearer_do_ml_e_redigido()",
+   "file_type": "code",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L89",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_registro_test_bearer_do_ml_e_redigido",
+   "community": 58,
+   "norm_label": "test_bearer_do_ml_e_redigido()"
+  },
+  {
+   "label": "test_bot_autorizacao.py",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao",
+   "community": 77,
+   "norm_label": "test_bot_autorizacao.py"
+  },
+  {
+   "label": "_handlers_registrados()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L40",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_handlers_registrados",
+   "community": 77,
+   "norm_label": "_handlers_registrados()"
+  },
+  {
+   "label": "_checa_autorizacao()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L52",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_checa_autorizacao",
+   "community": 77,
+   "norm_label": "_checa_autorizacao()"
+  },
+  {
+   "label": "test_todo_handler_registrado_checa_autorizacao()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L68",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "community": 77,
+   "norm_label": "test_todo_handler_registrado_checa_autorizacao()"
+  },
+  {
+   "label": "test_menu_nao_responde_a_estranho()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L86",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_menu_nao_responde_a_estranho",
+   "community": 77,
+   "norm_label": "test_menu_nao_responde_a_estranho()"
+  },
+  {
+   "label": "test_id_continua_aberto_de_proposito()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L94",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_id_continua_aberto_de_proposito",
+   "community": 77,
+   "norm_label": "test_id_continua_aberto_de_proposito()"
   }
  ],
  "links": [
@@ -27713,6 +27839,26 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
    "target": "tests_test_bot_alerta_update_msg",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L77",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "target": "tests_test_bot_autorizacao_checa_autorizacao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L71",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "target": "tests_test_bot_autorizacao_handlers_registrados",
    "confidence_score": 1.0
   },
   {
@@ -34286,7 +34432,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L964",
+   "source_location": "L981",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_agendar_aviso",
@@ -34336,7 +34482,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L879",
+   "source_location": "L896",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cb_botao",
@@ -34346,7 +34492,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L724",
+   "source_location": "L741",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_amanha",
@@ -34356,7 +34502,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L695",
+   "source_location": "L712",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_conta",
@@ -34366,7 +34512,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L938",
+   "source_location": "L955",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_desconhecido",
@@ -34376,7 +34522,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L869",
+   "source_location": "L886",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_detalhar",
@@ -34386,7 +34532,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L860",
+   "source_location": "L877",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_dia",
@@ -34396,7 +34542,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L720",
+   "source_location": "L737",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_hoje",
@@ -34406,7 +34552,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L683",
+   "source_location": "L700",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_id",
@@ -34416,7 +34562,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L848",
+   "source_location": "L865",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_loja",
@@ -34426,7 +34572,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L732",
+   "source_location": "L749",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_resumo",
@@ -34446,7 +34592,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L728",
+   "source_location": "L745",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_todos",
@@ -34456,7 +34602,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L736",
+   "source_location": "L753",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_vendas_apos",
@@ -34466,7 +34612,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L785",
+   "source_location": "L802",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_cmd_versao",
@@ -34496,7 +34642,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L755",
+   "source_location": "L772",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_commit_do_disco",
@@ -34526,7 +34672,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L810",
+   "source_location": "L827",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_contas_do_resumo",
@@ -34656,7 +34802,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L943",
+   "source_location": "L960",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_job_bom_dia",
@@ -34676,7 +34822,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L715",
+   "source_location": "L732",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_listar_acao",
@@ -34706,7 +34852,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L981",
+   "source_location": "L998",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_main",
@@ -34716,7 +34862,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L835",
+   "source_location": "L852",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_ordem_de_separacao",
@@ -34736,7 +34882,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1046",
+   "source_location": "L1063",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_pausar",
@@ -34766,7 +34912,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L819",
+   "source_location": "L836",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_resumo_para_envio",
@@ -34806,7 +34952,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L687",
+   "source_location": "L704",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_teclado_contas",
@@ -34836,7 +34982,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1016",
+   "source_location": "L1033",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_alerta_pos_horario_agora",
@@ -34846,7 +34992,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "bot_telegram.py",
-   "source_location": "L1060",
+   "source_location": "L1077",
    "weight": 1.0,
    "source": "bot_telegram",
    "target": "bot_telegram_testar_resumo_vendas_agora",
@@ -35346,7 +35492,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "registro.py",
-   "source_location": "L59",
+   "source_location": "L68",
    "weight": 1.0,
    "source": "registro",
    "target": "registro_sem_segredos",
@@ -38640,6 +38786,56 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta",
    "target": "tests_test_bot_alerta_update_msg",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L52",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_checa_autorizacao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L40",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_handlers_registrados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L94",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_id_continua_aberto_de_proposito",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L86",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_menu_nao_responde_a_estranho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L68",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
    "confidence_score": 1.0
   },
   {
@@ -41946,6 +42142,26 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_registro.py",
+   "source_location": "L69",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_app_secret_do_tiktok_e_redigido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L89",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_bearer_do_ml_e_redigido",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
    "source_location": "L57",
    "weight": 1.0,
    "source": "tests_test_registro",
@@ -41990,6 +42206,16 @@
    "weight": 1.0,
    "source": "tests_test_registro",
    "target": "tests_test_registro_test_texto_sem_segredo_fica_intacto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_registro.py",
+   "source_location": "L80",
+   "weight": 1.0,
+   "source": "tests_test_registro",
+   "target": "tests_test_registro_test_token_do_telegram_no_CAMINHO_da_url",
    "confidence_score": 1.0
   },
   {
@@ -44106,7 +44332,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L592",
+   "source_location": "L610",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_build_semantic_snapshot",
@@ -44116,7 +44342,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L120",
+   "source_location": "L138",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_canonical_links",
@@ -44126,7 +44352,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L126",
+   "source_location": "L144",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_dump_atomic",
@@ -44136,7 +44362,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L160",
+   "source_location": "L178",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_gen_symbol_id",
@@ -44156,7 +44382,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L238",
+   "source_location": "L256",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_leaf_name",
@@ -44166,7 +44392,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L110",
+   "source_location": "L128",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_load_json",
@@ -44176,7 +44402,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L115",
+   "source_location": "L133",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_loc_num",
@@ -44186,7 +44412,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L693",
+   "source_location": "L711",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_main",
@@ -44196,7 +44422,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L671",
+   "source_location": "L689",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_measure",
@@ -44206,7 +44432,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L104",
+   "source_location": "L122",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_module_id",
@@ -44216,7 +44442,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L225",
+   "source_location": "L243",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parse_all",
@@ -44226,7 +44452,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L173",
+   "source_location": "L191",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parse_python",
@@ -44236,7 +44462,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L152",
+   "source_location": "L170",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parsedmodule",
@@ -44246,7 +44472,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L260",
+   "source_location": "L278",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_reconcile",
@@ -44256,7 +44482,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L647",
+   "source_location": "L665",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_report",
@@ -44266,7 +44492,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L139",
+   "source_location": "L157",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_symbol",
@@ -44276,7 +44502,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L248",
+   "source_location": "L266",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_syncresult",
@@ -44286,7 +44512,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L562",
+   "source_location": "L580",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_validate",
@@ -44296,7 +44522,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L99",
+   "source_location": "L117",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_versioned_set",
@@ -44306,7 +44532,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L623",
+   "source_location": "L641",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_write_manifest",
@@ -51768,5 +51994,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "606bb28b12c1109197e2fd109fa9cd42fb79e5aa"
+ "built_at_commit": "2eb2784709dd54f52154d8d0feef43d6993c6881"
 }

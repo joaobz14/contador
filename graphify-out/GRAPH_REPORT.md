@@ -67,6 +67,45 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mais UAC, instância única de bandeja e dependências Windows-only). Depois do
   `--update`: **1557 nós, 2943 arestas, 0 órfãs**.
 
+- **2026-08-03 (segurança) — varredura com modelo de ameaça explícito.** Achado:
+  **`cmd_start` (`/start`, `/menu`, `/ajuda`) não checava autorização** e
+  respondia a qualquer estranho com a lista de comandos e a **loja ativa** — o
+  bot é a única superfície que qualquer pessoa na internet alcança. Nenhum dado
+  de venda vazava (todo botão passa por `cb_botao`, que checa), mas era
+  reconhecimento de graça. O risco real não era o código de hoje e sim **o
+  handler de amanhã**: a checagem vive em 2 pontos de estrangulamento
+  (`_responder`/`_listar_grupos`) e um comando novo que não delegue nasce aberto.
+  Daí o guardião `test_todo_handler_registrado_checa_autorizacao`, que varre os
+  handlers do `main` por AST — **verificado que ele pega a regressão** (handler
+  falso injetado → teste vermelho). `ABERTOS` lista os 2 abertos de propósito
+  (`/id`, catch-all) com o motivo.
+  **Verificados OK, por teste e não por leitura:** nenhuma credencial real em
+  **353 commits** de história (os 2 hits são fixtures, uma chamada `TOKEN_FALSO`);
+  zero `eval`/`exec`/`pickle`/`shell=True`/`verify=False`/`http://`; injeção de
+  ZPL barrada nos dois pontos que recebem texto de produto (`carimbo` e
+  `divisoria` removem `^` e `~`, os dois prefixos de comando); nome de arquivo
+  saneado por `isalnum`; cofre público sem segredo (e o validador do CI procura
+  ativamente); dependências com teto de major. **Risco aceito e registrado:**
+  credenciais gravadas sem `chmod 0600` — no Windows do dono o `os.chmod` só
+  mexe no bit de somente-leitura, então não agregaria proteção real.
+  Depois do `--update`: **1590 nós, 2985 arestas, 0 órfãs**.
+
+- **2026-08-03 (periferia) — o que as auditorias nunca olharam.** Pergunta do
+  dono: todas as auditorias entraram pelo NÚCLEO; ~3.000 linhas de periferia
+  (`tools/`, `ads-monitor/`, `pegar_token*`, `registro.py`, `.gitignore`, CI)
+  nunca foram vistas. Priorizado por **dano irreversível**, não por tamanho.
+  Achados: (a) **`registro.sem_segredos` tinha 2 brechas** — `app_secret` (do
+  TikTok, aberta no mesmo dia) e o token do **Telegram no CAMINHO** da URL
+  (`/bot<ID>:<TOKEN>/`), que a regex de `chave=valor` não alcança; somado o
+  `Bearer` do ML por precaução. São 64 linhas que são a ÚLTIMA defesa contra
+  token em log. (b) **screenshots da GUI não gitignorados** (`out.png`,
+  `tela_*.png`) — mostram pedidos/SKUs reais; e `api-monitor/snapshots/` só
+  ignorava `.md`, padrão permissivo ao contrário do `dados/*` endurecido.
+  **Verificados OK:** nenhum segredo rastreado no git, todos os arquivos de
+  credencial/estado/log ignorados (teste empírico com `git check-ignore`), e o CI
+  barra de verdade (pytest em 3.11+3.12, lint, cofre, smoke da GUI).
+  Depois do `--update`: **1584 nós, 2978 arestas, 0 órfãs**.
+
 - **2026-08-03 (por blocos) — CORRIDA DE CONTA no bot.** Varredura completa
   dividida por dano potencial (estado/marcação, agrupamento, token, GUI, bot,
   Shopee) + passada automática de lint com regras além das do CI. Achado grave:
