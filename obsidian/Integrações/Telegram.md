@@ -28,7 +28,14 @@ verified_at_commit: bcab879
 
 ## Comandos
 `/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/vendasapos` · `/detalhar <SKU>` ·
-`/conta` · `/loja` · `/id` · `/start` (=`/menu`,`/ajuda`, com botões).
+`/conta` · `/loja` · `/id` · `/versao` · `/perguntas` (ver abaixo) · `/start`
+(=`/menu`,`/ajuda`, com botões).
+
+O menu "/" do app é publicado por `setMyCommands` **no escopo de cada chat**
+(`BotCommandScopeChat`), nunca no global — no global a lista de comandos
+apareceria para qualquer estranho que abrisse o bot. O `setMyCommands`
+**substitui a lista inteira**: comando novo tem de entrar em `COMANDOS_MENU`,
+senão some do menu.
 
 ## Jobs automáticos (`JobQueue`)
 - **Aviso da manhã** (`job_bom_dia`, 1x/dia, `aviso_horario` no `bot_config.json`).
@@ -91,6 +98,32 @@ mesmo bot).
 > minado. Solução: trocar de mecanismo (Agendador de Tarefas, processo
 > criado do zero pelo Windows) em vez de seguir caçando o próximo achado.
 > Todo o código do lock de PID foi removido.
+
+## `/perguntas` — o bot dispara, o **n8n** responde
+Um fluxo do **n8n** (fora deste projeto) lista as perguntas e mensagens sem
+resposta da **conta 3**. O `/perguntas` só **aciona** esse fluxo: faz um POST no
+webhook, manda um "🔎 Consultando..." na hora e sai de cena — a **resposta chega
+alguns segundos depois, escrita pelo próprio n8n** no mesmo chat. Também há o
+botão **🔎 Perguntas** no `/menu`.
+
+> [!important] Dois sistemas, um bot só — e por isso o polling não pode mudar
+> O Telegram entrega os updates de um bot a **um consumidor só**. Quem **lê** os
+> comandos é este projeto (polling, em `main`); o n8n entra apenas como
+> **remetente** (`sendMessage`), sem ler nada. Trocar o polling por webhook aqui
+> derrubaria um dos dois lados.
+
+> [!warning] O endereço do webhook é uma credencial
+> O webhook não pede token nem cabeçalho: **quem tem o link dispara o fluxo** (por
+> isso o caminho leva um sufixo aleatório). Ele mora no `bot_config.json`
+> (`webhook_perguntas`) ou na variável `N8N_WEBHOOK_PERGUNTAS` — **nunca no
+> código**, que é público — e não entra em texto de erro nenhum. Ver
+> [[Redação de segredos]].
+
+Restrito a **um** chat (`chat_perguntas` no `bot_config.json`), não à whitelist
+inteira: o comando fala de uma conta específica do dono. De qualquer outro chat é
+ignorado **em silêncio** — responder "não autorizado" já confirmaria que o comando
+existe. Sem as duas chaves configuradas, o comando fica desligado e explica o que
+falta a quem está autorizado.
 
 ## Onde rodar
 No PC do escritório com a Zebra — a impressão sai na Downloads **dessa** máquina.

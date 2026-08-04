@@ -51,6 +51,24 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-04 — `/perguntas`: o bot dispara o n8n (e não responde nada).** O dono
+  tem um fluxo no n8n que lista perguntas/mensagens sem resposta de outra conta e
+  quer acioná-lo pelo mesmo bot. A restrição que desenha tudo: **o Telegram
+  entrega os updates de um bot a UM consumidor só** — quem lê os comandos é este
+  projeto (polling), e o n8n entra apenas como **remetente**. Por isso o comando
+  faz um POST no webhook, manda um "🔎 Consultando..." e sai de cena; a resposta
+  chega depois, escrita pelo n8n no mesmo chat. Nós novos: `bot_perguntas_n8n`,
+  `webhook_url_e_segredo` (a URL **é** a credencial — o endpoint não pede
+  autenticação, e este repositório é público: fica no `bot_config.json`/env e
+  fora de todo texto de erro, com `sem_segredos` redigindo `/webhook/…` como 3ª
+  camada), `bot_menu_comandos_por_chat` (o `setMyCommands` **global** mostraria a
+  lista de comandos a qualquer estranho, desfazendo a correção do `/menu` de
+  03/08 — por isso `BotCommandScopeChat`) e
+  `graph_sync_versioned_set_consistente` (a validação ainda usava `git ls-files`
+  puro: o coletor criava nós para arquivo novo e a validação os rejeitava —
+  mesma intermitência por ordem-de-stage do #208, pela porta dos fundos).
+  Depois do `--update`: **1631 nós, 3067 arestas, 0 órfãs**.
+
 - **2026-07-30 — Canal de volta com o app da Zebra (mural de status) + decisão
   de NÃO fundir os dois apps.** A entrega entre contador e app da Zebra é por
   arquivo e não tinha resposta: a tela adivinhava por duas pistas (o ZIP sumir,

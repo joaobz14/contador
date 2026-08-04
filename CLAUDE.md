@@ -32,7 +32,7 @@ repo) monitora e imprime.
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
-| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). |
+| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). Tem ainda o **`/perguntas`**, que só dispara um fluxo do n8n (não responde nada — ver a convenção). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `pegar_token_tiktok.py` | OAuth inicial do TikTok Shop. **Escrito, mas nunca rodou com sucesso** — a integração está ARQUIVADA (ver `docs/TIKTOK_SHOP_API.md`). |
@@ -508,6 +508,39 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **`/perguntas`: dois sistemas, um bot só (o bot dispara, o n8n responde).** O
+  dono tem um fluxo no **n8n** que lista perguntas/mensagens sem resposta de outra
+  conta e quer acioná-lo pelo mesmo bot. A restrição que desenha tudo: o Telegram
+  entrega os updates de um bot a **um consumidor só** — quem **lê** os comandos é
+  este projeto (polling, em `main`), e o n8n entra apenas como **remetente**
+  (`sendMessage`). Por isso o `/perguntas` **não responde com dado nenhum**: faz um
+  POST no webhook (`_disparar_perguntas`, `{"origem","comando"}`), manda um "🔎
+  Consultando..." imediato (o fluxo leva ~4s) e sai de cena; a resposta chega
+  depois, escrita pelo n8n no mesmo chat. **Não mexa na forma de RECEBER updates**
+  (trocar polling por webhook aqui derruba um dos dois lados). Restrito a **um**
+  chat (`chat_perguntas`), não à whitelist inteira — o comando fala de uma conta
+  específica do dono; chat não autorizado é ignorado **em silêncio** (responder
+  "não autorizado" já confirmaria que o comando existe). Falha de rede vira aviso
+  no chat, nunca exceção subindo pelo handler.
+- **URL de webhook é CREDENCIAL — e este repositório é público.** O webhook do
+  n8n não pede token nem cabeçalho: quem tem o link dispara o fluxo (por isso o
+  caminho leva um sufixo aleatório). Então a URL segue a regra dos segredos: mora
+  no `bot_config.json` (`webhook_perguntas`) ou na variável
+  `N8N_WEBHOOK_PERGUNTAS`, **nunca no código**, e não pode entrar em texto de
+  erro nenhum — nada de `raise_for_status()` (a mensagem dele inclui a URL) nem
+  de propagar a exceção crua do `requests` ("Max retries exceeded with url: …");
+  é o mesmo `_rede_limpa` da Shopee, com `from None`. Terceira camada:
+  `sem_segredos` redige o caminho depois de `/webhook/`. Vale para **qualquer**
+  integração futura por URL-segredo (Zapier, Make, n8n).
+- **Menu de comandos (`setMyCommands`) é POR CHAT, nunca global.** O menu "/" do
+  app é publicado no `post_init` com `BotCommandScopeChat`, um por chat
+  autorizado. No escopo **global** a lista apareceria para qualquer pessoa que
+  abrisse o bot — desfazendo, por uma porta lateral, a correção de 2026-08-03 (o
+  `/menu` revelava comandos e loja ativa a estranhos). Duas armadilhas: o
+  `setMyCommands` **substitui a lista inteira**, então comando novo tem de entrar
+  em `COMANDOS_MENU` (guardião em `tests/test_bot_perguntas.py`), e a publicação é
+  **best-effort** (roda antes do polling — falhar ali não pode impedir o bot de
+  subir por um detalhe cosmético).
 - **Todo handler do Telegram checa `_autorizado` (varredura de segurança
   2026-08-03):** o bot é a **única superfície do projeto que qualquer pessoa na
   internet alcança** — basta descobrir o @usuário. A checagem vive em dois pontos
