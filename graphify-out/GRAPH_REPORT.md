@@ -98,6 +98,22 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   handler deste lado, mesmo que o trabalho todo seja dele.
   Depois do `--update`: **1694 nós, 3185 arestas, 0 órfãs**.
 
+- **2026-08-04 (incidente) — config do bot inválida: a falha que não aparece em
+  lugar nenhum.** Relato: *"reiniciei, esperei, mandei /atualizar e não
+  respondeu — acho que o Reiniciar Bot.bat está com problema"*. O script estava
+  certo. A URL de um webhook foi parar **fora das chaves** do `bot_config.json`,
+  e três camadas de silêncio se somaram: o `_ler_json` devolve `{}` para
+  qualquer falha (JSON malformado → token "some"); a mensagem que sobrava era
+  "Token ausente", mandando procurar o **token** e não a vírgula; e sob o
+  lançador o bot roda em **janela oculta**, então o `print` não era visto e o
+  `bot.log` só mostrava a linha *anterior* ao crash. O único sintoma visível
+  virava "reinicia a cada 15s". Nó novo: `config_bot_invalida_silenciosa`.
+  Corrigido com `_ler_bot_config` (invalido ≠ ausente, com **linha e coluna**) e
+  com as falhas de inicialização indo para o `bot.log`. Lição: **uma falha que
+  só aparece onde ninguém olha é uma falha silenciosa** — sob janela oculta,
+  "imprimir o erro" não conta como reportar.
+  Depois do `--update`: **1734 nós, 3273 arestas, 0 órfãs**.
+
 - **2026-08-04 — `/anuncios`: a segunda integração vira tabela.** Com o segundo
   fluxo do n8n, o copiar-colar deixaria de ser barato. Entrou `IntegracaoN8N`
   (dataclass) + a tupla `INTEGRACOES`, de onde saem a chave de config, a variável

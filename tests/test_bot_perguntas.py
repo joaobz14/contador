@@ -383,3 +383,60 @@ def test_url_de_uma_integracao_nao_vaza_no_erro_de_outra():
     enviadas, _ = _rodar_integr("anuncios", CHAT_DONO, _cfg(), _estoura)
     texto = " ".join(t for _, t in enviadas)
     assert "2f8e7d1c4b" not in texto and "9f4c2a7be13d" not in texto
+
+
+# ============================== config invalida: causa visivel, nao "some"
+# Duas vezes o dono acrescentou a URL de um webhook FORA das chaves. Nas duas o
+# JSON virou invalido, o `_ler_json` do nucleo devolveu {} em silencio, o token
+# "sumiu" e a mensagem que sobrava era "Token ausente" — apontando para o lugar
+# errado. E, sob o lancador automatico, nem essa mensagem era vista: o bot roda
+# em janela oculta e o bot.log so mostrava a linha ANTERIOR ao crash. O sintoma
+# era um bot reiniciando a cada 15s sem causa nenhuma a vista.
+def test_config_invalida_diz_que_o_json_esta_quebrado(tmp_path, monkeypatch):
+    arq = tmp_path / "bot_config.json"
+    arq.write_text('{\n "token": "x",\n "chat_ids": [1]\n}\n"webhook_anuncios": "u"\n',
+                   encoding="utf-8")
+    monkeypatch.setattr(bot, "ARQUIVO_CONFIG", arq)
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+
+    with pytest.raises(core.SeparadorError) as e:
+        bot.carregar_config()
+
+    texto = str(e.value)
+    assert "JSON valido" in texto, "tem de dizer que o problema e o formato"
+    assert "linha" in texto, "e ONDE — senao o dono procura no arquivo inteiro"
+    assert "Token" not in texto, "nao pode mandar procurar o token; o erro e outro"
+
+
+def test_config_invalida_nao_e_confundida_com_ausente(tmp_path, monkeypatch):
+    """Arquivo que NAO existe continua sendo caso de 'falta configurar', com a
+    mensagem do token — sao situacoes diferentes e as acoes tambem."""
+    monkeypatch.setattr(bot, "ARQUIVO_CONFIG", tmp_path / "nao_existe.json")
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    with pytest.raises(core.SeparadorError) as e:
+        bot.carregar_config()
+    assert "Token" in str(e.value)
+
+
+def test_config_valida_com_a_url_dentro_das_chaves(tmp_path, monkeypatch):
+    """O jeito certo — e o teste que prova que o formato correto funciona."""
+    arq = tmp_path / "bot_config.json"
+    core._gravar_json(arq, {"token": "t", "chat_ids": [CHAT_DONO],
+                            "webhook_perguntas": URL, "webhook_anuncios": URL_ANUNCIOS,
+                            "chat_perguntas": CHAT_DONO})
+    monkeypatch.setattr(bot, "ARQUIVO_CONFIG", arq)
+    for integr in bot.INTEGRACOES:
+        monkeypatch.delenv(integr.variavel, raising=False)
+    cfg = bot.carregar_config()
+    assert cfg["webhooks"]["anuncios"] == URL_ANUNCIOS
+
+
+def test_falha_de_inicializacao_vai_para_o_log():
+    """Sob o lancador o bot roda em janela OCULTA: um print nao e visto por
+    ninguem. Se o motivo do crash nao entrar no bot.log, o unico sintoma vira
+    'reinicia a cada 15s' — e a suspeita cai no lugar errado."""
+    from pathlib import Path
+    fonte = Path(bot.__file__).read_text(encoding="utf-8")
+    bloco = fonte[fonte.index("    try:\n        main()"):]
+    assert "log.error(" in bloco, "SeparadorError na abertura tem de ir para o log"
+    assert "log.exception(" in bloco, "erro inesperado na abertura tambem"

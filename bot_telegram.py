@@ -37,6 +37,7 @@ bot ligado no horario.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import subprocess
@@ -140,8 +141,39 @@ def _inteiro(valor) -> int:
         return 0
 
 
+def _ler_bot_config() -> dict:
+    """Le o bot_config.json distinguindo INVALIDO de AUSENTE.
+
+    O `_ler_json` do nucleo devolve `{}` para qualquer falha — certo para caches
+    (refazer) e para o config da tela (`_sanear_config`), errado aqui: um JSON
+    malformado vira `{}`, o token "some", e a mensagem que sobra e "Token
+    ausente" — que manda procurar o token, nao a virgula. Aconteceu DUAS vezes
+    ao acrescentar a URL de um webhook fora das chaves, e nas duas o sintoma
+    visivel foi o bot reiniciando em laco a cada 15s sem dizer por que.
+
+    E a mesma distincao que o `estado.ler_estado` ja faz (corrompido != ausente),
+    aplicada ao config do bot.
+    """
+    if not ARQUIVO_CONFIG.exists():
+        return {}
+    try:
+        dados = json.loads(ARQUIVO_CONFIG.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise core.SeparadorError(
+            f"O bot_config.json existe mas nao e um JSON valido: {e.msg} "
+            f"(linha {e.lineno}, coluna {e.colno}). Erro tipico: chave "
+            "acrescentada FORA das chaves { } ou virgula faltando na linha "
+            "anterior. Corrija o arquivo e o bot sobe sozinho."
+        ) from None
+    except OSError as e:
+        raise core.SeparadorError(
+            f"Nao consegui ler o bot_config.json ({type(e).__name__})."
+        ) from None
+    return dados if isinstance(dados, dict) else {}
+
+
 def carregar_config() -> dict:
-    cfg = core._ler_json(ARQUIVO_CONFIG)
+    cfg = _ler_bot_config()
     token = os.getenv("TELEGRAM_BOT_TOKEN") or cfg.get("token", "")
     if not token:
         raise core.SeparadorError(
@@ -1652,7 +1684,15 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass  # Ctrl+C: encerrar e silencioso
     except core.SeparadorError as e:
-        # Erro esperado e explicado (ex.: token ausente, credenciais faltando).
+        # Erro esperado e explicado (ex.: token ausente, config invalida).
+        #
+        # VAI PARA O bot.log, nao so para a tela: sob o lancador automatico o
+        # bot roda numa janela OCULTA, entao este print nao e visto por ninguem
+        # — e o log so mostrava a linha ANTERIOR ao crash. O sintoma virava "o
+        # bot reinicia a cada 15s" sem causa nenhuma a vista, e a suspeita caia
+        # no lugar errado (aconteceu com o dono em 2026-08-04). Uma falha que so
+        # aparece onde ninguem olha e uma falha silenciosa.
+        log.error("NAO FOI POSSIVEL INICIAR O BOT: %s", sem_segredos(e))
         print(f"\nNAO FOI POSSIVEL INICIAR O BOT:\n  {e}")
         if "Token" in str(e):
             print("\nDica: copie exemplos/bot_config.example.json para bot_config.json e "
@@ -1661,6 +1701,7 @@ if __name__ == "__main__":
         raise SystemExit(1)
     except Exception:  # noqa: BLE001 - qualquer outra falha precisa ser vista
         import traceback
+        log.exception("O bot parou por um erro inesperado")   # idem: para o log
         print("\nO bot parou por um erro inesperado:\n")
         traceback.print_exc()
         _pausar()

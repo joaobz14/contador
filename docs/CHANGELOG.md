@@ -88,6 +88,15 @@ Histórico das principais mudanças do projeto.
   `/perguntas` só aparece no menu de quem pode usá-lo.
 
 ### Corrigido
+- **Erro no `bot_config.json` agora diz o que está errado — e onde.** Se o
+  arquivo tiver um problema de formato (uma chave fora das chaves `{ }`, uma
+  vírgula faltando), o bot passa a dizer exatamente isso, com a **linha e a
+  coluna**. Antes ele reclamava de "token ausente", mandando você procurar no
+  lugar errado.
+- **O motivo de o bot não subir agora aparece no `bot.log`.** Como ele roda numa
+  janela oculta, a mensagem de erro não era vista por ninguém e o log só mostrava
+  a última linha *antes* da falha. O sintoma virava "o bot reinicia sozinho a
+  cada 15 segundos" sem nenhuma pista — e a suspeita caía no lugar errado.
 - **Reiniciar o bot não reiniciava nada.** O par de comandos que o `/versao`
   mandava rodar (`schtasks /end` + `/run`) não funcionava: o lançador soltava o
   bot e saía, então para o Agendador a tarefa já tinha terminado e o bot ficava

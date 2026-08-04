@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 350,
- "edge_count": 639,
+ "node_count": 351,
+ "edge_count": 643,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4019,6 +4019,14 @@
    "source_location": null,
    "id": "alerta_nf_shopee",
    "_origin": "manual"
+  },
+  {
+   "label": "CONFIG DO BOT INVALIDA: A FALHA QUE NAO APARECE EM LUGAR NENHUM (incidente 2026-08-04, SEGUNDA ocorrencia). Sintoma relatado: 'reiniciei, esperei, mandei /atualizar e nao respondeu -- acho que o Reiniciar Bot.bat esta com problema'. O script estava certo. A causa: ao acrescentar a URL de um webhook, a linha foi parar FORA das chaves do bot_config.json. Dai em diante, tres camadas de silencio se somaram: (1) o `_ler_json` do nucleo devolve {} para QUALQUER falha -- certo para cache (refazer) e para o config da tela (_sanear_config), errado aqui: JSON malformado virou {} e o token 'sumiu'; (2) a mensagem que sobrava era 'Token ausente', que manda procurar o TOKEN e nao a virgula -- diagnostico apontando para o lugar errado; (3) sob o lancador automatico o bot roda em janela OCULTA, entao o print da mensagem nao era visto por ninguem, e o bot.log so mostrava a linha ANTERIOR ao crash ('Conta ativa: ...'). O unico sintoma visivel virava 'o bot reinicia a cada 15s' (o laco do .bat), sem causa nenhuma a vista -- e a suspeita caiu no script de reinicio, que era inocente. CORRECAO: `_ler_bot_config` distingue INVALIDO de AUSENTE (mesma distincao que o `estado.ler_estado` ja fazia para o estado de impressao, nao aplicada aqui) e diz LINHA e COLUNA do erro, citando a causa tipica; e as falhas de inicializacao passaram a ir para o bot.log (log.error/log.exception) alem do print. LICAO: uma falha que so aparece onde ninguem olha e uma falha silenciosa. Sob janela oculta, 'imprimir o erro' nao conta como reportar.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "id": "config_bot_invalida_silenciosa",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4909,6 +4917,28 @@
    "source": "ci_ruff_lint",
    "target": "ci_pytest",
    "confidence_score": 1.0
+  },
+  {
+   "source": "config_bot_invalida_silenciosa",
+   "target": "bot_atualizar_remoto",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o /atualizar mudo foi o sintoma relatado",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "config_bot_invalida_silenciosa",
+   "target": "reinicio_do_bot_orfao",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o script suspeito era inocente; o sintoma era o mesmo laco de 15s",
+   "source_file": "bot_telegram.py",
+   "source_location": null
   },
   {
    "relation": "conceptually_related_to",
@@ -6870,6 +6900,28 @@
    "source": "carimbo_encoding_ci28",
    "target": "separador_etiquetas_ml_carimbar_zpl",
    "confidence_score": 1.0
+  },
+  {
+   "source": "config_bot_invalida_silenciosa",
+   "target": "bot_telegram_carregar_config",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "por que nao usa o _ler_json do nucleo",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "config_bot_invalida_silenciosa",
+   "target": "bot_telegram_ler_bot_config",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "invalido != ausente, com linha e coluna",
+   "source_file": "bot_telegram.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",
