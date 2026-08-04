@@ -140,6 +140,18 @@ ignorado **em silêncio** — responder "não autorizado" já confirmaria que o 
 existe. Sem as duas chaves configuradas, o comando fica desligado e explica o que
 falta a quem está autorizado.
 
+## Contrato com o n8n (para as próximas integrações)
+Fechado com o outro lado em 04/08/2026, antes de existir a 2ª função:
+
+| Ponto | Acordo |
+|---|---|
+| `chat_id` | O n8n responde ao chat que vier no corpo. **A autorização é deste lado** — só vai para o POST um chat já autorizado. |
+| Webhook | **Um por fluxo**, não roteador. Uma chave de config por comando (passando de ~3, virar bloco `webhooks: {}`). |
+| Botões | O n8n **não** manda teclado. Toque em botão vira `callback_query`, que vai para o polling daqui — botão exige handler nosso. |
+| Parâmetro | Campo `args`, string crua com trim, `""` quando não houver. |
+| Quantidade | Um comando por função até ~5; submenu só depois. |
+| Fluxo caro | Ads leva ~5 min e **gasta dinheiro**: aviso explícito de demora, restrito ao chat do dono, e limite de frequência **persistido em arquivo** (em memória zeraria a cada `/atualizar`). |
+
 ## `/atualizar` — atualizar do celular
 `git pull` + reinício sem estar no PC. Responde o que aconteceu ("já estava na
 versão mais nova" / "atualizado: `abc` → `def`") e, quando volta, um "✅ Voltei".
