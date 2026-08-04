@@ -92,7 +92,25 @@ SEMANTIC_FILE_TYPES = {"rationale", "concept", "document", "image"}
 # Utilidades                                                                    #
 # --------------------------------------------------------------------------- #
 def git_files(pattern: str) -> list[str]:
-    out = subprocess.check_output(["git", "-C", REPO, "ls-files", pattern]).decode()
+    """Arquivos do repo que casam `pattern`, INCLUINDO os ainda nao commitados.
+
+    `--others --exclude-standard` acrescenta os nao-rastreados que o .gitignore
+    NAO ignora. Sem isso, `git ls-files` sozinho lista so o que ja esta no index
+    ou no HEAD — e um arquivo NOVO ficava invisivel para o `--update` e para o
+    teste-guardiao, ate alguem rodar `git add`.
+
+    O efeito era pior que um bug fixo, porque era INTERMITENTE: dependia da
+    ordem em que se stageia. Fluxo tipico "cria teste -> --update -> pytest ->
+    commit" passava local (o arquivo novo nao existia para nenhum dos dois) e
+    quebrava na CI, que faz checkout do commit — onde o arquivo JA e rastreado.
+    Custou um CI vermelho no PR #208; o mesmo arquivo em outro PR passou so
+    porque um `git add -A` anterior o tinha deixado no index.
+
+    `--deduplicate` porque um arquivo staged pode aparecer nas duas listagens.
+    """
+    out = subprocess.check_output(
+        ["git", "-C", REPO, "ls-files", "--cached", "--others",
+         "--exclude-standard", "--deduplicate", pattern]).decode()
     return [f for f in out.splitlines() if f]
 
 

@@ -88,7 +88,7 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   ativamente); dependências com teto de major. **Risco aceito e registrado:**
   credenciais gravadas sem `chmod 0600` — no Windows do dono o `os.chmod` só
   mexe no bit de somente-leitura, então não agregaria proteção real.
-  Depois do `--update`: **1584 nós, 2978 arestas, 0 órfãs**.
+  Depois do `--update`: **1590 nós, 2985 arestas, 0 órfãs**.
 
 - **2026-08-03 (periferia) — o que as auditorias nunca olharam.** Pergunta do
   dono: todas as auditorias entraram pelo NÚCLEO; ~3.000 linhas de periferia

@@ -404,6 +404,11 @@
   "ast_hash": "6249d116a1a38a321a81f81157a7fabc2bd84621",
   "semantic_hash": "6249d116a1a38a321a81f81157a7fabc2bd84621"
  },
+ "tests/test_bot_autorizacao.py": {
+  "mtime": 1785800977.1264076,
+  "ast_hash": "ea7631b8624ed3bc88edd28fc5822e50375ddab4",
+  "semantic_hash": "ea7631b8624ed3bc88edd28fc5822e50375ddab4"
+ },
  "tests/test_bot_impressao.py": {
   "mtime": 1784935664.5831094,
   "ast_hash": "0e5146afe3e21d6d935f1aff171a227feaa65b48",
@@ -570,9 +575,9 @@
   "semantic_hash": "25ec4bbd0318e332b469d535593173e5db2260a7"
  },
  "tools/graph_sync.py": {
-  "mtime": 1784736107.8134754,
-  "ast_hash": "2fcdd5240600765e56d2c33bb90f262eeec98794",
-  "semantic_hash": "2fcdd5240600765e56d2c33bb90f262eeec98794"
+  "mtime": 1785839503.7258182,
+  "ast_hash": "21f6bc868245739cb41fef9b4ffb21859a03d00f",
+  "semantic_hash": "21f6bc868245739cb41fef9b4ffb21859a03d00f"
  },
  "tools/gui_screenshot.py": {
   "mtime": 1784229860.1942687,

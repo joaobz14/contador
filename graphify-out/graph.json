@@ -15302,7 +15302,7 @@
    "label": "versioned_set()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L99",
+   "source_location": "L117",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15316,7 +15316,7 @@
    "label": "module_id()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L104",
+   "source_location": "L122",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15330,7 +15330,7 @@
    "label": "load_json()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L110",
+   "source_location": "L128",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15344,7 +15344,7 @@
    "label": "_loc_num()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L115",
+   "source_location": "L133",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15358,7 +15358,7 @@
    "label": "canonical_links()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L120",
+   "source_location": "L138",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15372,7 +15372,7 @@
    "label": "dump_atomic()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L126",
+   "source_location": "L144",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15386,7 +15386,7 @@
    "label": "Symbol",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L139",
+   "source_location": "L157",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15400,7 +15400,7 @@
    "label": "ParsedModule",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L152",
+   "source_location": "L170",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15414,7 +15414,7 @@
    "label": "gen_symbol_id()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L160",
+   "source_location": "L178",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15428,7 +15428,7 @@
    "label": "parse_python()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L173",
+   "source_location": "L191",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15442,7 +15442,7 @@
    "label": "parse_all()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L225",
+   "source_location": "L243",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15456,7 +15456,7 @@
    "label": "leaf_name()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L238",
+   "source_location": "L256",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15470,7 +15470,7 @@
    "label": "SyncResult",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L248",
+   "source_location": "L266",
    "metadata": {
     "language": "python",
     "kind": "class"
@@ -15484,7 +15484,7 @@
    "label": "reconcile()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L260",
+   "source_location": "L278",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15498,7 +15498,7 @@
    "label": "validate()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L562",
+   "source_location": "L580",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15512,7 +15512,7 @@
    "label": "build_semantic_snapshot()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L592",
+   "source_location": "L610",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15526,7 +15526,7 @@
    "label": "report()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L647",
+   "source_location": "L665",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15540,7 +15540,7 @@
    "label": "measure()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L671",
+   "source_location": "L689",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15554,7 +15554,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L693",
+   "source_location": "L711",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -15596,7 +15596,7 @@
    "label": "write_manifest()",
    "file_type": "code",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L623",
+   "source_location": "L641",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -21289,6 +21289,90 @@
    "id": "tests_test_registro_test_bearer_do_ml_e_redigido",
    "community": 58,
    "norm_label": "test_bearer_do_ml_e_redigido()"
+  },
+  {
+   "label": "test_bot_autorizacao.py",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L1",
+   "metadata": {
+    "language": "python",
+    "kind": "file"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao",
+   "community": 77,
+   "norm_label": "test_bot_autorizacao.py"
+  },
+  {
+   "label": "_handlers_registrados()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L40",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_handlers_registrados",
+   "community": 77,
+   "norm_label": "_handlers_registrados()"
+  },
+  {
+   "label": "_checa_autorizacao()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L52",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_checa_autorizacao",
+   "community": 77,
+   "norm_label": "_checa_autorizacao()"
+  },
+  {
+   "label": "test_todo_handler_registrado_checa_autorizacao()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L68",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "community": 77,
+   "norm_label": "test_todo_handler_registrado_checa_autorizacao()"
+  },
+  {
+   "label": "test_menu_nao_responde_a_estranho()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L86",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_menu_nao_responde_a_estranho",
+   "community": 77,
+   "norm_label": "test_menu_nao_responde_a_estranho()"
+  },
+  {
+   "label": "test_id_continua_aberto_de_proposito()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L94",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_autorizacao_test_id_continua_aberto_de_proposito",
+   "community": 77,
+   "norm_label": "test_id_continua_aberto_de_proposito()"
   }
  ],
  "links": [
@@ -27755,6 +27839,26 @@
    "weight": 1.0,
    "source": "tests_test_bot_alerta_test_versao_confirma_quando_esta_em_dia",
    "target": "tests_test_bot_alerta_update_msg",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L77",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "target": "tests_test_bot_autorizacao_checa_autorizacao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L71",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "target": "tests_test_bot_autorizacao_handlers_registrados",
    "confidence_score": 1.0
   },
   {
@@ -38687,6 +38791,56 @@
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L52",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_checa_autorizacao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L40",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_handlers_registrados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L94",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_id_continua_aberto_de_proposito",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L86",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_menu_nao_responde_a_estranho",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_autorizacao.py",
+   "source_location": "L68",
+   "weight": 1.0,
+   "source": "tests_test_bot_autorizacao",
+   "target": "tests_test_bot_autorizacao_test_todo_handler_registrado_checa_autorizacao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
    "source_file": "tests/test_bot_impressao.py",
    "source_location": "L135",
    "weight": 1.0,
@@ -44178,7 +44332,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L592",
+   "source_location": "L610",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_build_semantic_snapshot",
@@ -44188,7 +44342,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L120",
+   "source_location": "L138",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_canonical_links",
@@ -44198,7 +44352,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L126",
+   "source_location": "L144",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_dump_atomic",
@@ -44208,7 +44362,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L160",
+   "source_location": "L178",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_gen_symbol_id",
@@ -44228,7 +44382,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L238",
+   "source_location": "L256",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_leaf_name",
@@ -44238,7 +44392,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L110",
+   "source_location": "L128",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_load_json",
@@ -44248,7 +44402,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L115",
+   "source_location": "L133",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_loc_num",
@@ -44258,7 +44412,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L693",
+   "source_location": "L711",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_main",
@@ -44268,7 +44422,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L671",
+   "source_location": "L689",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_measure",
@@ -44278,7 +44432,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L104",
+   "source_location": "L122",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_module_id",
@@ -44288,7 +44442,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L225",
+   "source_location": "L243",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parse_all",
@@ -44298,7 +44452,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L173",
+   "source_location": "L191",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parse_python",
@@ -44308,7 +44462,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L152",
+   "source_location": "L170",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_parsedmodule",
@@ -44318,7 +44472,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L260",
+   "source_location": "L278",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_reconcile",
@@ -44328,7 +44482,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L647",
+   "source_location": "L665",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_report",
@@ -44338,7 +44492,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L139",
+   "source_location": "L157",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_symbol",
@@ -44348,7 +44502,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L248",
+   "source_location": "L266",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_syncresult",
@@ -44358,7 +44512,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L562",
+   "source_location": "L580",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_validate",
@@ -44368,7 +44522,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L99",
+   "source_location": "L117",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_versioned_set",
@@ -44378,7 +44532,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/graph_sync.py",
-   "source_location": "L623",
+   "source_location": "L641",
    "weight": 1.0,
    "source": "tools_graph_sync",
    "target": "tools_graph_sync_write_manifest",
@@ -51840,5 +51994,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "e64431e6391b8f284a7ba769896d6801b97915bf"
+ "built_at_commit": "2eb2784709dd54f52154d8d0feef43d6993c6881"
 }

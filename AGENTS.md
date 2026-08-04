@@ -102,7 +102,10 @@ em 2º plano.
   semântica, corrige números de linha, remove nó de símbolo morto e reconecta
   âncora manual quebrada (nunca deixa aresta órfã); grava atômico. Fluxo:
   `python tools/graph_sync.py --check` (detecta defasagem; roda no CI via
-  `tests/test_graphify_sync.py`) → `--update` (aplica; re-emite `semantic.json` +
+  `tests/test_graphify_sync.py`; enxerga **arquivo novo ainda não commitado** —
+  antes usava só `git ls-files` e um arquivo novo ficava invisível até o `git
+  add`, o que fazia o guardião passar local e **quebrar na CI**, de forma
+  intermitente conforme a ordem de stage) → `--update` (aplica; re-emite `semantic.json` +
   `manifest.json`) → `--validate`. `built_at_commit` passa a ser o HEAD
   sincronizado. `graph.html` só o CLI regenera (fica defasado — pendência conhecida).
 - **SEMPRE atualize o grafo com o que aprender:** ao terminar uma tarefa, rode
