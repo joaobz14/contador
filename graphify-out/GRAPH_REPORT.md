@@ -69,6 +69,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mesma intermitência por ordem-de-stage do #208, pela porta dos fundos).
   Depois do `--update`: **1631 nós, 3067 arestas, 0 órfãs**.
 
+- **2026-08-04 — `/atualizar`: `git pull` pelo Telegram.** Pedido do dono: *"às
+  vezes estou no celular e não consigo dar `git pull` na pasta, queria não ficar
+  refém de estar no computador"*. A peça que torna isso simples já existia — o
+  `Iniciar Bot (auto).bat` é um **laço**: se o processo morre, ele sobe de novo
+  15s depois. Então o bot **não dispara processo nenhum** para se reiniciar
+  (nada de `schtasks` daqui, que é o terreno do WinError 6): ele **sai**, e o
+  laço o traz de volta na versão nova. Nós novos: `bot_atualizar_remoto` e
+  `atualizar_guardas` — as duas guardas por dano irreversível: **árvore suja**
+  (`nomes_sku.json`/`skus_por_anuncio.json` são versionados **e** editados pela
+  tela; com alteração local o comando não puxa nada e lista os arquivos — nada
+  de `stash`/`reset` automático em cima do trabalho do dono) e **`TRAVA_CONTA`
+  com `blocking=False`** (o reinício não pode cair entre gerar o ZIP e marcar o
+  estado — invariante 1). Achado ao escrever o teste: o `.strip()` na saída
+  inteira do `git status --porcelain` **comia a primeira letra** do primeiro
+  arquivo (`nomes_sku.json` → `omes_sku.json`).
+  Depois do `--update`: **1675 nós, 3149 arestas, 0 órfãs**.
+
 - **2026-07-30 — Canal de volta com o app da Zebra (mural de status) + decisão
   de NÃO fundir os dois apps.** A entrega entre contador e app da Zebra é por
   arquivo e não tinha resposta: a tela adivinhava por duas pistas (o ZIP sumir,

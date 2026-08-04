@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 345,
- "edge_count": 615,
+ "node_count": 347,
+ "edge_count": 625,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3979,6 +3979,22 @@
    "source_location": null,
    "id": "graph_sync_versioned_set_consistente",
    "_origin": "manual"
+  },
+  {
+   "label": "/atualizar: git pull PELO TELEGRAM, sem estar na maquina (2026-08-04). Pedido do dono: 'as vezes estou no celular e nao consigo dar git pull na pasta, queria nao ficar refem de estar no computador'. O REINICIO nao usa subprocess (nada de schtasks disparado daqui): o bot roda sob o 'Iniciar Bot (auto).bat', que e um LACO — se o processo morre, ele sobe de novo 15s depois ja com o codigo novo. Entao basta SAIR (os._exit apos logging.shutdown). Isso evita de vez o terreno minado de disparar processo a partir de processo sem console (WinError 6, que derrubou o auto-start pela tela em 2026-07). BOT_SEM_PAUSA e o sinal de que quem subiu o bot foi esse lancador (so ele define a variavel): sem ela, sair deixaria o bot FORA DO AR, entao o comando atualiza e manda reiniciar na mao — bot mudo e pior que bot desatualizado. Fecha o ciclo com um recado em dados/reinicio_pendente.json lido no post_init (_avisar_reinicio): quem pediu esta no celular e nao ve a maquina; sem o 'Voltei' ele so descobriria mandando /versao. O recado e APAGADO ANTES do envio (um recado sobrevivente avisaria a cada reinicio, para sempre).",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "id": "bot_atualizar_remoto",
+   "_origin": "manual"
+  },
+  {
+   "label": "ATUALIZACAO AUTOMATICA NAO PODE DESTRUIR TRABALHO LOCAL NEM ATROPELAR OPERACAO (2026-08-04). Duas guardas no /atualizar, ambas por dano irreversivel. (1) ARVORE SUJA: nomes_sku.json e skus_por_anuncio.json sao VERSIONADOS e editados pela tela na maquina de operacao — com alteracao local nao commitada o comando NAO puxa nada e lista os arquivos. Nada de stash/checkout/reset automatico: o 'conflito' aqui e o trabalho do dono (ordem de separacao, nomes de produto), e um descarte silencioso seria pior que ficar desatualizado. (2) TRAVA_CONTA com blocking=False: o pull troca os .py sob um processo que ja os carregou, e o reinicio logo depois poderia matar o bot ENTRE gerar o ZIP e marcar o estado (etiqueta impressa sem marcacao = invariante 1). Ocupado responde na hora 'tente em instantes' em vez de ficar mudo esperando. E `git pull --ff-only`: numa pasta de operacao o historico so anda para a frente; se nao da fast-forward ha commit local e isso pede um humano, nao um merge automatico. O git roda com stdin=DEVNULL e GIT_TERMINAL_PROMPT=0 — sem isso ele ficaria esperando usuario/senha para sempre num processo sem console.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "id": "atualizar_guardas",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4582,6 +4598,17 @@
    "target": "shopee_api_renovar_token"
   },
   {
+   "source": "atualizar_guardas",
+   "target": "bot_atualizar_remoto",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "as guardas do mesmo comando",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
    "relation": "conceptually_related_to",
    "confidence": "MANUAL",
    "source_file": "separador_etiquetas_ml.py",
@@ -4701,6 +4728,28 @@
    "source": "bot_alerta_shopee",
    "target": "bot_vendas_apos_resumo",
    "confidence_score": 1.0
+  },
+  {
+   "source": "bot_atualizar_remoto",
+   "target": "bot_agendador_tarefas_logon",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o lancador com laco e quem reinicia",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_atualizar_remoto",
+   "target": "bot_segundo_plano_junto_com_tela",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o WinError 6 que esta solucao evita de proposito",
+   "source_file": "bot_telegram.py",
+   "source_location": null
   },
   {
    "source": "bot_menu_comandos_por_chat",
@@ -5664,6 +5713,17 @@
    "source_location": null
   },
   {
+   "source": "webhook_url_e_segredo",
+   "target": "registro_sem_segredos",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "credencial embutida na URL entrou na mesma funcao",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
    "relation": "conceptually_related_to",
    "confidence": "MANUAL",
    "source_file": "separador_etiquetas_ml.py",
@@ -6014,6 +6074,39 @@
    "confidence_score": 1.0
   },
   {
+   "source": "atualizar_guardas",
+   "target": "bot_telegram_atualizar_sem_atropelar",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "trava para nao cair no meio de um /imprimir",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "atualizar_guardas",
+   "target": "bot_telegram_git",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "descritores fixados + sem prompt de senha",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "atualizar_guardas",
+   "target": "bot_telegram_puxar_atualizacao",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "arvore suja e ff-only",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
    "relation": "rationale_for",
    "confidence": "MANUAL",
    "source_file": "bot_telegram.py",
@@ -6212,6 +6305,39 @@
    "source": "bot_alerta_shopee",
    "target": "shopee_api_pedidos_prontos_novos",
    "confidence_score": 1.0
+  },
+  {
+   "source": "bot_atualizar_remoto",
+   "target": "bot_telegram_ao_iniciar",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o aviso da volta roda no post_init",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_atualizar_remoto",
+   "target": "bot_telegram_avisar_reinicio",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "fecha o ciclo para quem esta no celular",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_atualizar_remoto",
+   "target": "bot_telegram_cmd_atualizar",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "por que o comando existe e como reinicia",
+   "source_file": "bot_telegram.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",

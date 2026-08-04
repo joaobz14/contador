@@ -39,6 +39,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import subprocess
 import sys
 import threading
 from datetime import datetime, time
@@ -758,7 +759,8 @@ AJUDA_COMANDOS = (
     "/detalhar SKU — composicao de um SKU (hoje, ML)\n"
     "/loja — trocar entre Mercado Livre e Shopee\n"
     "/conta — ver/trocar a conta ML (com 2+ contas)\n"
-    "/id — mostra seu chat id"
+    "/id — mostra seu chat id\n"
+    "/versao — versao que estou rodando · /atualizar — baixar a nova e reiniciar"
 )
 AJUDA_RODAPE = (
     "\n\nML: toque em 🖨 num grupo para imprimir (pede confirmacao).\n"
@@ -970,6 +972,188 @@ async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("\n".join(linhas))
 
 
+# ------------------------------------------------------- atualizacao remota
+# Motivo: o dono quase sempre esta no celular quando sai uma versao nova, e
+# atualizar exigia estar NA MAQUINA (duplo clique no "Atualizar programa.bat").
+# O /atualizar faz o mesmo de qualquer lugar: `git pull` e reinicio.
+#
+# O reinicio NAO usa subprocess (nada de `schtasks /run` daqui): o bot roda sob
+# o "Iniciar Bot (auto).bat", que e um LACO — se o processo morre, ele sobe de
+# novo 15s depois, ja com o codigo novo. Entao basta SAIR. Isso evita de vez o
+# terreno minado de disparar processo a partir de um processo sem console
+# (WinError 6, ver "Areas de risco" em docs/ARQUITETURA.md).
+#
+# `BOT_SEM_PAUSA` e o sinal de que quem subiu o bot foi esse lancador (e so ele
+# define a variavel). Sem ela, sair deixaria o bot FORA DO AR — entao o comando
+# atualiza e avisa que o reinicio tem de ser na mao.
+ARQUIVO_REINICIO = core.PASTA_DADOS / "reinicio_pendente.json"
+TIMEOUT_GIT = 120
+
+
+def _git(*args: str) -> subprocess.CompletedProcess:
+    """Roda um comando git na pasta do projeto, com TODOS os descritores fixados.
+
+    `stdin=DEVNULL` + `capture_output` nao herdam nada do processo pai — a mesma
+    precaucao que o `_commit_do_disco` resolve nao usando subprocess. E
+    `GIT_TERMINAL_PROMPT=0` para o git FALHAR em vez de ficar esperando usuario
+    e senha para sempre num processo sem console (o remoto e https).
+    """
+    return subprocess.run(
+        ["git", "-C", str(core.PASTA_SCRIPT), *args],
+        stdin=subprocess.DEVNULL, capture_output=True, text=True,
+        timeout=TIMEOUT_GIT, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+    )
+
+
+def _primeira_linha(texto: str) -> str:
+    """Primeira linha util de uma saida do git, ja redigida.
+
+    `sem_segredos` porque a saida do git pode carregar a URL do remoto — e um
+    remoto https com credencial embutida (`https://usuario:token@github.com/...`)
+    levaria o token junto para o chat.
+    """
+    for linha in (texto or "").splitlines():
+        if linha.strip():
+            return sem_segredos(linha.strip())[:200]
+    return ""
+
+
+def _puxar_atualizacao() -> tuple[bool, str]:
+    """`git pull` na pasta do projeto. Devolve (mudou?, texto para o chat).
+
+    NUNCA levanta: qualquer falha vira texto explicando o que fazer. Roda em
+    thread (subprocesso + rede).
+    """
+    try:
+        sujos = _git("status", "--porcelain", "--untracked-files=no")
+        if sujos.returncode != 0:
+            return False, ("Nao consegui ler o estado do git aqui. Esta pasta foi "
+                           "criada com `git clone`?\n" + _primeira_linha(sujos.stderr))
+        if sujos.stdout.strip():
+            # Alteracao local nao commitada — tipicamente nomes_sku.json ou
+            # skus_por_anuncio.json editados pela tela. NAO puxamos: um pull por
+            # cima falharia (ou, pior, um descarte automatico apagaria o
+            # trabalho do dono). Ele decide o que fazer, na maquina.
+            # `linha[2:]` e nao `strip()` na saida inteira: no formato porcelain
+            # o estado ocupa 2 colunas ("_M", "M_", "R_"...) e a 1a delas pode
+            # ser espaco — um strip() do texto todo comeria a 1a letra do
+            # primeiro arquivo ("nomes_sku.json" virava "omes_sku.json").
+            arquivos = [linha[2:].strip() for linha in sujos.stdout.splitlines()
+                        if linha.strip()]
+            lista = "\n".join(f"  • {a}" for a in arquivos[:6])
+            resto = f"\n  ... e mais {len(arquivos) - 6}" if len(arquivos) > 6 else ""
+            return False, ("Nao atualizei: ha alteracoes locais nao salvas nesta "
+                           f"pasta.\n{lista}{resto}\n\nNao mexi em nada para nao "
+                           "perder o seu trabalho — resolva no PC (commitar ou "
+                           "descartar) e mande /atualizar de novo.")
+
+        antes = _commit_do_disco()
+        # --ff-only: numa pasta de OPERACAO o histórico so deve andar para a
+        # frente. Se nao der fast-forward, ha commit local ou historico
+        # reescrito — situacao que pede um humano, nao um merge automatico.
+        pull = _git("pull", "--ff-only")
+        if pull.returncode != 0:
+            return False, ("O `git pull` falhou:\n" + (_primeira_linha(pull.stderr)
+                           or _primeira_linha(pull.stdout))
+                           + "\n\nSe falar em 'not possible to fast-forward', ha "
+                             "commit local nesta pasta — resolva no PC.")
+        depois = _commit_do_disco()
+        if antes and depois and antes == depois:
+            return False, f"Ja estava na versao mais nova ({depois}). Nada a fazer."
+        return True, f"Atualizado: {antes or '?'} → {depois or '?'}."
+    except subprocess.TimeoutExpired:
+        return False, ("O git demorou demais (mais de 2 min) e foi interrompido. "
+                       "Deve ser a internet do PC — tente de novo.")
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, (f"Nao consegui rodar o git ({type(e).__name__}). "
+                       "Ele esta instalado e no PATH do PC?")
+
+
+def _atualizar_sem_atropelar() -> tuple[bool, str] | None:
+    """`_puxar_atualizacao` sob TRAVA_CONTA; `None` se o bot esta ocupado.
+
+    Sem isto, o `git pull` (e o reinicio logo depois) poderia cair no meio de um
+    /imprimir — trocando os `.py` sob um processo que ja os carregou e matando o
+    bot entre gerar o ZIP e marcar o estado. `blocking=False` para o comando
+    responder na hora "estou ocupado" em vez de ficar mudo esperando.
+    """
+    if not TRAVA_CONTA.acquire(blocking=False):
+        return None
+    try:
+        return _puxar_atualizacao()
+    finally:
+        TRAVA_CONTA.release()
+
+
+async def cmd_atualizar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/atualizar — `git pull` + reinicio, sem precisar estar no PC."""
+    cfg = context.bot_data["cfg"]
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if not _autorizado(update, cfg):
+        log.warning("Acao /atualizar negada para chat %s", chat_id)
+        if chat_id:
+            await context.bot.send_message(chat_id, "Nao autorizado. Use /id e peca para liberar seu chat.")
+        return
+    log.info("Acao /atualizar de chat %s", chat_id)
+    await context.bot.send_message(chat_id, "🔄 Procurando atualizacoes...")
+
+    resultado = await asyncio.to_thread(_atualizar_sem_atropelar)
+    if resultado is None:
+        await context.bot.send_message(
+            chat_id, "Estou no meio de uma operacao agora. Tente de novo em instantes.")
+        return
+    mudou, texto = resultado
+    if not mudou:
+        await context.bot.send_message(chat_id, texto)
+        return
+
+    if not os.getenv("BOT_SEM_PAUSA"):
+        # Bot subido na mao (sem o lancador com laco): sair aqui o deixaria fora
+        # do ar, e um bot mudo e pior que um bot desatualizado.
+        await context.bot.send_message(
+            chat_id, f"{texto}\n\n⚠️ Eu NAO consigo me reiniciar sozinho (fui "
+                     "aberto sem o lancador automatico), entao ainda estou "
+                     "rodando o codigo ANTIGO. Reinicie no PC:\n"
+                     'schtasks /end /tn "Contador - Bot do Telegram (login)"\n'
+                     'schtasks /run /tn "Contador - Bot do Telegram (login)"')
+        return
+
+    # Deixa o recado para o EU DE DEPOIS do reinicio confirmar que voltou (ver
+    # `_avisar_reinicio`): daqui a 15s quem manda a mensagem e outro processo.
+    try:
+        core._gravar_json(ARQUIVO_REINICIO, {"chat_id": chat_id})
+    except OSError:
+        log.warning("Nao consegui gravar o aviso de reinicio", exc_info=True)
+    await context.bot.send_message(
+        chat_id, f"{texto}\n\n♻️ Reiniciando para pegar a versao nova — volto em "
+                 "uns 15 segundos.\n(Se a TELA do separador estiver aberta no PC, "
+                 "ela continua na versao antiga ate voce fechar e abrir.)")
+
+    log.info("Saindo para o lancador subir a versao nova.")
+    logging.shutdown()                    # o _exit nao passa pelos handlers
+    os._exit(0)                           # o laco do .bat sobe o bot de novo
+
+
+async def _avisar_reinicio(app) -> None:
+    """Avisa, na volta, que o bot subiu na versao nova (best-effort).
+
+    Fecha o ciclo do /atualizar: quem pediu esta no celular e nao tem como ver a
+    maquina — sem esta mensagem, ele so descobriria mandando /versao. O recado e
+    apagado ANTES do envio: um erro de rede aqui custa um aviso, enquanto um
+    recado que sobrevive avisaria de novo a cada reinicio, para sempre.
+    """
+    try:
+        dados = core._ler_json(ARQUIVO_REINICIO)
+        chat_id = dados.get("chat_id")
+        if not chat_id:
+            return
+        ARQUIVO_REINICIO.unlink(missing_ok=True)
+        await app.bot.send_message(
+            chat_id, f"✅ Voltei — agora rodando a versao {COMMIT_EM_USO or '(desconhecida)'}.")
+    except Exception:  # noqa: BLE001 - aviso cosmetico nao pode impedir o bot de subir
+        log.warning("Nao consegui avisar do reinicio", exc_info=True)
+
+
 def _contas_do_resumo() -> list[str]:
     """Contas que DEVEM aparecer no resumo, mesmo sem venda — ausencia tambem e
     informacao ("nenhuma venda" e diferente de o bloco sumir)."""
@@ -1160,6 +1344,7 @@ COMANDOS_MENU = [
     ("loja", "Trocar entre Mercado Livre e Shopee"),
     ("conta", "Ver/trocar a conta do Mercado Livre"),
     ("versao", "Versao que o bot esta rodando"),
+    ("atualizar", "Baixar a versao nova e reiniciar"),
     ("menu", "Menu com botoes"),
     ("id", "Mostra seu chat id"),
 ]
@@ -1194,6 +1379,14 @@ async def _publicar_comandos(app) -> None:
                         chat_id, exc_info=True)
 
 
+async def _ao_iniciar(app) -> None:
+    """`post_init`: roda depois do `initialize()` e ANTES do polling. As duas
+    tarefas daqui sao cosmeticas e best-effort — nenhuma pode impedir o bot de
+    subir."""
+    await _publicar_comandos(app)
+    await _avisar_reinicio(app)
+
+
 # ---------------------------------------------------------------- inicializacao
 def main() -> None:
     # Aplica as preferencias do nucleo (conta ativa e carimbar_sku do config.json)
@@ -1205,7 +1398,7 @@ def main() -> None:
     if conta:
         log.info("Conta ativa: %s (de %d configurada(s)).", conta, len(core.listar_contas()))
     cfg = carregar_config()
-    app = ApplicationBuilder().token(cfg["token"]).post_init(_publicar_comandos).build()
+    app = ApplicationBuilder().token(cfg["token"]).post_init(_ao_iniciar).build()
     app.bot_data["cfg"] = cfg
 
     app.add_handler(CommandHandler(["start", "menu", "ajuda"], cmd_start))
@@ -1219,6 +1412,7 @@ def main() -> None:
     app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
     app.add_handler(CommandHandler("perguntas", cmd_perguntas))
     app.add_handler(CommandHandler("versao", cmd_versao))
+    app.add_handler(CommandHandler("atualizar", cmd_atualizar))
     app.add_handler(CommandHandler("dia", cmd_dia))
     app.add_handler(CommandHandler("detalhar", cmd_detalhar))
     app.add_handler(CallbackQueryHandler(cb_botao))
