@@ -96,12 +96,16 @@ def texto_bom_dia(prontos: list, hoje: str, amanha: str) -> str:
     return f"{cabecalho}\n\n{texto_resumo(prontos, hoje, amanha)}"
 
 
-def texto_alerta_pos_horario(conta: str, itens: list) -> str:
-    """Alerta de venda nova ja pronta (ready_to_print) com despacho HOJE,
-    detectada pelo poll automatico do bot — fora do fluxo normal de
-    'Atualizar' da tela. Mostra SKU + quantidade total (somada por SKU, sem o
-    numero do envio — o dono precisa saber O QUE repor com o fornecedor, nao
-    qual pedido especifico)."""
+def texto_alerta_pos_horario(conta: str, itens: list, *, aviso: str = "") -> str:
+    """Alerta de venda nova com despacho HOJE, detectada pelo poll automatico do
+    bot — fora do fluxo normal de 'Atualizar' da tela. Mostra SKU + quantidade
+    total (somada por SKU, sem o numero do envio — o dono precisa saber O QUE
+    repor com o fornecedor, nao qual pedido especifico).
+
+    `aviso` (opcional) e uma linha acrescentada no fim, para o caso em que a
+    venda existe mas ainda NAO da para imprimir ("Informe a NF-e"): sem ela o
+    recado seria identico ao de uma venda pronta, e o dono iria imprimir uma
+    etiqueta que o ML nao libera."""
     cabecalho = f"🔔 Venda {conta}" if conta else "🔔 Venda nova"
     por_sku: dict[str, int] = defaultdict(int)
     ordem: list[str] = []
@@ -110,6 +114,8 @@ def texto_alerta_pos_horario(conta: str, itens: list) -> str:
             ordem.append(it.chave)
         por_sku[it.chave] += it.quantidade
     linhas = [cabecalho] + [f"{chave} - {por_sku[chave]}" for chave in ordem]
+    if aviso:
+        linhas += ["", aviso]
     return "\n".join(linhas)
 
 

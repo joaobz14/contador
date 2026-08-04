@@ -59,6 +59,12 @@ senão some do menu.
   número de envio/pedido — pedido do dono, só precisa saber O QUE repor. Cada
   disparo também persiste os itens no mesmo arquivo (junto do dedup), que alimenta
   o `/vendasapos` abaixo.
+- **Alerta também de "Informe a NF-e"** (`invoice_pending`, ML): venda de item
+  **sem estoque** não recebe o XML do faturador e nunca chega a `ready_to_print`
+  — era a única invisível, e a que mais precisa de aviso. Vem num aviso separado
+  (rótulo `· falta NF-e`), com dedup próprio, e **não entra em lote de impressão
+  nenhum** (o ML não libera a etiqueta). Diagnóstico do nome do substatus:
+  `python separador_etiquetas_ml.py substatus`.
 - **Testar na hora** (sem esperar os 5 min nem uma venda nova):
   `python bot_telegram.py testar-alerta` (ou `atalhos/'Testar Alerta
   Pos-Horario.bat'`) — monta um `Application` de verdade e chama o job uma

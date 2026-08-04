@@ -73,6 +73,12 @@ em `alertas_pos_horario.json` (junto do dedup — por `shipment_id` no ML,
 `/menu`) junta **tudo que já foi avisado hoje** numa mensagem só, por
 conta/loja + um TOTAL por SKU no final — evita que várias vendas caindo em
 sequência depois das 8:30 poluam o chat com um alerta cada.
+O alerta cobre também as vendas paradas em **"Informe a NF-e"**
+(`invoice_pending`): sem estoque o faturador não sobe o XML e o envio nunca
+chega a `ready_to_print` — a venda mais urgente era a única invisível. Vem
+da mesma passada (`filtrar_para_imprimir(pendentes_nf=...)`), em aviso e
+balde de dedup separados, e **nunca** entra em lote de impressão: o ML não
+libera a etiqueta desses envios.
 O **`/perguntas`** é o único comando que não consulta nem imprime: ele faz um
 POST num webhook do **n8n** (fluxo fora deste projeto, que lista perguntas sem
 resposta da conta 3) e a resposta chega no chat escrita pelo próprio n8n. Os

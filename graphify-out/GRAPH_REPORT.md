@@ -69,6 +69,21 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   mesma intermitência por ordem-de-stage do #208, pela porta dos fundos).
   Depois do `--update`: **1631 nós, 3067 arestas, 0 órfãs**.
 
+- **2026-08-04 — alerta de venda parada em "Informe a NF-e".** O dono controla
+  estoque: quando vende um item que não tem, o faturador não sobe o XML e o
+  envio fica em `invoice_pending` — **nunca** chega a `ready_to_print`. Ou seja,
+  a venda que mais precisa de aviso (a que exige reposição no mesmo dia) era a
+  única invisível para o app inteiro. Nó novo: `alerta_nf_pendente`. A regra que
+  não pode cair está escrita nele: `filtrar_para_imprimir` **continua devolvendo
+  só `ready_to_print`** — a separação lá dentro é por SUBSTATUS, não por "veio
+  preenchido"; o ML não libera a etiqueta desse envio, e contá-lo como pronto
+  poria no lote uma etiqueta que não existe (família da invariante 1). Os dois
+  grupos saem da **mesma passada** (zero chamada de API a mais) e o aviso vai em
+  **balde de dedup próprio** — dividir o balde faria o `shipment_id` já avisado
+  calar o "está pronta" de quando o XML subisse. A CLI ganhou o diagnóstico
+  `substatus` para confirmar o nome na conta real, já que ele é contrato do ML.
+  Depois do `--update`: **1693 nós, 3183 arestas, 0 órfãs**.
+
 - **2026-08-04 — `/atualizar`: `git pull` pelo Telegram.** Pedido do dono: *"às
   vezes estou no celular e não consigo dar `git pull` na pasta, queria não ficar
   refém de estar no computador"*. A peça que torna isso simples já existia — o

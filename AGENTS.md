@@ -508,6 +508,25 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **Alerta de venda parada em "Informe a NF-e" (`invoice_pending`):** o dono
+  controla estoque; quando vende um item que não tem, o faturador **não sobe o
+  XML** e o envio nunca chega a `ready_to_print` — a venda que mais precisa de
+  aviso era a única invisível para um app que só olha esse substatus.
+  `filtrar_para_imprimir` ganhou `pendentes_nf` (lista opcional) e
+  `_avaliar_pedido` um `substatus_extra`; os dois grupos saem da **mesma
+  passada** (o detalhe do envio já foi buscado — zero chamada a mais, e a
+  economia do alerta custou uma auditoria inteira). **O retorno continua sendo só
+  `ready_to_print`** — a separação lá dentro é por SUBSTATUS, não por "veio
+  preenchido": o ML não libera a etiqueta desse envio, e contá-lo como pronto
+  poria no lote uma etiqueta que não existe (família da invariante 1). Sem o
+  parâmetro, o caminho da impressão é idêntico ao de sempre. O aviso vai
+  **separado**, em balde de dedup próprio (`conta + SUFIXO_ALERTA_NF`): dividir o
+  balde faria o `shipment_id` já avisado **calar** o "está pronta" de quando o XML
+  subisse — são dois recados com ações diferentes (repor × imprimir). O texto leva
+  uma linha dizendo que a etiqueta só libera depois do XML; sem ela seria
+  indistinguível de uma venda pronta. **O nome do substatus é contrato do ML**:
+  `python separador_etiquetas_ml.py substatus` lista os que existem na conta, com
+  contagem — rode isso **antes** de mexer no código se o alerta parar de avisar.
 - **`/perguntas`: dois sistemas, um bot só (o bot dispara, o n8n responde).** O
   dono tem um fluxo no **n8n** que lista perguntas/mensagens sem resposta de outra
   conta e quer acioná-lo pelo mesmo bot. A restrição que desenha tudo: o Telegram
