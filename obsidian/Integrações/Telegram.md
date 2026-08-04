@@ -108,7 +108,9 @@ mesmo bot).
 ## `/perguntas` — o bot dispara, o **n8n** responde
 Um fluxo do **n8n** (fora deste projeto) lista as perguntas e mensagens sem
 resposta da **conta 3**. O `/perguntas` só **aciona** esse fluxo: faz um POST no
-webhook, manda um "🔎 Consultando..." na hora e sai de cena — a **resposta chega
+webhook (levando o `chat_id` de quem disparou, para o fluxo responder a quem
+perguntou em vez de a um chat fixo), manda um "🔎 Consultando..." na hora e sai
+de cena — a **resposta chega
 alguns segundos depois, escrita pelo próprio n8n** no mesmo chat. Também há o
 botão **🔎 Perguntas** no `/menu`.
 

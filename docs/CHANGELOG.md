@@ -5,6 +5,10 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **O `/perguntas` passou a mandar o seu chat id para o n8n.** Preparação para as
+  próximas integrações: com o chat id no pedido, o fluxo do n8n responde a **quem
+  perguntou**, em vez de ter um chat fixo escrito dentro dele. O fluxo de hoje
+  continua funcionando igual — é um campo a mais, que ele pode ignorar.
 - **O aviso de vendas passou a incluir as que estão em "Informe a NF-e".** Antes
   ele só avisava das vendas prontas para imprimir — e justamente a venda de um
   produto **sem estoque** nunca chega nesse estado, porque o faturador não sobe o

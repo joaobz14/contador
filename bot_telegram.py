@@ -173,8 +173,14 @@ def carregar_config() -> dict:
 TIMEOUT_PERGUNTAS = 10
 
 
-def _disparar_perguntas(url: str) -> None:
+def _disparar_perguntas(url: str, chat_id: int) -> None:
     """POST no webhook do n8n. Roda em thread (rede) e NUNCA deixa a URL vazar.
+
+    O `chat_id` de quem disparou vai no corpo para o fluxo do n8n responder A
+    QUEM PERGUNTOU, em vez de ter um chat fixo escrito dentro dele. Nao muda
+    nada para o fluxo de hoje (campo a mais e ignorado), e evita que cada
+    integracao nova nasca com um chat gravado por dentro — o custo de descobrir
+    isso depois de cinco fluxos prontos e alto.
 
     O webhook nao pede autenticacao: quem tem o link dispara o fluxo. O link e,
     portanto, o segredo — por isso ele vem do bot_config.json (nao versionado) e
@@ -190,7 +196,8 @@ def _disparar_perguntas(url: str) -> None:
     try:
         resp = requests.post(
             url,
-            json={"origem": "telegram", "comando": "/perguntas"},
+            json={"origem": "telegram", "comando": "/perguntas",
+                  "chat_id": chat_id},
             timeout=TIMEOUT_PERGUNTAS,
         )
     except requests.RequestException as e:
@@ -951,7 +958,7 @@ async def cmd_perguntas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info("Acao /perguntas de chat %s", chat_id)
     await context.bot.send_message(chat_id, "🔎 Consultando...")
     try:
-        await asyncio.to_thread(_disparar_perguntas, url)
+        await asyncio.to_thread(_disparar_perguntas, url, chat_id)
     except core.SeparadorError as e:
         # sem_segredos por convencao (todo texto de excecao que sai pro chat);
         # a URL ja nao entra na mensagem por construcao — isto e a 2a camada.

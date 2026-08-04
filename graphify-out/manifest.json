@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785853224.60716,
-  "ast_hash": "3ca56f344d09d3b55342a0ea04bb4ebd20c3614f",
-  "semantic_hash": "3ca56f344d09d3b55342a0ea04bb4ebd20c3614f"
+  "mtime": 1785854787.459377,
+  "ast_hash": "0e7717ba8debf9b3834019dd234cb5c98d6d9bda",
+  "semantic_hash": "0e7717ba8debf9b3834019dd234cb5c98d6d9bda"
  },
  "CLAUDE.md": {
-  "mtime": 1785853224.60716,
-  "ast_hash": "eb158166f8d18e392371bef32f2deeb0a940d163",
-  "semantic_hash": "eb158166f8d18e392371bef32f2deeb0a940d163"
+  "mtime": 1785854787.4585276,
+  "ast_hash": "af775dc8bfa4279d926de5450207c548e22bc929",
+  "semantic_hash": "af775dc8bfa4279d926de5450207c548e22bc929"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -85,19 +85,19 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785853224.60716,
-  "ast_hash": "5c6b3896155039500c2ee6a26206cb173be79bd1",
-  "semantic_hash": "5c6b3896155039500c2ee6a26206cb173be79bd1"
+  "mtime": 1785854735.4971101,
+  "ast_hash": "43486f680963a20071d2a4aac9e3c037787a9dc7",
+  "semantic_hash": "43486f680963a20071d2a4aac9e3c037787a9dc7"
  },
  "dados/nomes_sku.json": {
-  "mtime": 1785347101.9826937,
-  "ast_hash": "3d8b313a534af3700bc36ff8f3f1d268ba556372",
-  "semantic_hash": "3d8b313a534af3700bc36ff8f3f1d268ba556372"
+  "mtime": 1785854718.9989717,
+  "ast_hash": "a974228e3d890a14874136470bc47954b73d7ae4",
+  "semantic_hash": "a974228e3d890a14874136470bc47954b73d7ae4"
  },
  "dados/skus_por_anuncio.json": {
-  "mtime": 1785347101.9826937,
-  "ast_hash": "7657f213e291afc6305d9da4d650c908ba81c86c",
-  "semantic_hash": "7657f213e291afc6305d9da4d650c908ba81c86c"
+  "mtime": 1785854718.9989717,
+  "ast_hash": "7726c65d8aa0e8bd46e7e5c1d61f44883e0c9372",
+  "semantic_hash": "7726c65d8aa0e8bd46e7e5c1d61f44883e0c9372"
  },
  "docs/AMAZON_SP_API.md": {
   "mtime": 1784160592.696835,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785853224.60716,
-  "ast_hash": "fa216e0030ad09b310abb6f5e0240de0cfdba561",
-  "semantic_hash": "fa216e0030ad09b310abb6f5e0240de0cfdba561"
+  "mtime": 1785854787.4608831,
+  "ast_hash": "062ec472668ba374557b4b180858af9002c4ba49",
+  "semantic_hash": "062ec472668ba374557b4b180858af9002c4ba49"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -425,9 +425,9 @@
   "semantic_hash": "0e5146afe3e21d6d935f1aff171a227feaa65b48"
  },
  "tests/test_bot_perguntas.py": {
-  "mtime": 1785846248.7237282,
-  "ast_hash": "d40085ed92e68ac220e110818227c70426dae5bb",
-  "semantic_hash": "d40085ed92e68ac220e110818227c70426dae5bb"
+  "mtime": 1785854763.3050404,
+  "ast_hash": "fa7f7235dd7e21ea82dec477bb18fe3efe772863",
+  "semantic_hash": "fa7f7235dd7e21ea82dec477bb18fe3efe772863"
  },
  "tests/test_bot_segredo_no_log.py": {
   "mtime": 1785425799.5627954,
