@@ -597,11 +597,23 @@ em 2º plano.
     frequência é responsabilidade deste lado. **Esse limite tem de ser
     PERSISTIDO** (arquivo, como o dedup do alerta) — em memória ele zera a cada
     reinício, e o bot reinicia a cada `/atualizar`.
+- **Integração nova do n8n é UMA LINHA (`INTEGRACOES`).** A tabela
+  `IntegracaoN8N` descreve cada fluxo (comando, descrição do menu, rótulo do
+  botão) e dela saem a chave de config (`webhook_<comando>`), a variável de
+  ambiente (`N8N_WEBHOOK_<COMANDO>`), a linha do `/menu` e o botão inline;
+  `_acionar_n8n` é o corpo único (autorização, "Consultando…", disparo em
+  thread, erro contido). **Mas cada comando tem um handler NOMEADO** que só
+  delega (`cmd_perguntas`, `cmd_anuncios`) — um handler genérico registrado em
+  laço passaria batido pelo guardião `test_todo_handler_registrado_checa_autorizacao`,
+  que varre o `main` por AST: a generalização teria furado a rede de segurança da
+  autorização. A chave de chat continua `chat_perguntas` mesmo valendo para todas
+  as integrações — renomear obrigaria a reeditar o config da máquina de produção,
+  por ganho cosmético.
 - **URL de webhook é CREDENCIAL — e este repositório é público.** O webhook do
   n8n não pede token nem cabeçalho: quem tem o link dispara o fluxo (por isso o
   caminho leva um sufixo aleatório). Então a URL segue a regra dos segredos: mora
-  no `bot_config.json` (`webhook_perguntas`) ou na variável
-  `N8N_WEBHOOK_PERGUNTAS`, **nunca no código**, e não pode entrar em texto de
+  no `bot_config.json` (`webhook_<comando>`) ou na variável
+  `N8N_WEBHOOK_<COMANDO>`, **nunca no código**, e não pode entrar em texto de
   erro nenhum — nada de `raise_for_status()` (a mensagem dele inclui a URL) nem
   de propagar a exceção crua do `requests` ("Max retries exceeded with url: …");
   é o mesmo `_rede_limpa` da Shopee, com `from None`. Terceira camada:
