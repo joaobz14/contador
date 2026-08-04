@@ -5,6 +5,16 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **O bot separa as vendas da Shopee que ainda não podem ser impressas.** Mesma
+  regra do Mercado Livre: só as que precisam sair **no dia**, uma vez cada, em
+  mensagem separada.
+  - **Corrige algo que estava errado:** essas vendas já eram avisadas — só que
+    como **"pronta"**. A Shopee **recusa** organizar o envio enquanto a nota não
+    estiver validada, então o bot dizia que estava pronto o que ela mesma nega.
+  - O aviso **não chuta o motivo**: pode ser a NF-e faltando (venda sem estoque)
+    ou só a Shopee ainda processando o pedido — o painel mostra os dois do mesmo
+    jeito na API. Ele diz que a etiqueta não foi liberada e manda você conferir.
+  - Quando a nota é validada, você recebe o aviso normal de venda pronta também.
 - **Diagnóstico dos estados da Shopee** (`python shopee_api.py status`) — passo
   antes de levar o aviso de "falta NF-e" para a Shopee. Ele lista os estados que
   existem na sua loja agora, com contagem, e mostra o que a API devolve sobre os

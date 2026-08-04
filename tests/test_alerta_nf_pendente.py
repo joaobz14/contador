@@ -246,3 +246,134 @@ def test_job_manda_dois_avisos_separados(monkeypatch, tmp_path):
     dados = core._ler_json(tmp_path / "alertas.json")
     assert dados["avisados"]["cozilatti"] == [1]
     assert dados["avisados"]["cozilatti" + bot.SUFIXO_ALERTA_NF] == [9]
+
+
+# =================================================== Shopee (invoice_data)
+# A Shopee e o CONTRARIO do ML aqui: a venda travada NAO some — ela continua em
+# READY_TO_SHIP, ja aparece na tela e o alerta ja avisava dela como "pronta".
+# So que a Shopee RECUSA o ship_order enquanto a nota estiver pendente
+# (error_pending_invoice, confirmado com o suporte deles em 2026-08-04), entao
+# chama-la de pronta e dizer ao operador que esta pronto o que nao esta.
+import shopee_api as sh  # noqa: E402
+
+
+def _ped_shopee(sn, dia_epoch=None, nf="valid", pay=None, dias=None):
+    ped = {"order_sn": sn, "invoice_data": {"status": nf},
+           "item_list": [{"model_sku": sn, "model_quantity_purchased": 1}]}
+    if dia_epoch is not None:
+        ped["ship_by_date"] = dia_epoch
+    if pay is not None:
+        ped["pay_time"] = pay
+    if dias is not None:
+        ped["days_to_ship"] = dias
+    return ped
+
+
+def _epoch(dia_iso, hora="12:00:00"):
+    from datetime import datetime
+    return int(datetime.fromisoformat(f"{dia_iso}T{hora}-03:00").timestamp())
+
+
+def test_shopee_separa_pronta_de_travada_na_nf(monkeypatch):
+    hoje = core._hoje_br()
+    det = [_ped_shopee("OK", _epoch(hoje), nf="valid"),
+           _ped_shopee("TRAVADA", _epoch(hoje), nf="pending")]
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["OK", "TRAVADA"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+
+    novos, itens, nf, itens_nf = sh.pedidos_prontos_novos(
+        {}, "tok", avisados=set(), hoje=hoje, avisados_nf=set())
+
+    assert [d["order_sn"] for d in novos] == ["OK"]
+    assert [d["order_sn"] for d in nf] == ["TRAVADA"]
+    assert [i.chave for i in itens] == ["OK"]
+    assert [i.chave for i in itens_nf] == ["TRAVADA"]
+
+
+def test_shopee_travada_nao_e_mais_chamada_de_pronta(monkeypatch):
+    """Regressao: antes a venda com NF-e pendente entrava no aviso de "pronta"
+    — e a Shopee recusa o ship_order dela. Era dizer que esta pronto o que a
+    propria Shopee nega."""
+    hoje = core._hoje_br()
+    det = [_ped_shopee("TRAVADA", _epoch(hoje), nf="pending")]
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["TRAVADA"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+
+    novos, _, nf, _ = sh.pedidos_prontos_novos({}, "tok", avisados=set(), hoje=hoje,
+                                               avisados_nf=set())
+    assert novos == []
+    assert [d["order_sn"] for d in nf] == ["TRAVADA"]
+
+
+def test_shopee_so_avisa_do_dia(monkeypatch):
+    """Mesma regra do ML: so o que precisa sair HOJE."""
+    hoje = core._hoje_br()
+    from datetime import date, timedelta
+    amanha = (date.fromisoformat(hoje) + timedelta(days=1)).isoformat()
+    det = [_ped_shopee("HOJE", _epoch(hoje), nf="pending"),
+           _ped_shopee("AMANHA", _epoch(amanha), nf="pending")]
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["HOJE", "AMANHA"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+
+    _, _, nf, _ = sh.pedidos_prontos_novos({}, "tok", avisados=set(), hoje=hoje,
+                                           avisados_nf=set())
+    assert [d["order_sn"] for d in nf] == ["HOJE"]
+
+
+def test_shopee_dedup_separado_dos_prontos(monkeypatch):
+    """O mesmo order_sn pode gerar os dois recados: primeiro "falta NF-e" e,
+    quando o XML sobe, "esta pronta". Balde unico calaria o segundo."""
+    hoje = core._hoje_br()
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["X"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns:
+                        [_ped_shopee("X", _epoch(hoje), nf="pending")])
+    # ja avisado como PRONTO nao cala o aviso de NF-e
+    _, _, nf, _ = sh.pedidos_prontos_novos({}, "tok", avisados={"X"}, hoje=hoje,
+                                           avisados_nf=set())
+    assert [d["order_sn"] for d in nf] == ["X"]
+    # ja avisado no balde de NF-e nao repete
+    _, _, de_novo, _ = sh.pedidos_prontos_novos({}, "tok", avisados=set(), hoje=hoje,
+                                                avisados_nf={"X"})
+    assert de_novo == []
+
+
+# ------------------------------------------------- dia quando falta o prazo
+def test_dia_previsto_usa_ship_by_date_quando_existe():
+    hoje = core._hoje_br()
+    assert sh.dia_previsto(_ped_shopee("A", _epoch(hoje))) == hoje
+
+
+def test_dia_previsto_deriva_de_pay_time_mais_days_to_ship():
+    """A Shopee leva um tempo para atribuir o `ship_by_date` — venda recem-paga
+    vem sem ele. Sem este fallback, uma venda travada recem-criada ficaria fora
+    de qualquer filtro por dia e o aviso nasceria mudo.
+
+    A conta foi conferida contra um pedido real: ship_by_date e o FIM DO DIA de
+    pay_time + days_to_ship (pago 03/08, days_to_ship 2 -> 05/08 23:59:59)."""
+    ped = _ped_shopee("SEM_PRAZO", nf="pending", pay=_epoch("2026-08-03", "14:36:50"),
+                      dias=2)
+    assert sh.dia_previsto(ped) == "2026-08-05"
+
+
+def test_dia_previsto_vazio_quando_nao_da_para_saber():
+    assert sh.dia_previsto({"order_sn": "X"}) == ""
+
+
+def test_nota_nao_validada_e_tudo_que_nao_e_valid():
+    """`!= "valid"` e nao `== "pending"`: o suporte disse que a lista de
+    valores nao e exaustiva, e um valor novo que NAO seja "valid" tambem
+    significa etiqueta bloqueada. Errar para o lado de nao imprimir."""
+    assert sh.nota_nao_validada(_ped_shopee("A", nf="pending"))
+    assert sh.nota_nao_validada(_ped_shopee("A", nf="qualquer_coisa_nova"))
+    assert sh.nota_nao_validada({"order_sn": "A"})     # sem invoice_data: nao sabemos
+    assert not sh.nota_nao_validada(_ped_shopee("A", nf="valid"))
+
+
+def test_invoice_data_vem_na_mesma_chamada(monkeypatch):
+    """Custo zero: o campo viaja na chamada de detalhe que ja era feita."""
+    vistos = []
+    monkeypatch.setattr(sh, "_get_shop", lambda c, t, p, params:
+                        (vistos.append(params), {"response": {"order_list": []}})[1])
+    sh.buscar_detalhes({}, "tok", ["A"])
+    assert len(vistos) == 1, "nao pode fazer chamada extra"
+    assert "invoice_data" in vistos[0]["response_optional_fields"]

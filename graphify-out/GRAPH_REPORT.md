@@ -98,6 +98,26 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   handler deste lado, mesmo que o trabalho todo seja dele.
   Depois do `--update`: **1694 nós, 3185 arestas, 0 órfãs**.
 
+- **2026-08-04 — alerta de NF-e na Shopee: o espelho invertido do ML.** No ML a
+  venda travada **some** do app. Na Shopee é o contrário: ela continua em
+  `READY_TO_SHIP`, já aparece na tela, e o alerta **já a chamava de "pronta"** —
+  sendo que a Shopee **recusa o `ship_order`** enquanto a nota estiver pendente
+  (`error_pending_invoice`, confirmado com o suporte). Era dizer que está pronto
+  o que a própria Shopee nega: mesma família do incidente de 31/07. Nó novo:
+  `alerta_nf_shopee`. Registrado nele o que **não** confiar em duas respostas do
+  suporte — a de que `ship_by_date` só é atribuído após a nota virar válida
+  **contradiz o dado real** (havia pedido `pending` **com** `ship_by_date`), e o
+  push `fbs_br_invoice_issued_push` é de FBS, enquanto os pedidos do dono são
+  `fulfilled_by_local_seller`.
+  **Corrigido no mesmo dia, antes de mergear:** o painel do dono desmentiu o
+  suporte — as 20 `pending` apareciam como **"Em processamento"** e as 3 `valid`
+  como "Em aberto" (casamento exato, 20/20 e 3/3). Logo `pending` cobre **dois**
+  casos, a função virou `nota_nao_validada` (`!= "valid"`, errando para o lado de
+  não imprimir) e o aviso **parou de afirmar a causa**. Lição registrada:
+  resposta de suporte é evidência fraca perto do painel e da API da conta real;
+  quando divergem, vence o dado.
+  Depois do `--update`: **1713 nós, 3232 arestas, 0 órfãs**.
+
 - **2026-08-04 — diagnóstico de estados da Shopee (antes do alerta).** O dono
   pediu o mesmo alerta de NF-e para a Shopee. O sinal, porém, é **contrato
   deles** e não está documentado de forma confiável — e o app hoje só pede

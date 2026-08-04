@@ -122,13 +122,16 @@ def test_dados_alerta_shopee_delega_pro_shopee_api(monkeypatch):
     monkeypatch.setattr(shopee, "carregar_credenciais", lambda: {"cred": 1})
     monkeypatch.setattr(shopee, "obter_token", lambda cred: "TOK")
     monkeypatch.setattr(shopee, "pedidos_prontos_novos",
-                        lambda cred, token, avisados, hoje: chamadas.append(
-                            (cred, token, avisados, hoje)) or (["novo"], ["item"]))
+                        lambda cred, token, avisados, hoje, avisados_nf=None:
+                            chamadas.append((cred, token, avisados, hoje, avisados_nf))
+                            or (["novo"], ["item"], ["nf"], ["item_nf"]))
 
-    novos, itens = bot._dados_alerta_shopee(avisados={"SN0"}, hoje="2026-07-24")
+    novos, itens, nf, itens_nf = bot._dados_alerta_shopee(
+        avisados={"SN0"}, hoje="2026-07-24", avisados_nf={"SN9"})
 
     assert novos == ["novo"] and itens == ["item"]
-    assert chamadas == [({"cred": 1}, "TOK", {"SN0"}, "2026-07-24")]
+    assert nf == ["nf"] and itens_nf == ["item_nf"]
+    assert chamadas == [({"cred": 1}, "TOK", {"SN0"}, "2026-07-24", {"SN9"})]
 
 
 # ----------------------------------------------------- janela de horario/busca
@@ -332,10 +335,11 @@ def test_job_alerta_avisa_shopee_quando_configurada(monkeypatch, tmp_path):
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     monkeypatch.setattr(bot, "_dados_alerta_shopee",
-                        lambda avisados, hoje: (
+                        lambda avisados, hoje, avisados_nf=None: (
                             [_pedido_shopee("SN1")],
                             [core.ItemPedido(order_id="SN1", shipment_id="SN1", chave="A02",
                                             nome="A02", quantidade=2)],
+                            [], [],
                         ))
     enviados = []
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
@@ -381,7 +385,7 @@ def test_job_alerta_shopee_sem_novidade_nao_envia(monkeypatch, tmp_path):
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
-    monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda avisados, hoje, avisados_nf=None: ([], [], [], []))
     enviados = []
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
 

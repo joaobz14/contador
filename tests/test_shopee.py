@@ -317,19 +317,20 @@ def test_pedidos_prontos_novos_filtra_por_hoje_e_dedup(monkeypatch):
     hoje = sh.core._hoje_br()
     meio_dia = int(datetime.fromisoformat(hoje + "T12:00:00-03:00").timestamp())
     ontem = meio_dia - 86400
+    nota_ok = {"status": "valid"}      # pedido pronto tem a nota ja validada
     det = [
-        {"order_sn": "A1", "ship_by_date": meio_dia,
+        {"order_sn": "A1", "ship_by_date": meio_dia, "invoice_data": nota_ok,
          "item_list": [{"model_sku": "PRP", "model_quantity_purchased": 1}]},
-        {"order_sn": "A2", "ship_by_date": ontem,
+        {"order_sn": "A2", "ship_by_date": ontem, "invoice_data": nota_ok,
          "item_list": [{"model_sku": "A02", "model_quantity_purchased": 1}]},
-        {"order_sn": "A3", "ship_by_date": meio_dia,
+        {"order_sn": "A3", "ship_by_date": meio_dia, "invoice_data": nota_ok,
          "item_list": [{"model_sku": "A05", "model_quantity_purchased": 2}]},
     ]
     monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["A1", "A2", "A3"])
     monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
 
     # A1: hoje e nao avisado -> entra. A2: nao e hoje -> fora. A3: hoje mas ja avisado -> fora.
-    novos, itens = sh.pedidos_prontos_novos({}, "TOK", avisados={"A3"}, hoje=hoje)
+    novos, itens, *_ = sh.pedidos_prontos_novos({}, "TOK", avisados={"A3"}, hoje=hoje)
 
     assert [d["order_sn"] for d in novos] == ["A1"]
     assert len(itens) == 1 and itens[0].chave == "PRP"
@@ -337,7 +338,7 @@ def test_pedidos_prontos_novos_filtra_por_hoje_e_dedup(monkeypatch):
 
 def test_pedidos_prontos_novos_sem_pedido_nenhum(monkeypatch):
     monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: [])
-    novos, itens = sh.pedidos_prontos_novos({}, "TOK", avisados=set(), hoje="2026-07-24")
+    novos, itens, *_ = sh.pedidos_prontos_novos({}, "TOK", avisados=set(), hoje="2026-07-24")
     assert novos == [] and itens == []
 
 
@@ -345,10 +346,11 @@ def test_pedidos_prontos_novos_sem_novidade(monkeypatch):
     from datetime import datetime
     hoje = sh.core._hoje_br()
     meio_dia = int(datetime.fromisoformat(hoje + "T12:00:00-03:00").timestamp())
-    det = [{"order_sn": "A1", "ship_by_date": meio_dia, "item_list": []}]
+    det = [{"order_sn": "A1", "ship_by_date": meio_dia, "item_list": [],
+            "invoice_data": {"status": "valid"}}]
     monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["A1"])
     monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
-    novos, itens = sh.pedidos_prontos_novos({}, "TOK", avisados={"A1"}, hoje=hoje)
+    novos, itens, *_ = sh.pedidos_prontos_novos({}, "TOK", avisados={"A1"}, hoje=hoje)
     assert novos == [] and itens == []
 
 

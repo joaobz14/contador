@@ -30,7 +30,7 @@ import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -337,17 +337,67 @@ def listar_pedidos_com_status(cred: dict, token: str) -> list[dict]:
     return saida
 
 
+# Campos pedidos no detalhe do pedido. `invoice_data` e `pay_time` entraram
+# junto com o aviso de NF-e pendente: sao campos OPCIONAIS (so vem quando
+# pedidos pelo nome) e vao na MESMA chamada que ja era feita — custo zero.
+CAMPOS_DETALHE = "item_list,ship_by_date,invoice_data,pay_time"
+
+
 def buscar_detalhes(cred: dict, token: str, order_sns: list[str]) -> list[dict]:
-    """Detalhes dos pedidos (item_list, ship_by_date) em lotes de 50."""
+    """Detalhes dos pedidos (ver CAMPOS_DETALHE) em lotes de 50."""
     detalhes: list[dict] = []
     for i in range(0, len(order_sns), TAMANHO_LOTE):
         lote = order_sns[i:i + TAMANHO_LOTE]
         dados = _get_shop(cred, token, "/api/v2/order/get_order_detail", {
             "order_sn_list": ",".join(lote),
-            "response_optional_fields": "item_list,ship_by_date",
+            "response_optional_fields": CAMPOS_DETALHE,
         })
         detalhes.extend(dados.get("response", {}).get("order_list", []))
     return detalhes
+
+
+def nota_nao_validada(ped: dict) -> bool:
+    """True quando a Shopee ainda NAO validou a nota do pedido.
+
+    O efeito e o que importa e esta verificado: nesse estado a Shopee **recusa o
+    `ship_order`** (erro `error_pending_invoice`, confirmado com o suporte deles
+    em 2026-08-04) — a venda nao pode ser despachada, ponto.
+
+    **A CAUSA nao e unica, e por isso a funcao nao se chama `nf_pendente`.** O
+    suporte disse que `pending` = "Enviar NF-e" no painel, mas o painel do dono
+    desmentiu: as 20 `pending` da loja apareciam como **"Em processamento"** (a
+    Shopee ainda processando; a etiqueta libera num horario que ela anuncia) e as
+    3 `valid` como "Em aberto" — casamento exato, 20/20 e 3/3. Ou seja, `pending`
+    cobre pelo menos dois casos: processamento em andamento E nota faltando.
+    Afirmar "esperando a NF-e" mandaria o dono cobrar o faturador de uma venda
+    que so precisa de tempo.
+
+    Sozinho o campo tambem nao serve de alerta: `pending` e o estado inicial de
+    toda venda paga. Quem separa o que exige acao HOJE e o dia (`dia_previsto`).
+    """
+    return ((ped.get("invoice_data") or {}).get("status") or "") != "valid"
+
+
+def dia_previsto(ped: dict) -> str:
+    """Dia de despacho (YYYY-MM-DD), com fallback para quando o prazo ainda nao
+    foi atribuido.
+
+    A Shopee leva um tempo para preencher `ship_by_date` depois do pagamento —
+    as vendas mais novas vem sem ele. Sem fallback, uma venda travada recem-paga
+    ficaria fora de qualquer filtro por dia, e o aviso nasceria mudo.
+
+    A derivacao foi conferida contra um pedido real: `ship_by_date` e o FIM DO
+    DIA (23:59:59 de Brasilia) de `pay_time` + `days_to_ship`. Quando o campo
+    existe ele manda — a conta e so para o intervalo em que ele falta.
+    """
+    dia = _data_envio(ped.get("ship_by_date"))
+    if dia:
+        return dia
+    pago = ped.get("pay_time") or ped.get("create_time")
+    if not pago:
+        return ""
+    base = datetime.fromtimestamp(int(pago), core.TZ_BR).date()
+    return (base + timedelta(days=int(ped.get("days_to_ship") or 0))).isoformat()
 
 
 def _data_envio(ship_by_date) -> str:
@@ -385,24 +435,35 @@ def grupos_de_detalhes(detalhes: list[dict], nomes: dict, dia: str | None) -> li
     return grupos
 
 
-def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str):
-    """Equivalente Shopee do filtro do alerta pos-horario do ML: pedidos
-    READY_TO_SHIP (listar_order_sns ja filtra isso) com despacho HOJE
-    (ship_by_date) que ainda NAO estao em `avisados` (dedup por order_sn,
-    string — a Shopee nao tem shipment_id numerico separado do pedido).
-    Devolve (pedidos_novos, itens) — mesma forma de
-    core.filtrar_para_imprimir + core.extrair_itens do ML, pra
-    bot_telegram.py reusar sem reimplementar o filtro nem a extracao."""
+def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str,
+                          avisados_nf: set | None = None):
+    """Filtro do alerta pos-horario da Shopee: pedidos READY_TO_SHIP
+    (`listar_order_sns` ja filtra isso) com despacho HOJE, ainda nao avisados
+    (dedup por order_sn, string — a Shopee nao tem shipment_id separado).
+
+    Devolve QUATRO listas: (prontos, itens, pendentes_de_nf, itens_nf). A
+    separacao e por `invoice_data.status`, e nao e cosmetica: com a nota
+    pendente a Shopee RECUSA o `ship_order` (`error_pending_invoice`), entao a
+    venda nao pode ser despachada. Mistura-la com as prontas mandaria o operador
+    tentar imprimir o que a propria Shopee vai negar.
+
+    Os dois grupos saem da MESMA busca — `invoice_data` viaja na chamada de
+    detalhe que ja era feita (ver CAMPOS_DETALHE), sem chamada extra."""
     order_sns = listar_order_sns(cred, token)
     if not order_sns:
-        return [], []
+        return [], [], [], []
     detalhes = buscar_detalhes(cred, token, order_sns)
-    novos = [d for d in detalhes
-             if _data_envio(d.get("ship_by_date")) == hoje
-             and d.get("order_sn") not in avisados]
-    if not novos:
-        return [], []
-    return novos, _itens_de_detalhes(novos, None)
+    do_dia = [d for d in detalhes if dia_previsto(d) == hoje]
+    # A separacao e por NF-e, e ela decide o RECADO: uma venda com nota pendente
+    # nao pode ser despachada (o ship_order e recusado com error_pending_invoice),
+    # entao chama-la de "pronta" seria dizer ao operador que esta pronto o que nao
+    # esta — a mesma familia do incidente de 2026-07-31 no ML.
+    novos = [d for d in do_dia
+             if not nota_nao_validada(d) and d.get("order_sn") not in avisados]
+    novos_nf = [d for d in do_dia
+                if nota_nao_validada(d) and d.get("order_sn") not in (avisados_nf or set())]
+    return (novos, _itens_de_detalhes(novos, None),
+            novos_nf, _itens_de_detalhes(novos_nf, None))
 
 
 def contagem_por_dia(detalhes: list[dict]) -> dict[str, int]:
