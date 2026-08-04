@@ -1,5 +1,7 @@
 {
   "token": "COLE_AQUI_O_TOKEN_DO_BOTFATHER",
   "chat_ids": [123456789],
-  "aviso_horario": "08:00"
+  "aviso_horario": "08:00",
+  "webhook_perguntas": "https://SEU_N8N/webhook/SEU_FLUXO",
+  "chat_perguntas": 123456789
 }

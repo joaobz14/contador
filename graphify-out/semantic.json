@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 341,
- "edge_count": 601,
+ "node_count": 345,
+ "edge_count": 615,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3947,6 +3947,38 @@
    "community": 0,
    "norm_label": "por que os dois apps nao sao um so (decisao de 2026-07-30, avaliada a pedido do dono): o impressora_zebra_usb nao e back-end do contador. evidencia decisiva: monitoretiquetas.prefixos inclui 'etiqueta mercadoenvios', 'shipping-label' e 'danfe-simplificado-' -- os nomes que o proprio site do mercado livre da ao baixar etiqueta na mao. ou seja, ele imprime sem o contador existir, e e o plano b no dia em que o contador estiver quebrado. alem disso tem funcionalidade propria (etiquetas separadoras, gerar_zpl_separador + popupseparadora, com lista de produtos e busca proprias). tres impedimentos tecnicos: (1) ele roda elevado (elevar_privilegios/uac, para limpar a fila do spooler) e o contador roda sem privilegio -- fundir levaria tela e bot para o uac; (2) ciclos de vida opostos -- app de bandeja de instancia unica ligado o dia todo desde o logon, contra uma tela que abre sob demanda e um bot em terceiro processo pelo agendador; (3) plataforma -- pywin32/pystray/pillow sao windows-only, enquanto o nucleo daqui e portatil e o ci roda no linux. e a separacao paga: a pasta downloads e uma fila com persistencia de graca (a tela pode cair no meio do lote que a impressao continua). o unico custo real era a ausencia de canal de volta -- resolvido pelo mural de status, sem fundir nada.",
    "_origin": "manual"
+  },
+  {
+   "label": "COMANDO /perguntas: DOIS SISTEMAS, UM BOT SO (2026-08-04). O dono tem um fluxo no n8n que lista perguntas/mensagens sem resposta de uma conta (a 'conta 3', fora deste projeto) e quer dispara-lo pelo mesmo @ContadorML_bot. A restricao que define o desenho: o Telegram entrega os updates de um bot a UM consumidor so — quem LE os comandos e este projeto (polling em main()); o n8n entra apenas como REMETENTE (sendMessage). Por isso o /perguntas NAO responde com dado nenhum: ele faz um POST no webhook do n8n ({'origem','comando'}), manda um '🔎 Consultando...' imediato (o fluxo leva ~4s) e a RESPOSTA chega depois, escrita pelo n8n no mesmo chat. Nada aqui toca a forma de RECEBER updates — trocar polling por webhook neste repo derrubaria um dos dois lados. Restrito a UM chat (chat_perguntas), nao a whitelist inteira: o comando fala de uma conta especifica do dono e a whitelist pode um dia incluir outra pessoa; chat nao autorizado e ignorado EM SILENCIO (responder 'nao autorizado' ja confirmaria que o comando existe). Falha de rede vira aviso no chat, nunca excecao subindo pelo handler.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "id": "bot_perguntas_n8n",
+   "_origin": "manual"
+  },
+  {
+   "label": "URL DE WEBHOOK E CREDENCIAL — E ESTE REPOSITORIO E PUBLICO (2026-08-04). O webhook do n8n usado pelo /perguntas nao pede token nem cabecalho de autenticacao: quem tem o link dispara o fluxo (por isso o proprio caminho leva um sufixo aleatorio). Logo a URL e um SEGREDO e segue a regra do projeto: fora do codigo (vem do bot_config.json, gitignorado, ou da variavel N8N_WEBHOOK_PERGUNTAS) e fora de qualquer texto de erro. Nada de raise_for_status() (a mensagem dele inclui a URL) e nada de propagar a excecao crua do requests ('Max retries exceeded with url: ...') — mesma solucao do _rede_limpa da Shopee, com from None para o traceback nao arrastar a original. Terceira camada: sem_segredos passou a redigir o caminho depois de /webhook/. Vale para qualquer integracao futura por URL-segredo (Zapier, Make, n8n).",
+   "file_type": "concept",
+   "source_file": "registro.py",
+   "source_location": null,
+   "id": "webhook_url_e_segredo",
+   "_origin": "manual"
+  },
+  {
+   "label": "MENU DE COMANDOS POR CHAT, NUNCA GLOBAL (setMyCommands, 2026-08-04). O bot passou a publicar a lista de comandos no menu '/' do app. O setMyCommands no escopo GLOBAL mostraria essa lista a QUALQUER pessoa que abrisse o bot — desfazendo, por uma porta lateral, a correcao de 2026-08-03 (o /menu revelava comandos e loja ativa a estranhos). Por isso a publicacao e por chat (BotCommandScopeChat), um por chat autorizado, e o /perguntas so entra no menu do chat que pode usa-lo. Duas armadilhas registradas: (1) o setMyCommands SUBSTITUI a lista inteira — comando novo tem de entrar no COMANDOS_MENU, senao some do menu (guardiao em tests/test_bot_perguntas.py); (2) roda no post_init, antes do polling, entao e best-effort: uma falha ali nao pode impedir o bot de subir por causa de um detalhe cosmetico.",
+   "file_type": "concept",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "id": "bot_menu_comandos_por_chat",
+   "_origin": "manual"
+  },
+  {
+   "label": "versioned_set USA O MESMO CRITERIO DO git_files (2026-08-04). A correcao do #208 ensinou o coletor a enxergar arquivo novo ainda nao commitado (git_files com --cached --others --exclude-standard), mas a VALIDACAO continuou com um 'git ls-files' puro: o sincronizador criava nos para o arquivo novo e em seguida os rejeitava como 'source_file ausente', abortando o --update ate alguem rodar git add. Mesma intermitencia por ordem-de-stage, pela porta dos fundos. Licao: quando duas metades do mesmo processo perguntam 'que arquivos existem?', elas tem de perguntar do mesmo jeito.",
+   "file_type": "concept",
+   "source_file": "tools/graph_sync.py",
+   "source_location": null,
+   "id": "graph_sync_versioned_set_consistente",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4671,6 +4703,28 @@
    "confidence_score": 1.0
   },
   {
+   "source": "bot_menu_comandos_por_chat",
+   "target": "bot_perguntas_n8n",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o menu por chat existe por causa deste comando",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
+   "target": "bot_vendas_apos_resumo",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "outro comando do bot que so le/dispara, sem tocar impressao",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
    "relation": "conceptually_related_to",
    "confidence": "MANUAL",
    "source_file": "bot_telegram.py",
@@ -5042,6 +5096,17 @@
    "source": "graph_sync_processo",
    "target": "tests_test_graphify_sync",
    "confidence_score": 1.0
+  },
+  {
+   "source": "graph_sync_versioned_set_consistente",
+   "target": "tools_graph_sync_git_files",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "as duas metades da mesma pergunta",
+   "source_file": "tools/graph_sync.py",
+   "source_location": null
   },
   {
    "relation": "conceptually_related_to",
@@ -5586,6 +5651,17 @@
    "weight": 1.0,
    "source": "ui_seletor_loja",
    "target": "provider_abstraction"
+  },
+  {
+   "source": "webhook_url_e_segredo",
+   "target": "bot_perguntas_n8n",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o segredo que este comando carrega",
+   "source_file": "registro.py",
+   "source_location": null
   },
   {
    "relation": "conceptually_related_to",
@@ -6146,6 +6222,72 @@
    "source": "bot_aviso_blindado",
    "target": "bot_telegram_job_bom_dia",
    "confidence_score": 1.0
+  },
+  {
+   "source": "bot_menu_comandos_por_chat",
+   "target": "bot_telegram_comandos_do_chat",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o /perguntas so no menu de quem pode",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_menu_comandos_por_chat",
+   "target": "bot_telegram_publicar_comandos",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "escopo por chat e best-effort",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
+   "target": "bot_telegram_cmd_perguntas",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "por que o comando so dispara e nao responde",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
+   "target": "bot_telegram_disparar_perguntas",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o POST no n8n e o unico efeito do comando",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
+   "target": "bot_telegram_main",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o polling continua sendo o unico consumidor dos updates",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
+   "target": "bot_telegram_pode_perguntas",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "restrito a um chat, nao a whitelist",
+   "source_file": "bot_telegram.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",
@@ -6777,6 +6919,17 @@
    "source": "graph_sync_processo",
    "target": "tools_graph_sync_validate",
    "confidence_score": 1.0
+  },
+  {
+   "source": "graph_sync_versioned_set_consistente",
+   "target": "tools_graph_sync_versioned_set",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "mesma enumeracao do git_files",
+   "source_file": "tools/graph_sync.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",
@@ -9318,6 +9471,39 @@
    "source": "veredito_resposta_antes_de_pista",
    "target": "separador_etiquetas_ml_veredito_do_status",
    "confidence_score": 1.0
+  },
+  {
+   "source": "webhook_url_e_segredo",
+   "target": "bot_telegram_carregar_config",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "a URL vem da config/env, nunca do codigo",
+   "source_file": "registro.py",
+   "source_location": null
+  },
+  {
+   "source": "webhook_url_e_segredo",
+   "target": "bot_telegram_disparar_perguntas",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "erro limpo: a URL nao entra na mensagem",
+   "source_file": "registro.py",
+   "source_location": null
+  },
+  {
+   "source": "webhook_url_e_segredo",
+   "target": "registro_sem_segredos",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "3a camada: redige o caminho do webhook",
+   "source_file": "registro.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",

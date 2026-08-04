@@ -73,6 +73,13 @@ em `alertas_pos_horario.json` (junto do dedup — por `shipment_id` no ML,
 `/menu`) junta **tudo que já foi avisado hoje** numa mensagem só, por
 conta/loja + um TOTAL por SKU no final — evita que várias vendas caindo em
 sequência depois das 8:30 poluam o chat com um alerta cada.
+O **`/perguntas`** é o único comando que não consulta nem imprime: ele faz um
+POST num webhook do **n8n** (fluxo fora deste projeto, que lista perguntas sem
+resposta da conta 3) e a resposta chega no chat escrita pelo próprio n8n. Os
+dois sistemas dividem o mesmo bot porque o Telegram entrega os updates a **um
+consumidor só**: este projeto **lê** (polling), o n8n só **escreve** — mexer na
+forma de receber updates aqui derruba um dos lados. A URL do webhook é
+credencial (o endpoint não pede autenticação) e mora no `bot_config.json`.
 O bot sobe sozinho no **login do Windows** via Agendador de Tarefas (`atalhos/
 registrar-tarefa-bot.ps1`, registrado uma vez), independente da tela estar
 aberta — ver "Áreas de risco" para o histórico de por que não é mais a tela
@@ -129,7 +136,7 @@ quem sobe o bot.
 | `estado_grupos.json` | `marcar_impresso`/`status_grupo` (ML) | Não | por conta + dia | ❌ Não |
 | `estado_shopee.json` | estado de impresso (Shopee) | Não | por dia | ❌ Não |
 | `config.json` | `aplicar_config` (preferências) | Não | por máquina | ❌ Não |
-| `bot_config.json` | `bot_telegram` (token do bot) | **Sim** | por máquina | ❌ Não |
+| `bot_config.json` | `bot_telegram` (token do bot; URL do webhook do n8n em `webhook_perguntas` — também segredo) | **Sim** | por máquina | ❌ Não |
 | `itens_cache.json` | cache de detalhes de produto | Não | por conta | ❌ Não |
 | `envios_cache.json` | `filtrar_para_imprimir` (envios finalizados) | Não | por conta | ❌ Não |
 | `awb_cache_shopee.json` | cache de AWB da Shopee (`_cachear_awbs`/`preencher_rastreios`) | Não | por máquina | ❌ Não |

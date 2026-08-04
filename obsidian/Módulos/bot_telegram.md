@@ -24,7 +24,19 @@ arquivo: bot_telegram.py
 
 ## Comandos
 `/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/vendasapos` · `/detalhar <SKU>` ·
-`/conta` · `/loja` · `/id` · `/menu`.
+`/conta` · `/loja` · `/id` · `/versao` · `/perguntas` · `/menu`.
+O menu "/" do app vem de `setMyCommands` **por chat** (`BotCommandScopeChat`),
+nunca global — a lista de comandos não pode aparecer para estranhos. Comando novo
+tem de entrar em `COMANDOS_MENU`: o `setMyCommands` substitui a lista inteira.
+
+### `/perguntas` (dispara o n8n, não responde)
+`cmd_perguntas` faz um POST no webhook do n8n (`_disparar_perguntas`) e manda um
+"🔎 Consultando..."; a **resposta vem do n8n**, pelo mesmo bot, segundos depois.
+O Telegram entrega os updates a **um consumidor só** — este projeto lê (polling), o
+n8n só escreve; por isso nada aqui muda a forma de receber updates. Restrito a um
+chat (`chat_perguntas`); outros são ignorados em silêncio. A **URL do webhook é
+credencial** (o endpoint não pede autenticação): vem do `bot_config.json`/env e
+nunca entra em texto de erro → [[Redação de segredos]].
 
 ## Alerta pós-horário (`job_alerta_pos_horario`)
 A cada 5 min, percorre **todas** as contas ML (`core.listar_contas()`) **e também a

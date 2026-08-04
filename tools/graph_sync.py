@@ -115,8 +115,15 @@ def git_files(pattern: str) -> list[str]:
 
 
 def versioned_set() -> set[str]:
-    out = subprocess.check_output(["git", "-C", REPO, "ls-files"]).decode()
-    return {f for f in out.splitlines() if f}
+    """Arquivos que a validacao considera legitimos como `source_file`.
+
+    Usa o MESMO criterio do `git_files` (a outra metade fica inconsistente
+    senao): o coletor cria nos para um arquivo novo ainda nao commitado, e um
+    `git ls-files` puro aqui os rejeitaria como "source_file ausente" — o
+    `--update` abortava ate alguem rodar `git add`, que e exatamente a
+    intermitencia por ordem-de-stage corrigida no `git_files`, pela porta dos
+    fundos."""
+    return set(git_files("*"))
 
 
 def module_id(source_file: str) -> str:

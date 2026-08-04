@@ -4,7 +4,33 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Adicionado
+- **Comando `/perguntas` no bot** — dispara o fluxo do n8n que lista as
+  perguntas e mensagens sem resposta da conta 3. O bot **não responde nada**: ele
+  aciona o fluxo, manda um "🔎 Consultando..." na hora e a resposta chega alguns
+  segundos depois, escrita pelo próprio n8n no mesmo chat. Também dá para tocar
+  no botão **🔎 Perguntas** do `/menu`. O comando é restrito a **um** chat (o
+  seu); de qualquer outro é ignorado em silêncio.
+  - Para ligar, acrescente duas linhas ao `bot_config.json` (na pasta `dados/`,
+    que não vai para o GitHub): `"webhook_perguntas"` com o endereço do webhook
+    e `"chat_perguntas"` com o seu chat id — o `/id` mostra o número. **O
+    endereço do webhook não pode ir para o código**: quem tem o link dispara o
+    fluxo, e este repositório é público. Depois reinicie o bot (`/versao` avisa
+    se ele ainda está na versão antiga).
+  - Nada mudou na forma como o bot **recebe** as mensagens: ele continua lendo
+    por polling, e o n8n só escreve. Os dois sistemas dividem o mesmo bot
+    exatamente por isso.
+- **Menu de comandos no app do Telegram** (o botão "/"). A lista é publicada
+  **por chat**, não globalmente — no escopo global qualquer estranho que abrisse
+  o bot veria todos os comandos, o oposto da correção do `/menu` abaixo. O
+  `/perguntas` só aparece no menu de quem pode usá-lo.
+
 ### Corrigido
+- **Sincronizador do grafo abortava com arquivo novo** (só afeta o
+  desenvolvimento). A correção anterior ensinou o coletor a enxergar arquivo
+  ainda não commitado, mas a *validação* continuou perguntando de outro jeito:
+  ele criava os nós do arquivo novo e em seguida os rejeitava, travando o
+  `--update` até alguém rodar `git add`. As duas metades agora perguntam igual.
 - **`/menu` respondia a qualquer pessoa** (varredura de segurança). O bot é a
   única parte do projeto que alguém de fora alcança — basta achar o @usuário
   dele. Os comandos que mostram pedidos já exigiam autorização, mas `/start`,

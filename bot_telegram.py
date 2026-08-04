@@ -44,8 +44,15 @@ import threading
 from datetime import datetime, time
 from types import SimpleNamespace
 
+import requests
+
 try:
-    from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+    from telegram import (
+        BotCommandScopeChat,
+        InlineKeyboardButton,
+        InlineKeyboardMarkup,
+        Update,
+    )
     from telegram.ext import (
         ApplicationBuilder,
         CallbackQueryHandler,
@@ -119,6 +126,18 @@ for _biblioteca in ("httpx", "httpcore"):
 
 
 # ---------------------------------------------------------------- configuracao
+def _inteiro(valor) -> int:
+    """Inteiro tolerante: valor ausente/invalido vira 0 (= "nao configurado").
+
+    Mesma filosofia do `_sanear_config` do nucleo: um bot_config.json editado a
+    mao nao pode derrubar o bot na abertura — a funcionalidade fica desligada e
+    diz o que falta, em vez de estourar antes de o polling subir."""
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return 0
+
+
 def carregar_config() -> dict:
     cfg = core._ler_json(ARQUIVO_CONFIG)
     token = os.getenv("TELEGRAM_BOT_TOKEN") or cfg.get("token", "")
@@ -130,7 +149,68 @@ def carregar_config() -> dict:
         "token": token,
         "chat_ids": {int(c) for c in cfg.get("chat_ids", [])},
         "aviso_horario": (cfg.get("aviso_horario") or "").strip(),
+        # /perguntas (ver a secao logo abaixo). Fora do codigo de proposito: a
+        # URL do webhook e, na pratica, a senha dele — e este repositorio e
+        # publico.
+        "webhook_perguntas": (os.getenv("N8N_WEBHOOK_PERGUNTAS")
+                              or cfg.get("webhook_perguntas") or "").strip(),
+        "chat_perguntas": _inteiro(cfg.get("chat_perguntas")),
     }
+
+
+# ------------------------------------------------------------ /perguntas (n8n)
+# O /perguntas e diferente de todo o resto do bot: ele NAO responde com dado
+# nenhum. So aciona um fluxo do n8n, que consulta a conta 3 e manda a resposta
+# no Telegram POR ESTE MESMO BOT, alguns segundos depois.
+#
+# Por que assim, e nao o bot consultando: o Telegram entrega os updates de um bot
+# a UM consumidor so. Quem le os comandos e este projeto (polling, em `main`);
+# o n8n entra apenas como REMETENTE (sendMessage), sem ler nada. Os dois so
+# convivem enquanto essa divisao valer — qualquer mexida na forma de RECEBER
+# updates aqui (trocar polling por webhook, por exemplo) derruba um dos lados.
+# Nada nesta secao toca nisso: ela e um cliente HTTP de saida, ponto.
+TIMEOUT_PERGUNTAS = 10
+
+
+def _disparar_perguntas(url: str) -> None:
+    """POST no webhook do n8n. Roda em thread (rede) e NUNCA deixa a URL vazar.
+
+    O webhook nao pede autenticacao: quem tem o link dispara o fluxo. O link e,
+    portanto, o segredo — por isso ele vem do bot_config.json (nao versionado) e
+    nenhum texto de erro pode carrega-lo. Nada de `raise_for_status()` (a
+    mensagem dele inclui a URL) e nada de propagar a excecao crua do requests
+    ("Max retries exceeded with url: ..."). Mesma solucao do `_rede_limpa` da
+    Shopee, inclusive o `from None`: um `log.exception` la em cima nao pode
+    arrastar a original com a URL no traceback.
+
+    A resposta do n8n ({"message":"Workflow was started"}) e ignorada de
+    proposito — o resultado chega pelo chat, nao por aqui.
+    """
+    try:
+        resp = requests.post(
+            url,
+            json={"origem": "telegram", "comando": "/perguntas"},
+            timeout=TIMEOUT_PERGUNTAS,
+        )
+    except requests.RequestException as e:
+        raise core.SeparadorError(
+            f"nao consegui falar com o n8n ({type(e).__name__}). "
+            "Verifique a conexao e tente de novo.") from None
+    if resp.status_code >= 400:
+        raise core.SeparadorError(
+            f"o n8n recusou o pedido (HTTP {resp.status_code}). "
+            "Confira se o fluxo esta ativo (workflow ligado) no n8n.")
+
+
+def _pode_perguntas(chat_id, cfg: dict) -> bool:
+    """True se ESTE chat pode usar o /perguntas.
+
+    Restrito a UM chat (`chat_perguntas`), nao a whitelist inteira: o comando
+    fala de uma conta especifica do dono, e a whitelist pode um dia incluir
+    outra pessoa. Com `chat_perguntas` ausente (nao configurado) devolve False —
+    quem trata o "falta configurar" e o handler, que ai explica o que fazer."""
+    alvo = cfg.get("chat_perguntas") or 0
+    return bool(alvo and chat_id == alvo)
 
 
 # ---------------------------------------------------------------- coleta (rede)
@@ -441,15 +521,21 @@ def _autorizado(update: Update, cfg: dict) -> bool:
     return bool(chat and chat.id in cfg["chat_ids"])
 
 
-def _teclado(loja: str = LOJA_ML) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
+def _teclado(loja: str = LOJA_ML, *, perguntas: bool = False) -> InlineKeyboardMarkup:
+    """Teclado do menu. `perguntas=True` acrescenta o botao do /perguntas — so
+    para o chat que pode usa-lo (ver `_pode_perguntas`); nos demais o botao nem
+    aparece, em vez de aparecer e nao fazer nada."""
+    linhas = [
         [InlineKeyboardButton("📦 Hoje", callback_data="hoje"),
          InlineKeyboardButton("📅 Amanhã", callback_data="amanha")],
         [InlineKeyboardButton("📊 Resumo", callback_data="resumo"),
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
         [InlineKeyboardButton("🔔 Vendas após", callback_data="vendas_apos")],
-        [InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")],
-    ])
+    ]
+    if perguntas:
+        linhas.append([InlineKeyboardButton("🔎 Perguntas", callback_data="perguntas")])
+    linhas.append([InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")])
+    return InlineKeyboardMarkup(linhas)
 
 
 def _teclado_lojas(loja_ativa: str) -> InlineKeyboardMarkup:
@@ -661,7 +747,10 @@ async def _executar_impressao(update, context, idx: int) -> None:
 
 
 # ---------------------------------------------------------------- comandos
-AJUDA = (
+# Em duas partes porque a linha do /perguntas so entra para o chat que pode
+# usa-lo (ver `_pode_perguntas`) — e ela pertence a LISTA de comandos, no meio,
+# nao depois das observacoes de ML/Shopee.
+AJUDA_COMANDOS = (
     "Bot de pedidos (Mercado Livre e Shopee).\n\n"
     "Toque num botao abaixo ou use os comandos:\n"
     "/hoje  /amanha  /todos  /resumo\n"
@@ -669,10 +758,13 @@ AJUDA = (
     "/detalhar SKU — composicao de um SKU (hoje, ML)\n"
     "/loja — trocar entre Mercado Livre e Shopee\n"
     "/conta — ver/trocar a conta ML (com 2+ contas)\n"
-    "/id — mostra seu chat id\n\n"
-    "ML: toque em 🖨 num grupo para imprimir (pede confirmacao).\n"
+    "/id — mostra seu chat id"
+)
+AJUDA_RODAPE = (
+    "\n\nML: toque em 🖨 num grupo para imprimir (pede confirmacao).\n"
     "Shopee: somente consulta (a impressao fica no app)."
 )
+LINHA_AJUDA_PERGUNTAS = "\n/perguntas — perguntas e mensagens sem resposta (conta 3)"
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -693,8 +785,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Nao autorizado. Use /id e peca para liberar seu chat.")
         return
+    pode_perguntas = _pode_perguntas(update.effective_chat.id, cfg)
+    ajuda = AJUDA_COMANDOS + (LINHA_AJUDA_PERGUNTAS if pode_perguntas else "") + AJUDA_RODAPE
     await update.message.reply_text(
-        f"{AJUDA}\n\nLoja ativa: {_loja(context)}", reply_markup=_teclado(_loja(context)))
+        f"{ajuda}\n\nLoja ativa: {_loja(context)}",
+        reply_markup=_teclado(_loja(context), perguntas=pode_perguntas))
 
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -767,6 +862,57 @@ async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info("Acao /vendasapos de chat %s", chat_id)
     dados = await asyncio.to_thread(_carregar_alertas)
     await context.bot.send_message(chat_id, **_resumo_para_envio(dados["itens"]))
+
+
+AJUDA_CONFIG_PERGUNTAS = (
+    "O /perguntas ainda nao esta configurado. No bot_config.json (na pasta "
+    "dados/, que nao vai para o GitHub) acrescente:\n\n"
+    '  "webhook_perguntas": "https://.../webhook/...",\n'
+    '  "chat_perguntas": SEU_CHAT_ID\n\n'
+    "Depois reinicie o bot (o /versao mostra se ele ja pegou a versao nova)."
+)
+
+
+async def cmd_perguntas(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/perguntas — aciona o fluxo do n8n e NAO responde com dados.
+
+    Quem responde e o n8n, alguns segundos depois, pelo mesmo bot (ver a secao
+    "/perguntas (n8n)" mais acima). Daqui sai so o "🔎 Consultando...", para o
+    toque no botao nao parecer engolido durante esses segundos.
+
+    Chat nao autorizado (ou autorizado, mas que nao e o `chat_perguntas`) e
+    ignorado EM SILENCIO: responder "nao autorizado" ja confirmaria a um
+    estranho que o comando existe e que ha uma conta 3 do outro lado. O log
+    registra a tentativa — o dono ve, o estranho nao.
+    """
+    cfg = context.bot_data["cfg"]
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    if not _autorizado(update, cfg):
+        log.warning("Acao /perguntas negada para chat %s", chat_id)
+        return
+    if not _pode_perguntas(chat_id, cfg):
+        if cfg.get("chat_perguntas"):          # configurado, mas e outro chat
+            log.warning("Acao /perguntas negada para chat autorizado %s "
+                        "(nao e o chat_perguntas)", chat_id)
+            return
+        await context.bot.send_message(chat_id, AJUDA_CONFIG_PERGUNTAS)
+        return
+    url = cfg["webhook_perguntas"]
+    if not url:
+        await context.bot.send_message(chat_id, AJUDA_CONFIG_PERGUNTAS)
+        return
+
+    log.info("Acao /perguntas de chat %s", chat_id)
+    await context.bot.send_message(chat_id, "🔎 Consultando...")
+    try:
+        await asyncio.to_thread(_disparar_perguntas, url)
+    except core.SeparadorError as e:
+        # sem_segredos por convencao (todo texto de excecao que sai pro chat);
+        # a URL ja nao entra na mensagem por construcao — isto e a 2a camada.
+        await context.bot.send_message(chat_id, f"Nao consegui acionar: {sem_segredos(e)}")
+    except Exception as e:  # noqa: BLE001 - uma falha aqui nao pode derrubar o bot
+        log.exception("Falha ao acionar o /perguntas")
+        await context.bot.send_message(chat_id, f"Falha inesperada: {sem_segredos(e)}")
 
 
 def _commit_do_disco() -> str:
@@ -948,6 +1094,11 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "vendas_apos":
         await cmd_vendas_apos(update, context)
         return
+    if data == "perguntas":
+        # O botao so e mostrado a quem pode (ver _teclado), mas o callback_data
+        # viaja no cliente: cmd_perguntas refaz a checagem por conta propria.
+        await cmd_perguntas(update, context)
+        return
     if _params_listagem(data):
         await _listar_acao(update, context, data)
 
@@ -994,6 +1145,55 @@ def _agendar_aviso(app, cfg: dict) -> None:
         log.warning("aviso_horario invalido: %r (use HH:MM, ex.: 08:00).", horario)
 
 
+# ------------------------------------------------- menu de comandos (setMyCommands)
+# Lista publicada no menu "/" do app do Telegram. O setMyCommands SUBSTITUI a
+# lista inteira a cada chamada — comando novo tem de entrar AQUI tambem, senao
+# some do menu (guardiao: tests/test_bot_perguntas.py).
+COMANDOS_MENU = [
+    ("hoje", "Pedidos prontos para hoje"),
+    ("amanha", "Pedidos para amanha"),
+    ("todos", "Pedidos de todos os dias"),
+    ("resumo", "Resumo por SKU"),
+    ("vendasapos", "Vendas avisadas depois do horario"),
+    ("dia", "Um dia especifico (AAAA-MM-DD)"),
+    ("detalhar", "Composicao de um SKU"),
+    ("loja", "Trocar entre Mercado Livre e Shopee"),
+    ("conta", "Ver/trocar a conta do Mercado Livre"),
+    ("versao", "Versao que o bot esta rodando"),
+    ("menu", "Menu com botoes"),
+    ("id", "Mostra seu chat id"),
+]
+COMANDO_PERGUNTAS = ("perguntas", "Perguntas e mensagens sem resposta (conta 3)")
+
+
+def _comandos_do_chat(chat_id: int, cfg: dict) -> list[tuple[str, str]]:
+    """Menu de UM chat: o /perguntas so entra no chat que pode usa-lo."""
+    if _pode_perguntas(chat_id, cfg):
+        return [*COMANDOS_MENU, COMANDO_PERGUNTAS]
+    return list(COMANDOS_MENU)
+
+
+async def _publicar_comandos(app) -> None:
+    """Publica o menu POR CHAT (BotCommandScopeChat), nunca no escopo global.
+
+    O escopo global apareceria para QUALQUER pessoa que abrisse o bot,
+    desfazendo a correcao de 2026-08-03 (o /menu revelava a lista de comandos e
+    a loja ativa a estranhos). Por chat, so quem esta na whitelist ve o menu.
+
+    Best-effort: falhar aqui e um menu a menos, nunca um bot a menos — o
+    `post_init` roda antes do polling, e uma excecao solta impediria o bot de
+    subir por causa de um detalhe cosmetico.
+    """
+    cfg = app.bot_data["cfg"]
+    for chat_id in cfg["chat_ids"]:
+        try:
+            await app.bot.set_my_commands(_comandos_do_chat(chat_id, cfg),
+                                          scope=BotCommandScopeChat(chat_id=chat_id))
+        except Exception:  # noqa: BLE001
+            log.warning("Nao consegui publicar o menu de comandos no chat %s",
+                        chat_id, exc_info=True)
+
+
 # ---------------------------------------------------------------- inicializacao
 def main() -> None:
     # Aplica as preferencias do nucleo (conta ativa e carimbar_sku do config.json)
@@ -1005,7 +1205,7 @@ def main() -> None:
     if conta:
         log.info("Conta ativa: %s (de %d configurada(s)).", conta, len(core.listar_contas()))
     cfg = carregar_config()
-    app = ApplicationBuilder().token(cfg["token"]).build()
+    app = ApplicationBuilder().token(cfg["token"]).post_init(_publicar_comandos).build()
     app.bot_data["cfg"] = cfg
 
     app.add_handler(CommandHandler(["start", "menu", "ajuda"], cmd_start))
@@ -1017,6 +1217,7 @@ def main() -> None:
     app.add_handler(CommandHandler("todos", cmd_todos))
     app.add_handler(CommandHandler("resumo", cmd_resumo))
     app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
+    app.add_handler(CommandHandler("perguntas", cmd_perguntas))
     app.add_handler(CommandHandler("versao", cmd_versao))
     app.add_handler(CommandHandler("dia", cmd_dia))
     app.add_handler(CommandHandler("detalhar", cmd_detalhar))
