@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 347,
- "edge_count": 625,
+ "node_count": 348,
+ "edge_count": 631,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3995,6 +3995,14 @@
    "source_location": null,
    "id": "atualizar_guardas",
    "_origin": "manual"
+  },
+  {
+   "label": "ALERTA DE VENDA PARADA EM 'INFORME A NF-e' (2026-08-04). Pedido do dono: ele controla estoque, e quando sai uma venda de um item que NAO TEM em estoque o faturador dele nao sobe o XML da NF-e — o envio fica em substatus `invoice_pending` e NUNCA chega a ready_to_print. Resultado: a venda que MAIS precisa de aviso (a que exige reposicao com o fornecedor, no mesmo dia) era a unica invisivel para o app inteiro, que so olha ready_to_print. Como foi feito: `filtrar_para_imprimir` ganhou `pendentes_nf` (lista opcional) e `_avaliar_pedido` um `substatus_extra`; os dois grupos saem da MESMA passada (o detalhe do envio ja foi buscado — zero chamada de API a mais, e a economia do alerta custou uma auditoria inteira). REGRA QUE NAO PODE CAIR: o retorno de `filtrar_para_imprimir` continua sendo SO ready_to_print — a separacao la dentro e por SUBSTATUS, nao por 'veio preenchido'. O ML nao libera a etiqueta de um envio com NF-e pendente; conta-lo como pronto poria no lote uma etiqueta que nao existe (familia da invariante 1) e mentiria para a tela. Sem o parametro, nada e avaliado a mais e o caminho da impressao fica identico. O aviso vai SEPARADO, com balde de dedup proprio (`conta + SUFIXO_ALERTA_NF`): dividir o balde com o ready_to_print faria o shipment_id ja avisado calar o aviso de quando a venda ficasse pronta de fato — sao dois recados com acoes diferentes (repor x imprimir). O texto leva uma linha extra dizendo que a etiqueta so libera depois do XML, senao seria indistinguivel de uma venda pronta e o dono tentaria imprimir. O nome do substatus e um contrato do ML: a CLI ganhou o diagnostico `substatus` (contagem por status/substatus da janela curta) para confirmar na conta real — rode ANTES de mexer no codigo se o alerta parar de avisar.",
+   "file_type": "concept",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "id": "alerta_nf_pendente",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4444,6 +4452,17 @@
    "target": "api_monitor_sistema",
    "confidence_score": 1.0,
    "context": "mesmo padrao de uso do claude -p (subprocess, sem credencial de LLM nova) que o api-monitor/run-semanal.ps1 ja usa"
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "bot_alerta_pos_horario",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "estende o alerta que ja existia",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
   },
   {
    "relation": "conceptually_related_to",
@@ -5982,6 +6001,61 @@
    "source": "ads_monitor_narrar_camada4",
    "target": "ads_monitor_narrar_montar_prompt",
    "confidence_score": 1.0
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "bot_telegram_dados_alerta_da_conta_travado",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "os dois grupos na mesma passada",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "aviso separado, balde de dedup proprio",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "relatorio_texto_alerta_pos_horario",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "a linha que diz que ainda nao imprime",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "separador_etiquetas_ml_avaliar_pedido",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "substatus_extra, default vazio",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_pendente",
+   "target": "separador_etiquetas_ml_filtrar_para_imprimir",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o retorno continua so ready_to_print",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
   },
   {
    "relation": "rationale_for",

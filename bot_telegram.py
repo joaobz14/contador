@@ -237,12 +237,19 @@ def _imprimir_grupo(grupo):
         return core.imprimir_pendentes(token, grupo, estado)
 
 
-def _prontos(dias: int | None = None):
+def _prontos(dias: int | None = None, pendentes_nf: list | None = None):
+    """Envios ready_to_print da conta ativa.
+
+    `pendentes_nf` (lista) e repassado ao nucleo, que coleta nela — A PARTE —
+    os envios parados em "Informe a NF-e". Vem na MESMA passada: o detalhe do
+    envio ja foi buscado, entao nao custa nenhuma chamada extra de API (o alerta
+    roda a cada 5 min e a economia de chamadas foi conquistada a duras penas).
+    """
     with TRAVA_CONTA:
         cred = core.carregar_credenciais()
         token = core.obter_token(cred)
         pedidos = core.buscar_pedidos(token, cred["seller_id"], dias=dias)
-        return core.filtrar_para_imprimir(token, pedidos)
+        return core.filtrar_para_imprimir(token, pedidos, pendentes_nf=pendentes_nf)
 
 
 # ---------------------------------------------------------- alerta pos-horario
@@ -294,7 +301,8 @@ def _salvar_alertas(dados: dict) -> None:
     core._gravar_json(ARQUIVO_ALERTAS, dados)
 
 
-def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
+def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str,
+                           avisados_nf: set | None = None):
     """Todo o trabalho de rede de UMA conta (prontos + detalhe dos itens
     novos) num unico bloco de troca de conta. Junto numa funcao so: a troca de
     conta mexe em globais do nucleo compartilhadas com o resto do bot — fazer
@@ -303,35 +311,59 @@ def _dados_alerta_da_conta(conta: str, avisados: set, hoje: str):
     (bug sutil de conta errada). Roda em thread (rede) — ver job_alerta_pos_horario.
     """
     with TRAVA_CONTA:
-        return _dados_alerta_da_conta_travado(conta, avisados, hoje)
+        return _dados_alerta_da_conta_travado(conta, avisados, hoje, avisados_nf)
 
 
-def _dados_alerta_da_conta_travado(conta: str, avisados: set, hoje: str):
+def _de_hoje_e_novo(pedidos: list, hoje: str, avisados: set) -> list:
+    """Envios com despacho HOJE que ainda nao foram avisados."""
+    return [
+        p for p in pedidos
+        if (p.get("_envio") or {}).get("expected_date") == hoje
+        and p["_envio"]["shipment_id"] not in avisados
+    ]
+
+
+def _dados_alerta_da_conta_travado(conta: str, avisados: set, hoje: str,
+                                   avisados_nf: set | None = None):
     """Corpo de `_dados_alerta_da_conta`, ja sob TRAVA_CONTA. Separado para a
     troca de conta e TODO o trabalho que depende dela ficarem numa secao critica
-    so — um comando do usuario no meio disso leria a conta errada."""
+    so — um comando do usuario no meio disso leria a conta errada.
+
+    Devolve (novos_prontos, itens_prontos, novos_nf, itens_nf). Os dois grupos
+    saem da MESMA busca (`pendentes_nf` do nucleo) — nenhuma chamada de API a
+    mais — e a extracao de itens tambem e uma so, fatiada depois: `extrair_itens`
+    pede o detalhe dos anuncios sem SKU, e pedir duas vezes dobraria isso.
+    """
     original = core.conta_ativa()
     try:
         if conta and conta != original:
             core.definir_conta(conta)
-        prontos = _prontos(dias=DIAS_JANELA_ALERTA)
-        novos_pedidos = [
-            p for p in prontos
-            if (p.get("_envio") or {}).get("expected_date") == hoje
-            and p["_envio"]["shipment_id"] not in avisados
-        ]
-        if not novos_pedidos:
-            return [], []
+        pendentes_nf: list = [] if avisados_nf is not None else None
+        prontos = _prontos(dias=DIAS_JANELA_ALERTA, pendentes_nf=pendentes_nf)
+        novos = _de_hoje_e_novo(prontos, hoje, avisados)
+        novos_nf = _de_hoje_e_novo(pendentes_nf or [], hoje, avisados_nf or set())
+        if not novos and not novos_nf:
+            return [], [], [], []
         cred = core.carregar_credenciais()
         token = core.obter_token(cred)
-        itens = core.extrair_itens(token, novos_pedidos)
-        return novos_pedidos, itens
+        itens = core.extrair_itens(token, novos + novos_nf)
+        if not novos_nf:                   # caso comum: nada a fatiar
+            return novos, itens, [], []
+        ids_nf = {p["_envio"]["shipment_id"] for p in novos_nf}
+        return (novos, [i for i in itens if i.shipment_id not in ids_nf],
+                novos_nf, [i for i in itens if i.shipment_id in ids_nf])
     finally:
         if conta and conta != original and original:
             core.definir_conta(original)
 
 
 CHAVE_ALERTA_SHOPEE = "Shopee"
+# Rotulo do balde de dedup (e do cabecalho do aviso) das vendas paradas em
+# "Informe a NF-e". Acrescentado ao nome da conta: `cozilatti · falta NF-e`.
+# Balde SEPARADO de proposito — ver o comentario em job_alerta_pos_horario.
+SUFIXO_ALERTA_NF = " · falta NF-e"
+AVISO_NF_PENDENTE = ("⚠️ O ML esta esperando a NF-e — a etiqueta so libera "
+                     "depois que o XML subir.")
 
 
 def _dados_alerta_shopee(avisados: set, hoje: str):
@@ -345,7 +377,8 @@ def _dados_alerta_shopee(avisados: set, hoje: str):
 
 
 async def _disparar_alerta(context, cfg: dict, dados: dict,
-                           chave_estado: str, itens: list, ids_novos: list) -> None:
+                           chave_estado: str, itens: list, ids_novos: list,
+                           aviso: str = "") -> None:
     """Monta o texto, manda pra todos os chats autorizados e atualiza `dados`
     (dedup + itens) IN-PLACE. `chave_estado` e a chave usada em
     dados['avisados']/['itens'] — nome da conta ML, ou CHAVE_ALERTA_SHOPEE.
@@ -353,7 +386,7 @@ async def _disparar_alerta(context, cfg: dict, dados: dict,
     ML, order_sn string na Shopee) — o chamador decide o tipo, esta funcao
     so acumula. Compartilhada entre ML e Shopee pra nao duplicar o envio +
     a persistencia em dois lugares."""
-    texto = relatorio.texto_alerta_pos_horario(chave_estado, itens)
+    texto = relatorio.texto_alerta_pos_horario(chave_estado, itens, aviso=aviso)
     for chat_id in cfg["chat_ids"]:
         try:
             for bloco in relatorio.dividir_mensagem(texto):
@@ -387,17 +420,28 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     for conta in contas:
         avisados = set(dados["avisados"].get(conta, []))
+        chave_nf = conta + SUFIXO_ALERTA_NF
+        avisados_nf = set(dados["avisados"].get(chave_nf, []))
         try:
-            novos_pedidos, itens = await asyncio.to_thread(
-                _dados_alerta_da_conta, conta, avisados, hoje)
+            novos_pedidos, itens, novos_nf, itens_nf = await asyncio.to_thread(
+                _dados_alerta_da_conta, conta, avisados, hoje, avisados_nf)
         except Exception:
             log.exception("Falha ao checar alerta pos-horario da conta %r", conta)
             continue
-        if not novos_pedidos:
-            continue
-        await _disparar_alerta(context, cfg, dados, conta, itens,
-                               [p["_envio"]["shipment_id"] for p in novos_pedidos])
-        mudou = True
+        if novos_pedidos:
+            await _disparar_alerta(context, cfg, dados, conta, itens,
+                                   [p["_envio"]["shipment_id"] for p in novos_pedidos])
+            mudou = True
+        # "Informe a NF-e" vai num aviso SEPARADO, com dedup proprio (chave
+        # `conta + SUFIXO`). Se dividisse o balde com o ready_to_print, o
+        # shipment_id ja avisado agora calaria o aviso de quando a venda
+        # ficasse pronta de fato — e sao dois recados diferentes: um pede
+        # reposicao, o outro libera a impressao.
+        if novos_nf:
+            await _disparar_alerta(context, cfg, dados, chave_nf, itens_nf,
+                                   [p["_envio"]["shipment_id"] for p in novos_nf],
+                                   aviso=AVISO_NF_PENDENTE)
+            mudou = True
 
     # Shopee e independente das contas ML (loja unica); pula em silencio se
     # nao houver credencial configurada (setup so-ML e valido e nao deve

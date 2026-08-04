@@ -58,6 +58,13 @@ login do Windows (Agendador de Tarefas, `atalhos/registrar-tarefa-bot.ps1`) — 
 alerta só funciona com o bot rodando. → [[Telegram]] pro histórico de por que não
 é mais a tela quem sobe o bot.
 
+### Vendas paradas em "Informe a NF-e"
+Mesma passada do alerta: `_prontos(pendentes_nf=[...])` repassa a lista ao núcleo,
+que coleta à parte os envios em `invoice_pending` — zero chamada de API extra.
+`_dados_alerta_da_conta` devolve `(novos, itens, novos_nf, itens_nf)` e o job
+dispara **dois avisos**, com baldes de dedup separados (`conta + SUFIXO_ALERTA_NF`).
+O lote de impressão nunca recebe esses envios.
+
 ## Resumo agregado (`/vendasapos`)
 Junta tudo que o alerta já avisou hoje (todas as contas ML + Shopee) numa mensagem
 só, com um TOTAL por SKU no final — evita poluir o chat quando várias vendas caem

@@ -67,12 +67,12 @@ def test_dados_alerta_filtra_por_hoje_e_dedup(monkeypatch):
     prontos = [_envio(1, "2026-07-24"), _envio(2, "2026-07-23"), _envio(3, "2026-07-24")]
     monkeypatch.setattr(core, "conta_ativa", lambda: "")
     monkeypatch.setattr(core, "definir_conta", lambda nome: None)
-    monkeypatch.setattr(bot, "_prontos", lambda dias=None: prontos)
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None, pendentes_nf=None: prontos)
     monkeypatch.setattr(core, "carregar_credenciais", lambda: {})
     monkeypatch.setattr(core, "obter_token", lambda cred: "tok")
     monkeypatch.setattr(core, "extrair_itens", lambda token, pedidos: [f"item-{p['id']}" for p in pedidos])
 
-    novos, itens = bot._dados_alerta_da_conta("cozilatti", avisados={3}, hoje="2026-07-24")
+    novos, itens, *_ = bot._dados_alerta_da_conta("cozilatti", avisados={3}, hoje="2026-07-24")
 
     # sid 1: hoje e nao avisado -> entra. sid 2: nao e hoje -> fora. sid 3: hoje mas ja avisado -> fora.
     assert [p["_envio"]["shipment_id"] for p in novos] == [1]
@@ -82,11 +82,11 @@ def test_dados_alerta_filtra_por_hoje_e_dedup(monkeypatch):
 def test_dados_alerta_sem_novidade_nao_chama_extrair_itens(monkeypatch):
     monkeypatch.setattr(core, "conta_ativa", lambda: "")
     monkeypatch.setattr(core, "definir_conta", lambda nome: None)
-    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [_envio(1, "2026-07-24")])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None, pendentes_nf=None: [_envio(1, "2026-07-24")])
     chamou = []
     monkeypatch.setattr(core, "extrair_itens", lambda *a, **k: chamou.append(1))
 
-    novos, itens = bot._dados_alerta_da_conta("cozilatti", avisados={1}, hoje="2026-07-24")
+    novos, itens, *_ = bot._dados_alerta_da_conta("cozilatti", avisados={1}, hoje="2026-07-24")
 
     assert novos == [] and itens == []
     assert chamou == []
@@ -96,7 +96,7 @@ def test_dados_alerta_troca_e_restaura_conta(monkeypatch):
     trocas = []
     monkeypatch.setattr(core, "conta_ativa", lambda: "gastromaq")
     monkeypatch.setattr(core, "definir_conta", lambda nome: trocas.append(nome))
-    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None, pendentes_nf=None: [])
     monkeypatch.setattr(core, "extrair_itens", lambda *a, **k: [])
 
     bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-24")
@@ -109,7 +109,7 @@ def test_dados_alerta_nao_troca_se_ja_e_a_conta_ativa(monkeypatch):
     trocas = []
     monkeypatch.setattr(core, "conta_ativa", lambda: "cozilatti")
     monkeypatch.setattr(core, "definir_conta", lambda nome: trocas.append(nome))
-    monkeypatch.setattr(bot, "_prontos", lambda dias=None: [])
+    monkeypatch.setattr(bot, "_prontos", lambda dias=None, pendentes_nf=None: [])
 
     bot._dados_alerta_da_conta("cozilatti", avisados=set(), hoje="2026-07-24")
 
@@ -151,7 +151,7 @@ def test_dados_alerta_usa_janela_curta_de_busca(monkeypatch):
     — e o corte de ~90% das chamadas achado na auditoria de APIs."""
     capturado = {}
 
-    def _fake_prontos(dias=None):
+    def _fake_prontos(dias=None, pendentes_nf=None):
         capturado["dias"] = dias
         return []
 
@@ -187,10 +187,11 @@ def test_job_alerta_avisa_e_marca_dedup(monkeypatch):
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
-                        lambda conta, avisados, hoje: (
+                        lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],
                             [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
                                             nome="A02", quantidade=1)],
+                            [], [],
                         ))
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
 
@@ -223,7 +224,7 @@ def test_job_alerta_sem_novidade_nao_envia_nada(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
 
     asyncio.run(bot.job_alerta_pos_horario(ctx))
@@ -237,11 +238,12 @@ def test_job_alerta_nao_repete_o_mesmo_envio_em_ciclos_seguintes(monkeypatch):
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
 
-    def _dados(conta, avisados, hoje):
+    def _dados(conta, avisados, hoje, avisados_nf=None):
         if 1 in avisados:
-            return [], []
+            return [], [], [], []
         return ([_envio(1, hoje)],
-                [core.ItemPedido(order_id=1, shipment_id=1, chave="A02", nome="A02", quantidade=1)])
+                [core.ItemPedido(order_id=1, shipment_id=1, chave="A02", nome="A02", quantidade=1)],
+                [], [])
 
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
@@ -258,11 +260,12 @@ def test_job_alerta_isola_falha_por_conta(monkeypatch):
     monkeypatch.setattr(core, "listar_contas", lambda: ["com_erro", "ok"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
 
-    def _dados(conta, avisados, hoje):
+    def _dados(conta, avisados, hoje, avisados_nf=None):
         if conta == "com_erro":
             raise RuntimeError("falha de rede")
         return ([_envio(1, hoje)],
-                [core.ItemPedido(order_id=1, shipment_id=1, chave="A02", nome="A02", quantidade=1)])
+                [core.ItemPedido(order_id=1, shipment_id=1, chave="A02", nome="A02", quantidade=1)],
+                [], [])
 
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
@@ -277,10 +280,11 @@ def test_job_alerta_falha_num_chat_nao_cala_os_outros(monkeypatch):
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
-                        lambda conta, avisados, hoje: (
+                        lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],
                             [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
                                             nome="A02", quantidade=1)],
+                            [], [],
                         ))
 
     def send(chat_id, texto):
@@ -296,7 +300,7 @@ def test_job_alerta_falha_num_chat_nao_cala_os_outros(monkeypatch):
 def test_job_alerta_sem_contas_nao_quebra(monkeypatch):
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     ctx = _ctx([10], lambda cid, txt: None)
     asyncio.run(bot.job_alerta_pos_horario(ctx))  # nao deve levantar
 
@@ -311,7 +315,7 @@ def test_job_alerta_pula_shopee_sem_credencial(monkeypatch):
     loga erro a cada ciclo."""
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     chamou = []
     monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda *a, **k: chamou.append(1))
     ctx = _ctx([10], lambda cid, txt: None)
@@ -326,7 +330,7 @@ def test_job_alerta_avisa_shopee_quando_configurada(monkeypatch, tmp_path):
     shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     monkeypatch.setattr(bot, "_dados_alerta_shopee",
                         lambda avisados, hoje: (
                             [_pedido_shopee("SN1")],
@@ -352,10 +356,11 @@ def test_job_alerta_shopee_isola_falha_sem_impedir_ml(monkeypatch, tmp_path):
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
-                        lambda conta, avisados, hoje: (
+                        lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],
                             [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
                                             nome="A02", quantidade=1)],
+                            [], [],
                         ))
 
     def _shopee_com_erro(avisados, hoje):
@@ -375,7 +380,7 @@ def test_job_alerta_shopee_sem_novidade_nao_envia(monkeypatch, tmp_path):
     shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje: ([], []))
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     monkeypatch.setattr(bot, "_dados_alerta_shopee", lambda avisados, hoje: ([], []))
     enviados = []
     ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))

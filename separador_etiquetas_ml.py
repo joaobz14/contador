@@ -45,6 +45,17 @@ _LOCK_TOKEN = threading.Lock()   # serializa o refresh entre threads (ver obter_
 DIAS_JANELA = 30
 TAM_NOME = 45
 SUBSTATUS_IMPRIMIR = "ready_to_print"
+# "Informe a NF-e" no painel do ML: a venda esta pronta para envio, mas o ML
+# segura a etiqueta ate o faturador subir o XML da NF-e. Acontece justamente
+# quando FALTA ESTOQUE (o faturador nao emite), entao e a venda que o dono mais
+# precisa ver cedo — e ela nunca aparece no fluxo normal, que so olha
+# ready_to_print. Usado SO pelo alerta do bot; a impressao continua exigindo
+# ready_to_print (ver `filtrar_para_imprimir`).
+SUBSTATUS_NF_PENDENTE = "invoice_pending"
+# Janela do diagnostico `substatus` da CLI (dias). Curta de proposito: ele
+# consulta UM envio por pedido, e a pergunta que ele responde ("que substatus
+# existem agora") nao precisa de historico.
+DIAS_JANELA_ALERTA_CLI = 5
 DIAS_ESTADO = 7  # dias de historico de impressao mantidos no estado_grupos.json
 # Horario de Brasilia. O Mercado Livre expressa o prazo de despacho em -03:00
 # e o Brasil nao usa horario de verao desde 2019, entao um offset fixo basta
@@ -941,10 +952,17 @@ def _limpar_envios_cache(cache: dict, dias: int = DIAS_JANELA) -> dict:
     return {sid: d for sid, d in cache.items() if isinstance(d, str) and d >= limite}
 
 
-def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str, bool]:
+def _avaliar_pedido(token: str, ped: dict,
+                    substatus_extra: tuple[str, ...] = ()) -> tuple[dict | None, int | None, str, bool]:
     """Avalia o envio do pedido. Retorna (pedido, shipment_id, status, verificado):
     o pedido vem com _envio preenchido quando esta em ready_to_print; senao
     vem None (mas com o status, para o cache de finalizados).
+
+    `substatus_extra` aceita OUTROS substatus alem do ready_to_print (hoje so o
+    `invoice_pending`, para o alerta do bot). Eles seguem o mesmo caminho —
+    inclusive a data de despacho — e ficam identificaveis por
+    `_envio["substatus"]`. Default vazio: sem ele o comportamento e exatamente
+    o de sempre, e nada que nao seja ready_to_print escapa para a impressao.
 
     `verificado` e False quando a API do ML nao respondeu sobre este envio —
     "nao sei" em vez de "nao esta pronto" (ver `buscar_envio`). Quem chama TEM
@@ -957,7 +975,8 @@ def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str
     if env is None:
         return None, sid, "", False     # a API nao respondeu — NAO e "nao pronto"
     status = env.get("status") or ""
-    if env.get("substatus") != SUBSTATUS_IMPRIMIR:
+    sub = env.get("substatus") or ""
+    if sub != SUBSTATUS_IMPRIMIR and sub not in substatus_extra:
         return None, sid, status, True
     # O prazo de despacho costuma vir no proprio detalhe do envio; so chama o
     # /sla (uma requisicao a mais) quando nao encontramos no detalhe.
@@ -975,13 +994,22 @@ def _avaliar_pedido(token: str, ped: dict) -> tuple[dict | None, int | None, str
     expected = _data_despacho(expected_raw)
     logt = env.get("logistic_type") or (env.get("logistic") or {}).get("type", "")
     ped["_envio"] = {"shipment_id": sid, "expected_date": expected, "logistica": logt,
-                     "data_incerta": data_incerta}
+                     "data_incerta": data_incerta, "substatus": sub}
     return ped, sid, status, True
 
 
 def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
-                          stats: dict | None = None) -> list[dict]:
+                          stats: dict | None = None,
+                          pendentes_nf: list | None = None) -> list[dict]:
     """Mantem pedidos em ready_to_print. progresso(feitos, total) e chamado por pedido.
+
+    **O retorno so tem ready_to_print, sempre.** `pendentes_nf`, quando uma
+    lista e passada, coleta A PARTE os envios parados em "Informe a NF-e"
+    (`SUBSTATUS_NF_PENDENTE`) — usado pelo alerta do bot, que precisa avisar da
+    venda mesmo antes de ela poder ser impressa. Eles NUNCA entram no retorno:
+    imprimi-los e impossivel (o ML nao libera a etiqueta) e conta-los como
+    prontos enganaria a tela. Sem o parametro, esses envios nem chegam a ser
+    avaliados — o caminho da impressao fica identico ao de sempre.
 
     Pula os envios ja conhecidos como finalizados (cache de status terminais),
     reduzindo bastante as chamadas a API em atualizacoes repetidas.
@@ -1010,8 +1038,10 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
     # nao-terminal; mais concorrencia encurta o "Atualizar". Ha retry+Retry-After
     # (ver _com_retry) para absorver 429 se a API reclamar.
     nao_verificados = 0
+    extra = (SUBSTATUS_NF_PENDENTE,) if pendentes_nf is not None else ()
     with ThreadPoolExecutor(max_workers=20) as ex:
-        for ped, sid, status, verificado in ex.map(lambda p: _avaliar_pedido(token, p), a_checar):
+        for ped, sid, status, verificado in ex.map(
+                lambda p: _avaliar_pedido(token, p, extra), a_checar):
             feitos += 1
             if progresso:
                 progresso(feitos, total)
@@ -1024,7 +1054,13 @@ def filtrar_para_imprimir(token: str, pedidos: list[dict], progresso=None,
                 nao_verificados += 1
                 continue
             if ped is not None:
-                prontos.append(ped)
+                # A separacao e por SUBSTATUS, nao por "veio preenchido": com
+                # `pendentes_nf` os dois tipos chegam aqui, e so o
+                # ready_to_print pode seguir para o lote de impressao.
+                if (ped["_envio"].get("substatus") or "") == SUBSTATUS_IMPRIMIR:
+                    prontos.append(ped)
+                elif pendentes_nf is not None:
+                    pendentes_nf.append(ped)
             elif sid and status in STATUS_TERMINAIS:
                 novos_terminais[str(sid)] = hoje
     if not progresso:
@@ -2028,6 +2064,60 @@ def main() -> None:
 
     if comando == "rastrear" and len(args) >= 2:
         rastrear_sku(token, cred["seller_id"], args[1])
+        return
+
+    if comando == "substatus":
+        # Diagnostico: QUAIS substatus existem na conta agora, com a contagem, e
+        # o DESPACHO de cada envio parado em "Informe a NF-e".
+        #
+        # Duas perguntas, porque sao as duas duvidas reais: (1) o nome do
+        # substatus e contrato do ML, so a conta real confirma — foi assim que se
+        # conferiu que "Informe a NF-e" e o `invoice_pending`; (2) "sera que o
+        # alerta vai me avisar de venda de AMANHA?". O bloco de despacho responde
+        # a segunda mostrando, envio por envio, quem casa com HOJE (que e o unico
+        # que o alerta dispara — mesma regra do ready_to_print, ver
+        # `_de_hoje_e_novo` no bot).
+        #
+        # Se um dia o alerta de NF-e parar de avisar, rode isto ANTES de mexer no
+        # codigo: o nome pode ter mudado do lado deles.
+        pedidos = buscar_pedidos(token, cred["seller_id"], dias=DIAS_JANELA_ALERTA_CLI)
+        contagem: dict[str, int] = defaultdict(int)
+        pendentes_nf: list[tuple[int, dict]] = []
+        print(f"Consultando o envio de {len(pedidos)} pedido(s)...")
+
+        def _envio_do(ped):
+            sid = (ped.get("shipping") or {}).get("id")
+            return (sid, buscar_envio(token, sid)) if sid else (None, None)
+
+        with ThreadPoolExecutor(max_workers=20) as ex:
+            for sid, env in ex.map(_envio_do, pedidos):
+                if env is None:
+                    contagem["(a API nao respondeu)"] += 1
+                    continue
+                sub = env.get("substatus") or "(sem substatus)"
+                contagem[f"{env.get('status') or '?'} / {sub}"] += 1
+                if sub == SUBSTATUS_NF_PENDENTE:
+                    pendentes_nf.append((sid, env))
+
+        print("\nsubstatus encontrados (status / substatus):")
+        for rotulo, n in sorted(contagem.items(), key=lambda x: -x[1]):
+            marca = ""
+            if rotulo.endswith(f"/ {SUBSTATUS_IMPRIMIR}"):
+                marca = "   <- entra na impressao"
+            elif rotulo.endswith(f"/ {SUBSTATUS_NF_PENDENTE}"):
+                marca = "   <- alerta de NF-e pendente"
+            print(f"  {n:>4}  {rotulo}{marca}")
+
+        hoje = _hoje_br()
+        print(f'\ndespacho dos envios em "Informe a NF-e" (hoje = {hoje}):')
+        if not pendentes_nf:
+            print("  nenhum agora — nada a avisar (e nada a conferir aqui).")
+        for sid, env in pendentes_nf:
+            bruto = _prazo_do_envio(env) or ((_sla(token, sid) or {}).get("expected_date") or "")
+            dia = _data_despacho(bruto) or "(sem data)"
+            print(f"  envio {sid}  despacho {dia}"
+                  + ("   <- HOJE: o alerta avisaria" if dia == hoje
+                     else "   (outro dia: NAO avisa)"))
         return
 
     if comando in ("envios", "resumo"):

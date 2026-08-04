@@ -5,6 +5,20 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **O aviso de vendas passou a incluir as que estão em "Informe a NF-e".** Antes
+  ele só avisava das vendas prontas para imprimir — e justamente a venda de um
+  produto **sem estoque** nunca chega nesse estado, porque o faturador não sobe o
+  XML da NF-e. Era a venda que você mais precisava ver cedo, e era a única
+  invisível. Agora ela também avisa, no mesmo esquema de sempre: **só o que
+  precisa sair no dia**, uma vez por venda.
+  - Vem numa mensagem **separada**, com o rótulo `· falta NF-e` e a observação de
+    que a etiqueta só libera depois que o XML subir — para não se confundir com
+    uma venda que já dá para imprimir.
+  - Quando o XML sobe e a venda fica pronta, você recebe o aviso normal também.
+    São dois recados com ações diferentes; um não cala o outro.
+  - Aparece no `/vendasapos` como um bloco próprio.
+  - **A impressão não mudou em nada**: essas vendas não entram em lote nenhum (o
+    Mercado Livre não libera a etiqueta delas).
 - **Comando `/atualizar` no bot** — baixa a versão nova e reinicia, **sem você
   precisar estar no PC**. Ele responde o que aconteceu: "já estava na versão mais
   nova", "atualizado: `abc1234` → `def5678` — reiniciando, volto em uns 15
