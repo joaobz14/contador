@@ -64,6 +64,11 @@ _BEARER_RE = re.compile(r"(Bearer\s+)[\w.\-]+", re.I)
 # `_disparar_perguntas` ja constroi erro limpo (a URL nao entra na mensagem);
 # isto cobre o resto (um diagnostico futuro que imprima a config, por exemplo).
 _WEBHOOK_RE = re.compile(r"(/webhook(?:-test)?/)[\w-]+", re.I)
+# Credencial embutida na URL: https://usuario:token@github.com/... — forma que
+# o git usa quando o remoto foi clonado com token. Entrou junto com o
+# /atualizar, que manda saida do git para o chat do Telegram. Redige o par
+# inteiro (usuario tambem identifica).
+_USERINFO_RE = re.compile(r"(://)[^/\s:@]+:[^/\s@]+(@)")
 # Forma JSON / repr de dict:  "chave": "valor"  ou  'chave': 'valor'  (defesa em
 # profundidade — um caminho de erro futuro que serialize o corpo/credencial de um
 # request, ex.: f"Falha: {dados}", passaria batido pela regex de query). Valor sem
@@ -73,12 +78,13 @@ _JSON_RE = re.compile(rf'(["\'](?:{_CHAVES})["\']\s*:\s*)(["\'])[^"\']*\2', re.I
 
 def sem_segredos(texto) -> str:
     """Substitui o valor de parametros sensiveis por *** (mantendo a chave, util
-    para diagnostico). Cobre cinco formas: query (chave=valor), JSON
+    para diagnostico). Cobre seis formas: query (chave=valor), JSON
     ("chave": "valor"), segredo NO CAMINHO da URL (token do Telegram), o
-    cabecalho Bearer e o caminho do webhook do n8n. Tolera qualquer entrada
-    (converte para str)."""
+    cabecalho Bearer, o caminho do webhook do n8n e a credencial embutida na URL
+    (`://usuario:token@`). Tolera qualquer entrada (converte para str)."""
     t = _QUERY_RE.sub(r"\1=***", str(texto))
     t = _JSON_RE.sub(r"\1\2***\2", t)
     t = _PATH_RE.sub(r"\1***", t)
     t = _WEBHOOK_RE.sub(r"\1***", t)
+    t = _USERINFO_RE.sub(r"\1***\2", t)
     return _BEARER_RE.sub(r"\1***", t)

@@ -125,6 +125,30 @@ ignorado **em silêncio** — responder "não autorizado" já confirmaria que o 
 existe. Sem as duas chaves configuradas, o comando fica desligado e explica o que
 falta a quem está autorizado.
 
+## `/atualizar` — atualizar do celular
+`git pull` + reinício sem estar no PC. Responde o que aconteceu ("já estava na
+versão mais nova" / "atualizado: `abc` → `def`") e, quando volta, um "✅ Voltei".
+
+**Como reinicia:** o bot roda sob o `Iniciar Bot (auto).bat`, que é um **laço** —
+se o processo morre, ele sobe de novo 15s depois. Então o comando só **sai**; não
+dispara processo nenhum (nada de `schtasks` daqui, que é o terreno do WinError 6
+→ ver o histórico abaixo). Se o bot tiver sido aberto na mão (sem o lançador), ele
+**não sai**: atualiza e manda reiniciar no PC — bot mudo é pior que bot
+desatualizado.
+
+> [!warning] O que ele nunca faz
+> - **Não mexe em alteração local.** `nomes_sku.json`/`skus_por_anuncio.json` são
+>   versionados **e** editados pela tela: com alteração não commitada ele não puxa
+>   nada e lista os arquivos. Nada de `stash`/`reset` automático em cima da ordem
+>   de separação e dos nomes que o dono digitou.
+> - **Não atropela impressão.** Pega a `TRAVA_CONTA` sem esperar; ocupado responde
+>   "tente em instantes" — o reinício não pode cair entre gerar o ZIP e marcar o
+>   estado ([[Invariantes críticas|invariante 1]]).
+> - **Não faz merge.** `git pull --ff-only`: sem fast-forward há commit local, e
+>   isso pede um humano.
+
+A **tela** não é atualizada por ele — continua na versão antiga até fechar e abrir.
+
 ## Onde rodar
 No PC do escritório com a Zebra — a impressão sai na Downloads **dessa** máquina.
 

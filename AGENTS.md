@@ -32,7 +32,7 @@ repo) monitora e imprime.
 | `shopee_api.py` | Integração Shopee (API v2): listar, organizar envio, etiqueta, estado. |
 | `provedores.py` | Abstração de marketplace (`ProvedorML`/`ProvedorShopee`) usada pela GUI. |
 | `separador_gui.py` | Tela Tkinter (loja + conta + dia útil, busca, marcar todos, editor de Nomes). Usa `provedores`. |
-| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). Tem ainda o **`/perguntas`**, que só dispara um fluxo do n8n (não responde nada — ver a convenção). |
+| `bot_telegram.py` | Bot do Telegram: **consulta** (ML e Shopee) e **impressão só do ML** (com confirmação; marca direto — não vê a impressora). Também roda o **alerta pós-horário** (job a cada 5 min, todas as contas: avisa venda nova já `ready_to_print` com despacho hoje) e o aviso da manhã (`job_bom_dia`, 1x/dia). Tem ainda o **`/perguntas`**, que só dispara um fluxo do n8n (não responde nada — ver a convenção) e o **`/atualizar`** (`git pull` + reinício pelo celular). |
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `pegar_token_tiktok.py` | OAuth inicial do TikTok Shop. **Escrito, mas nunca rodou com sucesso** — a integração está ARQUIVADA (ver `docs/TIKTOK_SHOP_API.md`). |
@@ -569,6 +569,32 @@ em 2º plano.
   por conta entra na trava** — o teste `test_caminhos_que_dependem_da_conta_estao_travados`
   falha se esquecerem. A GUI não precisa: ela roda uma operação por vez
   (`ocupado`), e entre PROCESSOS quem protege são as travas de arquivo.
+- **`/atualizar` (git pull pelo Telegram) NÃO dispara processo para se
+  reiniciar.** O bot roda sob o `Iniciar Bot (auto).bat`, que é um **laço**: se o
+  processo morre, ele sobe de novo 15s depois, já com o código novo. Então o
+  comando só **sai** (`logging.shutdown()` + `os._exit(0)`) — nada de `schtasks`
+  disparado daqui, que é exatamente o terreno minado do WinError 6 (processo sem
+  console herdando handles inválidos) que fez o auto-start pela tela ser
+  abandonado. **`BOT_SEM_PAUSA` é o sinal** de que quem subiu o bot foi esse
+  lançador (só ele define a variável): sem ela, sair deixaria o bot **fora do
+  ar**, então o comando atualiza e manda reiniciar na mão — bot mudo é pior que
+  bot desatualizado. O ciclo fecha com um recado em `dados/reinicio_pendente.json`
+  lido no `post_init` (`_avisar_reinicio`, "✅ Voltei"): quem pediu está no
+  celular e não vê a máquina. O recado é **apagado antes do envio** — um recado
+  sobrevivente avisaria a cada reinício, para sempre.
+- **Atualização remota não pode destruir trabalho local nem atropelar operação.**
+  Duas guardas, ambas por dano irreversível: (1) **árvore suja** —
+  `nomes_sku.json` e `skus_por_anuncio.json` são **versionados e editados pela
+  tela** na máquina de operação; com alteração não commitada o comando **não puxa
+  nada** e lista os arquivos. Nada de `stash`/`checkout`/`reset` automático: o
+  "conflito" aqui é a ordem de separação e os nomes de produto que o dono digitou.
+  (2) **`TRAVA_CONTA` com `blocking=False`** — o pull troca os `.py` sob um
+  processo que já os carregou, e o reinício poderia matar o bot **entre gerar o
+  ZIP e marcar o estado** (invariante 1); ocupado responde "tente em instantes"
+  em vez de ficar mudo esperando. O pull é **`--ff-only`** (numa pasta de operação
+  o histórico só anda para a frente; sem fast-forward há commit local, e isso pede
+  um humano) e o git roda com **`stdin=DEVNULL` + `GIT_TERMINAL_PROMPT=0`** —
+  senão ficaria esperando usuário/senha para sempre num processo sem console.
 - **Código novo só vale depois de REINICIAR o processo:** `git pull` troca os
   arquivos; o bot que já está no ar segue com o que carregou no logon. O sintoma
   é "a mudança não pegou", sem sinal nenhum do porquê — aconteceu **duas vezes**

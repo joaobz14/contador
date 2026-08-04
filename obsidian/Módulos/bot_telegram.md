@@ -24,7 +24,7 @@ arquivo: bot_telegram.py
 
 ## Comandos
 `/hoje` `/amanha` `/dia` `/todos` · `/resumo` · `/vendasapos` · `/detalhar <SKU>` ·
-`/conta` · `/loja` · `/id` · `/versao` · `/perguntas` · `/menu`.
+`/conta` · `/loja` · `/id` · `/versao` · `/atualizar` · `/perguntas` · `/menu`.
 O menu "/" do app vem de `setMyCommands` **por chat** (`BotCommandScopeChat`),
 nunca global — a lista de comandos não pode aparecer para estranhos. Comando novo
 tem de entrar em `COMANDOS_MENU`: o `setMyCommands` substitui a lista inteira.
@@ -66,3 +66,11 @@ de API.
 
 ## Relacionado
 - [[relatorio]] · [[Estado já impresso]] · [[Fluxos de operação]] · [[Redação de segredos]] · [[Telegram]]
+
+### `/atualizar` (git pull + reinício)
+`cmd_atualizar` → `_atualizar_sem_atropelar` (pega `TRAVA_CONTA` sem esperar) →
+`_puxar_atualizacao` (`git status --porcelain` → recusa se houver alteração local;
+`git pull --ff-only`; compara `_commit_do_disco()` antes/depois). Se mudou, grava
+`dados/reinicio_pendente.json` e chama `os._exit(0)` — quem reinicia é o laço do
+`Iniciar Bot (auto).bat` (`BOT_SEM_PAUSA` é o sinal de que ele está no comando).
+Na volta, `_avisar_reinicio` (no `post_init`) manda o "✅ Voltei".

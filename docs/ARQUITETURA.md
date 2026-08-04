@@ -136,6 +136,7 @@ quem sobe o bot.
 | `estado_grupos.json` | `marcar_impresso`/`status_grupo` (ML) | Não | por conta + dia | ❌ Não |
 | `estado_shopee.json` | estado de impresso (Shopee) | Não | por dia | ❌ Não |
 | `config.json` | `aplicar_config` (preferências) | Não | por máquina | ❌ Não |
+| `reinicio_pendente.json` | recado do `/atualizar` para o bot avisar, na volta, que subiu na versão nova (`bot_telegram._avisar_reinicio`) | Não | por máquina | ❌ Não |
 | `bot_config.json` | `bot_telegram` (token do bot; URL do webhook do n8n em `webhook_perguntas` — também segredo) | **Sim** | por máquina | ❌ Não |
 | `itens_cache.json` | cache de detalhes de produto | Não | por conta | ❌ Não |
 | `envios_cache.json` | `filtrar_para_imprimir` (envios finalizados) | Não | por conta | ❌ Não |

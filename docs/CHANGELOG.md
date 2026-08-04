@@ -5,6 +5,21 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **Comando `/atualizar` no bot** — baixa a versão nova e reinicia, **sem você
+  precisar estar no PC**. Ele responde o que aconteceu: "já estava na versão mais
+  nova", "atualizado: `abc1234` → `def5678` — reiniciando, volto em uns 15
+  segundos" e, quando volta, um "✅ Voltei — agora rodando a versão `def5678`".
+  Três cuidados:
+  - **Nunca perde o seu trabalho.** Se houver alteração local não salva na pasta
+    (tipicamente os nomes de SKU editados na tela), ele **não puxa nada** e diz
+    quais arquivos travaram. Você resolve no PC e manda `/atualizar` de novo.
+  - **Não atropela uma operação.** Se estiver no meio de uma impressão, responde
+    "tente de novo em instantes" em vez de reiniciar no pior momento.
+  - **Só sai do ar se alguém for reiniciá-lo.** Se o bot tiver sido aberto na mão
+    (sem o lançador automático), ele atualiza mas avisa que continua na versão
+    antiga — um bot mudo é pior que um bot desatualizado.
+  - A **tela** não é atualizada por ele: se estiver aberta no PC, continua na
+    versão antiga até você fechar e abrir.
 - **Comando `/perguntas` no bot** — dispara o fluxo do n8n que lista as
   perguntas e mensagens sem resposta da conta 3. O bot **não responde nada**: ele
   aciona o fluxo, manda um "🔎 Consultando..." na hora e a resposta chega alguns
