@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
  "node_count": 350,
- "edge_count": 640,
+ "edge_count": 639,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -3949,7 +3949,7 @@
    "_origin": "manual"
   },
   {
-   "label": "COMANDO /perguntas: DOIS SISTEMAS, UM BOT SO (2026-08-04). O dono tem um fluxo no n8n que lista perguntas/mensagens sem resposta de uma conta (a 'conta 3', fora deste projeto) e quer dispara-lo pelo mesmo @ContadorML_bot. A restricao que define o desenho: o Telegram entrega os updates de um bot a UM consumidor so — quem LE os comandos e este projeto (polling em main()); o n8n entra apenas como REMETENTE (sendMessage). Por isso o /perguntas NAO responde com dado nenhum: ele faz um POST no webhook do n8n ({'origem','comando'}), manda um '🔎 Consultando...' imediato (o fluxo leva ~4s) e a RESPOSTA chega depois, escrita pelo n8n no mesmo chat. Nada aqui toca a forma de RECEBER updates — trocar polling por webhook neste repo derrubaria um dos dois lados. Restrito a UM chat (chat_perguntas), nao a whitelist inteira: o comando fala de uma conta especifica do dono e a whitelist pode um dia incluir outra pessoa; chat nao autorizado e ignorado EM SILENCIO (responder 'nao autorizado' ja confirmaria que o comando existe). Falha de rede vira aviso no chat, nunca excecao subindo pelo handler. ATUALIZACAO 2026-08-04: o corpo do POST passou a levar tambem o `chat_id` de quem disparou. Motivo, antes de existir a 2a integracao: sem ele o fluxo do n8n precisa ter um chat FIXO escrito por dentro — o que funciona com um comando e um chat, e vira divida assim que houver varios fluxos ou mais de um chat autorizado (descobrir isso com cinco fluxos prontos custa caro). E aditivo: campo a mais que o fluxo existente ignora. ARMADILHAS que o outro lado precisa saber ao crescer: botao inline mandado PELO n8n nao funciona (o callback_query e um update, entao vai para o consumidor do polling — este projeto —, que nao conhece aquele callback_data e nao faz nada); teclado persistente idem (o texto cai no catch-all 'Nao entendi'); e o n8n nao consegue reagir a comando nenhum, entao TODA funcao nova precisa de um handler registrado deste lado, mesmo que o trabalho todo seja do n8n. CONTRATO FECHADO COM O LADO DO n8n (2026-08-04, antes de existir a 2a integracao): (1) o chat_id e uma CAPACIDADE, nao um dado — o n8n responde ao chat que vier no corpo (e cai no chat do dono quando o campo falta), entao a AUTORIZACAO e responsabilidade deste lado: so pode ir para o POST um chat_id que ja passou por _autorizado e pela restricao do comando; mandar id nao validado faria o n8n entregar dado da conta a um terceiro. (2) UM WEBHOOK POR FLUXO, nao roteador — no n8n o webhook pertence ao workflow, e rotear exigiria um monolito onde uma funcao quebrada derruba as outras (o campo 'comando' segue no corpo so para log deles); consequencia aqui: uma chave de config por comando, e passando de ~3 trocar webhook_perguntas por um bloco webhooks:{nome:url}. (3) NADA DE BOTAO vindo do n8n (o callback_query e update e vai para o polling deste projeto, que nao conhece o callback_data e nao faz nada — falha silenciosa); botao em resposta do n8n exige handler daqui. (4) parametro vai em 'args', string CRUA ja com trim, '' quando nao houver — crua e nao lista para a sintaxe de um comando evoluir sem mexer nos dois lados. (5) um comando por funcao enquanto forem <=5; submenu so depois disso. (6) FLUXO CARO PRECISA DE FREIO: os relatorios de Ads levam ~5 min e gastam dinheiro (~US$0,04/conta, chamadas pagas de IA), entao o aviso imediato tem de dizer que demora, o comando fica restrito ao chat do dono, e o limite de frequencia e deste lado — PERSISTIDO em arquivo (como o dedup do alerta), porque em memoria ele zeraria a cada reinicio e o bot reinicia a cada /atualizar.",
+   "label": "COMANDO /perguntas: DOIS SISTEMAS, UM BOT SO (2026-08-04). O dono tem um fluxo no n8n que lista perguntas/mensagens sem resposta de uma conta (a 'conta 3', fora deste projeto) e quer dispara-lo pelo mesmo @ContadorML_bot. A restricao que define o desenho: o Telegram entrega os updates de um bot a UM consumidor so — quem LE os comandos e este projeto (polling em main()); o n8n entra apenas como REMETENTE (sendMessage). Por isso o /perguntas NAO responde com dado nenhum: ele faz um POST no webhook do n8n ({'origem','comando'}), manda um '🔎 Consultando...' imediato (o fluxo leva ~4s) e a RESPOSTA chega depois, escrita pelo n8n no mesmo chat. Nada aqui toca a forma de RECEBER updates — trocar polling por webhook neste repo derrubaria um dos dois lados. Restrito a UM chat (chat_perguntas), nao a whitelist inteira: o comando fala de uma conta especifica do dono e a whitelist pode um dia incluir outra pessoa; chat nao autorizado e ignorado EM SILENCIO (responder 'nao autorizado' ja confirmaria que o comando existe). Falha de rede vira aviso no chat, nunca excecao subindo pelo handler. ATUALIZACAO 2026-08-04: o corpo do POST passou a levar tambem o `chat_id` de quem disparou. Motivo, antes de existir a 2a integracao: sem ele o fluxo do n8n precisa ter um chat FIXO escrito por dentro — o que funciona com um comando e um chat, e vira divida assim que houver varios fluxos ou mais de um chat autorizado (descobrir isso com cinco fluxos prontos custa caro). E aditivo: campo a mais que o fluxo existente ignora. ARMADILHAS que o outro lado precisa saber ao crescer: botao inline mandado PELO n8n nao funciona (o callback_query e um update, entao vai para o consumidor do polling — este projeto —, que nao conhece aquele callback_data e nao faz nada); teclado persistente idem (o texto cai no catch-all 'Nao entendi'); e o n8n nao consegue reagir a comando nenhum, entao TODA funcao nova precisa de um handler registrado deste lado, mesmo que o trabalho todo seja do n8n. CONTRATO FECHADO COM O LADO DO n8n (2026-08-04, antes de existir a 2a integracao): (1) o chat_id e uma CAPACIDADE, nao um dado — o n8n responde ao chat que vier no corpo (e cai no chat do dono quando o campo falta), entao a AUTORIZACAO e responsabilidade deste lado: so pode ir para o POST um chat_id que ja passou por _autorizado e pela restricao do comando; mandar id nao validado faria o n8n entregar dado da conta a um terceiro. (2) UM WEBHOOK POR FLUXO, nao roteador — no n8n o webhook pertence ao workflow, e rotear exigiria um monolito onde uma funcao quebrada derruba as outras (o campo 'comando' segue no corpo so para log deles); consequencia aqui: uma chave de config por comando, e passando de ~3 trocar webhook_perguntas por um bloco webhooks:{nome:url}. (3) NADA DE BOTAO vindo do n8n (o callback_query e update e vai para o polling deste projeto, que nao conhece o callback_data e nao faz nada — falha silenciosa); botao em resposta do n8n exige handler daqui. (4) parametro vai em 'args', string CRUA ja com trim, '' quando nao houver — crua e nao lista para a sintaxe de um comando evoluir sem mexer nos dois lados. (5) um comando por funcao enquanto forem <=5; submenu so depois disso. (6) FLUXO CARO PRECISA DE FREIO: os relatorios de Ads levam ~5 min e gastam dinheiro (~US$0,04/conta, chamadas pagas de IA), entao o aviso imediato tem de dizer que demora, o comando fica restrito ao chat do dono, e o limite de frequencia e deste lado — PERSISTIDO em arquivo (como o dedup do alerta), porque em memoria ele zeraria a cada reinicio e o bot reinicia a cada /atualizar. SEGUNDA INTEGRACAO (/anuncios, 2026-08-04) — e o momento em que a tabela substituiu o copiar-colar. `INTEGRACAO_N8N` (dataclass) + a tupla `INTEGRACOES` descrevem cada fluxo (comando, descricao do menu, rotulo do botao) e derivam dali a chave de config (`webhook_<comando>`) e a variavel de ambiente (`N8N_WEBHOOK_<COMANDO>`); `_acionar_n8n` e o corpo unico (autorizacao, 'Consultando...', disparo em thread, erro contido). Comando novo passa a ser UMA LINHA na tupla + a URL no bot_config.json — menu, botao, autorizacao e tratamento de erro saem de graca. DUAS DECISOES QUE PARECEM DETALHE E NAO SAO: (1) cada comando tem um handler NOMEADO (cmd_perguntas, cmd_anuncios) que so delega, em vez de um handler generico registrado em laco — o guardiao test_todo_handler_registrado_checa_autorizacao varre o `main` por AST e um closure anonimo passaria batido por ele, ou seja, a generalizacao teria furado a rede de seguranca da autorizacao. (2) A chave de chat continua `chat_perguntas` mesmo valendo para TODAS as integracoes: renomear obrigaria o dono a reeditar o bot_config.json da maquina de producao, e o ganho seria so cosmetico (esta documentado no docstring do `_pode_n8n`).",
    "file_type": "concept",
    "source_file": "bot_telegram.py",
    "source_location": null,
@@ -6540,6 +6540,17 @@
   },
   {
    "source": "bot_perguntas_n8n",
+   "target": "bot_telegram",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o POST no n8n e o unico efeito do comando",
+   "source_file": "bot_telegram.py",
+   "source_location": null
+  },
+  {
+   "source": "bot_perguntas_n8n",
    "target": "bot_telegram_cmd_perguntas",
    "relation": "rationale_for",
    "confidence": "MANUAL",
@@ -6551,34 +6562,12 @@
   },
   {
    "source": "bot_perguntas_n8n",
-   "target": "bot_telegram_disparar_perguntas",
-   "relation": "rationale_for",
-   "confidence": "MANUAL",
-   "confidence_score": 1.0,
-   "weight": 1.0,
-   "context": "o POST no n8n e o unico efeito do comando",
-   "source_file": "bot_telegram.py",
-   "source_location": null
-  },
-  {
-   "source": "bot_perguntas_n8n",
    "target": "bot_telegram_main",
    "relation": "rationale_for",
    "confidence": "MANUAL",
    "confidence_score": 1.0,
    "weight": 1.0,
    "context": "o polling continua sendo o unico consumidor dos updates",
-   "source_file": "bot_telegram.py",
-   "source_location": null
-  },
-  {
-   "source": "bot_perguntas_n8n",
-   "target": "bot_telegram_pode_perguntas",
-   "relation": "rationale_for",
-   "confidence": "MANUAL",
-   "confidence_score": 1.0,
-   "weight": 1.0,
-   "context": "restrito a um chat, nao a whitelist",
    "source_file": "bot_telegram.py",
    "source_location": null
   },
@@ -9789,23 +9778,23 @@
   },
   {
    "source": "webhook_url_e_segredo",
+   "target": "bot_telegram",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "erro limpo: a URL nao entra na mensagem",
+   "source_file": "registro.py",
+   "source_location": null
+  },
+  {
+   "source": "webhook_url_e_segredo",
    "target": "bot_telegram_carregar_config",
    "relation": "rationale_for",
    "confidence": "MANUAL",
    "confidence_score": 1.0,
    "weight": 1.0,
    "context": "a URL vem da config/env, nunca do codigo",
-   "source_file": "registro.py",
-   "source_location": null
-  },
-  {
-   "source": "webhook_url_e_segredo",
-   "target": "bot_telegram_disparar_perguntas",
-   "relation": "rationale_for",
-   "confidence": "MANUAL",
-   "confidence_score": 1.0,
-   "weight": 1.0,
-   "context": "erro limpo: a URL nao entra na mensagem",
    "source_file": "registro.py",
    "source_location": null
   },

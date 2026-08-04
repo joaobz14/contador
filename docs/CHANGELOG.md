@@ -5,6 +5,13 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **Comando `/anuncios` no bot** — saúde dos anúncios das **duas** contas
+  (Cozilatti e Gastromaq) numa resposta só. Funciona igual ao `/perguntas`: o bot
+  aciona o fluxo do n8n, manda um "🔎 Consultando..." e a resposta chega em uns
+  segundos, escrita pelo n8n. Também tem botão **📦 Anúncios** no `/menu`.
+  - Para ligar, acrescente `"webhook_anuncios"` ao `bot_config.json` com o
+    endereço do fluxo. O chat autorizado é o mesmo do `/perguntas` — não precisa
+    configurar de novo.
 - **O bot separa as vendas da Shopee que ainda não podem ser impressas.** Mesma
   regra do Mercado Livre: só as que precisam sair **no dia**, uma vez cada, em
   mensagem separada.

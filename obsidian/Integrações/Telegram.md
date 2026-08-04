@@ -118,6 +118,16 @@ mesmo bot).
 > criado do zero pelo Windows) em vez de seguir caçando o próximo achado.
 > Todo o código do lock de PID foi removido.
 
+## Integrações do n8n (`/perguntas`, `/anuncios`)
+Comandos que o bot **dispara** e o n8n responde. Um fluxo por comando, uma linha
+na tupla `INTEGRACOES` + a URL no `bot_config.json` — menu, botão, autorização e
+tratamento de erro saem de graça.
+
+| Comando | O que devolve |
+|---|---|
+| `/perguntas` | perguntas e mensagens sem resposta (conta 3) |
+| `/anuncios` | saúde dos anúncios das **duas** contas, numa resposta só |
+
 ## `/perguntas` — o bot dispara, o **n8n** responde
 Um fluxo do **n8n** (fora deste projeto) lista as perguntas e mensagens sem
 resposta da **conta 3**. O `/perguntas` só **aciona** esse fluxo: faz um POST no

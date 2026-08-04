@@ -98,6 +98,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   handler deste lado, mesmo que o trabalho todo seja dele.
   Depois do `--update`: **1694 nós, 3185 arestas, 0 órfãs**.
 
+- **2026-08-04 — `/anuncios`: a segunda integração vira tabela.** Com o segundo
+  fluxo do n8n, o copiar-colar deixaria de ser barato. Entrou `IntegracaoN8N`
+  (dataclass) + a tupla `INTEGRACOES`, de onde saem a chave de config, a variável
+  de ambiente, o menu e o botão; `_acionar_n8n` virou o corpo único. Comando novo
+  é **uma linha** na tupla + a URL no `bot_config.json`. Duas decisões que
+  parecem detalhe e não são, registradas no nó `bot_perguntas_n8n`: cada comando
+  tem um **handler nomeado** que só delega (um genérico registrado em laço
+  passaria batido pelo guardião de autorização, que varre o `main` por AST — a
+  generalização teria furado a rede de segurança), e a chave de chat continua
+  `chat_perguntas` mesmo valendo para todas (renomear obrigaria a reeditar o
+  config da máquina de produção, por ganho cosmético).
+  Depois do `--update`: **1728 nós, 3263 arestas, 0 órfãs**.
+
 - **2026-08-04 — alerta de NF-e na Shopee: o espelho invertido do ML.** No ML a
   venda travada **some** do app. Na Shopee é o contrário: ela continua em
   `READY_TO_SHIP`, já aparece na tela, e o alerta **já a chamava de "pronta"** —

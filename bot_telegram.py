@@ -43,6 +43,7 @@ import subprocess
 import sys
 import threading
 from datetime import datetime, time
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 import requests
@@ -150,18 +151,21 @@ def carregar_config() -> dict:
         "token": token,
         "chat_ids": {int(c) for c in cfg.get("chat_ids", [])},
         "aviso_horario": (cfg.get("aviso_horario") or "").strip(),
-        # /perguntas (ver a secao logo abaixo). Fora do codigo de proposito: a
-        # URL do webhook e, na pratica, a senha dele — e este repositorio e
-        # publico.
-        "webhook_perguntas": (os.getenv("N8N_WEBHOOK_PERGUNTAS")
-                              or cfg.get("webhook_perguntas") or "").strip(),
+        # Integracoes do n8n (ver a secao logo abaixo): uma URL por fluxo. Fora
+        # do codigo de proposito — a URL do webhook e, na pratica, a senha dele,
+        # e este repositorio e publico.
+        "webhooks": {i.comando: (os.getenv(i.variavel)
+                                 or cfg.get(i.chave_config) or "").strip()
+                     for i in INTEGRACOES},
+        # Chat autorizado a usar TODAS as integracoes. Nome herdado do primeiro
+        # comando; mantido para nao obrigar a reeditar o config em producao.
         "chat_perguntas": _inteiro(cfg.get("chat_perguntas")),
     }
 
 
-# ------------------------------------------------------------ /perguntas (n8n)
-# O /perguntas e diferente de todo o resto do bot: ele NAO responde com dado
-# nenhum. So aciona um fluxo do n8n, que consulta a conta 3 e manda a resposta
+# ------------------------------------------------------- integracoes com o n8n
+# Estes comandos sao diferentes de todo o resto do bot: eles NAO respondem com
+# dado nenhum. So acionam um fluxo do n8n, que faz a consulta e manda a resposta
 # no Telegram POR ESTE MESMO BOT, alguns segundos depois.
 #
 # Por que assim, e nao o bot consultando: o Telegram entrega os updates de um bot
@@ -170,17 +174,47 @@ def carregar_config() -> dict:
 # convivem enquanto essa divisao valer — qualquer mexida na forma de RECEBER
 # updates aqui (trocar polling por webhook, por exemplo) derruba um dos lados.
 # Nada nesta secao toca nisso: ela e um cliente HTTP de saida, ponto.
-TIMEOUT_PERGUNTAS = 10
+#
+# UM WEBHOOK POR FLUXO (acordado com o outro lado): no n8n o webhook pertence ao
+# workflow, e rotear tudo por um so exigiria um monolito onde uma funcao quebrada
+# derruba as outras. Por isso a tabela abaixo: comando novo e uma LINHA aqui mais
+# a URL no bot_config.json — o resto (menu, botao, autorizacao, tratamento de
+# erro) sai de graca.
+TIMEOUT_N8N = 10
 
 
-def _disparar_perguntas(url: str, chat_id: int) -> None:
+@dataclass(frozen=True)
+class IntegracaoN8N:
+    """Um comando que so dispara um fluxo do n8n."""
+    comando: str        # "perguntas"  ->  /perguntas
+    descricao: str      # linha do menu "/" do app
+    botao: str          # rotulo no teclado do /menu
+
+    @property
+    def chave_config(self) -> str:
+        return f"webhook_{self.comando}"
+
+    @property
+    def variavel(self) -> str:
+        return f"N8N_WEBHOOK_{self.comando.upper()}"
+
+
+INTEGRACOES = (
+    IntegracaoN8N("perguntas", "Perguntas e mensagens sem resposta (conta 3)",
+                  "🔎 Perguntas"),
+    IntegracaoN8N("anuncios", "Saude dos anuncios das 2 contas: pausas, correcoes e fichas",
+                  "📦 Anuncios"),
+)
+POR_COMANDO = {i.comando: i for i in INTEGRACOES}
+
+
+def _disparar_n8n(url: str, comando: str, chat_id: int) -> None:
     """POST no webhook do n8n. Roda em thread (rede) e NUNCA deixa a URL vazar.
 
-    O `chat_id` de quem disparou vai no corpo para o fluxo do n8n responder A
-    QUEM PERGUNTOU, em vez de ter um chat fixo escrito dentro dele. Nao muda
-    nada para o fluxo de hoje (campo a mais e ignorado), e evita que cada
-    integracao nova nasca com um chat gravado por dentro — o custo de descobrir
-    isso depois de cinco fluxos prontos e alto.
+    O `chat_id` de quem disparou vai no corpo para o fluxo responder A QUEM
+    PERGUNTOU, em vez de ter um chat fixo escrito dentro dele. **Isso torna o
+    chat_id uma CAPACIDADE**: o n8n entrega no chat que receber, entao so pode
+    chegar aqui um id que ja passou pela autorizacao (ver `_acionar_n8n`).
 
     O webhook nao pede autenticacao: quem tem o link dispara o fluxo. O link e,
     portanto, o segredo — por isso ele vem do bot_config.json (nao versionado) e
@@ -196,9 +230,8 @@ def _disparar_perguntas(url: str, chat_id: int) -> None:
     try:
         resp = requests.post(
             url,
-            json={"origem": "telegram", "comando": "/perguntas",
-                  "chat_id": chat_id},
-            timeout=TIMEOUT_PERGUNTAS,
+            json={"origem": "telegram", "comando": f"/{comando}", "chat_id": chat_id},
+            timeout=TIMEOUT_N8N,
         )
     except requests.RequestException as e:
         raise core.SeparadorError(
@@ -210,13 +243,15 @@ def _disparar_perguntas(url: str, chat_id: int) -> None:
             "Confira se o fluxo esta ativo (workflow ligado) no n8n.")
 
 
-def _pode_perguntas(chat_id, cfg: dict) -> bool:
-    """True se ESTE chat pode usar o /perguntas.
+def _pode_n8n(chat_id, cfg: dict) -> bool:
+    """True se ESTE chat pode usar os comandos do n8n.
 
-    Restrito a UM chat (`chat_perguntas`), nao a whitelist inteira: o comando
-    fala de uma conta especifica do dono, e a whitelist pode um dia incluir
-    outra pessoa. Com `chat_perguntas` ausente (nao configurado) devolve False —
-    quem trata o "falta configurar" e o handler, que ai explica o que fazer."""
+    Restrito a UM chat (`chat_perguntas` — nome herdado do primeiro comando,
+    mantido para nao obrigar a reeditar o bot_config.json em producao; ele vale
+    para TODAS as integracoes), nao a whitelist inteira: esses comandos falam de
+    contas especificas do dono, e a whitelist pode um dia incluir outra pessoa.
+    Ausente (nao configurado) devolve False — quem trata o "falta configurar" e o
+    handler, que ai explica o que fazer."""
     alvo = cfg.get("chat_perguntas") or 0
     return bool(alvo and chat_id == alvo)
 
@@ -591,10 +626,10 @@ def _autorizado(update: Update, cfg: dict) -> bool:
     return bool(chat and chat.id in cfg["chat_ids"])
 
 
-def _teclado(loja: str = LOJA_ML, *, perguntas: bool = False) -> InlineKeyboardMarkup:
-    """Teclado do menu. `perguntas=True` acrescenta o botao do /perguntas — so
-    para o chat que pode usa-lo (ver `_pode_perguntas`); nos demais o botao nem
-    aparece, em vez de aparecer e nao fazer nada."""
+def _teclado(loja: str = LOJA_ML, *, integracoes: bool = False) -> InlineKeyboardMarkup:
+    """Teclado do menu. `integracoes=True` acrescenta um botao por integracao do
+    n8n — so para o chat que pode usa-las (ver `_pode_n8n`); nos demais o botao
+    nem aparece, em vez de aparecer e nao fazer nada."""
     linhas = [
         [InlineKeyboardButton("📦 Hoje", callback_data="hoje"),
          InlineKeyboardButton("📅 Amanhã", callback_data="amanha")],
@@ -602,8 +637,9 @@ def _teclado(loja: str = LOJA_ML, *, perguntas: bool = False) -> InlineKeyboardM
          InlineKeyboardButton("🗂 Todos", callback_data="todos")],
         [InlineKeyboardButton("🔔 Vendas após", callback_data="vendas_apos")],
     ]
-    if perguntas:
-        linhas.append([InlineKeyboardButton("🔎 Perguntas", callback_data="perguntas")])
+    if integracoes:
+        linhas.append([InlineKeyboardButton(i.botao, callback_data=i.comando)
+                       for i in INTEGRACOES])
     linhas.append([InlineKeyboardButton(f"🏪 Loja: {loja} (trocar)", callback_data="loja")])
     return InlineKeyboardMarkup(linhas)
 
@@ -817,9 +853,9 @@ async def _executar_impressao(update, context, idx: int) -> None:
 
 
 # ---------------------------------------------------------------- comandos
-# Em duas partes porque a linha do /perguntas so entra para o chat que pode
-# usa-lo (ver `_pode_perguntas`) — e ela pertence a LISTA de comandos, no meio,
-# nao depois das observacoes de ML/Shopee.
+# Em duas partes porque as linhas das integracoes do n8n so entram para o chat
+# que pode usa-las (ver `_pode_n8n`) — e elas pertencem a LISTA de comandos, no
+# meio, nao depois das observacoes de ML/Shopee.
 AJUDA_COMANDOS = (
     "Bot de pedidos (Mercado Livre e Shopee).\n\n"
     "Toque num botao abaixo ou use os comandos:\n"
@@ -835,7 +871,8 @@ AJUDA_RODAPE = (
     "\n\nML: toque em 🖨 num grupo para imprimir (pede confirmacao).\n"
     "Shopee: somente consulta (a impressao fica no app)."
 )
-LINHA_AJUDA_PERGUNTAS = "\n/perguntas — perguntas e mensagens sem resposta (conta 3)"
+def _linhas_ajuda_n8n() -> str:
+    return "".join(f"\n/{i.comando} — {i.descricao}" for i in INTEGRACOES)
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -856,11 +893,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "Nao autorizado. Use /id e peca para liberar seu chat.")
         return
-    pode_perguntas = _pode_perguntas(update.effective_chat.id, cfg)
-    ajuda = AJUDA_COMANDOS + (LINHA_AJUDA_PERGUNTAS if pode_perguntas else "") + AJUDA_RODAPE
+    pode_n8n = _pode_n8n(update.effective_chat.id, cfg)
+    ajuda = AJUDA_COMANDOS + (_linhas_ajuda_n8n() if pode_n8n else "") + AJUDA_RODAPE
     await update.message.reply_text(
         f"{ajuda}\n\nLoja ativa: {_loja(context)}",
-        reply_markup=_teclado(_loja(context), perguntas=pode_perguntas))
+        reply_markup=_teclado(_loja(context), integracoes=pode_n8n))
 
 
 async def cmd_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -935,55 +972,73 @@ async def cmd_vendas_apos(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id, **_resumo_para_envio(dados["itens"]))
 
 
-AJUDA_CONFIG_PERGUNTAS = (
-    "O /perguntas ainda nao esta configurado. No bot_config.json (na pasta "
-    "dados/, que nao vai para o GitHub) acrescente:\n\n"
-    '  "webhook_perguntas": "https://.../webhook/...",\n'
-    '  "chat_perguntas": SEU_CHAT_ID\n\n'
-    "Depois reinicie o bot (o /versao mostra se ele ja pegou a versao nova)."
-)
+def _ajuda_config(integr: IntegracaoN8N) -> str:
+    return (f"O /{integr.comando} ainda nao esta configurado. No bot_config.json "
+            "(na pasta dados/, que nao vai para o GitHub) acrescente:\n\n"
+            f'  "{integr.chave_config}": "https://.../webhook/...",\n'
+            '  "chat_perguntas": SEU_CHAT_ID\n\n'
+            "Depois reinicie o bot (o /versao mostra se ele ja pegou a versao nova).")
 
 
-async def cmd_perguntas(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """/perguntas — aciona o fluxo do n8n e NAO responde com dados.
+async def _acionar_n8n(update: Update, context: ContextTypes.DEFAULT_TYPE,
+                       integr: IntegracaoN8N) -> None:
+    """Corpo compartilhado dos comandos que so disparam um fluxo do n8n.
 
     Quem responde e o n8n, alguns segundos depois, pelo mesmo bot (ver a secao
-    "/perguntas (n8n)" mais acima). Daqui sai so o "🔎 Consultando...", para o
-    toque no botao nao parecer engolido durante esses segundos.
+    "integracoes com o n8n" mais acima). Daqui sai so o "🔎 Consultando...", para
+    o toque no botao nao parecer engolido durante esses segundos.
 
-    Chat nao autorizado (ou autorizado, mas que nao e o `chat_perguntas`) e
+    Chat nao autorizado (ou autorizado, mas que nao e o chat das integracoes) e
     ignorado EM SILENCIO: responder "nao autorizado" ja confirmaria a um
-    estranho que o comando existe e que ha uma conta 3 do outro lado. O log
-    registra a tentativa — o dono ve, o estranho nao.
+    estranho que o comando existe e sobre o que ele fala. O log registra a
+    tentativa — o dono ve, o estranho nao.
+
+    **O chat_id so chega ao POST depois de passar por aqui.** O n8n entrega no
+    chat que receber, entao mandar um id nao validado faria a resposta com dados
+    da conta cair no chat de outra pessoa.
     """
     cfg = context.bot_data["cfg"]
     chat_id = update.effective_chat.id if update.effective_chat else None
     if not _autorizado(update, cfg):
-        log.warning("Acao /perguntas negada para chat %s", chat_id)
+        log.warning("Acao /%s negada para chat %s", integr.comando, chat_id)
         return
-    if not _pode_perguntas(chat_id, cfg):
+    if not _pode_n8n(chat_id, cfg):
         if cfg.get("chat_perguntas"):          # configurado, mas e outro chat
-            log.warning("Acao /perguntas negada para chat autorizado %s "
-                        "(nao e o chat_perguntas)", chat_id)
+            log.warning("Acao /%s negada para chat autorizado %s (nao e o chat "
+                        "das integracoes)", integr.comando, chat_id)
             return
-        await context.bot.send_message(chat_id, AJUDA_CONFIG_PERGUNTAS)
+        await context.bot.send_message(chat_id, _ajuda_config(integr))
         return
-    url = cfg["webhook_perguntas"]
+    url = (cfg.get("webhooks") or {}).get(integr.comando, "")
     if not url:
-        await context.bot.send_message(chat_id, AJUDA_CONFIG_PERGUNTAS)
+        await context.bot.send_message(chat_id, _ajuda_config(integr))
         return
 
-    log.info("Acao /perguntas de chat %s", chat_id)
+    log.info("Acao /%s de chat %s", integr.comando, chat_id)
     await context.bot.send_message(chat_id, "🔎 Consultando...")
     try:
-        await asyncio.to_thread(_disparar_perguntas, url, chat_id)
+        await asyncio.to_thread(_disparar_n8n, url, integr.comando, chat_id)
     except core.SeparadorError as e:
         # sem_segredos por convencao (todo texto de excecao que sai pro chat);
         # a URL ja nao entra na mensagem por construcao — isto e a 2a camada.
         await context.bot.send_message(chat_id, f"Nao consegui acionar: {sem_segredos(e)}")
     except Exception as e:  # noqa: BLE001 - uma falha aqui nao pode derrubar o bot
-        log.exception("Falha ao acionar o /perguntas")
+        log.exception("Falha ao acionar o /%s", integr.comando)
         await context.bot.send_message(chat_id, f"Falha inesperada: {sem_segredos(e)}")
+
+
+# Um handler por comando (e nao um generico registrado em laco) de proposito: o
+# guardiao `test_todo_handler_registrado_checa_autorizacao` varre os handlers do
+# `main` por AST, e um closure anonimo passaria batido por ele. Cada um e uma
+# linha e delega o corpo inteiro para `_acionar_n8n`.
+async def cmd_perguntas(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/perguntas — perguntas e mensagens sem resposta (conta 3)."""
+    await _acionar_n8n(update, context, POR_COMANDO["perguntas"])
+
+
+async def cmd_anuncios(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/anuncios — saude dos anuncios das DUAS contas, numa resposta so."""
+    await _acionar_n8n(update, context, POR_COMANDO["anuncios"])
 
 
 def _commit_do_disco() -> str:
@@ -1352,10 +1407,10 @@ async def cb_botao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "vendas_apos":
         await cmd_vendas_apos(update, context)
         return
-    if data == "perguntas":
+    if data in POR_COMANDO:
         # O botao so e mostrado a quem pode (ver _teclado), mas o callback_data
-        # viaja no cliente: cmd_perguntas refaz a checagem por conta propria.
-        await cmd_perguntas(update, context)
+        # viaja no cliente: `_acionar_n8n` refaz a checagem por conta propria.
+        await _acionar_n8n(update, context, POR_COMANDO[data])
         return
     if _params_listagem(data):
         await _listar_acao(update, context, data)
@@ -1422,13 +1477,10 @@ COMANDOS_MENU = [
     ("menu", "Menu com botoes"),
     ("id", "Mostra seu chat id"),
 ]
-COMANDO_PERGUNTAS = ("perguntas", "Perguntas e mensagens sem resposta (conta 3)")
-
-
 def _comandos_do_chat(chat_id: int, cfg: dict) -> list[tuple[str, str]]:
-    """Menu de UM chat: o /perguntas so entra no chat que pode usa-lo."""
-    if _pode_perguntas(chat_id, cfg):
-        return [*COMANDOS_MENU, COMANDO_PERGUNTAS]
+    """Menu de UM chat: as integracoes do n8n so entram no chat que pode usa-las."""
+    if _pode_n8n(chat_id, cfg):
+        return [*COMANDOS_MENU, *((i.comando, i.descricao) for i in INTEGRACOES)]
     return list(COMANDOS_MENU)
 
 
@@ -1485,6 +1537,7 @@ def main() -> None:
     app.add_handler(CommandHandler("resumo", cmd_resumo))
     app.add_handler(CommandHandler("vendasapos", cmd_vendas_apos))
     app.add_handler(CommandHandler("perguntas", cmd_perguntas))
+    app.add_handler(CommandHandler("anuncios", cmd_anuncios))
     app.add_handler(CommandHandler("versao", cmd_versao))
     app.add_handler(CommandHandler("atualizar", cmd_atualizar))
     app.add_handler(CommandHandler("dia", cmd_dia))
