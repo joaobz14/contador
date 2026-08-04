@@ -508,6 +508,25 @@ em 2º plano.
   (`relatorio.texto_resumo_vendas_apos`) — sem isso, várias vendas caindo em
   sequência depois das 8:30 poluiriam o chat com um alerta cada. Só relê o
   estado já persistido, não refaz chamada de API nenhuma.
+- **Shopee: "Enviar NF-e" é o espelho INVERTIDO do ML.** Lá a venda travada
+  **some** do app; aqui ela continua em `READY_TO_SHIP`, aparece na tela e o
+  alerta **já a chamava de "pronta"** — sendo que a Shopee **recusa o
+  `ship_order`** com a nota pendente (`error_pending_invoice`, confirmado com o
+  suporte deles em 2026-08-04). Era dizer que está pronto o que a própria Shopee
+  nega. Sinal: `invoice_data.status == "pending"` (campo **opcional** — só vem se
+  pedido pelo nome; entrou no `CAMPOS_DETALHE` junto com `pay_time`, na chamada
+  de detalhe que já era feita, **custo zero**). **`pending` sozinho NÃO serve de
+  alerta**: é o estado inicial de toda venda paga até o faturador subir o XML
+  (confirmado e observado — um pedido virou `valid` sozinho em minutos). Quem
+  separa a travada da recém-criada é o **dia**. **Armadilha da data:** a Shopee
+  demora a atribuir `ship_by_date`, então venda recém-paga vem **sem prazo** e
+  ficaria fora de qualquer filtro por dia — o aviso nasceria mudo. Daí
+  `dia_previsto`: usa o `ship_by_date` quando existe, senão deriva de
+  `pay_time + days_to_ship` (fórmula **conferida** contra pedido real —
+  `ship_by_date` é o fim do dia, 23:59:59 de Brasília). **Duas respostas do
+  suporte NÃO valem:** a de que `ship_by_date` só é atribuído após a nota virar
+  válida **contradiz o dado real**, e o push `fbs_br_invoice_issued_push` (código
+  31) é de **FBS**, enquanto os pedidos do dono são `fulfilled_by_local_seller`.
 - **Alerta de venda parada em "Informe a NF-e" (`invoice_pending`):** o dono
   controla estoque; quando vende um item que não tem, o faturador **não sobe o
   XML** e o envio nunca chega a `ready_to_print` — a venda que mais precisa de

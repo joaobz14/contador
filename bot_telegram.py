@@ -371,16 +371,22 @@ CHAVE_ALERTA_SHOPEE = "Shopee"
 SUFIXO_ALERTA_NF = " · falta NF-e"
 AVISO_NF_PENDENTE = ("⚠️ O ML esta esperando a NF-e — a etiqueta so libera "
                      "depois que o XML subir.")
+# A Shopee e mais dura que o ML aqui: com a nota pendente ela RECUSA o
+# ship_order (error_pending_invoice), entao nem organizar o envio da.
+AVISO_NF_SHOPEE = ("⚠️ A Shopee esta esperando a NF-e — nao da nem para organizar "
+                   "o envio enquanto o XML nao subir.")
 
 
-def _dados_alerta_shopee(avisados: set, hoje: str):
+def _dados_alerta_shopee(avisados: set, hoje: str, avisados_nf: set | None = None):
     """Equivalente Shopee de _dados_alerta_da_conta: loja UNICA (sem troca de
     conta — a Shopee so tem uma), delega o filtro pra
     shopee_api.pedidos_prontos_novos (READY_TO_SHIP + despacho hoje, dedup
-    por order_sn). Roda em thread (rede) — ver job_alerta_pos_horario."""
+    por order_sn). Devolve (prontos, itens, pendentes_nf, itens_nf) — a venda
+    com NF-e pendente NAO pode ser despachada (a Shopee recusa o ship_order),
+    entao vai em recado separado. Roda em thread (rede)."""
     cred = shopee.carregar_credenciais()
     token = shopee.obter_token(cred)
-    return shopee.pedidos_prontos_novos(cred, token, avisados, hoje)
+    return shopee.pedidos_prontos_novos(cred, token, avisados, hoje, avisados_nf)
 
 
 async def _disparar_alerta(context, cfg: dict, dados: dict,
@@ -455,15 +461,22 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     # logar erro a cada 5 min pra sempre).
     if shopee.ARQUIVO_CRED.exists():
         avisados_shopee = set(dados["avisados"].get(CHAVE_ALERTA_SHOPEE, []))
+        chave_nf_shopee = CHAVE_ALERTA_SHOPEE + SUFIXO_ALERTA_NF
+        avisados_nf_shopee = set(dados["avisados"].get(chave_nf_shopee, []))
         try:
-            novos_shopee, itens_shopee = await asyncio.to_thread(
-                _dados_alerta_shopee, avisados_shopee, hoje)
+            novos_shopee, itens_shopee, nf_shopee, itens_nf_shopee = await asyncio.to_thread(
+                _dados_alerta_shopee, avisados_shopee, hoje, avisados_nf_shopee)
         except Exception:
             log.exception("Falha ao checar alerta pos-horario da Shopee")
-            novos_shopee, itens_shopee = [], []
+            novos_shopee, itens_shopee, nf_shopee, itens_nf_shopee = [], [], [], []
         if novos_shopee:
             await _disparar_alerta(context, cfg, dados, CHAVE_ALERTA_SHOPEE, itens_shopee,
                                    [d["order_sn"] for d in novos_shopee])
+            mudou = True
+        if nf_shopee:
+            await _disparar_alerta(context, cfg, dados, chave_nf_shopee, itens_nf_shopee,
+                                   [d["order_sn"] for d in nf_shopee],
+                                   aviso=AVISO_NF_SHOPEE)
             mudou = True
 
     if mudou:

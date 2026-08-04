@@ -59,6 +59,12 @@ senão some do menu.
   número de envio/pedido — pedido do dono, só precisa saber O QUE repor. Cada
   disparo também persiste os itens no mesmo arquivo (junto do dedup), que alimenta
   o `/vendasapos` abaixo.
+- **Shopee: "Enviar NF-e"** (`invoice_data.status == "pending"`) — o espelho
+  **invertido** do ML: a venda não some, ela já aparecia como *pronta*, e a
+  Shopee **recusa organizar o envio** enquanto a nota não subir. Agora vem em
+  aviso separado. `pending` sozinho é o estado de toda venda nova, então o que
+  distingue é o **dia** — e como o prazo demora a ser atribuído, ele é derivado
+  de `pay_time + days_to_ship` quando falta.
 - **Alerta também de "Informe a NF-e"** (`invoice_pending`, ML): venda de item
   **sem estoque** não recebe o XML do faturador e nunca chega a `ready_to_print`
   — era a única invisível, e a que mais precisa de aviso. Vem num aviso separado

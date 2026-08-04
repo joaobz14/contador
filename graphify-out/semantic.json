@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 349,
- "edge_count": 635,
+ "node_count": 350,
+ "edge_count": 640,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4011,6 +4011,14 @@
    "source_location": null,
    "id": "reinicio_do_bot_orfao",
    "_origin": "manual"
+  },
+  {
+   "label": "ALERTA DE NF-e NA SHOPEE: O ESPELHO INVERTIDO DO ML (2026-08-04). No ML a venda travada em invoice_pending SOME do app (so olhamos ready_to_print). Na Shopee e o CONTRARIO: ela continua em READY_TO_SHIP, ja aparece na tela e o alerta ja avisava dela como PRONTA — sendo que a Shopee RECUSA o ship_order enquanto a nota estiver pendente (erro `error_pending_invoice`, confirmado com o suporte deles). Ou seja, o app dizia que estava pronto o que a propria Shopee nega: mesma familia do incidente de 2026-07-31. SINAL: `invoice_data.status == 'pending'` (campo OPCIONAL — so vem se pedido pelo nome; entrou no CAMPOS_DETALHE junto com pay_time, na chamada que ja era feita, custo zero). 'pending' SOZINHO NAO SERVE de alerta: e o estado INICIAL de toda venda paga ate o faturador subir o XML (confirmado com o suporte E observado — um pedido do dono virou 'valid' sozinho em minutos). Quem separa a venda travada da recem-criada e o DIA: pending NO DIA DO DESPACHO e XML que ja devia ter subido. ARMADILHA DA DATA: a Shopee leva um tempo para atribuir `ship_by_date`, entao venda recem-paga vem SEM prazo e ficaria fora de qualquer filtro por dia — o aviso nasceria mudo. Dai `dia_previsto`, que usa o ship_by_date quando existe e senao deriva de pay_time + days_to_ship; a formula foi CONFERIDA contra um pedido real (ship_by_date e o FIM DO DIA, 23:59:59 de Brasilia, de pay_time + days_to_ship). NAO CONFIE em duas respostas do suporte: (a) a de que ship_by_date so e atribuido depois da nota virar valida CONTRADIZ o dado real (havia pedido pending COM ship_by_date); (b) o push `fbs_br_invoice_issued_push` (codigo 31) e de FBS/Fulfilled by Shopee, e os pedidos do dono sao fulfilled_by_local_seller — a propria IA hedgeou ali. O endpoint get_pending_buyer_invoice_order_list fala de nota pedida pelo COMPRADOR, outra coisa, e nao e necessario: o detalhe ja e buscado.",
+   "file_type": "concept",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "id": "alerta_nf_shopee",
+   "_origin": "manual"
   }
  ],
  "edges": [
@@ -4470,6 +4478,17 @@
    "weight": 1.0,
    "context": "estende o alerta que ja existia",
    "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_shopee",
+   "target": "alerta_nf_pendente",
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o mesmo problema no ML, com sinal invertido",
+   "source_file": "shopee_api.py",
    "source_location": null
   },
   {
@@ -6085,6 +6104,50 @@
    "weight": 1.0,
    "context": "o retorno continua so ready_to_print",
    "source_file": "separador_etiquetas_ml.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_shopee",
+   "target": "shopee_api_buscar_detalhes",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "invoice_data na chamada que ja existia",
+   "source_file": "shopee_api.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_shopee",
+   "target": "shopee_api_dia_previsto",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "a armadilha da data e a formula conferida",
+   "source_file": "shopee_api.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_shopee",
+   "target": "shopee_api_nf_pendente",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "o sinal e por que sozinho nao basta",
+   "source_file": "shopee_api.py",
+   "source_location": null
+  },
+  {
+   "source": "alerta_nf_shopee",
+   "target": "shopee_api_pedidos_prontos_novos",
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "confidence_score": 1.0,
+   "weight": 1.0,
+   "context": "separa pronta de travada",
+   "source_file": "shopee_api.py",
    "source_location": null
   },
   {

@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785855559.4896088,
-  "ast_hash": "eeb77db8c864f1aabe790c877c1714652210cd9e",
-  "semantic_hash": "eeb77db8c864f1aabe790c877c1714652210cd9e"
+  "mtime": 1785868196.1190362,
+  "ast_hash": "da10a164f2dc4802a330832cba2c370dacfd9ede",
+  "semantic_hash": "da10a164f2dc4802a330832cba2c370dacfd9ede"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785854718.9989717,
@@ -360,9 +360,9 @@
   "semantic_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02"
  },
  "shopee_api.py": {
-  "mtime": 1785867314.9969516,
-  "ast_hash": "d9fc240cc5ad2b4580009caa094b11731b86a5fb",
-  "semantic_hash": "d9fc240cc5ad2b4580009caa094b11731b86a5fb"
+  "mtime": 1785868139.638832,
+  "ast_hash": "d9a7a8ed090ab1061d06bcc40c2967251e685cdf",
+  "semantic_hash": "d9a7a8ed090ab1061d06bcc40c2967251e685cdf"
  },
  "tests/conftest.py": {
   "mtime": 1783442165.6975513,
@@ -390,9 +390,9 @@
   "semantic_hash": "acc4c2c9078dc5a40dfcc04874e72a43f0e04917"
  },
  "tests/test_alerta_nf_pendente.py": {
-  "mtime": 1785853224.6151602,
-  "ast_hash": "040899c4f83880a923c6102a0f7821ff88012e8e",
-  "semantic_hash": "040899c4f83880a923c6102a0f7821ff88012e8e"
+  "mtime": 1785868298.744949,
+  "ast_hash": "d6f0c19569d334411af61c3e0bf78a3a87adcc3a",
+  "semantic_hash": "d6f0c19569d334411af61c3e0bf78a3a87adcc3a"
  },
  "tests/test_ambas.py": {
   "mtime": 1783442165.699696,
@@ -405,9 +405,9 @@
   "semantic_hash": "ba5b3daac7e708efb0964b53609670b9d1e8b233"
  },
  "tests/test_bot_alerta.py": {
-  "mtime": 1785855644.6888692,
-  "ast_hash": "5d0be72fd4c22f091349cff9ce9de1ce34833667",
-  "semantic_hash": "5d0be72fd4c22f091349cff9ce9de1ce34833667"
+  "mtime": 1785868256.8231044,
+  "ast_hash": "ad5cba51c837c5e24603a5ed58dafb144f52e775",
+  "semantic_hash": "ad5cba51c837c5e24603a5ed58dafb144f52e775"
  },
  "tests/test_bot_atualizar.py": {
   "mtime": 1785855622.6538997,
@@ -565,9 +565,9 @@
   "semantic_hash": "366f4b500e44c0d3afa08872c397f092b5b69dc9"
  },
  "tests/test_shopee.py": {
-  "mtime": 1785861881.6760156,
-  "ast_hash": "49063e7e28d75a4aa397c0cb89f3e1ad835e70f3",
-  "semantic_hash": "49063e7e28d75a4aa397c0cb89f3e1ad835e70f3"
+  "mtime": 1785868168.3138301,
+  "ast_hash": "c1a0e77d8688a97dec67689e725fefbe59c52bf3",
+  "semantic_hash": "c1a0e77d8688a97dec67689e725fefbe59c52bf3"
  },
  "tests/test_validar_obsidian.py": {
   "mtime": 1784737273.0854487,
