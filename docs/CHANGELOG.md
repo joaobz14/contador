@@ -5,6 +5,12 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **Diagnóstico dos estados da Shopee** (`python shopee_api.py status`) — passo
+  antes de levar o aviso de "falta NF-e" para a Shopee. Ele lista os estados que
+  existem na sua loja agora, com contagem, e mostra o que a API devolve sobre os
+  pedidos que **não** estão em "pronto para enviar" — que é onde uma venda
+  travada esperando a nota fica. O app hoje só pergunta pelos prontos, então
+  essas vendas são invisíveis para ele, igual acontecia no Mercado Livre.
 - **Contrato com o n8n registrado** (só documentação, nada muda no que já roda).
   Ficou acordado com o outro lado, antes de existir a 2ª função: um endereço de
   webhook por fluxo, parâmetros num campo `args`, nada de botão vindo do n8n

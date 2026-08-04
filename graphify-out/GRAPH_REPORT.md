@@ -98,6 +98,18 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   handler deste lado, mesmo que o trabalho todo seja dele.
   Depois do `--update`: **1694 nós, 3185 arestas, 0 órfãs**.
 
+- **2026-08-04 — diagnóstico de estados da Shopee (antes do alerta).** O dono
+  pediu o mesmo alerta de NF-e para a Shopee. O sinal, porém, é **contrato
+  deles** e não está documentado de forma confiável — e o app hoje só pede
+  `order_status=READY_TO_SHIP`, então uma venda travada em outro estado é
+  invisível exatamente como o `invoice_pending` era no ML. Em vez de adivinhar,
+  entrou `listar_pedidos_com_status` + o comando `python shopee_api.py status`,
+  que lista os estados existentes na loja com contagem e mostra os **campos**
+  que a API devolve para os pedidos fora de `READY_TO_SHIP` — é lá que aparece
+  o sinal, qualquer que seja o nome dele. Mesmo método que confirmou o
+  `invoice_pending` no ML.
+  Depois do `--update`: **1699 nós, 3195 arestas, 0 órfãs**.
+
 - **2026-08-04 — alerta de venda parada em "Informe a NF-e".** O dono controla
   estoque: quando vende um item que não tem, o faturador não sobe o XML e o
   envio fica em `invoice_pending` — **nunca** chega a `ready_to_print`. Ou seja,

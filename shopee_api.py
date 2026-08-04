@@ -305,6 +305,38 @@ def listar_order_sns(cred: dict, token: str) -> list[str]:
     return sns
 
 
+def listar_pedidos_com_status(cred: dict, token: str) -> list[dict]:
+    """TODOS os pedidos da janela, cada um com o seu `order_status`.
+
+    Diferente do `listar_order_sns`, que pede so os READY_TO_SHIP — e por isso
+    nao enxerga uma venda travada em outro estado (ex.: esperando a NF-e). Serve
+    ao diagnostico `status` da CLI: descobrir, na conta real, QUAL estado a
+    Shopee usa para cada situacao. O nome do estado e contrato deles, entao
+    adivinhar aqui seria repetir o erro que o diagnostico existe para evitar.
+    """
+    agora = int(time.time())
+    desde = agora - DIAS_JANELA * 86400
+    saida: list[dict] = []
+    cursor = ""
+    while True:
+        dados = _get_shop(cred, token, "/api/v2/order/get_order_list", {
+            "time_range_field": "create_time",
+            "time_from": desde,
+            "time_to": agora,
+            "page_size": 100,
+            "cursor": cursor,
+            "response_optional_fields": "order_status",
+        })
+        resp = dados.get("response", {})
+        saida.extend(resp.get("order_list", []))
+        if not resp.get("more"):
+            break
+        cursor = resp.get("next_cursor", "")
+        if not cursor:
+            break
+    return saida
+
+
 def buscar_detalhes(cred: dict, token: str, order_sns: list[str]) -> list[dict]:
     """Detalhes dos pedidos (item_list, ship_by_date) em lotes de 50."""
     detalhes: list[dict] = []
@@ -1152,6 +1184,53 @@ def main() -> None:
         print(f"\nEtiqueta salva em: {caminho}")
         print(f"Formato: {fmt}  ({len(conteudo)} bytes)")
         print("O app da Zebra (impressora_zebra_usb.py) detecta esse arquivo e imprime sozinho.")
+        return
+
+    # Diagnostico: QUAIS estados existem na loja agora, com contagem — e o que a
+    # API devolve sobre os pedidos que NAO estao em READY_TO_SHIP.
+    #
+    # Existe pelo mesmo motivo do `substatus` do ML: o app so pede READY_TO_SHIP,
+    # entao uma venda travada em outro estado (esperando a NF-e, por exemplo) e
+    # invisivel para ele — e o nome desse estado e contrato da Shopee, que so a
+    # conta real confirma. Rode com uma venda travada para descobrir o sinal.
+    if comando == "status":
+        try:
+            cred = carregar_credenciais()
+            token = obter_token(cred)
+            pedidos = listar_pedidos_com_status(cred, token)
+        except core.SeparadorError as e:
+            sys.exit(f"ERRO: {e}")
+
+        contagem: dict[str, int] = {}
+        for p in pedidos:
+            contagem[p.get("order_status") or "(sem status)"] = \
+                contagem.get(p.get("order_status") or "(sem status)", 0) + 1
+        print(f"\n{len(pedidos)} pedido(s) na janela de {DIAS_JANELA} dias\n")
+        print("order_status encontrados:")
+        for rotulo, n in sorted(contagem.items(), key=lambda x: -x[1]):
+            marca = "   <- o app so enxerga estes" if rotulo == "READY_TO_SHIP" else ""
+            print(f"  {n:>4}  {rotulo}{marca}")
+
+        outros = [p.get("order_sn") for p in pedidos
+                  if p.get("order_status") != "READY_TO_SHIP"][:5]
+        if not outros:
+            print("\nNenhum pedido fora de READY_TO_SHIP agora — nada a investigar.")
+            return
+        print(f"\nDetalhe de ate 5 pedidos FORA de READY_TO_SHIP ({len(outros)}):")
+        try:
+            dados = _get_shop(cred, token, "/api/v2/order/get_order_detail", {
+                "order_sn_list": ",".join(outros),
+                "response_optional_fields": "item_list,ship_by_date,order_status",
+            })
+            for d in dados.get("response", {}).get("order_list", []):
+                print(f"\n  {d.get('order_sn')}  status={d.get('order_status')}"
+                      f"  despacho={_data_envio(d.get('ship_by_date')) or '(sem data)'}")
+                # As CHAVES sao o que interessa: e nelas que aparece o campo que
+                # sinaliza "esperando a NF-e", qualquer que seja o nome dele.
+                print(f"    campos: {', '.join(sorted(d.keys()))}")
+        except core.SeparadorError as e:
+            print(f"  nao consegui o detalhe: {e}")
+        print("\nMande esta saida no chat: e ela que diz qual estado usar no alerta.")
         return
 
     # Tipos de documento disponiveis para um pedido (diagnostico).
