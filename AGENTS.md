@@ -656,6 +656,18 @@ em 2º plano.
   por conta entra na trava** — o teste `test_caminhos_que_dependem_da_conta_estao_travados`
   falha se esquecerem. A GUI não precisa: ela roda uma operação por vez
   (`ocupado`), e entre PROCESSOS quem protege são as travas de arquivo.
+- **Config do bot inválida tem de DIZER isso (incidente 2026-08-04, 2ª vez).**
+  `bot_telegram._ler_bot_config` distingue **inválido** de **ausente** e informa
+  linha/coluna — o `_ler_json` do núcleo devolve `{}` para qualquer falha (certo
+  para cache e para o config da tela, errado aqui): um JSON malformado fazia o
+  token "sumir" e a mensagem virava "Token ausente", mandando procurar o token e
+  não a vírgula. **E toda falha de inicialização vai para o `bot.log`**
+  (`log.error`/`log.exception`), não só para o `print`: sob o lançador o bot roda
+  em **janela oculta**, então o print não é visto por ninguém e o log só mostrava
+  a linha *anterior* ao crash — o único sintoma visível era "reinicia a cada 15s"
+  (o laço do `.bat`), e a suspeita caiu no script de reinício, que era inocente.
+  **Uma falha que só aparece onde ninguém olha é uma falha silenciosa**; sob
+  janela oculta, "imprimir o erro" não conta como reportar.
 - **Reiniciar o bot: NUNCA `schtasks /end` + `/run` (incidente 2026-08-04).**
   Aquele par **não reiniciava nada**: o `rodar-bot-oculto.ps1` subia o `.bat` com
   `Start-Process` **sem `-Wait`**, o Agendador dava a tarefa por terminada no 1º
