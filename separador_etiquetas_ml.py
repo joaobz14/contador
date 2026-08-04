@@ -1753,7 +1753,7 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
 
     Devolve:
       "impresso"  — o monitor confirmou (pelo status publicado, ou porque os
-                    arquivos sumiram: ele apaga o que imprimiu);
+                    arquivos sairam da pasta: o que ele imprime, ele tira dali);
       "falhou"    — o monitor publicou FALHA num dos nossos arquivos;
       "imprimindo"— o monitor esta vivo, mas ainda nao da para afirmar que O
                     NOSSO arquivo saiu;
@@ -1768,7 +1768,13 @@ def aguardar_impressao(nossos: set[Path], *, espera: float = ESPERA_MONITOR,
          de "ainda nao terminou", e a unica que funciona com a opcao "Excluir
          apos imprimir" DESLIGADA (sem ela o arquivo nunca some e a pista 2
          nunca fecha). So existe com o monitor >= v1.26.0;
-      2. o ARQUIVO SUMIR — o monitor apaga apos imprimir;
+      2. o ARQUIVO SAIR DA PASTA — o monitor tira dali o que imprimiu. SAIR NAO
+         E SER APAGADO: desde a v1.26.2 ele MOVE o sucesso para
+         `~/zebra_usb_concluidos/AAAA-MM-DD/` (retencao para reimprimir se a
+         impressora falhar FISICAMENTE depois de o spooler aceitar). Para esta
+         pista da no mesmo; muda so onde procurar o arquivo depois. O que a
+         pista exige e a ASSIMETRIA, contratada dos dois lados: sucesso sai da
+         pasta, FALHA PERMANECE nela — falha que saisse seria lida como impressa;
       3. o LOG DO MONITOR AVANCAR — prova que ele esta VIVO, util no lote grande
          em que o arquivo so some na ultima etiqueta.
 

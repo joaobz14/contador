@@ -5,6 +5,16 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **Etiqueta já impressa agora dá para recuperar** (exige o app da Zebra
+  **v1.26.2** ou mais novo). Antes, com "Excluir após imprimir" ligado, o arquivo
+  era apagado assim que a impressão era mandada — se a impressora travasse
+  **depois disso** (papel preso, ribbon rasgado), o lote estava perdido. Agora ele
+  é **movido** para `C:\Users\<você>\zebra_usb_concluidos\AAAA-MM-DD\` e pode ser
+  reimpresso. Atalho: **bandeja do app da Zebra → "Abrir pasta de concluídos"**.
+  - **Nada muda na tela daqui** — ela continua lendo "o arquivo saiu da pasta" como
+    "foi impresso", e mover satisfaz isso igual a apagar.
+  - A pasta **não é limpa sozinha** (é o ponto: guardar). Para limpar, apague as
+    pastas de datas antigas pelo Explorer.
 - **Comando `/anuncios` no bot** — saúde dos anúncios das **duas** contas
   (Cozilatti e Gastromaq) numa resposta só. Funciona igual ao `/perguntas`: o bot
   aciona o fluxo do n8n, manda um "🔎 Consultando..." e a resposta chega em uns

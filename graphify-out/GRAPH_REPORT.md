@@ -51,6 +51,28 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-04 — a pista do monitor é "SAIR da pasta", não "ser apagado"
+  (app Zebra v1.26.2).** O outro lado passou a **mover** o arquivo impresso com
+  sucesso para `~/zebra_usb_concluidos/AAAA-MM-DD/` em vez de apagá-lo: quando a
+  impressora aceita o job no spooler e falha **fisicamente** depois (papel preso,
+  ribbon), o lote agora pode ser reimpresso — antes o arquivo já tinha sumido.
+  **Nada muda no código daqui** (a pista lê o caminho não existir mais, e mover
+  satisfaz isso), mas sete pontos do repertório descreviam o mecanismo como
+  "ele apaga após imprimir" — descrição que virou falsa e cara: quem investigasse
+  um lote perdido procuraria um arquivo apagado que na verdade **existe**. Trocado
+  por "sai da pasta", que descreve o que a pista de fato exige. O que ela exige
+  mesmo é a **assimetria** — *sucesso sai, falha permanece* —, agora contratada
+  explicitamente dos dois lados: se a falha também fosse movida (a ideia de uma
+  pasta `.erros/`, considerada e descartada lá), ela seria lida aqui como
+  **impressa**. A pasta de retenção fica **fora** da vigiada e na raiz do perfil
+  por dois motivos que valem registrar: o OneDrive não sincroniza a raiz do perfil
+  (o *Known Folder Move* só redireciona Desktop/Documentos/Downloads) e um arquivo
+  já impresso deixa de poder ser **reingerido** pelo monitor sem depender de o
+  filtro do polling continuar não-recursivo. Novo nó
+  `retencao_de_concluidos_zebra`. Lição de método: **contrato mudado de um lado
+  envelhece a documentação do outro em silêncio** — nenhum teste falha, porque a
+  descrição não é executável.
+  Depois do `--update`: **1735 nós, 3279 arestas, 0 órfãs**.
 - **2026-08-04 — `/perguntas`: o bot dispara o n8n (e não responde nada).** O dono
   tem um fluxo no n8n que lista perguntas/mensagens sem resposta de outra conta e
   quer acioná-lo pelo mesmo bot. A restrição que desenha tudo: **o Telegram

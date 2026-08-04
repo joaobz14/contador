@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 351,
- "edge_count": 643,
+ "node_count": 352,
+ "edge_count": 649,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4027,6 +4027,19 @@
    "source_location": null,
    "id": "config_bot_invalida_silenciosa",
    "_origin": "manual"
+  },
+  {
+   "label": "RETENCAO DE CONCLUIDOS NO LADO DA ZEBRA (2026-08-04, v1.26.2 do outro repo): a pista indireta 2 deste app e 'o arquivo SAIU da pasta vigiada', nao 'o arquivo foi apagado' -- distincao que so ficou visivel quando o outro lado parou de apagar. Motivo la: o spooler aceitar o job nao garante papel impresso (papel preso, ribbon rasgado depois do aceite), e com 'Excluir apos imprimir' ligado o arquivo ja tinha sido destruido quando o operador descobria -- o lote precisava ser rebaixado no marketplace. Agora o sucesso e MOVIDO para ~/zebra_usb_concluidos/AAAA-MM-DD/ (retencao para reimprimir). NADA muda no codigo daqui: _ainda_na_pasta le exists() do caminho original, e mover satisfaz isso igual a apagar. O que a pista exige e a ASSIMETRIA -- sucesso sai da pasta, FALHA PERMANECE nela --, agora contratada explicitamente dos dois lados: mover tambem a falha (a ideia de uma pasta .erros/, considerada e descartada la) a faria ser lida aqui como IMPRESSA, um lote quebrado aparecendo como concluido na tela. A pasta de retencao fica FORA da vigiada e na raiz do perfil por dois motivos: o OneDrive nao sincroniza a raiz do perfil (o Known Folder Move so redireciona Desktop/Documentos/Downloads, entao nao consome cota nem exige expurgo desde o dia um) e um arquivo ja impresso deixa de poder ser REINGERIDO pelo monitor sem depender de o filtro do polling continuar nao-recursivo -- risco de etiqueta duplicada, familia da invariante 1. Expurgo automatico NAO foi implementado de proposito (reter E a funcao; bug de expurgo se manifesta apagando o que nao devia, justo aqui): as invariantes de um expurgo futuro ficaram escritas no codigo do outro repo -- so dentro de CONCLUIDOS_DIR, jamais a pasta vigiada, jamais o dia corrente. LICAO DE METODO: contrato mudado de um lado envelhece a documentacao do outro EM SILENCIO -- sete pontos do repertorio daqui diziam 'ele apaga apos imprimir', e nenhum teste falha por uma descricao errada, porque descricao nao e executavel.",
+   "file_type": "rationale",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "retencao_de_concluidos_zebra",
+   "community": 0,
+   "norm_label": "retencao de concluidos no lado da zebra (2026-08-04, v1.26.2 do outro repo): a pista indireta 2 deste app e 'o arquivo saiu da pasta vigiada', nao 'o arquivo foi apagado' -- distincao que so ficou visivel quando o outro lado parou de apagar. motivo la: o spooler aceitar o job nao garante papel impresso (papel preso, ribbon rasgado depois do aceite), e com 'excluir apos imprimir' ligado o arquivo j"
   }
  ],
  "edges": [
@@ -5607,6 +5620,36 @@
    "weight": 1.0,
    "source": "resumo_soma_por_produto",
    "target": "separador_etiquetas_ml_ordenar_grupos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "canal_de_volta_status_zebra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "confirmacao_de_impressao_monitor_zebra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "nao_fundir_contador_e_zebra",
    "confidence_score": 1.0
   },
   {
@@ -8016,6 +8059,36 @@
    "weight": 1.0,
    "source": "resumo_soma_por_produto",
    "target": "historico_linhas_consolidado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "separador_etiquetas_ml_aguardar_impressao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "separador_etiquetas_ml_ainda_na_pasta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_etiquetas_ml.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "retencao_de_concluidos_zebra",
+   "target": "tests_test_confirmacao_monitor_test_arquivo_sumiu_e_impresso",
    "confidence_score": 1.0
   },
   {

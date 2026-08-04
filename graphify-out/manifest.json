@@ -30,14 +30,14 @@
   "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
  },
  "AGENTS.md": {
-  "mtime": 1785875421.2221448,
-  "ast_hash": "43fbabc2abd9b7e58b66b3227ca9adc5f9b2fc4e",
-  "semantic_hash": "43fbabc2abd9b7e58b66b3227ca9adc5f9b2fc4e"
+  "mtime": 1785885518.1683638,
+  "ast_hash": "96443b3646d23395801e46c868a2e1c227e73077",
+  "semantic_hash": "96443b3646d23395801e46c868a2e1c227e73077"
  },
  "CLAUDE.md": {
-  "mtime": 1785875421.2212954,
-  "ast_hash": "40f3405f664366ba0bea5e8ad52d79618315ad0d",
-  "semantic_hash": "40f3405f664366ba0bea5e8ad52d79618315ad0d"
+  "mtime": 1785885504.5883644,
+  "ast_hash": "c37d3d98332544bfe96868affad7631951d84293",
+  "semantic_hash": "c37d3d98332544bfe96868affad7631951d84293"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -105,9 +105,9 @@
   "semantic_hash": "a688957ab0be46b845d545eacfcf5ff39bfcb9e4"
  },
  "docs/ARQUITETURA.md": {
-  "mtime": 1785853224.60716,
-  "ast_hash": "cbcc88cf6c7fed7220e682b43c653ffa9396e16d",
-  "semantic_hash": "cbcc88cf6c7fed7220e682b43c653ffa9396e16d"
+  "mtime": 1785885526.6403635,
+  "ast_hash": "cba4f75938bda9e8d1ebe8bde9f24d77461e3006",
+  "semantic_hash": "cba4f75938bda9e8d1ebe8bde9f24d77461e3006"
  },
  "docs/AUDITORIA_2026-07-16.md": {
   "mtime": 1784220423.936459,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785875399.3466682,
-  "ast_hash": "5937ec41b2ffc7979544772add972480901d5ba5",
-  "semantic_hash": "5937ec41b2ffc7979544772add972480901d5ba5"
+  "mtime": 1785885634.89636,
+  "ast_hash": "750ca1f6941e5faf4c0e83a72454e10b4d14fcd4",
+  "semantic_hash": "750ca1f6941e5faf4c0e83a72454e10b4d14fcd4"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -225,9 +225,9 @@
   "semantic_hash": "5a1c61cdd57333ddf0402e039e46b0d6e6a73a57"
  },
  "obsidian/Conceitos/Ponte com a Zebra.md": {
-  "mtime": 1785429736.8427055,
-  "ast_hash": "0ca0abdd29ce36047d4a6fe1330b46f92f4b17fa",
-  "semantic_hash": "0ca0abdd29ce36047d4a6fe1330b46f92f4b17fa"
+  "mtime": 1785885576.1923618,
+  "ast_hash": "1e0cef4b2cda3dcf2c083bd2eb8248618203d448",
+  "semantic_hash": "1e0cef4b2cda3dcf2c083bd2eb8248618203d448"
  },
  "obsidian/Conceitos/Trava entre processos.md": {
   "mtime": 1784923251.5942357,
@@ -350,9 +350,9 @@
   "semantic_hash": "43cabf677d7ffae76480dfdddcf7642a1a11df3c"
  },
  "separador_etiquetas_ml.py": {
-  "mtime": 1785853540.898638,
-  "ast_hash": "9de0d8a2144a0d6d6244977c2cdd1a32cf9db7cb",
-  "semantic_hash": "9de0d8a2144a0d6d6244977c2cdd1a32cf9db7cb"
+  "mtime": 1785885540.556363,
+  "ast_hash": "9edf246f75e2d73551be4999041983ad6805a26e",
+  "semantic_hash": "9edf246f75e2d73551be4999041983ad6805a26e"
  },
  "separador_gui.py": {
   "mtime": 1785762829.3379242,
@@ -460,9 +460,9 @@
   "semantic_hash": "9c1591faa58cfdf9c114915cd5ca8d99f089f9c5"
  },
  "tests/test_confirmacao_monitor.py": {
-  "mtime": 1785429321.974715,
-  "ast_hash": "90fa7cbf2aaf307c0b85807cd9e27687e8b2659d",
-  "semantic_hash": "90fa7cbf2aaf307c0b85807cd9e27687e8b2659d"
+  "mtime": 1785885549.2083628,
+  "ast_hash": "daf7ec658cf8a4d341193b2b666101d891e41486",
+  "semantic_hash": "daf7ec658cf8a4d341193b2b666101d891e41486"
  },
  "tests/test_contas.py": {
   "mtime": 1785347160.5106921,
