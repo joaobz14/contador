@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 357,
- "edge_count": 672,
+ "node_count": 358,
+ "edge_count": 673,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4105,6 +4105,19 @@
    "id": "reiniciar_bot_duas_vezes",
    "community": 0,
    "norm_label": "reiniciar bot so funcionava na segunda tentativa (05/08/2026). relato do dono: 'tenho que abrir o reiniciar bot.bat 2x para o bot reiniciar mesmo'. o bot roda numa arvore powershell(tarefa) -> cmd.exe(.bat do laco) -> python.exe. o script matava o cmd.exe e o python, mas o powershell da tarefa so termina depois que o seu `start-process -wait` percebe que o .bat morreu -- e enquanto isso a tarefa c"
+  },
+  {
+   "label": "ENTREGA INSTANTANEA DA SHOPEE NAO SE APLICA (05/08/2026, decisao do dono, nao achado tecnico). A Shopee anunciou por e-mail (mercados incluindo BR) que espera adocao crescente da Instant Delivery e pede que apps de fulfillment suportem o fluxo -- pedido processado INDIVIDUALMENTE, em minutos, com o rider despachado logo apos a compra. Duas razoes convergentes, mas a que decide e a segunda: (1) o catalogo (fritadeiras industriais, forno, engenho de 3 moendas, prateleira) nao tem cara de item que uma moto carrega em minutos -- indicio, nao prova; (2) O MODELO DE ENVIO DO DONO E INCOMPATIVEL POR DEFINICAO: Instant Delivery depende de um rider que a Shopee despacha para BUSCAR NA PORTA do vendedor; o dono LEVA os pacotes num ponto de coleta (Postagem/drop-off, a mesma opcao que organizar_envio ja usa sempre, nunca buyer-pickup) -- sao duas logisticas diferentes, nao uma opcao que se liga por configuracao. Confirmado pelo proprio dono, entao nao e suposicao. FICOU UM DIAGNOSTICO (`python shopee_api.py canais`, v2.logistics.get_channel_list, service_type_identifier == 'instant') mas a resposta ja e conhecida por fora da API -- ele so faz sentido rodar se o MODELO DE ENVIO mudar algum dia (deixar de ser so drop-off). Registrado para uma sessao futura nao reabrir a investigacao ao ver o mesmo tipo de anuncio de novo.",
+   "file_type": "rationale",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "entrega_instantanea_nao_se_aplica",
+   "community": 0,
+   "norm_label": "entrega instantanea da shopee nao se aplica (05/08/2026, decisao do dono, nao achado tecnico). a shopee anunciou por e-mail (mercados incluindo br) que espera adocao crescente da instant delivery e pede que apps de fulfillment suportem o fluxo -- pedido processado individualmente, em minutos, com o rider despachado logo apos a compra. duas razoes convergentes, mas a que decide e a segunda: (1) o c"
   }
  ],
  "edges": [
@@ -7380,6 +7393,16 @@
    "weight": 1.0,
    "source": "editores_instancia_unica",
    "target": "separador_gui_separadorapp_focar_editor_aberto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "entrega_instantanea_nao_se_aplica",
+   "target": "shopee_api_main",
    "confidence_score": 1.0
   },
   {

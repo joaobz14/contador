@@ -51,6 +51,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — Entrega Instantânea da Shopee não se aplica (decisão do
+  dono).** A Shopee anunciou por e-mail que espera adoção crescente da Instant
+  Delivery (mercados incluindo BR) e pede suporte de apps de fulfillment.
+  Modelo: pedido processado **individualmente**, em minutos, rider despachado
+  logo após a compra — oposto do app inteiro, feito para lote por dia de
+  despacho. O catálogo (fritadeiras industriais, engenho de 3 moendas) já
+  sugeria baixa relevância, mas o que **decide** é outro: Instant Delivery
+  depende de um rider que **busca na porta do vendedor**; o dono **leva os
+  pacotes num ponto de coleta** (drop-off, a mesma opção que `organizar_envio`
+  já usa sempre) — duas logísticas incompatíveis por definição, não uma opção
+  que se liga. Confirmado pelo dono, não suposição. Ficou um diagnóstico
+  (`python shopee_api.py canais`) para o dia em que o **modelo de envio** mudar,
+  mas a resposta de hoje já é conhecida por fora da API. Novo nó
+  `entrega_instantanea_nao_se_aplica`. **Método:** é o mesmo tratamento dado ao
+  TikTok Shop e à Amazon SP-API — registrar a decisão evita que uma sessão
+  futura reabra a investigação ao ver o mesmo tipo de e-mail de novo.
+  Depois do `--update`: **1775 nós, 3375 arestas, 0 órfãs**.
 - **2026-08-05 — "tenho que abrir o Reiniciar Bot.bat 2x".** Relato do dono. O
   bot roda numa árvore `powershell`(tarefa) → `cmd.exe`(laço) → `python.exe`. O
   script matava o `cmd.exe` e o `python`, mas o `powershell` da tarefa só termina
