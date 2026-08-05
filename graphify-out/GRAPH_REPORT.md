@@ -51,6 +51,27 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — webhook do n8n autenticado por `Authorization: Bearer`.**
+  Proposto pelo lado n8n, negociado nos dois. Os webhooks eram endpoints sem
+  autenticação — vazamento de **dado** já estava fechado (o `chat_id` passa por
+  allowlist lá, a resposta sempre vai ao dono), mas sobrava **abuso por
+  repetição**: cota do ML (16 chamadas por `/anuncios`), flood e ruído. Três
+  decisões: **um** segredo para os dois fluxos (se o config vazar, as duas URLs
+  vazam juntas); **`Authorization`** e não cabeçalho próprio, porque o
+  `sem_segredos` **já** redige `Bearer <token>` — verificado contra segredos
+  reais de `token_urlsafe(32)`, que caem inteiros na regex; e **segredo ausente
+  = não manda cabeçalho**, o que viabiliza a implantação em 4 passos sem janela
+  (código inerte → dono configura e reinicia → n8n **confirma** o cabeçalho
+  chegando → só então exige). O passo do reinício era o furo do plano original,
+  que o tratava como automático. **Nota de método:** o argumento inicial deste
+  lado contra a alternativa `onlyRunIf` (que ela criaria execução e gastaria
+  cota) estava **errado**, e o lado n8n corrigiu com a doc do nó. O motivo real
+  é melhor: ela **falha aberto** — erro na avaliação **libera** a requisição.
+  Controle de acesso que autoriza quando quebra não é controle de acesso, e é a
+  mesma família dos outros achados do dia (o `gui-smoke` verde com a tela
+  quebrada, o reinício anunciando sucesso sem subir nada): o defeito nunca é
+  falhar, é **passar** quando deveria barrar. Novo nó `webhook_n8n_autenticado`.
+  Depois do `--update`: **1798 nós, 3422 arestas, 0 órfãs**.
 - **2026-08-05 — carência do aviso "sem NF-e": o sinal é o TEMPO, não o
   estado.** Relato do dono, com print: o alerta avisava "sem NF-e" e minutos
   depois se desmentia com o ✅. Causa: o ERP dele (UpSeller) consulta as APIs,

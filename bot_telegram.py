@@ -212,6 +212,12 @@ def carregar_config() -> dict:
         # mexer no codigo porque o numero certo depende do FATURADOR do dono,
         # nao do app: e o tempo que o ERP leva para puxar a venda e subir o XML.
         "carencia_nf_min": _inteiro(cfg.get("carencia_nf_min")) or CARENCIA_NF_MIN,
+        # Segredo do cabecalho Authorization dos webhooks do n8n (ver
+        # _disparar_n8n). UNICO para os dois fluxos de proposito: o modelo de
+        # ameaca e "alguem obteve a URL", e se este arquivo vazar as duas URLs
+        # vazam juntas — dois segredos nao comprariam nada e dobrariam a chance
+        # de errar ao colar. Ausente = nao manda cabecalho nenhum.
+        "n8n_segredo": (os.getenv("N8N_SEGREDO") or cfg.get("n8n_segredo") or "").strip(),
     }
 
 
@@ -260,7 +266,7 @@ INTEGRACOES = (
 POR_COMANDO = {i.comando: i for i in INTEGRACOES}
 
 
-def _disparar_n8n(url: str, comando: str, chat_id: int) -> None:
+def _disparar_n8n(url: str, comando: str, chat_id: int, segredo: str = "") -> None:
     """POST no webhook do n8n. Roda em thread (rede) e NUNCA deixa a URL vazar.
 
     O `chat_id` de quem disparou vai no corpo para o fluxo responder A QUEM
@@ -268,27 +274,59 @@ def _disparar_n8n(url: str, comando: str, chat_id: int) -> None:
     chat_id uma CAPACIDADE**: o n8n entrega no chat que receber, entao so pode
     chegar aqui um id que ja passou pela autorizacao (ver `_acionar_n8n`).
 
-    O webhook nao pede autenticacao: quem tem o link dispara o fluxo. O link e,
-    portanto, o segredo — por isso ele vem do bot_config.json (nao versionado) e
-    nenhum texto de erro pode carrega-lo. Nada de `raise_for_status()` (a
-    mensagem dele inclui a URL) e nada de propagar a excecao crua do requests
-    ("Max retries exceeded with url: ..."). Mesma solucao do `_rede_limpa` da
-    Shopee, inclusive o `from None`: um `log.exception` la em cima nao pode
-    arrastar a original com a URL no traceback.
+    A URL e, por si so, um segredo: o webhook aceita quem tiver o link. Por isso
+    ela vem do bot_config.json (nao versionado) e nenhum texto de erro pode
+    carrega-la. Nada de `raise_for_status()` (a mensagem dele inclui a URL) e
+    nada de propagar a excecao crua do requests ("Max retries exceeded with url:
+    ..."). Mesma solucao do `_rede_limpa` da Shopee, inclusive o `from None`: um
+    `log.exception` la em cima nao pode arrastar a original com a URL no
+    traceback.
+
+    CABECALHO `Authorization: Bearer <segredo>` (combinado com o lado n8n em
+    05/08/2026, `authentication: headerAuth` nos dois nos de webhook). A URL
+    sozinha nao basta: quem a obtiver dispara os fluxos a vontade, e o abuso por
+    REPETICAO custa cota da API do ML e enche o chat do dono. O headerAuth
+    rejeita com 403 ANTES de criar execucao — e por isso resolve abuso por
+    volume, coisa que uma validacao dentro do fluxo nao faria.
+
+    `Authorization` (e nao um cabecalho proprio) porque o `sem_segredos` do
+    projeto JA redige a forma `Bearer <token>` — uma das seis que ele conhece,
+    criada para o token do ML. Verificado contra segredos reais de
+    `secrets.token_urlsafe(32)`: os 43 caracteres caem inteiros na regex, sem
+    sobra. O segredo nasce protegido em log e mensagem de erro, sem regra nova.
+
+    SEGREDO AUSENTE = NAO MANDA CABECALHO, de proposito. E o que permite a ordem
+    de implantacao sem janela de indisponibilidade: este codigo sobe primeiro e
+    fica INERTE (cabecalho extra e ignorado por um endpoint que nao o exige);
+    so depois o dono cria a credencial, cola o valor e reinicia; o lado n8n
+    confirma o cabecalho chegando nos dados de execucao; e so entao liga a
+    exigencia. Nunca ha um momento em que um lado exige e o outro nao manda.
 
     A resposta do n8n ({"message":"Workflow was started"}) e ignorada de
     proposito — o resultado chega pelo chat, nao por aqui.
     """
+    cabecalhos = {"Authorization": f"Bearer {segredo}"} if segredo else {}
     try:
         resp = requests.post(
             url,
             json={"origem": "telegram", "comando": f"/{comando}", "chat_id": chat_id},
+            headers=cabecalhos,
             timeout=TIMEOUT_N8N,
         )
     except requests.RequestException as e:
         raise core.SeparadorError(
             f"nao consegui falar com o n8n ({type(e).__name__}). "
             "Verifique a conexao e tente de novo.") from None
+    # 401/403 e credencial; o resto dos 4xx/5xx e outra coisa. Mandar o dono
+    # "conferir se o workflow esta ligado" diante de um segredo errado o faria
+    # ligar e desligar fluxo sem chegar a lugar nenhum — o mesmo conselho
+    # inutil que o `_propagar_se_auth` corrigiu no coletor do Ads. Erros que
+    # pedem acoes OPOSTAS nao podem sair com o mesmo texto.
+    if resp.status_code in (401, 403):
+        raise core.SeparadorError(
+            f"o n8n recusou a credencial (HTTP {resp.status_code}). O segredo do "
+            "cabecalho esta ausente ou nao confere com o do n8n: revise "
+            "'n8n_segredo' no bot_config.json e reinicie o bot.")
     if resp.status_code >= 400:
         raise core.SeparadorError(
             f"o n8n recusou o pedido (HTTP {resp.status_code}). "
@@ -1217,7 +1255,8 @@ async def _acionar_n8n(update: Update, context: ContextTypes.DEFAULT_TYPE,
     log.info("Acao /%s de chat %s", integr.comando, chat_id)
     await context.bot.send_message(chat_id, "🔎 Consultando...")
     try:
-        await asyncio.to_thread(_disparar_n8n, url, integr.comando, chat_id)
+        await asyncio.to_thread(_disparar_n8n, url, integr.comando, chat_id,
+                                cfg.get("n8n_segredo", ""))
     except core.SeparadorError as e:
         # sem_segredos por convencao (todo texto de excecao que sai pro chat);
         # a URL ja nao entra na mensagem por construcao — isto e a 2a camada.

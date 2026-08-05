@@ -658,6 +658,29 @@ em 2º plano.
   autorização. A chave de chat continua `chat_perguntas` mesmo valendo para todas
   as integrações — renomear obrigaria a reeditar o config da máquina de produção,
   por ganho cosmético.
+- **Webhook do n8n autenticado por `Authorization: Bearer` (05/08/2026).** A URL
+  sozinha não bastava: quem a obtivesse disparava os fluxos à vontade, e o abuso
+  por **repetição** custa cota da API do ML e enche o chat do dono. O lado n8n
+  liga `authentication: headerAuth` nos dois nós; este lado manda o cabeçalho
+  (`n8n_segredo` no `bot_config.json`, ou `N8N_SEGREDO`). **Um segredo só para
+  os dois fluxos:** se o config vazar, as duas URLs vazam juntas — dois segredos
+  não comprariam nada e dobrariam a chance de errar ao colar. **`Authorization`
+  e não um cabeçalho próprio** porque o `sem_segredos` **já** redige a forma
+  `Bearer <token>` (uma das seis que ele conhece, criada para o ML): o segredo
+  nasce protegido em log e erro, sem regra nova — verificado contra segredos
+  reais de `secrets.token_urlsafe(32)`, cujos 43 caracteres caem inteiros na
+  regex. **Segredo ausente = não manda cabeçalho**, de propósito: é o que
+  permite subir este código **antes** de o n8n exigir (cabeçalho extra é
+  ignorado por quem não o exige), fechando a janela em que um lado exigiria e o
+  outro ainda não mandaria. E **401/403 tem mensagem própria** — apontar o
+  workflow diante de um segredo errado faria o dono ligar e desligar fluxo sem
+  chegar a lugar nenhum (mesmo conselho inútil que o `_propagar_se_auth`
+  corrigiu no coletor do Ads). **Descartadas:** allowlist de IP (o IP é dinâmico
+  e a falha chega de madrugada disfarçada de "o n8n caiu"; e autentica a rede,
+  não o chamador) e segredo no corpo via `onlyRunIf` — este último **não** por
+  consumir execução (não consome; eu estava errado e o lado n8n corrigiu), mas
+  porque **falha aberto**: erro na avaliação da expressão libera a requisição.
+  Controle de acesso que autoriza quando quebra não é controle de acesso.
 - **URL de webhook é CREDENCIAL — e este repositório é público.** O webhook do
   n8n não pede token nem cabeçalho: quem tem o link dispara o fluxo (por isso o
   caminho leva um sufixo aleatório). Então a URL segue a regra dos segredos: mora

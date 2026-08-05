@@ -6,6 +6,7 @@
   "aviso_horario": "08:00",
   "carencia_nf_min": 30,
   "webhook_perguntas": "https://SEU_N8N/webhook/SEU_FLUXO",
+  "n8n_segredo": "GERE_COM_python_-c_import_secrets;print(secrets.token_urlsafe(32))",
   "chat_perguntas": 123456789,
   "webhook_anuncios": "https://SEU_N8N/webhook/OUTRO_FLUXO"
 }

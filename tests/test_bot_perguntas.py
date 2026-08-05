@@ -71,7 +71,7 @@ def _rodar(chat_id, cfg, disparo):
     duble = _Bot()
     chamadas: list[str] = []
 
-    def _falso(url, comando, chat_id):
+    def _falso(url, comando, chat_id, segredo=""):
         chamadas.append(url)
         return disparo(url) if disparo else None
 
@@ -154,8 +154,8 @@ def test_nenhuma_mensagem_de_erro_carrega_a_url():
 def test_disparar_manda_o_corpo_combinado_com_o_n8n(monkeypatch):
     visto = {}
 
-    def _post(url, json=None, timeout=None):
-        visto.update(url=url, json=json, timeout=timeout)
+    def _post(url, json=None, headers=None, timeout=None):
+        visto.update(url=url, json=json, headers=headers, timeout=timeout)
         return type("R", (), {"status_code": 200})()
 
     monkeypatch.setattr(bot.requests, "post", _post)
@@ -172,7 +172,7 @@ def test_chat_id_enviado_e_o_de_quem_disparou(monkeypatch):
     outra pessoa recebe o dado dele."""
     visto = {}
     monkeypatch.setattr(bot, "_disparar_n8n",
-                        lambda url, comando, chat_id:
+                        lambda url, comando, chat_id, segredo="":
                             visto.update(url=url, comando=comando, chat_id=chat_id))
     duble = _Bot()
     asyncio.run(bot.cmd_perguntas(_Update(CHAT_DONO), _Ctx(_cfg(), duble)))
@@ -304,7 +304,7 @@ def _rodar_integr(comando, chat_id, cfg, disparo=None):
     duble = _Bot()
     chamadas: list[tuple] = []
 
-    def _falso(url, cmd, cid):
+    def _falso(url, cmd, cid, segredo=""):
         chamadas.append((url, cmd, cid))
         return disparo(url) if disparo else None
 
@@ -336,7 +336,7 @@ def test_anuncios_manda_o_proprio_comando_no_corpo(monkeypatch):
     """O n8n usa o campo `comando` para log e conferencia, mesmo sem rotear."""
     visto = {}
     monkeypatch.setattr(bot.requests, "post",
-                        lambda url, json=None, timeout=None:
+                        lambda url, json=None, headers=None, timeout=None:
                             (visto.update(json=json), type("R", (), {"status_code": 200})())[1])
     bot._disparar_n8n(URL_ANUNCIOS, "anuncios", CHAT_DONO)
     assert visto["json"] == {"origem": "telegram", "comando": "/anuncios",
@@ -440,3 +440,100 @@ def test_falha_de_inicializacao_vai_para_o_log():
     bloco = fonte[fonte.index("    try:\n        main()"):]
     assert "log.error(" in bloco, "SeparadorError na abertura tem de ir para o log"
     assert "log.exception(" in bloco, "erro inesperado na abertura tambem"
+
+
+# ======================================= cabecalho Authorization (05/08/2026)
+# A URL sozinha nao basta: quem a obtiver dispara os fluxos a vontade, e o
+# abuso por REPETICAO custa cota da API do ML e enche o chat do dono. O lado
+# n8n liga `authentication: headerAuth`; este lado manda o cabecalho.
+SEGREDO = "kQ7x-Fz2Rm9tLpA4vNc8WbYh0JdSgE6uT3iOkX1nZqM"
+
+
+def _post_espiao(monkeypatch, status=200):
+    visto = {}
+
+    def _post(url, json=None, headers=None, timeout=None):
+        visto.update(url=url, json=json, headers=headers or {})
+        return type("R", (), {"status_code": status})()
+
+    monkeypatch.setattr(bot.requests, "post", _post)
+    return visto
+
+
+def test_segredo_presente_vai_no_authorization_bearer(monkeypatch):
+    visto = _post_espiao(monkeypatch)
+    bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+    assert visto["headers"]["Authorization"] == f"Bearer {SEGREDO}"
+
+
+def test_sem_segredo_NAO_manda_cabecalho(monkeypatch):
+    """O que permite subir este codigo ANTES de o n8n exigir qualquer coisa:
+    enquanto o segredo nao estiver no bot_config.json, o POST e identico ao de
+    sempre. Sem isso, a implantacao teria uma janela em que um lado exige e o
+    outro ainda nao manda."""
+    visto = _post_espiao(monkeypatch)
+    bot._disparar_n8n(URL, "perguntas", CHAT_DONO)
+    assert "Authorization" not in visto["headers"]
+
+
+def test_credencial_recusada_manda_olhar_o_SEGREDO_e_nao_o_workflow(monkeypatch):
+    """401/403 e credencial; o resto dos 4xx e outra coisa. Mandar conferir se
+    o workflow esta ligado diante de um segredo errado faria o dono ligar e
+    desligar fluxo sem chegar a lugar nenhum — o mesmo conselho inutil que o
+    `_propagar_se_auth` corrigiu no coletor do Ads."""
+    for status in (401, 403):
+        _post_espiao(monkeypatch, status=status)
+        with pytest.raises(core.SeparadorError) as e:
+            bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+        texto = str(e.value)
+        assert "n8n_segredo" in texto, "tem de apontar a chave certa do config"
+        assert "workflow" not in texto.lower(), "esse e o conselho do OUTRO erro"
+
+
+def test_outros_erros_seguem_apontando_o_workflow(monkeypatch):
+    """Guardiao do contrario: 404/500 nao viraram 'confira o segredo'."""
+    _post_espiao(monkeypatch, status=404)
+    with pytest.raises(core.SeparadorError) as e:
+        bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+    assert "workflow" in str(e.value).lower()
+
+
+def test_o_segredo_nunca_aparece_em_texto_de_erro(monkeypatch):
+    """Mesma regra da URL: o segredo e credencial e o repositorio e publico.
+    Vale para TODOS os caminhos de erro, nao so o de credencial."""
+    for status in (401, 403, 404, 500):
+        _post_espiao(monkeypatch, status=status)
+        with pytest.raises(core.SeparadorError) as e:
+            bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+        assert SEGREDO not in str(e.value)
+
+    def _explode(url, json=None, headers=None, timeout=None):
+        raise bot.requests.RequestException(f"falhou com Bearer {SEGREDO}")
+    monkeypatch.setattr(bot.requests, "post", _explode)
+    with pytest.raises(core.SeparadorError) as e:
+        bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+    assert SEGREDO not in str(e.value)
+
+
+def test_redator_do_projeto_cobre_o_segredo_no_formato_escolhido():
+    """A razao de ter escolhido `Authorization: Bearer` e nao um cabecalho
+    proprio: o `sem_segredos` JA redige essa forma. Se alguem trocar o formato,
+    o segredo passa a vazar em log — este teste falha antes disso."""
+    import secrets
+    for _ in range(5):
+        segredo = secrets.token_urlsafe(32)
+        redigido = registro.sem_segredos(f"POST falhou (Authorization: Bearer {segredo})")
+        assert segredo not in redigido
+        assert "Bearer ***" in redigido
+
+
+def test_segredo_e_UNICO_para_os_dois_fluxos(monkeypatch):
+    """Decisao de 05/08/2026: um segredo so. Se este arquivo vazar, as duas
+    URLs vazam juntas — dois segredos nao comprariam nada e dobrariam a chance
+    de errar ao colar."""
+    visto = _post_espiao(monkeypatch)
+    bot._disparar_n8n(URL, "perguntas", CHAT_DONO, SEGREDO)
+    cab_perguntas = visto["headers"]["Authorization"]
+    visto = _post_espiao(monkeypatch)
+    bot._disparar_n8n(URL_ANUNCIOS, "anuncios", CHAT_DONO, SEGREDO)
+    assert visto["headers"]["Authorization"] == cab_perguntas
