@@ -111,6 +111,14 @@ def _linhas_por_sku(itens: list) -> list[str]:
     return [f"{chave} - {por_sku[chave]}" for chave in ordem]
 
 
+def _tempo_curto(minutos: int) -> str:
+    """"45 min", "2h10", "3h" — legivel de relance no celular."""
+    if minutos < 60:
+        return f"{minutos} min"
+    horas, resto = divmod(minutos, 60)
+    return f"{horas}h{resto:02d}" if resto else f"{horas}h"
+
+
 @dataclass(frozen=True)
 class BlocoAlerta:
     """Uma origem (conta ML ou Shopee) dentro de UM ciclo do alerta."""
@@ -119,6 +127,7 @@ class BlocoAlerta:
     nf_pendente: bool = False   # vai para a secao "ainda sem NF-e"
     aviso: str = ""             # explicacao da secao NF (difere ML x Shopee)
     liberadas: bool = False     # inclui venda que estava esperando NF-e
+    espera_min: int = 0         # ha quanto tempo a mais antiga esta parada
 
 
 def texto_alerta_pos_horario(blocos: list) -> str:
@@ -155,6 +164,12 @@ def texto_alerta_pos_horario(blocos: list) -> str:
         partes.append("⚠️ Ainda sem NF-e — não dá para imprimir")
         for b in pendentes:
             corpo = ([b.rotulo] if b.rotulo else []) + _linhas_por_sku(b.itens)
+            # "Ha quanto tempo" e o que permite julgar a CAUSA, que a API nao
+            # informa: UMA venda parada ha 40 min e falta de estoque; VARIAS de
+            # uma vez e o faturador fora do ar. O texto entrega o dado e nao
+            # conclui por ninguem.
+            if b.espera_min:
+                corpo.append(f"⏱ parada há {_tempo_curto(b.espera_min)}")
             partes.append("\n".join(corpo))
         # A explicacao entra uma vez por texto distinto (ML e Shopee tem
         # motivos diferentes), nunca uma vez por origem.

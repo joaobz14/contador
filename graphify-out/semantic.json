@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 358,
- "edge_count": 673,
+ "node_count": 359,
+ "edge_count": 679,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4118,6 +4118,19 @@
    "id": "entrega_instantanea_nao_se_aplica",
    "community": 0,
    "norm_label": "entrega instantanea da shopee nao se aplica (05/08/2026, decisao do dono, nao achado tecnico). a shopee anunciou por e-mail (mercados incluindo br) que espera adocao crescente da instant delivery e pede que apps de fulfillment suportem o fluxo -- pedido processado individualmente, em minutos, com o rider despachado logo apos a compra. duas razoes convergentes, mas a que decide e a segunda: (1) o c"
+  },
+  {
+   "label": "CARENCIA DO AVISO 'SEM NF-e': O SINAL E O TEMPO, NAO O ESTADO (05/08/2026, relato do dono com print). O faturador dele (ERP UpSeller) consulta as APIs do ML/Shopee, puxa a venda, confere o ESTOQUE INTERNO e so entao sobe o XML. Logo TODA venda nova passa alguns minutos sem NF-e -- e o alerta disparava dentro dessa janela normal, avisando 'sem NF-e' e se desmentindo minutos depois com o ✅ liberada. Duas mensagens para um nao-evento. O aviso NAO existe para dizer 'esta sem NF-e'; existe para dizer 'esta sem NF-e HA TEMPO DEMAIS para ser processamento normal', que no fluxo do dono significa uma coisa so: o ERP olhou, NAO achou estoque e por isso nao faturou. Este era o discriminador que FALTAVA: quando o alerta da Shopee foi feito, ja se sabia que invoice_data.status=pending e ambiguo (cobre 'nota faltando' E 'Shopee ainda processando') e por isso o texto nao afirmava a causa -- o que nao se tinha era como separar os dois. O tempo separa, e de quebra mata o falso positivo do 'Em processamento', que tambem se resolve em minutos: um mecanismo, dois ruidos. TRES DECISOES QUE NAO SAO DETALHE: (1) o relogio conta do carimbo da VENDA (pay_time na Shopee, date_closed/date_created no ML), NAO de quando o bot olhou -- com bot fora do ar a noite toda, uma venda travada desde as 23h ja nasce com 9h de idade e e avisada na hora, em vez de esperar mais 30 min a toa; (2) quem esta NA CARENCIA nao e registrado no dedup -- registrar ali o calaria para sempre, que e o oposto do objetivo; (3) SEM carimbo de tempo, AVISA: calar por falta de informacao esconderia justamente a venda sem estoque que este aviso existe para pegar (regra do incidente de 2026-07-31, nunca calar com prova na mao) -- se a API parar de mandar o campo, o sintoma sera ruido visivel e nao silencio. ONDE FICA: no BOT (_fora_da_carencia), nao no nucleo. filtrar_para_imprimir continua respondendo 'quem esta em invoice_pending'; quem decide 'sobre quem vale avisar' e o alerta -- assim a politica do aviso nao vaza para o caminho da impressao nem para a tela. A mensagem leva HA QUANTO TEMPO (espera_min, o mais antigo do bloco): UMA venda parada ha 40 min e falta de estoque; VARIAS de uma vez e o faturador fora do ar. O texto entrega o dado que separa os casos e NAO conclui por ninguem -- a API nao sabe a causa. CARENCIA_NF_MIN=30 escolhido com o dono; carencia_nf_min no bot_config.json ajusta, porque o numero certo depende do ERP e nao do app. LIMITE CONHECIDO: venda que trava as 20:50 so completa a carencia depois das 21h (fora da janela do alerta) e no dia seguinte seu prazo ja nao e 'hoje' -- aparece como atrasada na tela. Nao tratado de proposito, para ver acontecer antes de resolver.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "carencia_do_aviso_sem_nf",
+   "community": 0,
+   "norm_label": "carencia do aviso 'sem nf-e': o sinal e o tempo, nao o estado (05/08/2026, relato do dono com print). o faturador dele (erp upseller) consulta as apis do ml/shopee, puxa a venda, confere o estoque interno e so entao sobe o xml. logo toda venda nova passa alguns minutos sem nf-e -- e o alerta disparava dentro dessa janela normal, avisando 'sem nf-e' e se desmentindo minutos depois com o ✅ liberada."
   }
  ],
  "edges": [
@@ -4997,6 +5010,16 @@
    "weight": 1.0,
    "source": "canal_de_volta_status_zebra",
    "target": "veredito_resposta_antes_de_pista",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "alerta_uma_mensagem_por_ciclo",
    "confidence_score": 1.0
   },
   {
@@ -7140,6 +7163,56 @@
    "weight": 1.0,
    "source": "canal_de_volta_status_zebra",
    "target": "separador_etiquetas_ml_status_do_monitor",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "bot_telegram_carencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "bot_telegram_fora_da_carencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "bot_telegram_pago_em",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "carencia_do_aviso_sem_nf",
+   "target": "bot_telegram_so_dos_ids",
    "confidence_score": 1.0
   },
   {

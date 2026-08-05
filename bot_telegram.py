@@ -43,7 +43,7 @@ import os
 import subprocess
 import sys
 import threading
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from dataclasses import dataclass
 from types import SimpleNamespace
 
@@ -129,6 +129,22 @@ for _biblioteca in ("httpx", "httpcore"):
 
 
 # ---------------------------------------------------------------- configuracao
+# Carencia do aviso "sem NF-e": so avisa quando a venda passou deste tempo E
+# CONTINUA sem nota. O aviso NAO existe para dizer "esta sem NF-e" — toda venda
+# nova esta, por alguns minutos. Ele existe para dizer "esta sem NF-e ha tempo
+# demais para ser processamento normal", que no fluxo do dono significa uma
+# coisa so: o ERP (UpSeller) puxou a venda, NAO achou estoque e por isso nao
+# faturou. Sem a carencia o alerta disparava dentro da janela normal do ERP e
+# se desmentia minutos depois com o ✅ — falso alarme e pior que aviso nenhum,
+# porque ensina a ignorar o canal (mesma licao do monitor da Zebra, 2026-07-30).
+# Efeito colateral bom: mata tambem o falso positivo do "Em processamento" da
+# Shopee, que `invoice_data.status=pending` nao distingue de nota faltando (ver
+# AVISO_NF_SHOPEE) e que tambem se resolve em minutos. Um mecanismo, dois ruidos.
+# 30 min e o padrao escolhido com o dono (05/08/2026); `carencia_nf_min` no
+# bot_config.json ajusta sem mexer no codigo.
+CARENCIA_NF_MIN = 30
+
+
 def _inteiro(valor) -> int:
     """Inteiro tolerante: valor ausente/invalido vira 0 (= "nao configurado").
 
@@ -192,6 +208,10 @@ def carregar_config() -> dict:
         # Chat autorizado a usar TODAS as integracoes. Nome herdado do primeiro
         # comando; mantido para nao obrigar a reeditar o config em producao.
         "chat_perguntas": _inteiro(cfg.get("chat_perguntas")),
+        # Carencia do aviso "sem NF-e" (ver CARENCIA_NF_MIN). Ajustavel sem
+        # mexer no codigo porque o numero certo depende do FATURADOR do dono,
+        # nao do app: e o tempo que o ERP leva para puxar a venda e subir o XML.
+        "carencia_nf_min": _inteiro(cfg.get("carencia_nf_min")) or CARENCIA_NF_MIN,
     }
 
 
@@ -445,7 +465,8 @@ CHAVE_ALERTA_SHOPEE = "Shopee"
 # Balde SEPARADO de proposito — ver o comentario em job_alerta_pos_horario.
 SUFIXO_ALERTA_NF = " · falta NF-e"
 AVISO_NF_PENDENTE = ("⚠️ O ML esta esperando a NF-e — a etiqueta so libera "
-                     "depois que o XML subir.")
+                     "depois que o XML subir. Ja passou do tempo normal do "
+                     "faturador: veja se falta estoque deste item.")
 # NAO afirma a CAUSA, so o efeito — que e o que esta verificado. O painel do
 # dono mostrou que `invoice_data.status=pending` cobre tambem o "Em
 # processamento" (a Shopee ainda processando; a etiqueta libera num horario que
@@ -453,8 +474,90 @@ AVISO_NF_PENDENTE = ("⚠️ O ML esta esperando a NF-e — a etiqueta so libera
 # seria inventar um motivo: o operador iria cobrar o faturador de uma venda que
 # so precisa de tempo.
 AVISO_NF_SHOPEE = ("⚠️ A Shopee ainda nao liberou a etiqueta desta venda (nota "
-                   "nao validada). Nao da nem para organizar o envio: confira no "
-                   "painel se falta a NF-e ou se e so processamento.")
+                   "nao validada) e ja passou do tempo normal. Nao da nem para "
+                   "organizar o envio: veja se falta estoque; se houver, confira "
+                   "no painel se e so processamento da Shopee.")
+
+
+def _pago_em(ped: dict):
+    """Instante em que a venda foi PAGA, no fuso de Brasilia. None = nao sei.
+
+    Serve de relogio para a carencia do aviso de NF-e (ver CARENCIA_NF_MIN).
+    E o carimbo da VENDA, nao o de quando o bot olhou — a diferenca importa: se
+    o bot ficar fora do ar a noite toda e subir as 8:30, uma venda travada desde
+    as 23h ja nasce com 9 horas de idade e e avisada na hora, em vez de esperar
+    mais 30 minutos a toa.
+
+    Aceita as duas formas porque as duas listas de pendentes chegam aqui:
+    Shopee manda `pay_time` (epoch em segundos, ja vem no CAMPOS_DETALHE) e o
+    ML manda `date_closed` (o pagamento) com `date_created` de reserva — ISO
+    com fuso, que o `fromisoformat` do 3.11+ le direto.
+    """
+    bruto = ped.get("pay_time")
+    if bruto:
+        try:
+            return datetime.fromtimestamp(int(bruto), core.TZ_BR)
+        except (TypeError, ValueError, OSError, OverflowError):
+            return None
+    for chave in ("date_closed", "date_created"):
+        texto = ped.get(chave)
+        if not texto:
+            continue
+        try:
+            return datetime.fromisoformat(str(texto)).astimezone(core.TZ_BR)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _fora_da_carencia(pendentes: list, minutos: int, agora=None) -> tuple[list, int]:
+    """Filtra os pendentes de NF-e que ja passaram da carencia.
+
+    Devolve (lista, minutos_do_mais_antigo) — o segundo item vai para a
+    mensagem, porque "ha quanto tempo" e o que permite julgar a causa: UMA
+    venda parada ha 40 min e falta de estoque; OITO de uma vez e o faturador
+    fora do ar. O alerta continua sem afirmar a causa (nao da para saber pela
+    API), mas entrega o dado que separa os dois casos.
+
+    Sem carimbo de tempo, AVISA. E "nao sei" para o lado de falar: calar por
+    falta de informacao esconderia uma venda sem estoque, que e justamente o
+    que este aviso existe para pegar (a regra do incidente de 2026-07-31 —
+    nunca calar com prova na mao). Se algum dia a API parar de mandar o campo,
+    o sintoma sera ruido a mais, visivel, e nao silencio.
+    """
+    agora = agora or datetime.now(core.TZ_BR)
+    limite = timedelta(minutes=max(0, minutos))
+    passaram, mais_antigo = [], 0
+    for ped in pendentes:
+        pago = _pago_em(ped)
+        if pago is None:
+            passaram.append(ped)
+            continue
+        espera = agora - pago
+        if espera >= limite:
+            passaram.append(ped)
+            mais_antigo = max(mais_antigo, int(espera.total_seconds() // 60))
+    return passaram, mais_antigo
+
+
+def _carencia(cfg: dict) -> int:
+    """Carencia em minutos, com o padrao quando o config nao traz a chave.
+
+    `cfg.get(...)`, e nao `cfg[...]`: um config montado sem esta chave (setup
+    antigo que nunca a definiu) nao pode derrubar o job do alerta inteiro por
+    KeyError — a mesma filosofia do `_sanear_config` do nucleo, onde valor
+    ausente vira o default em vez de excecao."""
+    return _inteiro(cfg.get("carencia_nf_min")) or CARENCIA_NF_MIN
+
+
+def _so_dos_ids(itens: list, ids: set) -> list:
+    """Os itens que pertencem a estes envios/pedidos.
+
+    Os dois marketplaces guardam o identificador no mesmo campo do ItemPedido
+    (`shipment_id` — no ML e o numero do envio, na Shopee e o order_sn), entao
+    um filtro so serve para os dois. Precisa existir porque a lista de itens
+    vem achatada (todos os pendentes juntos) e a carencia corta por PEDIDO."""
+    return [it for it in itens if it.shipment_id in ids]
 
 
 def _dados_alerta_shopee(avisados: set, hoje: str, avisados_nf: set | None = None):
@@ -532,12 +635,14 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     blocos: list = []
     mudou = False
 
-    def _acrescentar(rotulo, itens, *, nf=False, aviso="", liberadas=False):
+    def _acrescentar(rotulo, itens, *, nf=False, aviso="", liberadas=False,
+                     espera_min=0):
         """So entra na mensagem fora do primeiro ciclo — o registro no estado
         acontece sempre (ver o docstring)."""
         if not primeiro_ciclo and itens:
             blocos.append(relatorio.BlocoAlerta(rotulo, itens, nf_pendente=nf,
-                                                aviso=aviso, liberadas=liberadas))
+                                                aviso=aviso, liberadas=liberadas,
+                                                espera_min=espera_min))
 
     for conta in contas:
         avisados = set(dados["avisados"].get(conta, []))
@@ -562,12 +667,20 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
         # dividisse o balde com o ready_to_print, o shipment_id ja avisado
         # calaria o aviso de quando a venda ficasse pronta de fato — sao dois
         # recados diferentes: um pede reposicao, o outro libera a impressao.
+        # A CARENCIA (ver CARENCIA_NF_MIN) corta aqui, e nao no nucleo: o
+        # `filtrar_para_imprimir` continua respondendo "quem esta em
+        # invoice_pending" — quem decide "sobre quem vale avisar" e o alerta.
+        # Quem ainda esta na carencia NAO e registrado: precisa continuar
+        # elegivel nos proximos ciclos, senao o dedup o calaria para sempre.
         if novos_nf:
-            _acrescentar(conta or "Mercado Livre", itens_nf, nf=True,
-                         aviso=AVISO_NF_PENDENTE)
-            _registrar_alerta(dados, chave_nf, itens_nf,
-                              [p["_envio"]["shipment_id"] for p in novos_nf])
-            mudou = True
+            maduros, espera = _fora_da_carencia(novos_nf, _carencia(cfg))
+            if maduros:
+                ids_nf = {p["_envio"]["shipment_id"] for p in maduros}
+                itens_maduros = _so_dos_ids(itens_nf, ids_nf)
+                _acrescentar(conta or "Mercado Livre", itens_maduros, nf=True,
+                             aviso=AVISO_NF_PENDENTE, espera_min=espera)
+                _registrar_alerta(dados, chave_nf, itens_maduros, list(ids_nf))
+                mudou = True
 
     # Shopee e independente das contas ML (loja unica); pula em silencio se
     # nao houver credencial configurada (setup so-ML e valido e nao deve
@@ -589,11 +702,15 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             _registrar_alerta(dados, CHAVE_ALERTA_SHOPEE, itens_shopee, sns)
             mudou = True
         if nf_shopee:
-            _acrescentar(CHAVE_ALERTA_SHOPEE, itens_nf_shopee, nf=True,
-                         aviso=AVISO_NF_SHOPEE)
-            _registrar_alerta(dados, chave_nf_shopee, itens_nf_shopee,
-                              [d["order_sn"] for d in nf_shopee])
-            mudou = True
+            maduros_sh, espera_sh = _fora_da_carencia(nf_shopee, _carencia(cfg))
+            if maduros_sh:
+                sns_nf = {d["order_sn"] for d in maduros_sh}
+                itens_maduros_sh = _so_dos_ids(itens_nf_shopee, sns_nf)
+                _acrescentar(CHAVE_ALERTA_SHOPEE, itens_maduros_sh, nf=True,
+                             aviso=AVISO_NF_SHOPEE, espera_min=espera_sh)
+                _registrar_alerta(dados, chave_nf_shopee, itens_maduros_sh,
+                                  list(sns_nf))
+                mudou = True
 
     await _enviar_alerta(context, cfg, relatorio.texto_alerta_pos_horario(blocos))
 
