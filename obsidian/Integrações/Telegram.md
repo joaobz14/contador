@@ -39,7 +39,7 @@ senão some do menu.
 
 ## Jobs automáticos (`JobQueue`)
 - **Aviso da manhã** (`job_bom_dia`, 1x/dia, `aviso_horario` no `bot_config.json`).
-- **Alerta pós-horário** (`job_alerta_pos_horario`, a cada 5 min, das **07:00 às
+- **Alerta pós-horário** (`job_alerta_pos_horario`, a cada 5 min, das **8:30 às
   20:59** de Brasília — fora disso é no-op sem chamada de API; busca ML com janela
   dedicada de **5 dias** em vez dos 30 do Atualizar — juntas, as duas janelas
   cortaram ~95% das chamadas que o alerta fazia, auditoria de APIs 2026-07):
@@ -54,11 +54,22 @@ senão some do menu.
   Independente do botão Atualizar da tela; dedup em `alertas_pos_horario.json` (reseta
   sozinho no dia seguinte) — por `shipment_id` no ML, por `order_sn` na Shopee
   (tratada como mais uma chave, `"Shopee"`). Isola falha por conta/loja — envio e
-  persistência compartilhados entre ML e Shopee via `_disparar_alerta` (não duplica
+  persistência compartilhados entre ML e Shopee via `_registrar_alerta` (não duplica
   essa lógica). Mostra SKU + quantidade **somada por SKU** (`A01 - 2L 110 - 1`), sem
   número de envio/pedido — pedido do dono, só precisa saber O QUE repor. Cada
   disparo também persiste os itens no mesmo arquivo (junto do dedup), que alimenta
   o `/vendasapos` abaixo.
+- **Uma mensagem por ciclo, e o 1º ciclo do dia é calado** (05/08/2026, a partir
+  de um print do dono): o envio era por origem **e** por tipo — com 2 contas ML +
+  Shopee, até **6 mensagens a cada 5 min**. Hoje as origens são **seções** de um
+  texto só (`relatorio.BlocoAlerta`), com a seção de NF-e no fim e a explicação
+  uma vez. **O dedup continua por origem**; só o envio (`_enviar_alerta`) virou
+  um — juntar os baldes faria o envio já avisado como "falta NF-e" calar o aviso
+  de quando ficasse pronto. A janela subiu para **8:30** porque antes disso o
+  dono está na tela e já leu o aviso da manhã. E o **primeiro ciclo do dia só
+  registra**, sem enviar (`iniciado` no estado): senão a abertura da janela
+  despejaria o dia inteiro numa mensagem — o oposto de "apareceu agora". Venda
+  antes travada por NF-e que ficou pronta vem marcada com **✅**.
 - **Shopee: "Enviar NF-e"** (`invoice_data.status == "pending"`) — o espelho
   **invertido** do ML: a venda não some, ela já aparecia como *pronta*, e a
   Shopee **recusa organizar o envio** enquanto a nota não subir. Agora vem em
@@ -77,8 +88,8 @@ senão some do menu.
   única vez, fora do agendamento.
 
 ## Resumo agregado (`/vendasapos`)
-Se várias vendas caírem em sequência depois das 8:30, cada uma vira um alerta
-separado — poluindo o chat. `/vendasapos` (comando e botão "🔔 Vendas após" no
+Mesmo com uma mensagem por ciclo, várias vendas ao longo do dia viram vários
+avisos espalhados. `/vendasapos` (comando e botão "🔔 Vendas após" no
 `/menu`) junta **tudo que já foi avisado hoje**, por conta/loja (ML e Shopee), com
 um TOTAL por SKU no final. Só relê `alertas_pos_horario.json` (os itens que o
 alerta já persistiu), não refaz nenhuma chamada de API.

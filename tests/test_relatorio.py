@@ -72,32 +72,76 @@ def test_texto_detalhe_sem_resultado(core):
     assert "Nada encontrado" in relatorio.texto_detalhe([], "XYZ")
 
 
+def _bloco(rotulo, itens, **k):
+    return relatorio.BlocoAlerta(rotulo, itens, **k)
+
+
 def test_texto_alerta_pos_horario(core):
     itens = [
         core.ItemPedido(order_id=1, shipment_id=100, chave="A02", nome="A02", quantidade=2),
         core.ItemPedido(order_id=2, shipment_id=101, chave="A06F", nome="A06F", quantidade=1),
     ]
-    txt = relatorio.texto_alerta_pos_horario("Cozilatti", itens)
-    assert txt.split("\n")[0] == "🔔 Venda Cozilatti"
+    txt = relatorio.texto_alerta_pos_horario([_bloco("Cozilatti", itens)])
+    assert txt.split("\n")[0] == "🔔 Vendas novas para hoje"
+    assert "Cozilatti" in txt
     assert "A02 - 2" in txt
     assert "A06F - 1" in txt
     assert "100" not in txt  # sem numero de envio
 
 
-def test_texto_alerta_pos_horario_soma_mesmo_sku_entre_envios(core):
+def test_texto_alerta_soma_mesmo_sku_entre_envios(core):
     # O mesmo SKU em 2 envios diferentes deve somar, numa linha so.
     itens = [
         core.ItemPedido(order_id=1, shipment_id=200, chave="A02", nome="A02", quantidade=1),
         core.ItemPedido(order_id=2, shipment_id=201, chave="A02", nome="A02", quantidade=2),
     ]
-    txt = relatorio.texto_alerta_pos_horario("", itens)
+    txt = relatorio.texto_alerta_pos_horario([_bloco("", itens)])
     assert txt.count("A02") == 1
     assert "A02 - 3" in txt
 
 
-def test_texto_alerta_pos_horario_sem_conta_usa_rotulo_generico(core):
-    txt = relatorio.texto_alerta_pos_horario("", [])
-    assert txt == "🔔 Venda nova"
+def test_texto_alerta_sem_nada_e_vazio(core):
+    """Sem bloco com item, nao ha mensagem — o job nao pode mandar um cabecalho
+    sozinho a cada 5 minutos."""
+    assert relatorio.texto_alerta_pos_horario([]) == ""
+    assert relatorio.texto_alerta_pos_horario([_bloco("Cozilatti", [])]) == ""
+
+
+def test_texto_alerta_junta_varias_origens_numa_mensagem_so(core):
+    """O motivo da mudanca: 2 contas + Shopee davam ate 6 mensagens por ciclo."""
+    def _it(chave):
+        return core.ItemPedido(order_id=1, shipment_id=1, chave=chave, nome=chave, quantidade=1)
+
+    txt = relatorio.texto_alerta_pos_horario([
+        _bloco("Cozilatti", [_it("A02")]),
+        _bloco("Gastromaq", [_it("A13")]),
+        _bloco("Shopee", [_it("CN1")]),
+    ])
+    assert txt.count("🔔") == 1, "um cabecalho so"
+    for esperado in ("Cozilatti", "A02 - 1", "Gastromaq", "A13 - 1", "Shopee", "CN1 - 1"):
+        assert esperado in txt
+
+
+def test_texto_alerta_secao_de_nf_vem_por_ultimo_e_explica_uma_vez(core):
+    """A explicacao repetia inteira em cada mensagem; agora entra uma vez."""
+    def _it(chave):
+        return core.ItemPedido(order_id=1, shipment_id=1, chave=chave, nome=chave, quantidade=1)
+
+    txt = relatorio.texto_alerta_pos_horario([
+        _bloco("Cozilatti", [_it("A02")]),
+        _bloco("Cozilatti", [_it("A11")], nf_pendente=True, aviso="XML pendente."),
+        _bloco("Gastromaq", [_it("A13")], nf_pendente=True, aviso="XML pendente."),
+    ])
+    assert txt.index("A02 - 1") < txt.index("Ainda sem NF-e"), "pronto vem antes"
+    assert txt.count("XML pendente.") == 1, "a explicacao nao se repete por origem"
+
+
+def test_texto_alerta_marca_a_venda_que_estava_esperando_nf(core):
+    """Sem a marca, o mesmo SKU reaparecendo minutos depois parece duplicata —
+    quando e a noticia de que o XML subiu."""
+    itens = [core.ItemPedido(order_id=1, shipment_id=1, chave="A11", nome="A11", quantidade=1)]
+    txt = relatorio.texto_alerta_pos_horario([_bloco("Cozilatti", itens, liberadas=True)])
+    assert "✅" in txt and "esperando a NF-e" in txt
 
 
 # ------------------------------------------------------------ texto_resumo_vendas_apos
