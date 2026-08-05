@@ -410,9 +410,9 @@
   "semantic_hash": "61abd022a7324ffe64ee319ba2dc98cd2af40736"
  },
  "tests/test_bot_atualizar.py": {
-  "mtime": 1785855622.6538997,
-  "ast_hash": "cae0909551607a38bb2223fc4d8fa88227a91bcc",
-  "semantic_hash": "cae0909551607a38bb2223fc4d8fa88227a91bcc"
+  "mtime": 1785933781.0297174,
+  "ast_hash": "8beba219776bd795edbbea43afd9f8772cd7ec07",
+  "semantic_hash": "8beba219776bd795edbbea43afd9f8772cd7ec07"
  },
  "tests/test_bot_autorizacao.py": {
   "mtime": 1785800977.1264076,
