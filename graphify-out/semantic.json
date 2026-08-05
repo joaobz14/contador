@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 359,
- "edge_count": 679,
+ "node_count": 360,
+ "edge_count": 683,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4131,6 +4131,19 @@
    "id": "carencia_do_aviso_sem_nf",
    "community": 0,
    "norm_label": "carencia do aviso 'sem nf-e': o sinal e o tempo, nao o estado (05/08/2026, relato do dono com print). o faturador dele (erp upseller) consulta as apis do ml/shopee, puxa a venda, confere o estoque interno e so entao sobe o xml. logo toda venda nova passa alguns minutos sem nf-e -- e o alerta disparava dentro dessa janela normal, avisando 'sem nf-e' e se desmentindo minutos depois com o ✅ liberada."
+  },
+  {
+   "label": "WEBHOOK DO n8n AUTENTICADO POR Authorization: Bearer (05/08/2026, proposto pelo lado n8n e negociado nos dois lados). O PROBLEMA: os webhooks eram endpoints HTTP sem autenticacao -- o unico segredo era o sufixo aleatorio no path. Vazamento de DADO ja estava fechado (o chat_id passa por allowlist do lado n8n, entao a resposta sempre vai para o dono), mas sobrava ABUSO POR REPETICAO: cota da API do ML (o /anuncios faz 16 chamadas por disparo), flood no chat e poluicao da Data Table de 'vistos'. Probabilidade baixa (precisa da URL), entao e endurecimento e nao incendio. A SOLUCAO: headerAuth do lado n8n + cabecalho deste lado. TRES DECISOES DE PROJETO: (1) UM segredo para os DOIS fluxos -- o modelo de ameaca e 'alguem obteve a URL', e se o bot_config.json vazar as duas URLs vazam juntas; dois segredos nao comprariam nada e dobrariam a chance de errar ao colar (mesma logica do chat_perguntas, que governa todas as integracoes). (2) `Authorization: Bearer` e NAO um cabecalho proprio, porque o sem_segredos JA redige essa forma -- uma das seis que ele conhece, criada para o token do ML. VERIFICADO, nao suposto: segredos reais de secrets.token_urlsafe(32) tem 43 caracteres em [A-Za-z0-9_-] e caem inteiros na regex _BEARER_RE, sem sobra. Um cabecalho proprio exigiria regra de redacao nova, e esquece-la deixaria o segredo exposto justo nos caminhos de diagnostico (o repositorio e publico). (3) SEGREDO AUSENTE = NAO MANDA CABECALHO. E o que permite a IMPLANTACAO EM 4 PASSOS sem janela de indisponibilidade: (a) este codigo sobe INERTE, porque cabecalho extra e ignorado por um endpoint que nao o exige; (b) o dono cria a credencial, cola no bot_config.json e REINICIA -- passo que o plano original tratava como automatico e nao e, e e exatamente ali que o 403 nasceria; (c) o lado n8n CONFIRMA o cabecalho chegando nos dados de execucao, transformando o passo seguinte de aposta em verificacao; (d) so entao liga a exigencia. ALTERNATIVAS DESCARTADAS: allowlist de IP (IP residencial/empresarial dinamico; pior, o modo de FALHAR e silencioso e tardio -- quebra de madrugada e se disfarca de 'o n8n caiu'; e autentica a rede, nao o chamador: qualquer um atras do mesmo NAT passa) e segredo no corpo via onlyRunIf. ESTA SEGUNDA MERECE NOTA DE METODO: o argumento inicial deste lado foi que ela criaria execucao e consumiria cota -- ERRADO, e o lado n8n corrigiu com a doc do no (onlyRunIf responde 200 sem criar execucao). O motivo real de descartar e melhor: ela FALHA ABERTO -- se a expressao der erro na avaliacao, a requisicao e LIBERADA e o erro so e registrado. Controle de acesso que autoriza quando quebra nao e controle de acesso, e e a mesma familia dos achados de 05/08 deste lado (o gui-smoke verde com a tela quebrada, o reiniciar-bot anunciando sucesso sem subir nada): o defeito nunca e falhar, e PASSAR quando deveria barrar. Tambem entrou o 401/403 com MENSAGEM PROPRIA: apontar 'confira se o workflow esta ligado' diante de um segredo errado faria o dono ligar e desligar fluxo sem chegar a lugar nenhum -- mesmo conselho inutil que o _propagar_se_auth corrigiu no coletor do Ads.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "webhook_n8n_autenticado",
+   "community": 0,
+   "norm_label": "webhook do n8n autenticado por authorization: bearer (05/08/2026, proposto pelo lado n8n e negociado nos dois lados). o problema: os webhooks eram endpoints http sem autenticacao -- o unico segredo era o sufixo aleatorio no path. vazamento de dado ja estava fechado (o chat_id passa por allowlist do lado n8n, entao a resposta sempre vai para o dono), mas sobrava abuso por repeticao: cota da api do "
   }
  ],
  "edges": [
@@ -5992,6 +6005,16 @@
    "weight": 1.0,
    "source": "ui_seletor_loja",
    "target": "provider_abstraction"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "webhook_n8n_autenticado",
+   "target": "registro_sem_segredos",
+   "confidence_score": 1.0
   },
   {
    "source": "webhook_url_e_segredo",
@@ -10290,6 +10313,36 @@
    "weight": 1.0,
    "source": "veredito_resposta_antes_de_pista",
    "target": "separador_etiquetas_ml_veredito_do_status",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "webhook_n8n_autenticado",
+   "target": "bot_telegram_acionar_n8n",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "webhook_n8n_autenticado",
+   "target": "bot_telegram_carregar_config",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "webhook_n8n_autenticado",
+   "target": "bot_telegram_disparar_n8n",
    "confidence_score": 1.0
   },
   {

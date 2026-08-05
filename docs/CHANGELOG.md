@@ -4,6 +4,23 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Adicionado
+- **Os comandos `/perguntas` e `/anuncios` passam a mandar uma senha ao n8n.**
+  Hoje qualquer pessoa que descobrisse o endereço do fluxo conseguia dispará-lo
+  — não veria os dados (a resposta sempre vai para o seu chat), mas podia gastar
+  a cota da API do Mercado Livre e encher o seu Telegram.
+  - **Nada muda até você configurar.** Enquanto a senha não estiver no
+    `bot_config.json`, o bot funciona exatamente como antes. Isso é de
+    propósito: permite atualizar o programa agora e ligar a proteção quando
+    quiser, sem os dois lados terem que mudar no mesmo instante.
+  - **Quando for ligar** (o passo é seu, junto com quem cuida do n8n): gere a
+    senha na sua máquina com
+    `python -c "import secrets; print(secrets.token_urlsafe(32))"`, cole o mesmo
+    valor nos dois lados e acrescente ao `bot_config.json`:
+    `"n8n_segredo": "o_valor_gerado"`. Depois reinicie o bot.
+  - Se a senha ficar errada, o bot avisa **isso** — não manda mais você conferir
+    o workflow à toa.
+
 ### Alterado
 - **O aviso "sem NF-e" agora espera o seu faturador trabalhar.** Ele estava
   disparando assim que a venda caía — antes de o UpSeller puxar o pedido — e

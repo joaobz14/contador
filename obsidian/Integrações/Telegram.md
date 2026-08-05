@@ -151,6 +151,25 @@ tratamento de erro saem de graça.
 | `/perguntas` | perguntas e mensagens sem resposta (conta 3) |
 | `/anuncios` | saúde dos anúncios das **duas** contas, numa resposta só |
 
+> [!info] Autenticação por cabeçalho (05/08/2026)
+> A URL sozinha não bastava: quem a obtivesse disparava os fluxos à vontade — o
+> abuso por **repetição** custa cota da API do ML e enche o chat do dono. O n8n
+> liga `authentication: headerAuth`; este lado manda
+> `Authorization: Bearer <segredo>`, com o segredo em `n8n_segredo`
+> (`bot_config.json`) ou `N8N_SEGREDO`.
+>
+> **Um segredo só para os dois fluxos** — se o config vazar, as duas URLs vazam
+> juntas. **`Authorization`, e não cabeçalho próprio**, porque o `sem_segredos`
+> já redige `Bearer <token>`: o segredo nasce protegido, sem regra nova.
+> **Ausente = não manda cabeçalho**, o que permitiu subir o código antes de o
+> n8n exigir (implantação em 4 passos, sem janela em que um lado exige e o outro
+> não manda). E **401/403 tem mensagem própria** — apontar o workflow diante de
+> um segredo errado mandaria o dono mexer no lugar errado.
+>
+> Descartadas: allowlist de IP (IP dinâmico; a falha chega de madrugada
+> disfarçada de "o n8n caiu") e segredo no corpo via `onlyRunIf` — este porque
+> **falha aberto**: erro na avaliação libera a requisição.
+
 ## `/perguntas` — o bot dispara, o **n8n** responde
 Um fluxo do **n8n** (fora deste projeto) lista as perguntas e mensagens sem
 resposta da **conta 3**. O `/perguntas` só **aciona** esse fluxo: faz um POST no
