@@ -4,6 +4,21 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Removido
+- **A checagem semanal das APIs (`api-monitor`) foi desativada.** Ela nunca
+  conseguiu ler as fontes de verdade — a página de novidades do Mercado Livre
+  exige login e as da Shopee dependem de renderizar a página inteira, o que
+  falhava — então o relatório saía "bloqueada" toda semana, sem informação
+  nenhuma, e ainda gastava uma consulta paga de IA a cada execução. Também havia
+  um risco: ela rodava sozinha, sem restrição, na pasta onde ficam as
+  credenciais, usando conteúdo baixado da internet.
+  - **O que você precisa fazer na máquina:** remover a tarefa do Agendador —
+    `Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:$false`.
+    Enquanto ela existir, vai continuar rodando semanalmente (agora só para
+    imprimir o aviso de desativado).
+  - O código ficou guardado, com o motivo escrito e o que precisaria mudar para
+    voltar (`api-monitor/README.md`).
+
 ### Corrigido
 - **Quando a tela não abre, agora dá para saber por quê.** O atalho sobe o
   programa sem janela preta — então, se algo quebrasse na abertura, o

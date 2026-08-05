@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 354,
- "edge_count": 660,
+ "node_count": 355,
+ "edge_count": 663,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4066,6 +4066,19 @@
    "id": "falha_silenciosa_na_abertura_da_tela",
    "community": 0,
    "norm_label": "falha silenciosa na abertura da tela e o guardiao que nao guardava (2026-08-05, auditoria dos arquivos 'bestas'). dois defeitos da mesma causa: o tk captura excecao de callback (after/clique/trace), imprime no stderr e segue -- e sob `pythonw` (como o atalho sobe a tela) e sob o job da ci nao ha ninguem lendo esse stderr. (1) na tela: `main()` eram quatro linhas sem try/except e sem log; uma falha"
+  },
+  {
+   "label": "API-MONITOR DESATIVADO (05/08/2026, pausa e nao desistencia). Duas razoes, e a segunda e a que decide. (1) NAO FUNCIONAVA: a fonte 1 (ML Devcenter Novidades) exige login do console e nao tem equivalente publico (RSS/changelog); as fontes 3 e 4 (Shopee) sao SPAs que dependiam do Playwright+Edge renderizar e nem sempre renderizavam. O relatorio saia 'bloqueada' toda semana -- rotina que nunca responde nao monitora, e ainda custava uma chamada paga de IA por semana. (2) RISCO: rodava `claude -p --permission-mode bypassPermissions`, SEM supervisao (tarefa agendada, janela oculta), com cwd na RAIZ DO PROJETO -- a mesma pasta de dados/contas/*/credenciais.json, credenciais_shopee.json e bot_config.json (token do Telegram + URLs dos webhooks do n8n, que sao credenciais). E a ENTRADA era conteudo baixado da web (paginas do ML/Shopee, inclusive HTML pre-renderizado em api-monitor/fetched/). Probabilidade baixa; raio de alcance = as credenciais do negocio. COMO FOI DESATIVADO: os dois .ps1 saem no comeco com aviso (bloco ARQUIVADO), o codigo inteiro preservado -- reativar e apagar o bloco, nao reescrever. O registrar-tarefa.ps1 tambem foi travado de proposito: sem isso, reativar seria um duplo-clique distraido num script esquecido, e nao uma decisao. A flag foi trocada por --allowedTools \"WebFetch,Read,Write,Edit\" ANTES de arquivar: em modo -p, ferramenta fora da lista falha em vez de perguntar, entao roda sem ninguem presente e SEM shell -- assim uma reativacao futura nao reinstala o risco por descuido. O QUE DESTRAVA: fonte publica estavel para as novidades do ML e captura da Shopee que nao dependa de renderizar SPA. LICAO: agente automatico sem supervisao herda o alcance da pasta em que roda; quando a entrada dele e conteudo de terceiros, restringir ferramenta nao e paranoia, e o minimo -- e desligar o que nao entrega valor e sempre mais barato que proteger.",
+   "file_type": "rationale",
+   "source_file": "api-monitor/run-semanal.ps1",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "api_monitor_desativado",
+   "community": 0,
+   "norm_label": "api-monitor desativado (05/08/2026, pausa e nao desistencia). duas razoes, e a segunda e a que decide. (1) nao funcionava: a fonte 1 (ml devcenter novidades) exige login do console e nao tem equivalente publico (rss/changelog); as fontes 3 e 4 (shopee) sao spas que dependiam do playwright+edge renderizar e nem sempre renderizavam. o relatorio saia 'bloqueada' toda semana -- rotina que nunca respon"
   }
  ],
  "edges": [
@@ -4588,6 +4601,16 @@
    "weight": 1.0,
    "source": "anuncio_sem_sku_adota",
    "target": "ordem_separacao_pessoal",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "api-monitor/run-semanal.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "api_monitor_desativado",
+   "target": "falha_silenciosa_na_abertura_da_tela",
    "confidence_score": 1.0
   },
   {
@@ -6357,6 +6380,26 @@
    "weight": 1.0,
    "source": "anuncio_sem_sku_adota",
    "target": "separador_gui",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "api-monitor/run-semanal.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "api_monitor_desativado",
+   "target": "api_monitor_fetch_render",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "api-monitor/run-semanal.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "api_monitor_desativado",
+   "target": "api_monitor_sistema",
    "confidence_score": 1.0
   },
   {

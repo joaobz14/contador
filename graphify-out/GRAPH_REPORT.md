@@ -51,6 +51,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — `api-monitor` desativado (pausa, não desistência).** Duas
+  razões, e a segunda é a que decide. **(1) Não funcionava:** ML Novidades exige
+  login e não tem equivalente público; as fontes da Shopee são SPAs que nem
+  sempre renderizavam. O relatório saía "bloqueada" toda semana — rotina que
+  nunca responde não monitora — e ainda custava uma chamada paga de IA por
+  semana. **(2) Risco:** rodava `claude -p --permission-mode bypassPermissions`,
+  **sem supervisão**, com `cwd` na raiz do projeto (a pasta das credenciais do
+  ML, da Shopee e do bot), tendo **conteúdo baixado da web como entrada**.
+  Probabilidade baixa, raio de alcance igual às credenciais do negócio. Os dois
+  `.ps1` saem no começo com aviso e o código ficou inteiro — reativar é apagar o
+  bloco. O `registrar-tarefa.ps1` foi travado **de propósito**: sem isso,
+  reativar seria um duplo-clique distraído num script esquecido, e não uma
+  decisão. A flag virou `--allowedTools` **antes** de arquivar, para que uma
+  reativação futura não reinstale o risco por descuido. Novo nó
+  `api_monitor_desativado`. **Lição:** agente automático sem supervisão herda o
+  alcance da pasta em que roda; quando a entrada dele é conteúdo de terceiros,
+  restringir ferramenta é o mínimo — e desligar o que não entrega valor é sempre
+  mais barato que proteger.
+  Depois do `--update`: **1759 nós, 3327 arestas, 0 órfãs**.
 - **2026-08-05 — a tela que não abre sem deixar rastro, e o guardião que não
   guardava.** Auditoria feita por um critério novo: procurar por
   **invisibilidade** (onde uma falha não apareceria para ninguém), não por

@@ -8,6 +8,21 @@
 #
 # Ajuste o dia/horario nas variaveis abaixo se quiser.
 
+# ############################################################################
+# ARQUIVADO EM 05/08/2026 - NAO REGISTRA MAIS NADA (ver api-monitor/README.md).
+# O run-semanal.ps1 esta desativado (fontes inacessiveis); registrar a tarefa so
+# criaria uma execucao semanal que nao produz relatorio e ainda gasta uma
+# chamada paga de IA. Este bloco existe para que reativar seja uma DECISAO, e
+# nao um duplo-clique distraido em um script que ficou para tras.
+#
+# PARA REMOVER a tarefa que ja esteja registrada na sua maquina:
+#   Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:$false
+# ############################################################################
+Write-Host "api-monitor DESATIVADO em 05/08/2026 - nada foi registrado." -ForegroundColor Yellow
+Write-Host "Para remover a tarefa ja existente, rode:"
+Write-Host "  Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:`$false"
+exit 0
+
 $ErrorActionPreference = 'Stop'
 
 # ---- configuracao (edite se quiser) --------------------------------------
