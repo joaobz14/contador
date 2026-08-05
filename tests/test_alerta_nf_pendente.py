@@ -118,16 +118,21 @@ def test_envio_terminal_nao_e_cacheado_como_pendente(envios, tmp_path):
 # ------------------------------------------------------------------ o aviso
 def test_texto_do_aviso_diz_que_ainda_nao_da_para_imprimir():
     itens = [core.ItemPedido(order_id=1, shipment_id=1, chave="A03", nome="A03", quantidade=1)]
-    texto = relatorio.texto_alerta_pos_horario("cozilatti · falta NF-e", itens,
-                                               aviso="⚠️ O ML esta esperando a NF-e")
+    texto = relatorio.texto_alerta_pos_horario([
+        relatorio.BlocoAlerta("cozilatti", itens, nf_pendente=True,
+                              aviso="⚠️ O ML esta esperando a NF-e")])
     assert "A03 - 1" in texto
-    assert "falta NF-e" in texto
+    assert "Ainda sem NF-e" in texto
     assert "esperando a NF-e" in texto
 
 
-def test_aviso_vazio_mantem_o_texto_de_sempre():
+def test_venda_pronta_nao_leva_recado_de_nf():
+    """Sem a secao de NF, o texto nao pode insinuar que falta alguma coisa —
+    era o recado que fazia o dono conferir o painel a toa."""
     itens = [core.ItemPedido(order_id=1, shipment_id=1, chave="A03", nome="A03", quantidade=1)]
-    assert relatorio.texto_alerta_pos_horario("cozilatti", itens) == "🔔 Venda cozilatti\nA03 - 1"
+    texto = relatorio.texto_alerta_pos_horario([relatorio.BlocoAlerta("cozilatti", itens)])
+    assert texto == "🔔 Vendas novas para hoje\n\ncozilatti\nA03 - 1"
+    assert "NF-e" not in texto
 
 
 # ------------------------------------------------------------- integração bot
@@ -202,9 +207,13 @@ def test_chave_do_balde_de_nf_nao_colide_com_a_da_conta():
 
 
 @pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
-def test_job_manda_dois_avisos_separados(monkeypatch, tmp_path):
-    """De ponta a ponta: uma venda pronta e uma parada na NF-e viram DUAS
-    mensagens, cada uma com o seu recado, e cada uma no seu balde de dedup."""
+def test_job_manda_um_texto_com_as_duas_secoes_e_baldes_separados(monkeypatch, tmp_path):
+    """De ponta a ponta: uma venda pronta e uma parada na NF-e viram UMA
+    mensagem com duas secoes — e continuam em baldes de dedup SEPARADOS.
+
+    O agrupamento (05/08/2026) mudou so o ENVIO. A separacao dos baldes e o que
+    nao pode mudar: se o shipment_id ja avisado como "falta NF-e" caisse no
+    mesmo balde, ele calaria o aviso de quando a venda ficasse pronta de fato."""
     import asyncio
 
     import shopee_api as shopee
@@ -234,13 +243,20 @@ def test_job_manda_dois_avisos_separados(monkeypatch, tmp_path):
         bot_data = {"cfg": {"chat_ids": [10]}}
         bot = _Bot()
 
+    # 1o ciclo do dia e calado (so registra); o 2o e que fala.
+    asyncio.run(bot.job_alerta_pos_horario(_Ctx()))
+    assert enviadas == [], "o ciclo que abre a janela nao despeja o dia inteiro"
+    core._gravar_json(tmp_path / "alertas.json",
+                      {"dia": hoje, "avisados": {}, "itens": {}, "iniciado": True})
+
     asyncio.run(bot.job_alerta_pos_horario(_Ctx()))
 
-    assert len(enviadas) == 2
-    pronto = next(t for t in enviadas if "A02" in t)
-    pendente = next(t for t in enviadas if "A03" in t)
-    assert "falta NF-e" not in pronto and "NF-e" not in pronto
-    assert "falta NF-e" in pendente and "esperando a NF-e" in pendente
+    assert len(enviadas) == 1, "uma mensagem por ciclo, nao uma por balde"
+    texto = enviadas[0]
+    assert "A02 - 1" in texto and "A03 - 1" in texto
+    assert texto.index("A02 - 1") < texto.index("Ainda sem NF-e"), \
+        "o que da para imprimir vem antes do que ainda nao da"
+    assert "esperando a NF-e" in texto
 
     # baldes de dedup separados, cada um com o seu envio
     dados = core._ler_json(tmp_path / "alertas.json")

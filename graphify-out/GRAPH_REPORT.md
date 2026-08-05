@@ -51,6 +51,23 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — alerta pós-horário: uma mensagem por ciclo, janela às 8:30 e 1º
+  ciclo calado.** Veio de um print do próprio dono. O envio era **por origem e
+  por tipo**: com 2 contas ML + Shopee, cada uma podendo ter "pronta" e "falta
+  NF-e", o pior caso eram **6 mensagens a cada 5 minutos**. Três correções:
+  **(1)** as origens viram **seções** de um texto só — mas o **dedup e a
+  persistência continuam por origem**, só o envio virou um; juntar os baldes
+  faria o `shipment_id` já avisado como "falta NF-e" calar o aviso de quando a
+  venda ficasse pronta. **(2)** a janela começa às **8:30** (era 7h): das 7h às
+  8:30 o dono está no Atualizar e já leu o aviso das 08:00 — o alerta repetia o
+  que ele acabara de ver. **(3)** o **primeiro ciclo do dia não envia**, só
+  registra: sem isso, subir a janela trocaria a parede de mensagens por um
+  **despejo único** com o dia inteiro, o oposto de "apareceu agora". Venda antes
+  travada por NF-e que ficou pronta vem marcada com **✅**. Novo nó
+  `alerta_uma_mensagem_por_ciclo`. **Lição:** ruído em canal de alerta não é
+  cosmético — ensina o dono a ignorar o canal, e aí ele perde a utilidade no dia
+  em que a mensagem importar (mesma lógica do falso alarme do monitor da Zebra).
+  Depois do `--update`: **1772 nós, 3370 arestas, 0 órfãs**.
 - **2026-08-05 — `api-monitor` desativado (pausa, não desistência).** Duas
   razões, e a segunda é a que decide. **(1) Não funcionava:** ML Novidades exige
   login e não tem equivalente público; as fontes da Shopee são SPAs que nem

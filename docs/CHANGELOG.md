@@ -4,6 +4,22 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Alterado
+- **Os avisos de venda do bot pararam de poluir o chat.** Três mudanças, todas
+  no alerta automático:
+  - **Uma mensagem por vez, não uma por conta.** Cozilatti, Gastromaq e Shopee
+    agora aparecem como blocos de um aviso só. Antes, cada uma mandava a sua — e
+    com o aviso de "falta NF-e" somado, dava até **6 mensagens a cada 5 minutos**.
+  - **Os avisos começam às 8:30**, não mais às 7h. Antes das 8:30 você está na
+    tela e já recebeu o resumo da manhã; o alerta só repetia o que você acabou
+    de ler.
+  - **O primeiro aviso do dia não vem.** Ele só anota o que já existe, para que
+    dali em diante o aviso signifique literalmente **"apareceu agora"**. Nada se
+    perde: essas vendas estão no resumo das 8:00 e na tela.
+  - A explicação do "falta NF-e" agora aparece **uma vez** no fim, e a venda que
+    estava travada e foi liberada vem marcada com **✅** — antes ela reaparecia
+    igual à primeira e parecia mensagem repetida.
+
 ### Removido
 - **A checagem semanal das APIs (`api-monitor`) foi desativada.** Ela nunca
   conseguiu ler as fontes de verdade — a página de novidades do Mercado Livre

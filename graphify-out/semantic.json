@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 355,
- "edge_count": 663,
+ "node_count": 356,
+ "edge_count": 669,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4079,6 +4079,19 @@
    "id": "api_monitor_desativado",
    "community": 0,
    "norm_label": "api-monitor desativado (05/08/2026, pausa e nao desistencia). duas razoes, e a segunda e a que decide. (1) nao funcionava: a fonte 1 (ml devcenter novidades) exige login do console e nao tem equivalente publico (rss/changelog); as fontes 3 e 4 (shopee) sao spas que dependiam do playwright+edge renderizar e nem sempre renderizavam. o relatorio saia 'bloqueada' toda semana -- rotina que nunca respon"
+  },
+  {
+   "label": "ALERTA POS-HORARIO: UMA MENSAGEM POR CICLO, JANELA AS 8:30 E 1o CICLO CALADO (05/08/2026, a partir de um print do proprio dono). O envio era POR ORIGEM E POR TIPO: com 2 contas ML + Shopee, e cada uma podendo ter 'pronta' e 'falta NF-e', o pior caso eram SEIS mensagens a cada 5 minutos -- avisos curtos competindo entre si no chat. Tres correcoes, e cada uma resolve uma coisa diferente. (1) AGRUPAR: as origens viram SECOES de um texto so (relatorio.BlocoAlerta + texto_alerta_pos_horario). O ponto que nao pode ser perdido numa refatoracao futura: o DEDUP e a PERSISTENCIA continuam POR ORIGEM (_registrar_alerta), so o ENVIO virou um (_enviar_alerta) -- juntar os baldes faria o shipment_id ja avisado como 'falta NF-e' calar o aviso de quando a venda ficasse pronta de fato, que sao dois recados com acoes opostas (repor x imprimir). A explicacao da NF entra UMA vez por texto distinto (ML e Shopee tem motivos diferentes), nunca uma por origem. (2) JANELA AS 8:30 (ALERTA_INICIO, antes 7h): o motivo declarado do alerta sempre foi a venda que cai DEPOIS que o dono para de olhar a tela; das 7h as 8:30 ele esta no Atualizar e ja leu o aviso das 08:00, entao o alerta repetia o que ele acabara de ver. A constante virou datetime.time (a comparacao era por HORA inteira e nao suportava 8:30). (3) PRIMEIRO CICLO DO DIA CALADO (flag `iniciado` no estado): ele so REGISTRA o que ja existe. Sem isso, subir o inicio da janela teria trocado a parede de mensagens da manha por um DESPEJO UNICO com o dia inteiro -- o oposto de 'apareceu agora'. Essas vendas nao se perdem: estao no aviso das 08:00 e na tela. Efeito colateral aceito e documentado: se o bot so subir as 10h, o primeiro ciclo dele silencia o que passou -- ainda melhor que o despejo. (4) Venda antes travada por NF-e que ficou pronta vem marcada com ✅ (`liberadas`, comparando os ids novos contra o balde de NF): sem isso o mesmo SKU reaparecendo minutos depois parece duplicata, quando e a noticia de que o XML subiu. LICAO: ruido em canal de alerta nao e cosmetico -- ensina o dono a ignorar o canal, e ai ele perde a utilidade no dia em que a mensagem importar (mesma logica do falso alarme do monitor da Zebra, 2026-07-30).",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "alerta_uma_mensagem_por_ciclo",
+   "community": 0,
+   "norm_label": "alerta pos-horario: uma mensagem por ciclo, janela as 8:30 e 1o ciclo calado (05/08/2026, a partir de um print do proprio dono). o envio era por origem e por tipo: com 2 contas ml + shopee, e cada uma podendo ter 'pronta' e 'falta nf-e', o pior caso eram seis mensagens a cada 5 minutos -- avisos curtos competindo entre si no chat. tres correcoes, e cada uma resolve uma coisa diferente. (1) agrupar"
   }
  ],
  "edges": [
@@ -6295,6 +6308,66 @@
   {
    "relation": "rationale_for",
    "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "bot_telegram_alerta_no_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "bot_telegram_carregar_alertas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "bot_telegram_enviar_alerta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "bot_telegram_registrar_alerta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_uma_mensagem_por_ciclo",
+   "target": "relatorio_texto_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
    "source_file": "docs/AMAZON_SP_API.md",
    "source_location": null,
    "weight": 1.0,
@@ -6612,7 +6685,7 @@
    "source_location": null,
    "weight": 1.0,
    "source": "bot_alerta_shopee",
-   "target": "bot_telegram_dados_alerta_shopee",
+   "target": "bot_telegram",
    "confidence_score": 1.0
   },
   {
@@ -6622,7 +6695,7 @@
    "source_location": null,
    "weight": 1.0,
    "source": "bot_alerta_shopee",
-   "target": "bot_telegram_disparar_alerta",
+   "target": "bot_telegram_dados_alerta_shopee",
    "confidence_score": 1.0
   },
   {

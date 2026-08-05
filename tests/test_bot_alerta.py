@@ -38,11 +38,21 @@ def _envio(sid, dia, item_id=1):
     return {"id": item_id, "_envio": {"shipment_id": sid, "expected_date": dia}}
 
 
+def _ja_iniciado(dia="2026-07-24"):
+    """Marca o primeiro ciclo do dia como ja rodado.
+
+    O primeiro ciclo do dia e CALADO de proposito: ele so registra o que ja
+    existia (ver `job_alerta_pos_horario`). Os testes de regime partem daqui —
+    senao estariam conferindo uma mensagem que o alerta, por decisao, nao manda.
+    """
+    bot._salvar_alertas({"dia": dia, "avisados": {}, "itens": {}, "iniciado": True})
+
+
 # ------------------------------------------------------- _carregar/_salvar_alertas
 def test_carregar_alertas_comeca_vazio_sem_arquivo(monkeypatch):
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": False}
 
 
 def test_carregar_alertas_preserva_mesmo_dia(monkeypatch):
@@ -59,7 +69,7 @@ def test_carregar_alertas_reseta_quando_dia_muda(monkeypatch):
                         "itens": {"cozilatti": [{"chave": "A02", "quantidade": 1}]}})
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": False}
 
 
 # ------------------------------------------------------------ _dados_alerta_da_conta
@@ -142,8 +152,13 @@ def test_alerta_no_horario_janela():
     def as_(h, m=0):
         return datetime(2026, 7, 29, h, m, tzinfo=tz)
 
+    # A janela comeca as 8:30 -- o horario em que o dono para de olhar a tela.
+    # Antes das 8:30 ele esta no Atualizar e ja recebeu o aviso da manha (08:00):
+    # avisar ali era repetir, em varias mensagens, o que ele acabara de ler.
     assert _ALERTA_NO_HORARIO_REAL(as_(6, 59)) is False   # madrugada: dorme
-    assert _ALERTA_NO_HORARIO_REAL(as_(7, 0)) is True     # inicio inclusivo
+    assert _ALERTA_NO_HORARIO_REAL(as_(8, 0)) is False    # aviso da manha cobre
+    assert _ALERTA_NO_HORARIO_REAL(as_(8, 29)) is False   # ainda na tela
+    assert _ALERTA_NO_HORARIO_REAL(as_(8, 30)) is True    # inicio inclusivo
     assert _ALERTA_NO_HORARIO_REAL(as_(12, 30)) is True
     assert _ALERTA_NO_HORARIO_REAL(as_(20, 59)) is True   # ultimo ciclo util
     assert _ALERTA_NO_HORARIO_REAL(as_(21, 0)) is False   # fim exclusivo
@@ -189,6 +204,7 @@ def test_job_alerta_avisa_e_marca_dedup(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
                         lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],
@@ -240,6 +256,7 @@ def test_job_alerta_nao_repete_o_mesmo_envio_em_ciclos_seguintes(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
 
     def _dados(conta, avisados, hoje, avisados_nf=None):
         if 1 in avisados:
@@ -262,6 +279,7 @@ def test_job_alerta_isola_falha_por_conta(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["com_erro", "ok"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
 
     def _dados(conta, avisados, hoje, avisados_nf=None):
         if conta == "com_erro":
@@ -282,6 +300,7 @@ def test_job_alerta_falha_num_chat_nao_cala_os_outros(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
                         lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],
@@ -298,6 +317,113 @@ def test_job_alerta_falha_num_chat_nao_cala_os_outros(monkeypatch):
     ctx = _ctx([1, 2], send)
     asyncio.run(bot.job_alerta_pos_horario(ctx))
     assert enviados == [2]
+
+
+def test_primeiro_ciclo_do_dia_e_CALADO_mas_registra(monkeypatch):
+    """"Apareceu agora" (05/08/2026): o ciclo que abre a janela (08:30) nao
+    avisa — ele so marca como conhecida a venda que ja existia.
+
+    Sem isso, subir o inicio da janela teria trocado a parede de mensagens da
+    manha por um despejo unico com o dia inteiro. Essas vendas nao se perdem:
+    estao no aviso das 08:00 e na tela, que e onde o dono esteve ate ali.
+    """
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta",
+                        lambda conta, avisados, hoje, avisados_nf=None: (
+                            [_envio(1, hoje)],
+                            [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
+                                            nome="A02", quantidade=1)],
+                            [], [],
+                        ))
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert enviados == [], "o primeiro ciclo do dia nao manda mensagem"
+    dados = bot._carregar_alertas()
+    assert dados["avisados"]["cozilatti"] == [1], "mas registra, para nao avisar depois"
+    assert dados["iniciado"] is True
+
+
+def test_apos_o_primeiro_ciclo_a_venda_nova_e_avisada(monkeypatch):
+    """O outro lado da moeda: o que aparece DEPOIS da abertura vira aviso."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    vendas = {"lote": []}
+
+    def _dados(conta, avisados, hoje, avisados_nf=None):
+        novas = [v for v in vendas["lote"] if v not in avisados]
+        itens = [core.ItemPedido(order_id=v, shipment_id=v, chave=f"A0{v}",
+                                nome=f"A0{v}", quantidade=1) for v in novas]
+        return [_envio(v, hoje) for v in novas], itens, [], []
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    vendas["lote"] = [1]                       # ja existia quando a janela abriu
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+    assert enviados == []
+
+    vendas["lote"] = [1, 2]                    # esta sim apareceu agora
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+    assert len(enviados) == 1
+    assert "A02" in enviados[0][1] and "A01" not in enviados[0][1]
+
+
+def test_duas_contas_no_mesmo_ciclo_viram_UMA_mensagem(monkeypatch):
+    """O motivo da mudanca: com 2 contas ML + Shopee, e cada uma podendo ter
+    "pronta" e "falta NF-e", o pior caso eram SEIS mensagens a cada 5 minutos."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti", "gastromaq"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
+
+    def _dados(conta, avisados, hoje, avisados_nf=None):
+        sku = "A02" if conta == "cozilatti" else "A13"
+        sid = 1 if conta == "cozilatti" else 2
+        return ([_envio(sid, hoje)],
+                [core.ItemPedido(order_id=sid, shipment_id=sid, chave=sku,
+                                nome=sku, quantidade=1)],
+                [], [])
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1, "uma mensagem por ciclo, nao uma por conta"
+    texto = enviados[0][1]
+    for esperado in ("cozilatti", "A02 - 1", "gastromaq", "A13 - 1"):
+        assert esperado in texto
+    # o dedup continua por conta
+    dados = bot._carregar_alertas()
+    assert dados["avisados"]["cozilatti"] == [1]
+    assert dados["avisados"]["gastromaq"] == [2]
+
+
+def test_venda_liberada_da_NF_vem_marcada(monkeypatch):
+    """A venda avisada antes como "falta NF-e" e agora pronta ganha o ✅ — sem
+    ele, o mesmo SKU reaparecendo minutos depois parece duplicata."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    bot._salvar_alertas({"dia": "2026-07-24", "iniciado": True, "itens": {},
+                        "avisados": {"cozilatti" + bot.SUFIXO_ALERTA_NF: [7]}})
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta",
+                        lambda conta, avisados, hoje, avisados_nf=None: (
+                            [_envio(7, hoje)],
+                            [core.ItemPedido(order_id=7, shipment_id=7, chave="A11",
+                                            nome="A11", quantidade=1)],
+                            [], [],
+                        ))
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert "✅" in enviados[0][1]
 
 
 def test_job_alerta_sem_contas_nao_quebra(monkeypatch):
@@ -333,6 +459,7 @@ def test_job_alerta_avisa_shopee_quando_configurada(monkeypatch, tmp_path):
     shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(core, "listar_contas", lambda: [])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
     monkeypatch.setattr(bot, "_dados_alerta_da_conta", lambda conta, avisados, hoje, avisados_nf=None: ([], [], [], []))
     monkeypatch.setattr(bot, "_dados_alerta_shopee",
                         lambda avisados, hoje, avisados_nf=None: (
@@ -347,7 +474,7 @@ def test_job_alerta_avisa_shopee_quando_configurada(monkeypatch, tmp_path):
     asyncio.run(bot.job_alerta_pos_horario(ctx))
 
     assert len(enviados) == 1
-    assert "🔔 Venda Shopee" in enviados[0][1]
+    assert "Shopee" in enviados[0][1] and "A02 - 2" in enviados[0][1]
     assert "A02 - 2" in enviados[0][1]
     dados = bot._carregar_alertas()
     assert dados["avisados"]["Shopee"] == ["SN1"]
@@ -359,6 +486,7 @@ def test_job_alerta_shopee_isola_falha_sem_impedir_ml(monkeypatch, tmp_path):
     shopee.ARQUIVO_CRED.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado()
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
                         lambda conta, avisados, hoje, avisados_nf=None: (
                             [_envio(1, hoje)],

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import html
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 
 import separador_etiquetas_ml as core
@@ -96,27 +97,71 @@ def texto_bom_dia(prontos: list, hoje: str, amanha: str) -> str:
     return f"{cabecalho}\n\n{texto_resumo(prontos, hoje, amanha)}"
 
 
-def texto_alerta_pos_horario(conta: str, itens: list, *, aviso: str = "") -> str:
-    """Alerta de venda nova com despacho HOJE, detectada pelo poll automatico do
-    bot — fora do fluxo normal de 'Atualizar' da tela. Mostra SKU + quantidade
-    total (somada por SKU, sem o numero do envio — o dono precisa saber O QUE
-    repor com o fornecedor, nao qual pedido especifico).
+def _linhas_por_sku(itens: list) -> list[str]:
+    """SKU + quantidade SOMADA por SKU, na ordem em que apareceram.
 
-    `aviso` (opcional) e uma linha acrescentada no fim, para o caso em que a
-    venda existe mas ainda NAO da para imprimir ("Informe a NF-e"): sem ela o
-    recado seria identico ao de uma venda pronta, e o dono iria imprimir uma
-    etiqueta que o ML nao libera."""
-    cabecalho = f"🔔 Venda {conta}" if conta else "🔔 Venda nova"
+    Sem o numero do envio de proposito: o dono precisa saber O QUE repor com o
+    fornecedor, nao qual pedido especifico."""
     por_sku: dict[str, int] = defaultdict(int)
     ordem: list[str] = []
     for it in itens:
         if it.chave not in por_sku:
             ordem.append(it.chave)
         por_sku[it.chave] += it.quantidade
-    linhas = [cabecalho] + [f"{chave} - {por_sku[chave]}" for chave in ordem]
-    if aviso:
-        linhas += ["", aviso]
-    return "\n".join(linhas)
+    return [f"{chave} - {por_sku[chave]}" for chave in ordem]
+
+
+@dataclass(frozen=True)
+class BlocoAlerta:
+    """Uma origem (conta ML ou Shopee) dentro de UM ciclo do alerta."""
+    rotulo: str                 # "Cozilatti", "Shopee"; "" quando ha uma so
+    itens: list
+    nf_pendente: bool = False   # vai para a secao "ainda sem NF-e"
+    aviso: str = ""             # explicacao da secao NF (difere ML x Shopee)
+    liberadas: bool = False     # inclui venda que estava esperando NF-e
+
+
+def texto_alerta_pos_horario(blocos: list) -> str:
+    """UMA mensagem por ciclo do alerta, com os blocos em secoes.
+
+    Antes era uma mensagem POR ORIGEM e POR TIPO: com 2 contas ML + Shopee, e
+    cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram SEIS
+    mensagens a cada 5 minutos — e o chat virava uma parede de avisos curtos
+    que competiam entre si (reclamacao do dono, com print, em 05/08/2026).
+    Agrupar nao perde informacao nenhuma: o dedup e a persistencia continuam
+    por origem, so o ENVIO e que passou a ser um so.
+
+    A secao de NF-e vem por ultimo e leva a explicacao UMA vez (antes ela se
+    repetia inteira em cada mensagem). `liberadas` marca a origem em que uma
+    venda antes travada por NF-e agora esta pronta: sem essa linha, o mesmo SKU
+    aparecendo de novo minutos depois parece duplicata, quando e a boa noticia
+    de que o XML subiu."""
+    prontos = [b for b in blocos if not b.nf_pendente and b.itens]
+    pendentes = [b for b in blocos if b.nf_pendente and b.itens]
+    if not prontos and not pendentes:
+        return ""
+
+    partes: list[str] = []
+    if prontos:
+        partes.append("🔔 Venda nova para hoje" if len(prontos) == 1 and not prontos[0].rotulo
+                      else "🔔 Vendas novas para hoje")
+        for b in prontos:
+            corpo = ([b.rotulo] if b.rotulo else []) + _linhas_por_sku(b.itens)
+            if b.liberadas:
+                corpo.append("✅ inclui venda que estava esperando a NF-e")
+            partes.append("\n".join(corpo))
+
+    if pendentes:
+        partes.append("⚠️ Ainda sem NF-e — não dá para imprimir")
+        for b in pendentes:
+            corpo = ([b.rotulo] if b.rotulo else []) + _linhas_por_sku(b.itens)
+            partes.append("\n".join(corpo))
+        # A explicacao entra uma vez por texto distinto (ML e Shopee tem
+        # motivos diferentes), nunca uma vez por origem.
+        for aviso in dict.fromkeys(b.aviso for b in pendentes if b.aviso):
+            partes.append(aviso)
+
+    return "\n\n".join(partes)
 
 
 def texto_resumo_vendas_apos(itens_por_conta: dict, *, agora=None,

@@ -338,20 +338,22 @@ INTERVALO_ALERTA_SEGUNDOS = 5 * 60
 # ha 6+ dias que so agora ficou pronto pra hoje) ainda aparece no aviso da
 # manha e em qualquer Atualizar manual, que seguem com a janela cheia.
 DIAS_JANELA_ALERTA = 5
-# Janela de HORARIO (Brasilia) em que o alerta roda: o motivo do alerta e a
-# venda que cai depois das 8:30 e precisa de reposicao no MESMO dia — de
-# madrugada nao ha o que fazer com o aviso (a venda da noite aparece no aviso
-# da manha), e cada ciclo fora de hora e so gasto de API. Fora da janela o job
-# acorda e volta a dormir sem chamada nenhuma.
-ALERTA_HORA_INICIO = 7    # inclusive (07:00)
-ALERTA_HORA_FIM = 21      # exclusive (roda ate 20:59)
+# Janela de HORARIO (Brasilia) em que o alerta roda. O motivo do alerta e a
+# venda que cai DEPOIS QUE O DONO PARA DE OLHAR A TELA (~8:30) e ainda precisa
+# de reposicao no MESMO dia. Comecar antes disso era ruido: das 7h as 8:30 ele
+# esta no Atualizar, e o aviso da manha (job_bom_dia, 08:00) ja deu o total do
+# dia — o alerta repetia, em varias mensagens, o que ele acabara de ler.
+# De madrugada nao ha o que fazer com o aviso, e cada ciclo fora de hora e so
+# gasto de API: fora da janela o job acorda e volta a dormir sem chamada nenhuma.
+ALERTA_INICIO = time(8, 30)   # inclusive
+ALERTA_FIM = time(21, 0)      # exclusive
 
 
 def _alerta_no_horario(agora=None) -> bool:
     """True se o relogio de Brasilia esta dentro da janela em que o alerta e
-    util (ver ALERTA_HORA_INICIO/FIM)."""
-    hora = (agora or datetime.now(core.TZ_BR)).hour
-    return ALERTA_HORA_INICIO <= hora < ALERTA_HORA_FIM
+    util (ver ALERTA_INICIO/ALERTA_FIM)."""
+    hora = (agora or datetime.now(core.TZ_BR)).time()
+    return ALERTA_INICIO <= hora < ALERTA_FIM
 
 
 def _carregar_alertas() -> dict:
@@ -361,13 +363,19 @@ def _carregar_alertas() -> dict:
     {conta: [{chave, quantidade}, ...]}}) — usados pelo /vendasapos pra
     juntar tudo sem refazer nenhuma chamada de API. Reseta sozinho quando o
     dia muda (mesma filosofia do estado de impressao — nao precisa "limpar"
-    nada na mao; um dia novo comeca com "hoje" vazio)."""
+    nada na mao; um dia novo comeca com "hoje" vazio).
+
+    Guarda tambem `iniciado`: se o PRIMEIRO ciclo do dia ja rodou (ver
+    `job_alerta_pos_horario`). Sem essa marca, o ciclo que abre a janela
+    consideraria "nova" toda venda pronta do dia e despejaria o lote inteiro
+    numa mensagem — justamente o oposto de "apareceu agora"."""
     dados = core._ler_json(ARQUIVO_ALERTAS)
     hoje = core._hoje_br()
     if dados.get("dia") != hoje:
-        return {"dia": hoje, "avisados": {}, "itens": {}}
+        return {"dia": hoje, "avisados": {}, "itens": {}, "iniciado": False}
     dados.setdefault("avisados", {})
     dados.setdefault("itens", {})
+    dados.setdefault("iniciado", False)
     return dados
 
 
@@ -461,29 +469,34 @@ def _dados_alerta_shopee(avisados: set, hoje: str, avisados_nf: set | None = Non
     return shopee.pedidos_prontos_novos(cred, token, avisados, hoje, avisados_nf)
 
 
-async def _disparar_alerta(context, cfg: dict, dados: dict,
-                           chave_estado: str, itens: list, ids_novos: list,
-                           aviso: str = "") -> None:
-    """Monta o texto, manda pra todos os chats autorizados e atualiza `dados`
-    (dedup + itens) IN-PLACE. `chave_estado` e a chave usada em
-    dados['avisados']/['itens'] — nome da conta ML, ou CHAVE_ALERTA_SHOPEE.
-    `ids_novos` sao os identificadores pra dedup (shipment_id numerico no
-    ML, order_sn string na Shopee) — o chamador decide o tipo, esta funcao
-    so acumula. Compartilhada entre ML e Shopee pra nao duplicar o envio +
-    a persistencia em dois lugares."""
-    texto = relatorio.texto_alerta_pos_horario(chave_estado, itens, aviso=aviso)
+def _registrar_alerta(dados: dict, chave_estado: str, itens: list,
+                      ids_novos: list) -> None:
+    """Atualiza o estado (dedup + itens) IN-PLACE, sem enviar nada.
+
+    Separado do envio de proposito: o registro continua sendo POR ORIGEM
+    (`chave_estado` e o nome da conta ML ou CHAVE_ALERTA_SHOPEE) enquanto a
+    mensagem passou a ser UMA por ciclo. E e o registro sozinho que o primeiro
+    ciclo do dia usa, para marcar como conhecida a venda que ja existia sem
+    avisar ninguem. `ids_novos` sao os identificadores do dedup (shipment_id
+    numerico no ML, order_sn string na Shopee) — o chamador decide o tipo."""
+    dados["avisados"].setdefault(chave_estado, [])
+    dados["avisados"][chave_estado].extend(ids_novos)
+    dados["itens"].setdefault(chave_estado, [])
+    dados["itens"][chave_estado].extend(
+        {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
+
+
+async def _enviar_alerta(context, cfg: dict, texto: str) -> None:
+    """Manda o texto do ciclo para todos os chats autorizados. Isola falha por
+    chat: um chat com problema nao pode calar o aviso nos outros."""
+    if not texto:
+        return
     for chat_id in cfg["chat_ids"]:
         try:
             for bloco in relatorio.dividir_mensagem(texto):
                 await context.bot.send_message(chat_id, bloco)
         except Exception:
             log.exception("Falha ao enviar alerta pos-horario para o chat %s", chat_id)
-
-    dados["avisados"].setdefault(chave_estado, [])
-    dados["avisados"][chave_estado].extend(ids_novos)
-    dados["itens"].setdefault(chave_estado, [])
-    dados["itens"][chave_estado].extend(
-        {"chave": it.chave, "quantidade": it.quantidade} for it in itens)
 
 
 async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -494,14 +507,37 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     pronto pra despachar HOJE (ready_to_print no ML, READY_TO_SHIP na Shopee).
     Isola falha por conta/loja: uma com erro nao impede o aviso das demais
     (mesma filosofia do ads-monitor/coletar.py). Fora da janela de horario
-    (ver _alerta_no_horario) e um no-op sem chamada de API nenhuma."""
+    (ver _alerta_no_horario) e um no-op sem chamada de API nenhuma.
+
+    UMA MENSAGEM POR CICLO (05/08/2026): as origens viram secoes de um texto
+    so. Antes era uma mensagem por origem E por tipo — com 2 contas ML +
+    Shopee, ate SEIS mensagens a cada 5 minutos, e o chat virava uma parede de
+    avisos curtos. O dedup e a persistencia continuam POR ORIGEM; so o envio
+    passou a ser um.
+
+    PRIMEIRO CICLO DO DIA E CALADO: ele so registra o que ja existe. Sem isso,
+    o ciclo que abre a janela (08:30) trataria como "nova" toda venda pronta do
+    dia e mandaria o lote inteiro numa mensagem — o oposto de "apareceu agora".
+    Essas vendas nao se perdem: estao no aviso da manha (08:00) e na tela, que
+    e onde o dono esteve ate ali. Se o bot so subir mais tarde, o primeiro
+    ciclo dele silencia o que ja passou — pelo mesmo motivo, e melhor que um
+    despejo do dia inteiro de uma vez."""
     if not _alerta_no_horario():
         return
     cfg = context.bot_data["cfg"]
     contas = core.listar_contas() or [""]
     hoje = core._hoje_br()
     dados = await asyncio.to_thread(_carregar_alertas)
+    primeiro_ciclo = not dados.get("iniciado")
+    blocos: list = []
     mudou = False
+
+    def _acrescentar(rotulo, itens, *, nf=False, aviso="", liberadas=False):
+        """So entra na mensagem fora do primeiro ciclo — o registro no estado
+        acontece sempre (ver o docstring)."""
+        if not primeiro_ciclo and itens:
+            blocos.append(relatorio.BlocoAlerta(rotulo, itens, nf_pendente=nf,
+                                                aviso=aviso, liberadas=liberadas))
 
     for conta in contas:
         avisados = set(dados["avisados"].get(conta, []))
@@ -514,18 +550,23 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             log.exception("Falha ao checar alerta pos-horario da conta %r", conta)
             continue
         if novos_pedidos:
-            await _disparar_alerta(context, cfg, dados, conta, itens,
-                                   [p["_envio"]["shipment_id"] for p in novos_pedidos])
+            ids = [p["_envio"]["shipment_id"] for p in novos_pedidos]
+            # Venda que ja tinha sido avisada como "falta NF-e" e agora esta
+            # pronta: sem marcar, o mesmo SKU reaparecendo minutos depois
+            # parece duplicata, quando e a noticia de que o XML subiu.
+            _acrescentar(conta or "Mercado Livre", itens,
+                         liberadas=any(i in avisados_nf for i in ids))
+            _registrar_alerta(dados, conta, itens, ids)
             mudou = True
-        # "Informe a NF-e" vai num aviso SEPARADO, com dedup proprio (chave
-        # `conta + SUFIXO`). Se dividisse o balde com o ready_to_print, o
-        # shipment_id ja avisado agora calaria o aviso de quando a venda
-        # ficasse pronta de fato — e sao dois recados diferentes: um pede
-        # reposicao, o outro libera a impressao.
+        # "Informe a NF-e" tem dedup proprio (chave `conta + SUFIXO`). Se
+        # dividisse o balde com o ready_to_print, o shipment_id ja avisado
+        # calaria o aviso de quando a venda ficasse pronta de fato — sao dois
+        # recados diferentes: um pede reposicao, o outro libera a impressao.
         if novos_nf:
-            await _disparar_alerta(context, cfg, dados, chave_nf, itens_nf,
-                                   [p["_envio"]["shipment_id"] for p in novos_nf],
-                                   aviso=AVISO_NF_PENDENTE)
+            _acrescentar(conta or "Mercado Livre", itens_nf, nf=True,
+                         aviso=AVISO_NF_PENDENTE)
+            _registrar_alerta(dados, chave_nf, itens_nf,
+                              [p["_envio"]["shipment_id"] for p in novos_nf])
             mudou = True
 
     # Shopee e independente das contas ML (loja unica); pula em silencio se
@@ -542,15 +583,25 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             log.exception("Falha ao checar alerta pos-horario da Shopee")
             novos_shopee, itens_shopee, nf_shopee, itens_nf_shopee = [], [], [], []
         if novos_shopee:
-            await _disparar_alerta(context, cfg, dados, CHAVE_ALERTA_SHOPEE, itens_shopee,
-                                   [d["order_sn"] for d in novos_shopee])
+            sns = [d["order_sn"] for d in novos_shopee]
+            _acrescentar(CHAVE_ALERTA_SHOPEE, itens_shopee,
+                         liberadas=any(s in avisados_nf_shopee for s in sns))
+            _registrar_alerta(dados, CHAVE_ALERTA_SHOPEE, itens_shopee, sns)
             mudou = True
         if nf_shopee:
-            await _disparar_alerta(context, cfg, dados, chave_nf_shopee, itens_nf_shopee,
-                                   [d["order_sn"] for d in nf_shopee],
-                                   aviso=AVISO_NF_SHOPEE)
+            _acrescentar(CHAVE_ALERTA_SHOPEE, itens_nf_shopee, nf=True,
+                         aviso=AVISO_NF_SHOPEE)
+            _registrar_alerta(dados, chave_nf_shopee, itens_nf_shopee,
+                              [d["order_sn"] for d in nf_shopee])
             mudou = True
 
+    await _enviar_alerta(context, cfg, relatorio.texto_alerta_pos_horario(blocos))
+
+    if primeiro_ciclo:
+        dados["iniciado"] = True
+        mudou = True
+        log.info("Primeiro ciclo do dia: vendas ja existentes marcadas como "
+                 "conhecidas, sem avisar (a partir daqui, so o que aparecer agora).")
     if mudou:
         await asyncio.to_thread(_salvar_alertas, dados)
 

@@ -478,6 +478,24 @@ em 2º plano.
   meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
   pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
   libera a trava; o `finally` libera mesmo se a confirmação estourar.
+- **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
+  (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
+  Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6
+  mensagens a cada 5 min**, e o chat virava parede (reclamação do dono, com
+  print). Hoje as origens viram **seções** de um texto só
+  (`relatorio.BlocoAlerta` + `texto_alerta_pos_horario`), com a seção de NF-e no
+  fim e a explicação **uma vez** (antes repetia inteira em cada mensagem).
+  **O dedup e a persistência continuam POR ORIGEM** (`_registrar_alerta`); só o
+  envio (`_enviar_alerta`) passou a ser um — misturar os baldes faria o
+  `shipment_id` já avisado calar o "está pronta" de depois. A janela começa às
+  **8:30** (`ALERTA_INICIO`, antes 7h): é a hora em que o dono para de olhar a
+  tela — antes disso ele está no Atualizar e já leu o aviso das 08:00, então o
+  alerta repetia o que ele acabara de ver. E o **primeiro ciclo do dia não
+  envia**: só registra o que já existe (`iniciado` no estado). Sem isso, subir a
+  janela trocaria a parede de mensagens por um despejo único com o dia inteiro —
+  o oposto de "apareceu agora"; essas vendas estão no aviso da manhã e na tela.
+  Venda antes travada por NF-e que ficou pronta vem marcada com **✅** (`liberadas`):
+  sem isso o mesmo SKU reaparecendo minutos depois parece duplicata.
 - **Alerta pós-horário do bot (venda nova pronta pra hoje, ML + Shopee):**
   motivado por um problema real do dono — venda que cai depois das 8:30
   (quando ele já parou de checar a tela) só é vista tarde demais, e o
