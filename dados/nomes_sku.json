@@ -159,7 +159,7 @@
   "ex50iF": "50 CM 220 INOX",
   "CEEU": "EMBUTIR 110",
   "F4IF": "4B FORNO VIDRO",
-  "m190x70": "190X70 INOX",
+  "m190x70": "190X70",
   "ME50": "50X55",
   "M12070INX": "120X70 INOX",
   "m150x55": "150X55 EPOXI",
@@ -200,5 +200,6 @@
   "F6BPMGN": "6 BOCAS BP MGN",
   "ENG60": "ENGENHO 3 MOENDAS MGN",
   "prateleira": "PRATELEIRA 6 NÍVEIS",
-  "A40 - P": "2L JL + PP"
+  "A40 - P": "2L JL + PP",
+  "F1BPMGN": "1B BP MGN"
 }
