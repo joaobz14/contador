@@ -25,9 +25,9 @@
   "semantic_hash": "985a368f39808c2974ce2acb4e2a4eb9553205c8"
  },
  ".github/workflows/testes.yml": {
-  "mtime": 1784923251.5782356,
-  "ast_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe",
-  "semantic_hash": "0312b5cef72a0ed850ece53c2eefdb3bd303cefe"
+  "mtime": 1785926757.0137262,
+  "ast_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988",
+  "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
   "mtime": 1785885518.1683638,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785885634.89636,
-  "ast_hash": "750ca1f6941e5faf4c0e83a72454e10b4d14fcd4",
-  "semantic_hash": "750ca1f6941e5faf4c0e83a72454e10b4d14fcd4"
+  "mtime": 1785888434.9722476,
+  "ast_hash": "fe655fc23eb96710d3858ffe243c61c40eec4c7d",
+  "semantic_hash": "fe655fc23eb96710d3858ffe243c61c40eec4c7d"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -355,9 +355,9 @@
   "semantic_hash": "9edf246f75e2d73551be4999041983ad6805a26e"
  },
  "separador_gui.py": {
-  "mtime": 1785762829.3379242,
-  "ast_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02",
-  "semantic_hash": "8d3b4dc4b238e8fe64dda137640c367d96958d02"
+  "mtime": 1785926699.7057273,
+  "ast_hash": "a982fac9d8182be75d92bc8129839009a52c5ffc",
+  "semantic_hash": "a982fac9d8182be75d92bc8129839009a52c5ffc"
  },
  "shopee_api.py": {
   "mtime": 1785868767.6113226,
@@ -489,6 +489,11 @@
   "ast_hash": "5112c6bba2580b68d30ed6d5d0393cf4d05bfedd",
   "semantic_hash": "5112c6bba2580b68d30ed6d5d0393cf4d05bfedd"
  },
+ "tests/test_gui_abertura.py": {
+  "mtime": 1785926809.881725,
+  "ast_hash": "4f1742a65eb0fe37314419a579a501812f85b33e",
+  "semantic_hash": "4f1742a65eb0fe37314419a579a501812f85b33e"
+ },
  "tests/test_gui_adocao.py": {
   "mtime": 1784202399.1648724,
   "ast_hash": "45d9d8a2fd46da0bce1f33608c448cfdd1ca678b",
@@ -595,9 +600,9 @@
   "semantic_hash": "922555f7a474a39db423a74dfb020108e3cdd907"
  },
  "tools/gui_screenshot.py": {
-  "mtime": 1784229860.1942687,
-  "ast_hash": "1f41100b119f2c9fcd9e746ce9f0a3a984b0efca",
-  "semantic_hash": "1f41100b119f2c9fcd9e746ce9f0a3a984b0efca"
+  "mtime": 1785926743.5297265,
+  "ast_hash": "2c2ff49f6af50ec5ec98aa9f647d188dc5d2eeec",
+  "semantic_hash": "2c2ff49f6af50ec5ec98aa9f647d188dc5d2eeec"
  },
  "tools/setup_gui_tests.sh": {
   "mtime": 1783442165.7068965,

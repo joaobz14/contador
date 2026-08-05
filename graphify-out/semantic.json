@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 353,
- "edge_count": 655,
+ "node_count": 354,
+ "edge_count": 660,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4053,6 +4053,19 @@
    "id": "coletor_ads_nao_sei_e_isolamento",
    "community": 0,
    "norm_label": "coletor do ads: 'nao sei' e isolamento por conta (2026-08-05, achados de uma auditoria externa conferida no codigo). tres defeitos da mesma familia, todos ja conhecidos do projeto e nao aplicados aqui. (1) isolamento prometido e nao entregue: o docstring de coletar_conta dizia 'nunca levanta -- uma conta ruim nao pode derrubar as demais', mas o try/except cobria so a autenticacao; advertiser, laco"
+  },
+  {
+   "label": "FALHA SILENCIOSA NA ABERTURA DA TELA E O GUARDIAO QUE NAO GUARDAVA (2026-08-05, auditoria dos arquivos 'bestas'). Dois defeitos da MESMA causa: o Tk CAPTURA excecao de callback (after/clique/trace), imprime no stderr e SEGUE -- e sob `pythonw` (como o atalho sobe a tela) e sob o job da CI nao ha ninguem lendo esse stderr. (1) NA TELA: `main()` eram quatro linhas sem try/except e sem log; uma falha ao montar fazia o duplo-clique nao produzir NADA -- sem janela, sem mensagem, sem linha no separador.log. Identico ao incidente do bot_config.json (2026-08-04), mas no app que abre toda manha, e com o mesmo agravante: sob janela oculta, 'imprimir o erro' nao conta como reportar. Hoje `_falha_na_abertura` grava no separador.log E mostra caixa de dialogo (o log e a garantia, a caixa e o extra: sem display ela tambem estoura, e por isso vem depois), e `_erro_de_callback` manda para o log o que o Tk engoliria em tempo de uso -- aditivo, nao muda o que a tela faz. (2) NA CI: o job gui-smoke existia para pegar 'erro de montagem/renderizacao na inicializacao', mas pegava so erro de CONSTRUCAO; erro dentro de callback deixava tools/gui_screenshot.py tirar o screenshot e sair com codigo 0 -- job VERDE com a tela quebrada, e o bug seguia para o main e para a maquina de operacao. Reproduzido antes de corrigir. Hoje o script instala report_callback_exception, acumula as falhas e sai 1; o screenshot e tirado ANTES de reprovar (com a tela quebrada a imagem e a primeira pista, e sumiria se o script morresse antes). E a CI ganhou um passo `--autoteste` que agenda um callback que estoura de proposito e EXIGE que o script reprove: guardiao sem prova de que reprova nao e guardiao, e a forma de descobrir que ele parou de guardar nao pode ser um bug chegando na producao. CRITERIO DA AUDITORIA que achou os dois: procurar por INVISIBILIDADE (onde uma falha nao apareceria para ninguem), nao por complexidade -- foi o que o incidente do bot_config ensinou, e rende mais que varrer o codigo por padroes.",
+   "file_type": "rationale",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "falha_silenciosa_na_abertura_da_tela",
+   "community": 0,
+   "norm_label": "falha silenciosa na abertura da tela e o guardiao que nao guardava (2026-08-05, auditoria dos arquivos 'bestas'). dois defeitos da mesma causa: o tk captura excecao de callback (after/clique/trace), imprime no stderr e segue -- e sob `pythonw` (como o atalho sobe a tela) e sob o job da ci nao ha ninguem lendo esse stderr. (1) na tela: `main()` eram quatro linhas sem try/except e sem log; uma falha"
   }
  ],
  "edges": [
@@ -5197,6 +5210,16 @@
    "weight": 1.0,
    "source": "ext_zebra_app",
    "target": "ext_zebra"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "falha_silenciosa_na_abertura_da_tela",
+   "target": "config_bot_invalida_silenciosa",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -7298,6 +7321,46 @@
    "weight": 1.0,
    "source": "estado_trava_processos",
    "target": "estado_trava",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "falha_silenciosa_na_abertura_da_tela",
+   "target": "separador_gui_erro_de_callback",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "falha_silenciosa_na_abertura_da_tela",
+   "target": "separador_gui_falha_na_abertura",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "falha_silenciosa_na_abertura_da_tela",
+   "target": "separador_gui_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "separador_gui.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "falha_silenciosa_na_abertura_da_tela",
+   "target": "tools_gui_screenshot",
    "confidence_score": 1.0
   },
   {

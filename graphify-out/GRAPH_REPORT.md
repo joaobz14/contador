@@ -51,6 +51,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — a tela que não abre sem deixar rastro, e o guardião que não
+  guardava.** Auditoria feita por um critério novo: procurar por
+  **invisibilidade** (onde uma falha não apareceria para ninguém), não por
+  complexidade — o que o incidente do `bot_config.json` ensinou. Dois achados,
+  mesma causa: o Tk **captura** exceção de callback (`after`/clique/`trace`),
+  imprime no stderr e segue — e nem sob `pythonw` (como o atalho sobe a tela)
+  nem no job da CI existe alguém lendo esse stderr. **(1) Na tela:** `main()`
+  eram quatro linhas sem `try/except` e sem log; falha ao montar fazia o
+  duplo-clique não produzir **nada**. Idêntico ao incidente do bot, no app que
+  abre toda manhã. **(2) Na CI:** o `gui-smoke` pegava só erro de **construção**
+  — erro em callback deixava o `gui_screenshot.py` tirar o screenshot e sair com
+  0, job **verde** com a tela quebrada (reproduzido antes de corrigir). Hoje o
+  script instala `report_callback_exception` e reprova, **com o screenshot
+  tirado antes** (a imagem é a primeira pista e sumiria se ele morresse antes),
+  e a CI ganhou um passo `--autoteste` que exige que ele reprove: guardião sem
+  prova de que reprova não é guardião, e descobrir que ele parou de guardar não
+  pode depender de um bug chegar na produção. Novo nó
+  `falha_silenciosa_na_abertura_da_tela`.
+  Depois do `--update`: **1758 nós, 3324 arestas, 0 órfãs**.
 - **2026-08-05 — coletor do Ads: "não sei" e isolamento por conta.** Três
   defeitos da mesma família, todos já conhecidos do projeto e nunca aplicados
   nesta pasta. (1) `coletar_conta` **prometia no docstring** um isolamento que

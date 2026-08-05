@@ -5,6 +5,12 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Corrigido
+- **Quando a tela não abre, agora dá para saber por quê.** O atalho sobe o
+  programa sem janela preta — então, se algo quebrasse na abertura, o
+  duplo-clique não fazia **nada**: sem tela, sem mensagem, sem nenhum registro.
+  Agora aparece uma caixa de erro dizendo o que houve, e o erro completo fica
+  no `logs/separador.log`. Erros que acontecem com a tela já aberta (e que antes
+  se perdiam) também passam a ser registrados lá.
 - **A coleta diária do Product Ads não anuncia mais sucesso quando falha.**
   Quando o Mercado Livre não respondia à busca de campanhas, o coletor gravava
   o dia como "nenhuma campanha", dizia que tinha dado certo e saía com código de
