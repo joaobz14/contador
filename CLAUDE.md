@@ -772,6 +772,17 @@ em 2º plano.
   como **Postagem (drop-off)** via `ship_order` — sempre essa opção, nunca buyer-pickup.
   `info_needed.dropoff` lista os campos exigidos (geralmente vazio; às vezes
   `branch_id`/`sender_real_name`).
+- **Entrega Instantânea NÃO se aplica — decisão do dono, não achado técnico
+  (05/08/2026).** A Shopee anunciou a iniciativa por e-mail (mercados incluindo
+  BR) pedindo que apps de fulfillment suportem o fluxo. O modelo é incompatível
+  por definição com a operação: Instant Delivery depende de um **rider que a
+  Shopee despacha para buscar na porta do vendedor** logo após a venda; o dono
+  **leva os pacotes num ponto de coleta** (Postagem/drop-off, a cláusula acima) —
+  são duas logísticas diferentes, não uma opção que se liga. `python
+  shopee_api.py canais` existe como diagnóstico (`v2.logistics.get_channel_list`,
+  `service_type_identifier == "instant"`), mas a resposta já é conhecida por
+  fora da API: não rode para "confirmar", rode só se o **modelo de envio**
+  mudar algum dia.
 - **Já organizado ≠ sem drop-off:** um pedido já organizado (no painel, ou pelo
   lote) tem `info_needed={}` até o AWB sair. `organizar_envio` consulta
   `envio_ja_arranjado(param)` **antes** de recusar: se já arranjado, **pula o

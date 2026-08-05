@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1785929531.7174184,
-  "ast_hash": "15df22dd4f72be6b3a2e0bedfce53ea4f2e5558a",
-  "semantic_hash": "15df22dd4f72be6b3a2e0bedfce53ea4f2e5558a"
+  "mtime": 1785938064.1242082,
+  "ast_hash": "730e2166518489128e60eda5d6ca54830724be95",
+  "semantic_hash": "730e2166518489128e60eda5d6ca54830724be95"
  },
  "CLAUDE.md": {
-  "mtime": 1785929531.7161262,
-  "ast_hash": "38964a5eb747c31548e313524659038598ba84c2",
-  "semantic_hash": "38964a5eb747c31548e313524659038598ba84c2"
+  "mtime": 1785938054.1358879,
+  "ast_hash": "7145a71a322790e50d85deb73cc3033e54ac1412",
+  "semantic_hash": "7145a71a322790e50d85deb73cc3033e54ac1412"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -90,14 +90,14 @@
   "semantic_hash": "1d7fbecd07d57fb82b1adcbbe7458c083c30c098"
  },
  "dados/nomes_sku.json": {
-  "mtime": 1785854718.9989717,
-  "ast_hash": "a974228e3d890a14874136470bc47954b73d7ae4",
-  "semantic_hash": "a974228e3d890a14874136470bc47954b73d7ae4"
+  "mtime": 1785933863.773306,
+  "ast_hash": "16ff9230ce77b26af0f5d6a037e5ac6ef73a64af",
+  "semantic_hash": "16ff9230ce77b26af0f5d6a037e5ac6ef73a64af"
  },
  "dados/skus_por_anuncio.json": {
-  "mtime": 1785854718.9989717,
-  "ast_hash": "7726c65d8aa0e8bd46e7e5c1d61f44883e0c9372",
-  "semantic_hash": "7726c65d8aa0e8bd46e7e5c1d61f44883e0c9372"
+  "mtime": 1785933863.773306,
+  "ast_hash": "4f1d979e03f728f541b95451f46176d9208caaf0",
+  "semantic_hash": "4f1d979e03f728f541b95451f46176d9208caaf0"
  },
  "docs/AMAZON_SP_API.md": {
   "mtime": 1784160592.696835,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785929542.9324458,
-  "ast_hash": "4dce3314044fe7b48386a471665207294402e385",
-  "semantic_hash": "4dce3314044fe7b48386a471665207294402e385"
+  "mtime": 1785933848.3898811,
+  "ast_hash": "55451292353af4bb805f575a3232d507c01d4655",
+  "semantic_hash": "55451292353af4bb805f575a3232d507c01d4655"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785411736.8780603,
@@ -360,9 +360,9 @@
   "semantic_hash": "a982fac9d8182be75d92bc8129839009a52c5ffc"
  },
  "shopee_api.py": {
-  "mtime": 1785868767.6113226,
-  "ast_hash": "9af103667c23da0ec41c67a8df2da130b28ed329",
-  "semantic_hash": "9af103667c23da0ec41c67a8df2da130b28ed329"
+  "mtime": 1785937829.879893,
+  "ast_hash": "4ea4bf9d950c7a75b6a9d7af68bb49799c19ac46",
+  "semantic_hash": "4ea4bf9d950c7a75b6a9d7af68bb49799c19ac46"
  },
  "tests/conftest.py": {
   "mtime": 1783442165.6975513,
