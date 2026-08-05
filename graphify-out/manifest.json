@@ -45,14 +45,14 @@
   "semantic_hash": "c2bf831806b90a05e1dde31c8846818223b20c0a"
  },
  "ads-monitor/README.md": {
-  "mtime": 1784916367.2070236,
-  "ast_hash": "038f47f18ff00d541d11d36dfb62902207630a11",
-  "semantic_hash": "038f47f18ff00d541d11d36dfb62902207630a11"
+  "mtime": 1785888377.8202496,
+  "ast_hash": "e2c19b65873dc5ed3610bfea9401ceed3a4fb1f9",
+  "semantic_hash": "e2c19b65873dc5ed3610bfea9401ceed3a4fb1f9"
  },
  "ads-monitor/coletar.py": {
-  "mtime": 1784827818.4783335,
-  "ast_hash": "0f8fbaca9f192204c64f7f6f26c76118fd5c1fa7",
-  "semantic_hash": "0f8fbaca9f192204c64f7f6f26c76118fd5c1fa7"
+  "mtime": 1785888208.7082553,
+  "ast_hash": "b223d6e6b87abfd9615cceaf04a411507d3be692",
+  "semantic_hash": "b223d6e6b87abfd9615cceaf04a411507d3be692"
  },
  "ads-monitor/narrar.py": {
   "mtime": 1784916367.2070236,
@@ -370,9 +370,9 @@
   "semantic_hash": "d0e874f000f8d62b7494dfff2fd9cd33f445c118"
  },
  "tests/test_ads_monitor_coletar.py": {
-  "mtime": 1784827818.4821675,
-  "ast_hash": "076ae2b8a43bf6717b3d9456afca4878425a4b4f",
-  "semantic_hash": "076ae2b8a43bf6717b3d9456afca4878425a4b4f"
+  "mtime": 1785888336.729102,
+  "ast_hash": "e415f32dba0d152050635eee439ce24d1bdbe982",
+  "semantic_hash": "e415f32dba0d152050635eee439ce24d1bdbe982"
  },
  "tests/test_ads_monitor_narrar.py": {
   "mtime": 1784916367.2150238,

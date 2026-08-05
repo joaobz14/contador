@@ -16436,7 +16436,7 @@
    "label": "conectar_db()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L156",
+   "source_location": "L157",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16450,7 +16450,7 @@
    "label": "_get()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L163",
+   "source_location": "L164",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16464,7 +16464,7 @@
    "label": "buscar_advertiser()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L182",
+   "source_location": "L200",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16478,7 +16478,7 @@
    "label": "buscar_campanhas_do_dia()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L200",
+   "source_location": "L227",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16492,7 +16492,7 @@
    "label": "buscar_detalhe_campanha()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L218",
+   "source_location": "L255",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16506,7 +16506,7 @@
    "label": "salvar_campanha()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L280",
+   "source_location": "L349",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16520,7 +16520,7 @@
    "label": "coletar_conta()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L436",
+   "source_location": "L511",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16534,7 +16534,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L475",
+   "source_location": "L572",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16562,7 +16562,7 @@
    "label": "_sequencia()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L21",
+   "source_location": "L24",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16576,7 +16576,7 @@
    "label": "test_buscar_advertiser_ok()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L34",
+   "source_location": "L37",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16587,24 +16587,10 @@
    "norm_label": "test_buscar_advertiser_ok()"
   },
   {
-   "label": "test_buscar_advertiser_404_devolve_none()",
-   "file_type": "code",
-   "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L40",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_ads_monitor_coletar_test_buscar_advertiser_404_devolve_none",
-   "community": 66,
-   "norm_label": "test_buscar_advertiser_404_devolve_none()"
-  },
-  {
    "label": "test_buscar_advertiser_lista_vazia_devolve_none()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L45",
+   "source_location": "L64",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16618,7 +16604,7 @@
    "label": "test_buscar_campanhas_do_dia_ok()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L51",
+   "source_location": "L72",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16629,24 +16615,10 @@
    "norm_label": "test_buscar_campanhas_do_dia_ok()"
   },
   {
-   "label": "test_buscar_campanhas_do_dia_falha_devolve_lista_vazia()",
-   "file_type": "code",
-   "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L59",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_lista_vazia",
-   "community": 66,
-   "norm_label": "test_buscar_campanhas_do_dia_falha_devolve_lista_vazia()"
-  },
-  {
    "label": "test_buscar_detalhe_campanha_ok()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L65",
+   "source_location": "L94",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16660,7 +16632,7 @@
    "label": "test_buscar_detalhe_campanha_falha_devolve_vazio()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L72",
+   "source_location": "L101",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16674,7 +16646,7 @@
    "label": "test_salvar_campanha_e_idempotente()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L172",
+   "source_location": "L213",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16688,7 +16660,7 @@
    "label": "test_salvar_campanha_chaves_diferentes_nao_colidem()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L192",
+   "source_location": "L233",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16702,7 +16674,7 @@
    "label": "test_conectar_db_cria_schema()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L204",
+   "source_location": "L245",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16716,7 +16688,7 @@
    "label": "test_coletar_conta_fim_a_fim()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L247",
+   "source_location": "L288",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16730,7 +16702,7 @@
    "label": "test_coletar_conta_sem_advertiser_isola_falha()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L355",
+   "source_location": "L398",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16744,7 +16716,7 @@
    "label": "test_coletar_conta_falha_de_auth_nao_levanta()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L368",
+   "source_location": "L411",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16758,7 +16730,7 @@
    "label": "test_main_sem_contas_configuradas()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L381",
+   "source_location": "L525",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16772,7 +16744,7 @@
    "label": "test_main_dia_default_e_ontem()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L388",
+   "source_location": "L532",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16800,7 +16772,7 @@
    "label": "buscar_ad_groups_da_campanha()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L236",
+   "source_location": "L285",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16814,7 +16786,7 @@
    "label": "buscar_itens_do_ad_group()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L267",
+   "source_location": "L330",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16828,7 +16800,7 @@
    "label": "salvar_ad_group()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L322",
+   "source_location": "L391",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16842,7 +16814,7 @@
    "label": "salvar_item_ad_group()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L381",
+   "source_location": "L450",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16856,7 +16828,7 @@
    "label": "_teve_atividade()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L398",
+   "source_location": "L467",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16870,7 +16842,7 @@
    "label": "_coletar_ad_groups_da_campanha()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L405",
+   "source_location": "L474",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16884,7 +16856,7 @@
    "label": "test_buscar_ad_groups_da_campanha_ok()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L78",
+   "source_location": "L107",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16898,7 +16870,7 @@
    "label": "test_buscar_ad_groups_da_campanha_pagina()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L87",
+   "source_location": "L116",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16909,24 +16881,10 @@
    "norm_label": "test_buscar_ad_groups_da_campanha_pagina()"
   },
   {
-   "label": "test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia()",
-   "file_type": "code",
-   "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L98",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia",
-   "community": 66,
-   "norm_label": "test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia()"
-  },
-  {
    "label": "test_buscar_itens_do_ad_group_ok()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L103",
+   "source_location": "L142",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16937,24 +16895,10 @@
    "norm_label": "test_buscar_itens_do_ad_group_ok()"
   },
   {
-   "label": "test_buscar_itens_do_ad_group_falha_devolve_lista_vazia()",
-   "file_type": "code",
-   "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L110",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_lista_vazia",
-   "community": 66,
-   "norm_label": "test_buscar_itens_do_ad_group_falha_devolve_lista_vazia()"
-  },
-  {
    "label": "test_teve_atividade()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L115",
+   "source_location": "L156",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16968,7 +16912,7 @@
    "label": "test_salvar_ad_group_e_idempotente()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L216",
+   "source_location": "L257",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16982,7 +16926,7 @@
    "label": "test_salvar_item_ad_group_grava_sku_quando_resolvido()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L234",
+   "source_location": "L275",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -16996,7 +16940,7 @@
    "label": "test_coletar_conta_ad_group_ativo_resolve_item_e_sku()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L277",
+   "source_location": "L319",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17024,7 +16968,7 @@
    "label": "_resolver_sku_adocao()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L351",
+   "source_location": "L420",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17038,7 +16982,7 @@
    "label": "_resolver_skus()",
    "file_type": "code",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L359",
+   "source_location": "L428",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17052,7 +16996,7 @@
    "label": "test_resolver_sku_adocao_encontrado_e_ausente()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L121",
+   "source_location": "L162",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17066,7 +17010,7 @@
    "label": "test_resolver_skus_usa_seller_sku_do_cache()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L128",
+   "source_location": "L169",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17080,7 +17024,7 @@
    "label": "test_resolver_skus_cai_para_adocao_quando_sem_seller_sku()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L134",
+   "source_location": "L175",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17094,7 +17038,7 @@
    "label": "test_resolver_skus_busca_item_ausente_do_cache()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L141",
+   "source_location": "L182",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17108,7 +17052,7 @@
    "label": "test_resolver_skus_refaz_entrada_antiga_sem_chave_seller_sku()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L149",
+   "source_location": "L190",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17122,7 +17066,7 @@
    "label": "test_resolver_skus_sem_ids_nao_chama_nada()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L161",
+   "source_location": "L202",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -17136,7 +17080,7 @@
    "label": "test_coletar_conta_seller_sku_do_cache_tem_prioridade_sobre_adocao()",
    "file_type": "code",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L320",
+   "source_location": "L363",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -23342,6 +23286,187 @@
    "id": "retencao_de_concluidos_zebra",
    "community": 0,
    "norm_label": "retencao de concluidos no lado da zebra (2026-08-04, v1.26.2 do outro repo): a pista indireta 2 deste app e 'o arquivo saiu da pasta vigiada', nao 'o arquivo foi apagado' -- distincao que so ficou visivel quando o outro lado parou de apagar. motivo la: o spooler aceitar o job nao garante papel impresso (papel preso, ribbon rasgado depois do aceite), e com 'excluir apos imprimir' ligado o arquivo j"
+  },
+  {
+   "label": "_propagar_se_auth()",
+   "file_type": "code",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": "L183",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "ads_monitor_coletar_propagar_se_auth",
+   "community": 65,
+   "norm_label": "_propagar_se_auth()"
+  },
+  {
+   "label": "test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L43",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem",
+   "community": 66,
+   "norm_label": "test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem()"
+  },
+  {
+   "label": "test_buscar_advertiser_401_manda_pegar_o_token()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L55",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_advertiser_401_manda_pegar_o_token",
+   "community": 66,
+   "norm_label": "test_buscar_advertiser_401_manda_pegar_o_token()"
+  },
+  {
+   "label": "test_buscar_campanhas_do_dia_falha_devolve_NONE_e_nao_lista_vazia()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_NONE_e_nao_lista_vazia",
+   "community": 66,
+   "norm_label": "test_buscar_campanhas_do_dia_falha_devolve_none_e_nao_lista_vazia()"
+  },
+  {
+   "label": "test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L87",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia",
+   "community": 66,
+   "norm_label": "test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia()"
+  },
+  {
+   "label": "test_buscar_ad_groups_da_campanha_falha_devolve_none()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L127",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_none",
+   "community": 66,
+   "norm_label": "test_buscar_ad_groups_da_campanha_falha_devolve_none()"
+  },
+  {
+   "label": "test_pagina_do_MEIO_falhando_nao_devolve_lista_TRUNCADA()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L132",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_pagina_do_MEIO_falhando_nao_devolve_lista_TRUNCADA",
+   "community": 66,
+   "norm_label": "test_pagina_do_meio_falhando_nao_devolve_lista_truncada()"
+  },
+  {
+   "label": "test_buscar_itens_do_ad_group_falha_devolve_none()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L149",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_none",
+   "community": 66,
+   "norm_label": "test_buscar_itens_do_ad_group_falha_devolve_none()"
+  },
+  {
+   "label": "test_erro_de_banco_no_meio_da_conta_nao_levanta()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L423",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_erro_de_banco_no_meio_da_conta_nao_levanta",
+   "community": 66,
+   "norm_label": "test_erro_de_banco_no_meio_da_conta_nao_levanta()"
+  },
+  {
+   "label": "test_falha_na_busca_de_campanhas_nao_vira_dia_coletado()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L450",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_falha_na_busca_de_campanhas_nao_vira_dia_coletado",
+   "community": 66,
+   "norm_label": "test_falha_na_busca_de_campanhas_nao_vira_dia_coletado()"
+  },
+  {
+   "label": "test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L473",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados",
+   "community": 66,
+   "norm_label": "test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados()"
+  },
+  {
+   "label": "test_main_continua_na_proxima_conta_quando_uma_estoura()",
+   "file_type": "code",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L504",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_ads_monitor_coletar_test_main_continua_na_proxima_conta_quando_uma_estoura",
+   "community": 66,
+   "norm_label": "test_main_continua_na_proxima_conta_quando_uma_estoura()"
+  },
+  {
+   "label": "COLETOR DO ADS: 'NAO SEI' E ISOLAMENTO POR CONTA (2026-08-05, achados de uma auditoria externa conferida no codigo). Tres defeitos da mesma familia, todos ja conhecidos do projeto e nao aplicados aqui. (1) ISOLAMENTO PROMETIDO E NAO ENTREGUE: o docstring de coletar_conta dizia 'nunca levanta -- uma conta ruim nao pode derrubar as demais', mas o try/except cobria SO a autenticacao; advertiser, laco de campanhas, gravacao e commit corriam fora dele, entao um sqlite3.Error na 1a conta estourava por cima do main e a 2a nem era tentada. Mesma causa-raiz do incidente do migrar_para_pastas (2026-07-29): em rotina best-effort que percorre uma FILA, o try/except pertence a cada item. Hoje o try envolve o corpo inteiro E o main repete a guarda (a fila nao pode depender de uma funcao cumprir a promessa -- foi uma promessa nao cumprida que derrubou o run). (2) FALHA DE API VIRANDO FATO: buscar_campanhas_do_dia devolvia [] no erro; o laco nao rodava, coletar_conta marcava ok=True com campanhas=0 e o main saia com codigo 0. A coleta ANUNCIAVA SUCESSO com um buraco no historico, e como o coletor so busca 'ontem', esse dia nunca era preenchido sozinho. Importante para calibrar o dano: nenhuma linha era gravada, entao NAO existia 'dia zerado' distorcendo medias -- AVG() ignora linha ausente; o efeito no recomendar.py e ficar abaixo de MIN_DIAS e a campanha virar 'monitorando'. O motor fica mais CALADO, nao mais errado -- a direcao do erro importa ao priorizar. Mesma correcao em buscar_ad_groups_da_campanha (a falha da 2a pagina dava break e devolvia as 50 primeiras COMO SE fossem o total -- resposta truncada gravada como completa) e buscar_itens_do_ad_group. (3) 401/403 LIDO COMO CONFIGURACAO: buscar_advertiser colapsava erro de credencial em None e a mensagem virava 'conta sem Product Ads?', mandando o dono mexer no Mercado Ads em vez de rodar pegar_token.py -- diagnostico errado e ESTAVEL. EXCECAO DELIBERADA que NAO deve ser 'corrigida': buscar_detalhe_campanha continua devolvendo {}, porque salvar_campanha grava detalhe.get(...) -> NULL e o AVG() do SQLite ignora NULL; avaliar_campanha so olha o sinal quando 'is not None', entao falha ali ja e 'sem sinal' e nunca 'campanha saudavel'. Vira defeito grave no dia em que alguem trocar o default por 0. METODO: a auditoria externa reconheceu os PADROES e acertou 4 de 6 achados, mas inventou a consequencia do principal (afirmou distorcao de medias, que nao existe) -- revisor que aponta onde olhar, nao autoridade sobre o que acontece; conferir no codigo antes de agir continua sendo obrigatorio.",
+   "file_type": "rationale",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "coletor_ads_nao_sei_e_isolamento",
+   "community": 0,
+   "norm_label": "coletor do ads: 'nao sei' e isolamento por conta (2026-08-05, achados de uma auditoria externa conferida no codigo). tres defeitos da mesma familia, todos ja conhecidos do projeto e nao aplicados aqui. (1) isolamento prometido e nao entregue: o docstring de coletar_conta dizia 'nunca levanta -- uma conta ruim nao pode derrubar as demais', mas o try/except cobria so a autenticacao; advertiser, laco"
   }
  ],
  "links": [
@@ -23359,10 +23484,30 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
+   "source_location": "L312",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar_buscar_ad_groups_da_campanha",
+   "target": "ads_monitor_coletar_propagar_se_auth",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
    "source_location": "L127",
    "weight": 1.0,
    "source": "ads_monitor_coletar_buscar_advertiser",
    "target": "ads_monitor_coletar_get",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": "L211",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar_buscar_advertiser",
+   "target": "ads_monitor_coletar_propagar_se_auth",
    "confidence_score": 1.0
   },
   {
@@ -23379,6 +23524,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
+   "source_location": "L248",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar_buscar_campanhas_do_dia",
+   "target": "ads_monitor_coletar_propagar_se_auth",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
    "source_location": "L171",
    "weight": 1.0,
    "source": "ads_monitor_coletar_buscar_detalhe_campanha",
@@ -23389,10 +23544,30 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
+   "source_location": "L278",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar_buscar_detalhe_campanha",
+   "target": "ads_monitor_coletar_propagar_se_auth",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
    "source_location": "L267",
    "weight": 1.0,
    "source": "ads_monitor_coletar_buscar_itens_do_ad_group",
    "target": "ads_monitor_coletar_get",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": "L342",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar_buscar_itens_do_ad_group",
+   "target": "ads_monitor_coletar_propagar_se_auth",
    "confidence_score": 1.0
   },
   {
@@ -29191,7 +29366,27 @@
    "source_file": "tests/test_ads_monitor_coletar.py",
    "source_location": "L99",
    "weight": 1.0,
-   "source": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia",
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L483",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L128",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_none",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -29219,9 +29414,19 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L41",
+   "source_location": "L58",
    "weight": 1.0,
-   "source": "tests_test_ads_monitor_coletar_test_buscar_advertiser_404_devolve_none",
+   "source": "tests_test_ads_monitor_coletar_test_buscar_advertiser_401_manda_pegar_o_token",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L49",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -29249,9 +29454,9 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L60",
+   "source_location": "L83",
    "weight": 1.0,
-   "source": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_lista_vazia",
+   "source": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_NONE_e_nao_lista_vazia",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -29262,6 +29467,16 @@
    "source_location": "L54",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_ok",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L89",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -29289,9 +29504,9 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L111",
+   "source_location": "L152",
    "weight": 1.0,
-   "source": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_lista_vazia",
+   "source": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_none",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -29342,6 +29557,36 @@
    "source_location": "L151",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar_test_coletar_conta_sem_advertiser_isola_falha",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L432",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_erro_de_banco_no_meio_da_conta_nao_levanta",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L460",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_falha_na_busca_de_campanhas_nao_vira_dia_coletado",
+   "target": "tests_test_ads_monitor_coletar_sequencia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L138",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar_test_pagina_do_MEIO_falhando_nao_devolve_lista_TRUNCADA",
    "target": "tests_test_ads_monitor_coletar_sequencia",
    "confidence_score": 1.0
   },
@@ -36359,6 +36604,16 @@
    "confidence_score": 1.0
   },
   {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletor_camada1",
+   "confidence_score": 1.0
+  },
+  {
    "source": "config_bot_invalida_silenciosa",
    "target": "bot_atualizar_remoto",
    "relation": "conceptually_related_to",
@@ -37355,7 +37610,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L236",
+   "source_location": "L285",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_buscar_ad_groups_da_campanha",
@@ -37365,7 +37620,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L182",
+   "source_location": "L200",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_buscar_advertiser",
@@ -37375,7 +37630,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L200",
+   "source_location": "L227",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_buscar_campanhas_do_dia",
@@ -37385,7 +37640,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L218",
+   "source_location": "L255",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_buscar_detalhe_campanha",
@@ -37395,7 +37650,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L267",
+   "source_location": "L330",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_buscar_itens_do_ad_group",
@@ -37405,7 +37660,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L405",
+   "source_location": "L474",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_coletar_ad_groups_da_campanha",
@@ -37415,7 +37670,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L436",
+   "source_location": "L511",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_coletar_conta",
@@ -37425,7 +37680,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L156",
+   "source_location": "L157",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_conectar_db",
@@ -37435,7 +37690,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L163",
+   "source_location": "L164",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_get",
@@ -37445,7 +37700,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L475",
+   "source_location": "L572",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_main",
@@ -37455,7 +37710,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L351",
+   "source_location": "L183",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar",
+   "target": "ads_monitor_coletar_propagar_se_auth",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": "L420",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_resolver_sku_adocao",
@@ -37465,7 +37730,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L359",
+   "source_location": "L428",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_resolver_skus",
@@ -37475,7 +37740,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L322",
+   "source_location": "L391",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_salvar_ad_group",
@@ -37485,7 +37750,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L280",
+   "source_location": "L349",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_salvar_campanha",
@@ -37495,7 +37760,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L381",
+   "source_location": "L450",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_salvar_item_ad_group",
@@ -37505,7 +37770,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "ads-monitor/coletar.py",
-   "source_location": "L398",
+   "source_location": "L467",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
    "target": "ads_monitor_coletar_teve_atividade",
@@ -40925,7 +41190,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L21",
+   "source_location": "L24",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_sequencia",
@@ -40935,17 +41200,27 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L98",
+   "source_location": "L473",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
-   "target": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia",
+   "target": "tests_test_ads_monitor_coletar_test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L78",
+   "source_location": "L127",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_falha_devolve_none",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L107",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_ok",
@@ -40955,7 +41230,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L87",
+   "source_location": "L116",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_ad_groups_da_campanha_pagina",
@@ -40965,17 +41240,27 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L40",
+   "source_location": "L55",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
-   "target": "tests_test_ads_monitor_coletar_test_buscar_advertiser_404_devolve_none",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_advertiser_401_manda_pegar_o_token",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L45",
+   "source_location": "L43",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L64",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_advertiser_lista_vazia_devolve_none",
@@ -40985,7 +41270,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L34",
+   "source_location": "L37",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_advertiser_ok",
@@ -40995,20 +41280,10 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L59",
+   "source_location": "L80",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
-   "target": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_lista_vazia",
-   "confidence_score": 1.0
-  },
-  {
-   "relation": "contains",
-   "confidence": "EXTRACTED",
-   "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L51",
-   "weight": 1.0,
-   "source": "tests_test_ads_monitor_coletar",
-   "target": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_ok",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_falha_devolve_NONE_e_nao_lista_vazia",
    "confidence_score": 1.0
   },
   {
@@ -41018,6 +41293,26 @@
    "source_location": "L72",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_ok",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L87",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L101",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_detalhe_campanha_falha_devolve_vazio",
    "confidence_score": 1.0
   },
@@ -41025,7 +41320,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L65",
+   "source_location": "L94",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_detalhe_campanha_ok",
@@ -41035,17 +41330,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L110",
+   "source_location": "L149",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
-   "target": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_lista_vazia",
+   "target": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_falha_devolve_none",
    "confidence_score": 1.0
   },
   {
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L103",
+   "source_location": "L142",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_buscar_itens_do_ad_group_ok",
@@ -41055,7 +41350,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L277",
+   "source_location": "L319",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_coletar_conta_ad_group_ativo_resolve_item_e_sku",
@@ -41065,7 +41360,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L368",
+   "source_location": "L411",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_coletar_conta_falha_de_auth_nao_levanta",
@@ -41075,7 +41370,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L247",
+   "source_location": "L288",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_coletar_conta_fim_a_fim",
@@ -41085,7 +41380,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L320",
+   "source_location": "L363",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_coletar_conta_seller_sku_do_cache_tem_prioridade_sobre_adocao",
@@ -41095,7 +41390,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L355",
+   "source_location": "L398",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_coletar_conta_sem_advertiser_isola_falha",
@@ -41105,7 +41400,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L204",
+   "source_location": "L245",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_conectar_db_cria_schema",
@@ -41115,7 +41410,37 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L388",
+   "source_location": "L423",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_erro_de_banco_no_meio_da_conta_nao_levanta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L450",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_falha_na_busca_de_campanhas_nao_vira_dia_coletado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L504",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_main_continua_na_proxima_conta_quando_uma_estoura",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L532",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_main_dia_default_e_ontem",
@@ -41125,7 +41450,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L381",
+   "source_location": "L525",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_main_sem_contas_configuradas",
@@ -41135,7 +41460,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L121",
+   "source_location": "L132",
+   "weight": 1.0,
+   "source": "tests_test_ads_monitor_coletar",
+   "target": "tests_test_ads_monitor_coletar_test_pagina_do_MEIO_falhando_nao_devolve_lista_TRUNCADA",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_ads_monitor_coletar.py",
+   "source_location": "L162",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_sku_adocao_encontrado_e_ausente",
@@ -41145,7 +41480,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L141",
+   "source_location": "L182",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_skus_busca_item_ausente_do_cache",
@@ -41155,7 +41490,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L134",
+   "source_location": "L175",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_skus_cai_para_adocao_quando_sem_seller_sku",
@@ -41165,7 +41500,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L149",
+   "source_location": "L190",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_skus_refaz_entrada_antiga_sem_chave_seller_sku",
@@ -41175,7 +41510,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L161",
+   "source_location": "L202",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_skus_sem_ids_nao_chama_nada",
@@ -41185,7 +41520,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L128",
+   "source_location": "L169",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_resolver_skus_usa_seller_sku_do_cache",
@@ -41195,7 +41530,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L216",
+   "source_location": "L257",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_salvar_ad_group_e_idempotente",
@@ -41205,7 +41540,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L192",
+   "source_location": "L233",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_salvar_campanha_chaves_diferentes_nao_colidem",
@@ -41215,7 +41550,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L172",
+   "source_location": "L213",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_salvar_campanha_e_idempotente",
@@ -41225,7 +41560,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L234",
+   "source_location": "L275",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_salvar_item_ad_group_grava_sku_quando_resolvido",
@@ -41235,7 +41570,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_ads_monitor_coletar.py",
-   "source_location": "L115",
+   "source_location": "L156",
    "weight": 1.0,
    "source": "tests_test_ads_monitor_coletar",
    "target": "tests_test_ads_monitor_coletar_test_teve_atividade",
@@ -49108,6 +49443,16 @@
    "source_location": "L1",
    "weight": 1.0,
    "source": "ads_monitor_coletar",
+   "target": "registro",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "imports",
+   "confidence": "EXTRACTED",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": "L1",
+   "weight": 1.0,
+   "source": "ads_monitor_coletar",
    "target": "separador_etiquetas_ml",
    "confidence_score": 1.0
   },
@@ -52261,6 +52606,56 @@
    "weight": 1.0,
    "source": "carimbo_encoding_ci28",
    "target": "separador_etiquetas_ml_carimbar_zpl",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_ad_groups_da_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_advertiser",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_campanhas_do_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_coletar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_main",
    "confidence_score": 1.0
   },
   {
@@ -56945,5 +57340,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "8cd6063a2b3bee6d09d49aeecc5340dcb50b2295"
+ "built_at_commit": "a35b96d7698c53ce6796aec8810eab8c7ddde206"
 }

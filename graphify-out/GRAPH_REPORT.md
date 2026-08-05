@@ -51,6 +51,30 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — coletor do Ads: "não sei" e isolamento por conta.** Três
+  defeitos da mesma família, todos já conhecidos do projeto e nunca aplicados
+  nesta pasta. (1) `coletar_conta` **prometia no docstring** um isolamento que
+  não entregava: o `try/except` cobria só a autenticação, e um `sqlite3.Error`
+  na 1ª conta derrubava o run antes de a 2ª ser tentada — mesma causa-raiz do
+  `migrar_para_pastas` (2026-07-29). (2) `buscar_campanhas_do_dia` devolvia
+  `[]` no erro, então o dia era dado por coletado com `campanhas: 0` e o run
+  **anunciava sucesso** com código de saída 0, deixando um buraco que nunca era
+  preenchido (o coletor só busca "ontem"). **Calibração do dano:** nenhuma linha
+  era gravada, então não havia "dia zerado" distorcendo médias — `AVG()` ignora
+  linha ausente; o efeito no `recomendar.py` é cair abaixo de `MIN_DIAS` e virar
+  "monitorando", ou seja, o motor fica mais **calado**, não mais errado. Mesma
+  correção na paginação de ad_groups (falha na 2ª página devolvia as 50
+  primeiras como se fossem o total) e na busca de itens. (3) 401/403 virava
+  "conta sem Product Ads?", mandando mexer no Mercado Ads em vez de rodar
+  `pegar_token.py`. **Exceção deliberada preservada:** `buscar_detalhe_campanha`
+  continua devolvendo `{}` — vira NULL, e `AVG()` ignora NULL, então falha ali
+  já significa "sem sinal" e nunca "campanha saudável". Novo nó
+  `coletor_ads_nao_sei_e_isolamento`. **Método:** os achados vieram de uma
+  auditoria feita por outra ferramenta de agente, conferida linha a linha aqui —
+  ela reconheceu os padrões e acertou 4 de 6, mas **inventou a consequência** do
+  achado principal. Revisor que aponta onde olhar, não autoridade sobre o que
+  acontece.
+  Depois do `--update`: **1744 nós, 3306 arestas, 0 órfãs**.
 - **2026-08-04 — a pista do monitor é "SAIR da pasta", não "ser apagado"
   (app Zebra v1.26.2).** O outro lado passou a **mover** o arquivo impresso com
   sucesso para `~/zebra_usb_concluidos/AAAA-MM-DD/` em vez de apagá-lo: quando a

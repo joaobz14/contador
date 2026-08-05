@@ -5,7 +5,10 @@ de tests/test_validar_obsidian.py.
 """
 import datetime
 import importlib.util
+import sqlite3
 from pathlib import Path
+
+import pytest
 
 from conftest import FakeResp
 
@@ -37,12 +40,30 @@ def test_buscar_advertiser_ok(monkeypatch):
     assert cm.buscar_advertiser("tok") == ("999", "MLB")
 
 
-def test_buscar_advertiser_404_devolve_none(monkeypatch):
-    _sequencia(monkeypatch, [FakeResp(404, json_data={"error": "not_found"})])
-    assert cm.buscar_advertiser("tok") is None
+def test_buscar_advertiser_falha_de_api_levanta_em_vez_de_dizer_que_nao_tem(monkeypatch):
+    """Falha de API nao pode virar o mesmo `None` de "conta sem Product Ads".
+
+    Sao fatos opostos: um e sobre a conta, o outro e a ausencia de qualquer
+    fato. Colapsados, o operador recebia um diagnostico errado e ESTAVEL.
+    """
+    _sequencia(monkeypatch, [FakeResp(500)])
+    with pytest.raises(cm.core.SeparadorError) as e:
+        cm.buscar_advertiser("tok")
+    assert "advertiser" in str(e.value)
+
+
+def test_buscar_advertiser_401_manda_pegar_o_token(monkeypatch):
+    """Credencial recusada precisa DIZER o que fazer: nenhuma re-tentativa
+    conserta um token revogado, e o conselho errado se repete para sempre."""
+    _sequencia(monkeypatch, [FakeResp(401)])
+    with pytest.raises(cm.core.SeparadorError) as e:
+        cm.buscar_advertiser("tok")
+    assert "pegar_token.py" in str(e.value)
 
 
 def test_buscar_advertiser_lista_vazia_devolve_none(monkeypatch):
+    """None fica reservado para o unico caso em que ele e um FATO: a conta
+    respondeu e nao tem Product Ads habilitado."""
     _sequencia(monkeypatch, [FakeResp(200, json_data={"advertisers": []})])
     assert cm.buscar_advertiser("tok") is None
 
@@ -56,8 +77,16 @@ def test_buscar_campanhas_do_dia_ok(monkeypatch):
     assert len(camps) == 1 and camps[0]["id"] == 1
 
 
-def test_buscar_campanhas_do_dia_falha_devolve_lista_vazia(monkeypatch):
+def test_buscar_campanhas_do_dia_falha_devolve_NONE_e_nao_lista_vazia(monkeypatch):
+    """`[]` diria "a conta nao teve campanha no dia" — um FATO. Falha de API
+    nao sabe disso, e o `[]` fazia o dia ser dado por coletado com sucesso."""
     _sequencia(monkeypatch, [FakeResp(500)])
+    assert cm.buscar_campanhas_do_dia("tok", "MLB", "999", DIA) is None
+
+
+def test_buscar_campanhas_do_dia_sem_campanha_e_lista_vazia(monkeypatch):
+    """E o `[]` continua existindo para o caso legitimo: respondeu, nao tinha."""
+    _sequencia(monkeypatch, [FakeResp(200, json_data={"results": []})])
     assert cm.buscar_campanhas_do_dia("tok", "MLB", "999", DIA) == []
 
 
@@ -95,9 +124,19 @@ def test_buscar_ad_groups_da_campanha_pagina(monkeypatch):
     assert [a["id"] for a in ags] == [1, 2, 3]
 
 
-def test_buscar_ad_groups_da_campanha_falha_devolve_lista_vazia(monkeypatch):
+def test_buscar_ad_groups_da_campanha_falha_devolve_none(monkeypatch):
     _sequencia(monkeypatch, [FakeResp(400)])
-    assert cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA) == []
+    assert cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA) is None
+
+
+def test_pagina_do_MEIO_falhando_nao_devolve_lista_TRUNCADA(monkeypatch):
+    """O achado: falha a partir da 2a pagina dava `break` e devolvia as 50
+    primeiras COMO SE fossem o total — resposta truncada gravada como
+    completa, indistinguivel de uma campanha pequena. Sem nada acusando."""
+    pag1 = {"paging": {"total": 120, "offset": 0, "limit": 50},
+            "results": [{"id": i} for i in range(50)]}
+    _sequencia(monkeypatch, [FakeResp(200, json_data=pag1), FakeResp(503)])
+    assert cm.buscar_ad_groups_da_campanha("tok", "MLB", "999", "1", DIA) is None
 
 
 def test_buscar_itens_do_ad_group_ok(monkeypatch):
@@ -107,9 +146,11 @@ def test_buscar_itens_do_ad_group_ok(monkeypatch):
     assert itens == [{"item_id": "MLB1", "title": "Produto", "price": 10.0}]
 
 
-def test_buscar_itens_do_ad_group_falha_devolve_lista_vazia(monkeypatch):
+def test_buscar_itens_do_ad_group_falha_devolve_none(monkeypatch):
+    """`[]` faria um ad_group COM itens parecer um ad_group sem nenhum, e a
+    atribuicao por SKU sumiria sem rastro."""
     _sequencia(monkeypatch, [FakeResp(404)])
-    assert cm.buscar_itens_do_ad_group("tok", "MLB", "10", DIA) == []
+    assert cm.buscar_itens_do_ad_group("tok", "MLB", "10", DIA) is None
 
 
 def test_teve_atividade():
@@ -266,7 +307,8 @@ def test_coletar_conta_fim_a_fim(monkeypatch, tmp_path):
 
     conn = cm.conectar_db(tmp_path / "t.sqlite3")
     r = cm.coletar_conta(conn, "cozilatti", DIA)
-    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 2, "ad_groups": 0, "erro": None}
+    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 2, "ad_groups": 0,
+                 "erro": None, "incompletas": 0}
     linhas = conn.execute(
         "SELECT campaign_id, lost_impression_share_by_budget FROM campanhas_diarias "
         "ORDER BY campaign_id").fetchall()
@@ -305,7 +347,8 @@ def test_coletar_conta_ad_group_ativo_resolve_item_e_sku(monkeypatch, tmp_path):
 
     conn = cm.conectar_db(tmp_path / "t.sqlite3")
     r = cm.coletar_conta(conn, "cozilatti", DIA)
-    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 1, "ad_groups": 2, "erro": None}
+    assert r == {"conta": "cozilatti", "ok": True, "campanhas": 1, "ad_groups": 2,
+                 "erro": None, "incompletas": 0}
 
     ags = conn.execute(
         "SELECT ad_group_id, clicks FROM ad_groups_diarios ORDER BY ad_group_id").fetchall()
@@ -377,7 +420,108 @@ def test_coletar_conta_falha_de_auth_nao_levanta(monkeypatch, tmp_path):
     conn.close()
 
 
+def test_erro_de_banco_no_meio_da_conta_nao_levanta(monkeypatch, tmp_path):
+    """O `try` cobria SO a autenticacao: qualquer excecao depois dela (sqlite
+    travado, campo inesperado) estourava por cima do `main`, e o docstring de
+    `coletar_conta` prometia isolamento que o codigo nao entregava."""
+    monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
+    monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
+    _sequencia(monkeypatch, [
+        FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
+        FakeResp(200, json_data={"results": [
+            {"id": 1, "name": "A", "status": "active", "metrics": {}}]}),
+        FakeResp(200, json_data={"metrics": {}}),
+    ])
+
+    def _explode(*a, **k):
+        raise sqlite3.OperationalError("database is locked")
+    monkeypatch.setattr(cm, "salvar_campanha", _explode)
+
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    r = cm.coletar_conta(conn, "cozilatti", DIA)      # nao pode levantar
+    assert r["ok"] is False
+    assert "OperationalError" in r["erro"]
+    conn.close()
+
+
+def test_falha_na_busca_de_campanhas_nao_vira_dia_coletado(monkeypatch, tmp_path):
+    """O achado principal: 500 do ML devolvia `[]`, o laco nao rodava e a
+    conta era dada por coletada com `campanhas: 0`. Nada era gravado, o run
+    saia com codigo 0 e o buraco no historico nunca era preenchido (o coletor
+    so busca "ontem")."""
+    monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
+    monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
+    _sequencia(monkeypatch, [
+        FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
+        FakeResp(500),
+    ])
+
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    r = cm.coletar_conta(conn, "cozilatti", DIA)
+    assert r["ok"] is False, "falha de API nao pode ser reportada como sucesso"
+    assert "nao respondeu" in r["erro"]
+    assert conn.execute("SELECT COUNT(*) FROM campanhas_diarias").fetchone()[0] == 0
+    conn.close()
+
+
+def test_ad_groups_truncados_preservam_a_campanha_e_sao_reportados(monkeypatch, tmp_path):
+    """O detalhe por item e best-effort: quando a paginacao nao fecha, o
+    snapshot da CAMPANHA (que alimenta as recomendacoes) e preservado e nada
+    parcial vai para a tabela de ad_group — mas o run diz que ficou incompleto,
+    em vez de anunciar sucesso liso."""
+    monkeypatch.setattr(cm.core, "definir_conta", lambda nome: None)
+    monkeypatch.setattr(cm.core, "carregar_credenciais", lambda: {"seller_id": "1"})
+    monkeypatch.setattr(cm.core, "obter_token", lambda cred: "tok")
+    monkeypatch.setattr(cm.core, "carregar_skus_anuncio", lambda: {})
+    monkeypatch.setattr(cm.core, "carregar_cache", lambda: {})
+    _sequencia(monkeypatch, [
+        FakeResp(200, json_data={"advertisers": [{"advertiser_id": 999, "site_id": "MLB"}]}),
+        FakeResp(200, json_data={"results": [
+            {"id": 1, "name": "A", "status": "active", "metrics": {"clicks": 9}}]}),
+        FakeResp(200, json_data={"metrics": {"lost_impression_share_by_budget": 0.3}}),
+        FakeResp(200, json_data={"paging": {"total": 120, "offset": 0, "limit": 50},
+                                 "results": [{"id": i} for i in range(50)]}),
+        FakeResp(503),                                  # 2a pagina falha
+    ])
+
+    conn = cm.conectar_db(tmp_path / "t.sqlite3")
+    r = cm.coletar_conta(conn, "cozilatti", DIA)
+    assert r["ok"] is True and r["campanhas"] == 1
+    assert r["incompletas"] == 1 and r["ad_groups"] == 0
+    assert conn.execute("SELECT COUNT(*) FROM campanhas_diarias").fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM ad_groups_diarios").fetchone()[0] == 0, \
+        "meia lista de ad_groups nao pode ser gravada como se fosse a lista inteira"
+    conn.close()
+
+
 # ------------------------------------------------------------------- CLI
+def test_main_continua_na_proxima_conta_quando_uma_estoura(monkeypatch, tmp_path, capsys):
+    """Cinto E suspensorio: mesmo que `coletar_conta` quebre a promessa de
+    nunca levantar, a FILA segue. Era o run inteiro que morria na 1a conta
+    ruim, e a 2a nem chegava a ser tentada."""
+    monkeypatch.setattr(cm.core, "listar_contas", lambda: ["cozilatti", "gastromaq"])
+    vistas = []
+
+    def _fake(conn, conta, dia):
+        vistas.append(conta)
+        if conta == "cozilatti":
+            raise sqlite3.OperationalError("database is locked")
+        return {"conta": conta, "ok": True, "campanhas": 2, "ad_groups": 0,
+                "erro": None, "incompletas": 0}
+    monkeypatch.setattr(cm, "coletar_conta", _fake)
+
+    rc = cm.main(["--db", str(tmp_path / "t.sqlite3")])
+    assert vistas == ["cozilatti", "gastromaq"], "a 2a conta tem de ser tentada"
+    assert rc == 1, "codigo != 0 e o unico sinal que o Agendador registra sozinho"
+    assert "1/2 conta(s) OK" in capsys.readouterr().out
+
+
 def test_main_sem_contas_configuradas(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(cm.core, "listar_contas", lambda: [])
     rc = cm.main(["--db", str(tmp_path / "t.sqlite3")])

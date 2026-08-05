@@ -29,8 +29,24 @@ Gastromaq, em três camadas determinísticas + uma camada opcional de narrativa:
   backfill automático: para coletar vários dias, rode com `--dia` repetidas
   vezes.
 - **Idempotente:** rodar o mesmo dia de novo **regrava** (não duplica).
-- **Isola falha por conta:** uma conta sem Product Ads ou com token vencido
-  não derruba a coleta das demais no mesmo run.
+- **Isola falha por conta:** uma conta sem Product Ads, com token vencido ou
+  com erro inesperado (banco travado, campo estranho) **não** derruba a coleta
+  das demais no mesmo run — a proteção envolve o corpo inteiro de
+  `coletar_conta`, e o `main` ainda repete a guarda por item da fila.
+- **Falha de API é "não sei", nunca "não tem":** `buscar_campanhas_do_dia`,
+  `buscar_ad_groups_da_campanha` e `buscar_itens_do_ad_group` devolvem `None`
+  quando a chamada falha, e lista vazia só quando o Mercado Livre respondeu que
+  não há nada. Sem essa distinção, um erro da API virava um dia gravado como
+  "zero campanhas", com o run **anunciando sucesso** e código de saída 0 — e
+  como o coletor só busca "ontem", o buraco no histórico nunca era preenchido.
+  Pelo mesmo motivo, uma paginação que não fecha descarta o parcial: meia lista
+  gravada como lista inteira é indistinguível de uma campanha pequena.
+  Exceção deliberada: `buscar_detalhe_campanha` devolve `{}`, que vira NULL no
+  banco — o `AVG()` do SQLite ignora NULL, então falha ali já significa "sem
+  sinal" e nunca "campanha saudável".
+- **Credencial recusada (401/403) estoura** com a instrução de rodar
+  `pegar_token.py`, em vez de virar "conta sem Product Ads?" — token revogado e
+  conta sem Ads pedem ações opostas.
 
 ## Endpoints usados
 

@@ -4,6 +4,23 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Corrigido
+- **A coleta diária do Product Ads não anuncia mais sucesso quando falha.**
+  Quando o Mercado Livre não respondia à busca de campanhas, o coletor gravava
+  o dia como "nenhuma campanha", dizia que tinha dado certo e saía com código de
+  sucesso — o dia ficava vazio no histórico e ninguém ficava sabendo. Agora ele
+  informa a falha e termina com erro (que é o que o Agendador de Tarefas do
+  Windows registra sozinho). Para recuperar um dia perdido:
+  `python ads-monitor/coletar.py --dia AAAA-MM-DD`.
+- **Uma conta com problema não derruba mais a coleta da outra.** Um erro
+  inesperado na Cozilatti (banco travado, resposta estranha) fazia o programa
+  parar antes de tentar a Gastromaq. Agora cada conta é isolada de verdade.
+- **Token vencido não é mais confundido com "conta sem Product Ads".** A
+  mensagem agora diz o que fazer: rodar `pegar_token.py` para aquela conta.
+- **Campanha grande não é mais gravada pela metade.** Se a listagem de anúncios
+  de uma campanha for interrompida no meio, o dia dela fica marcado como
+  incompleto em vez de registrar só a primeira parte como se fosse o total.
+
 ### Adicionado
 - **Etiqueta já impressa agora dá para recuperar** (exige o app da Zebra
   **v1.26.2** ou mais novo). Antes, com "Excluir após imprimir" ligado, o arquivo

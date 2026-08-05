@@ -63,6 +63,7 @@ from urllib.parse import urlencode
 import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import registro  # noqa: E402
 import separador_etiquetas_ml as core  # noqa: E402
 
 PASTA = Path(__file__).resolve().parent
@@ -179,13 +180,39 @@ def _get(path: str, token: str, headers: dict | None = None):
     return r.status_code, data, None
 
 
+def _propagar_se_auth(st, onde: str) -> None:
+    """401/403 ESTOURA com a instrucao certa; o resto segue o fluxo de quem
+    chamou.
+
+    Erro de credencial e erro transitorio pedem acoes OPOSTAS, e tratar
+    credencial recusada como "nao sei" faz o coletor dar um diagnostico que
+    NUNCA se confirma: com o token revogado toda chamada falha, e o operador
+    lia "conta sem Product Ads?" -- indo mexer na configuracao do Mercado Ads
+    em vez de rodar `pegar_token.py`. Mesma regra do `_propagar_se_auth` do
+    nucleo (achado de 2026-08-03), que existe pelo mesmo motivo.
+    """
+    if st in (401, 403):
+        raise core.SeparadorError(
+            f"o Mercado Livre recusou a credencial ({st}) em {onde}. "
+            "Rode `python pegar_token.py` para esta conta e tente de novo.")
+
+
 def buscar_advertiser(token: str) -> tuple[str, str] | None:
     """Descobre (advertiser_id, site_id) do Product Ads (product_id=PADS).
-    None se a conta nao tiver Product Ads habilitado ou a chamada falhar."""
-    st, data, _ = _get("/advertising/advertisers?product_id=PADS", token,
-                       {"Api-Version": "1"})
+
+    None significa UMA coisa so: a conta respondeu e NAO tem Product Ads
+    habilitado. Falha de credencial ou de rede LEVANTA -- nao pode virar o
+    mesmo None, porque "a conta nao usa Ads" e um fato sobre a conta e
+    "a API nao respondeu" e a ausencia de fato nenhum; quem colapsa os dois
+    entrega um diagnostico errado e estavel, que e o pior tipo.
+    """
+    st, data, err = _get("/advertising/advertisers?product_id=PADS", token,
+                         {"Api-Version": "1"})
+    _propagar_se_auth(st, "a busca do advertiser")
     if st != 200 or not isinstance(data, dict):
-        return None
+        raise core.SeparadorError(
+            f"nao consegui consultar o advertiser (status {st}"
+            f"{', ' + err if err else ''}).")
     advs = data.get("advertisers") or []
     if not advs or not isinstance(advs, list):
         return None
@@ -198,9 +225,18 @@ def buscar_advertiser(token: str) -> tuple[str, str] | None:
 
 
 def buscar_campanhas_do_dia(token: str, site_id: str, advertiser_id: str,
-                            dia: datetime.date) -> list[dict]:
+                            dia: datetime.date) -> list[dict] | None:
     """Campanhas do advertiser com metricas de UM dia (date_from==date_to).
-    [] se a chamada falhar ou nao houver campanha — nunca levanta."""
+
+    `[]` = a conta respondeu e nao tinha campanha nenhuma no dia.
+    `None` = NAO SEI (a chamada falhou) -- e a distincao que faz a diferenca:
+    antes o erro devolvia `[]`, o laco de campanhas nao rodava, `coletar_conta`
+    marcava `ok=True` com `campanhas: 0` e o `main` saia com codigo 0. A coleta
+    ANUNCIAVA SUCESSO deixando um buraco no historico, e como o coletor so
+    busca "ontem", esse dia nunca era preenchido sozinho -- so um `--dia`
+    manual, que ninguem roda para um problema que nao sabe que existe.
+    Nunca levanta (fora 401/403, que sao credencial, nao "nao sei").
+    """
     qs = urlencode({
         "date_from": dia.isoformat(),
         "date_to": dia.isoformat(),
@@ -209,8 +245,9 @@ def buscar_campanhas_do_dia(token: str, site_id: str, advertiser_id: str,
     path = (f"/advertising/{site_id}/advertisers/{advertiser_id}"
             f"/product_ads/campaigns/search?{qs}")
     st, data, _ = _get(path, token, {"Api-Version": "2"})
+    _propagar_se_auth(st, "a busca de campanhas")
     if st != 200 or not isinstance(data, dict):
-        return []
+        return None
     camps = data.get("results") or data.get("campaigns") or []
     return camps if isinstance(camps, list) else []
 
@@ -219,7 +256,18 @@ def buscar_detalhe_campanha(token: str, site_id: str, campaign_id: str,
                             dia: datetime.date) -> dict:
     """Metricas de limitacao (orcamento/ranking) de UMA campanha no dia.
     {} se falhar — best-effort: o snapshot principal ja foi obtido, este
-    detalhe extra nao pode impedir a gravacao do resto."""
+    detalhe extra nao pode impedir a gravacao do resto.
+
+    ESTE `{}` E DELIBERADAMENTE DIFERENTE do `None` das outras buscas, e nao e
+    a mesma falha: `salvar_campanha` grava `detalhe.get(...)`, entao o `{}`
+    vira NULL nas colunas de limitacao -- e o `AVG()` do SQLite IGNORA NULL,
+    devolvendo NULL quando nao ha nenhum valor. `avaliar_campanha` so olha o
+    sinal quando ele `is not None`, logo falha aqui vira "sem sinal", nunca
+    "campanha saudavel". O `{}` ja e o "nao sei" desta camada; trocar por
+    `None` mudaria o tipo sem mudar o comportamento. Se um dia esta gravacao
+    passar a usar `0` como default, isto vira defeito grave (perda de
+    impressao zerada = campanha aparentemente sadia, recomendacao suprimida).
+    """
     qs = urlencode({
         "date_from": dia.isoformat(),
         "date_to": dia.isoformat(),
@@ -227,6 +275,7 @@ def buscar_detalhe_campanha(token: str, site_id: str, campaign_id: str,
     })
     path = f"/advertising/{site_id}/product_ads/campaigns/{campaign_id}?{qs}"
     st, data, _ = _get(path, token, {"Api-Version": "2"})
+    _propagar_se_auth(st, "o detalhe da campanha")
     if st != 200 or not isinstance(data, dict):
         return {}
     m = data.get("metrics")
@@ -234,10 +283,21 @@ def buscar_detalhe_campanha(token: str, site_id: str, campaign_id: str,
 
 
 def buscar_ad_groups_da_campanha(token: str, site_id: str, advertiser_id: str,
-                                 campaign_id: str, dia: datetime.date) -> list[dict]:
+                                 campaign_id: str, dia: datetime.date) -> list[dict] | None:
     """Todos os ad_groups (item/familia/catalogo anunciado) de UMA campanha no
     dia -- pagina com offset ate cobrir o total (a resposta vem limitada a
-    LIMITE_PAGINA_AD_GROUPS por chamada). [] se falhar -- nunca levanta."""
+    LIMITE_PAGINA_AD_GROUPS por chamada).
+
+    `None` = NAO SEI: a paginacao nao pode ser concluida. Vale para a 1a pagina
+    E para qualquer pagina do meio -- e o ponto que faltava. Antes, uma falha
+    na 2a pagina dava `break` e a funcao devolvia as 50 primeiras COMO SE
+    fossem o total; a campanha era gravada com 50 de 120 ad_groups e nada
+    acusava. Resposta truncada gravada como completa e indistinguivel de uma
+    campanha pequena -- e o historico so serve para comparar dias entre si.
+    Descartar o parcial nao perde nada de verdade: o coletor e idempotente e
+    `--dia` refaz o dia inteiro; o que nao da para desfazer e um numero errado
+    que ninguem sabe que esta errado.
+    """
     resultados: list[dict] = []
     offset = 0
     while True:
@@ -249,10 +309,13 @@ def buscar_ad_groups_da_campanha(token: str, site_id: str, advertiser_id: str,
         path = (f"/advertising/{site_id}/advertisers/{advertiser_id}"
                f"/product_ads/ad_groups/search?{qs}")
         st, data, _ = _get(path, token, {"Api-Version": "2"})
+        _propagar_se_auth(st, "a busca de ad_groups")
         if st != 200 or not isinstance(data, dict):
-            break
+            return None
         pagina = data.get("results")
-        if not isinstance(pagina, list) or not pagina:
+        if not isinstance(pagina, list):
+            return None
+        if not pagina:
             break
         resultados.extend(pagina)
         paging = data.get("paging") or {}
@@ -265,14 +328,20 @@ def buscar_ad_groups_da_campanha(token: str, site_id: str, advertiser_id: str,
 
 
 def buscar_itens_do_ad_group(token: str, site_id: str, ad_group_id: str,
-                             dia: datetime.date) -> list[dict]:
+                             dia: datetime.date) -> list[dict] | None:
     """Item_id(s) que compoe UM ad_group no dia (pode ser mais de 1 -- tipos
-    FAMILY/CATALOG agrupam variacoes/concorrentes). [] se falhar."""
+    FAMILY/CATALOG agrupam variacoes/concorrentes).
+
+    `[]` = o ad_group respondeu e nao tem item resolvivel; `None` = NAO SEI.
+    Mesma razao das outras: `[]` em erro faz um ad_group com itens parecer um
+    ad_group sem nenhum, e a atribuicao por SKU some sem deixar rastro.
+    """
     qs = urlencode({"date_from": dia.isoformat(), "date_to": dia.isoformat()})
     path = f"/advertising/{site_id}/product_ads/ad_groups/{ad_group_id}/ads?{qs}"
     st, data, _ = _get(path, token, {"Api-Version": "2"})
+    _propagar_se_auth(st, "a busca de itens do ad_group")
     if st != 200 or not isinstance(data, dict):
-        return []
+        return None
     itens = data.get("results")
     return itens if isinstance(itens, list) else []
 
@@ -404,13 +473,17 @@ def _teve_atividade(metrics: dict) -> bool:
 
 def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id: str,
                                    advertiser_id: str, conta: str, campaign_id: str,
-                                   dia: datetime.date, cache: dict, skus_anuncio: dict) -> int:
+                                   dia: datetime.date, cache: dict, skus_anuncio: dict) -> int | None:
     """Ad_groups de UMA campanha + resolucao de item_id/SKU dos que tiveram
-    atividade no dia. Devolve quantos ad_groups foram gravados. A resolucao de
-    SKU e feita numa unica leva (todos os itens da campanha), nao item a item
-    -- menos overhead de cache/thread-pool no core.buscar_detalhes."""
+    atividade no dia. Devolve quantos ad_groups foram gravados, ou `None`
+    quando a listagem nao pode ser concluida (ai NADA e gravado desta campanha
+    -- meia lista e pior que lista nenhuma). A resolucao de SKU e feita numa
+    unica leva (todos os itens da campanha), nao item a item -- menos overhead
+    de cache/thread-pool no core.buscar_detalhes."""
     ad_groups = buscar_ad_groups_da_campanha(token, site_id, advertiser_id,
                                              campaign_id, dia)
+    if ad_groups is None:                 # nao sei: nao grava nada desta campanha
+        return None
     itens_por_ad_group: dict[str, list[dict]] = {}
     for ag in ad_groups:
         salvar_ad_group(conn, dia=dia, conta=conta, site_id=site_id,
@@ -419,8 +492,10 @@ def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id
         agid = ag.get("id") or ag.get("ad_group_id")
         if not agid or not _teve_atividade(ag.get("metrics") or {}):
             continue
-        itens = [it for it in buscar_itens_do_ad_group(token, site_id, agid, dia)
-                if it.get("item_id")]
+        achados = buscar_itens_do_ad_group(token, site_id, agid, dia)
+        if achados is None:               # idem, mas so deste ad_group
+            continue
+        itens = [it for it in achados if it.get("item_id")]
         if itens:
             itens_por_ad_group[agid] = itens
 
@@ -434,41 +509,63 @@ def _coletar_ad_groups_da_campanha(conn: sqlite3.Connection, token: str, site_id
 
 
 def coletar_conta(conn: sqlite3.Connection, conta: str, dia: datetime.date) -> dict:
-    """Coleta 1 conta p/ 1 dia. Isola falha — nunca levanta (uma conta ruim
-    nao pode derrubar a coleta das demais no mesmo run)."""
+    """Coleta 1 conta p/ 1 dia. Isola falha — NUNCA levanta (uma conta ruim
+    nao pode derrubar a coleta das demais no mesmo run).
+
+    O `try` cobre o CORPO INTEIRO, nao so a autenticacao. Antes ele terminava
+    logo depois do `obter_token`, e todo o resto -- advertiser, laco de
+    campanhas, gravacao, commit -- corria desprotegido: um `sqlite3.Error` na
+    1a conta estourava por cima do `main` e a 2a conta nao era nem tentada,
+    apesar do docstring prometer o contrario. Mesma causa-raiz do incidente do
+    `migrar_para_pastas` (2026-07-29): em rotina best-effort que percorre uma
+    FILA, o `try/except` pertence a cada item.
+    """
     resultado = {"conta": conta, "ok": False, "campanhas": 0, "ad_groups": 0,
-                "erro": None}
+                "erro": None, "incompletas": 0}
     try:
-        if conta:
-            core.definir_conta(conta)
-        cred = core.carregar_credenciais()
-        token = core.obter_token(cred)
-    except Exception as e:
-        resultado["erro"] = f"falha de autenticacao: {type(e).__name__}"
-        return resultado
+        try:
+            if conta:
+                core.definir_conta(conta)
+            cred = core.carregar_credenciais()
+            token = core.obter_token(cred)
+        except Exception as e:
+            resultado["erro"] = f"falha de autenticacao: {type(e).__name__}"
+            return resultado
 
-    adv = buscar_advertiser(token)
-    if not adv:
-        resultado["erro"] = "advertiser nao encontrado (conta sem Product Ads?)"
-        return resultado
-    advertiser_id, site_id = adv
-    skus_anuncio = core.carregar_skus_anuncio()
-    cache = core.carregar_cache()
+        adv = buscar_advertiser(token)
+        if not adv:
+            resultado["erro"] = "a conta nao tem Product Ads habilitado"
+            return resultado
+        advertiser_id, site_id = adv
+        skus_anuncio = core.carregar_skus_anuncio()
+        cache = core.carregar_cache()
 
-    campanhas = buscar_campanhas_do_dia(token, site_id, advertiser_id, dia)
-    total_ad_groups = 0
-    for c in campanhas:
-        cid = c.get("id") or c.get("campaign_id")
-        detalhe = buscar_detalhe_campanha(token, site_id, cid, dia) if cid else {}
-        salvar_campanha(conn, dia=dia, conta=conta, site_id=site_id,
-                        advertiser_id=advertiser_id, campanha=c, detalhe=detalhe)
-        if cid:
-            total_ad_groups += _coletar_ad_groups_da_campanha(
-                conn, token, site_id, advertiser_id, conta, cid, dia, cache, skus_anuncio)
-    conn.commit()
-    resultado["ok"] = True
-    resultado["campanhas"] = len(campanhas)
-    resultado["ad_groups"] = total_ad_groups
+        campanhas = buscar_campanhas_do_dia(token, site_id, advertiser_id, dia)
+        if campanhas is None:
+            # NAO SEI != "nenhuma campanha". Sem isto, um 500 do ML virava um
+            # dia gravado como vazio, com o run anunciando sucesso.
+            resultado["erro"] = "o Mercado Livre nao respondeu a busca de campanhas"
+            return resultado
+        total_ad_groups = 0
+        for c in campanhas:
+            cid = c.get("id") or c.get("campaign_id")
+            detalhe = buscar_detalhe_campanha(token, site_id, cid, dia) if cid else {}
+            salvar_campanha(conn, dia=dia, conta=conta, site_id=site_id,
+                            advertiser_id=advertiser_id, campanha=c, detalhe=detalhe)
+            if cid:
+                n = _coletar_ad_groups_da_campanha(
+                    conn, token, site_id, advertiser_id, conta, cid, dia, cache, skus_anuncio)
+                if n is None:
+                    resultado["incompletas"] += 1   # o snapshot da campanha ficou; o detalhe por item, nao
+                else:
+                    total_ad_groups += n
+        conn.commit()
+        resultado["ok"] = True
+        resultado["campanhas"] = len(campanhas)
+        resultado["ad_groups"] = total_ad_groups
+    except Exception as e:                  # noqa: BLE001 - isolamento por conta e o contrato desta funcao
+        resultado["ok"] = False
+        resultado["erro"] = registro.sem_segredos(f"{type(e).__name__}: {e}")
     return resultado
 
 
@@ -491,14 +588,26 @@ def main(argv=None) -> int:
     try:
         falhas = 0
         for conta in contas:
-            r = coletar_conta(conn, conta, dia)
+            # Cinto E suspensorio: `coletar_conta` ja promete nunca levantar,
+            # mas a fila nao pode depender de uma funcao cumprir a promessa --
+            # e foi exatamente uma promessa nao cumprida que derrubou o run
+            # inteiro antes desta correcao.
+            try:
+                r = coletar_conta(conn, conta, dia)
+            except Exception as e:          # noqa: BLE001 - a fila continua
+                r = {"ok": False, "erro": registro.sem_segredos(
+                    f"erro inesperado: {type(e).__name__}: {e}")}
             if r["ok"]:
+                extra = (f" ({r['incompletas']} campanha(s) sem o detalhe por item)"
+                        if r.get("incompletas") else "")
                 print(f"  {conta}: {r['campanhas']} campanha(s), "
-                     f"{r['ad_groups']} ad group(s) salvos para {dia}")
+                     f"{r['ad_groups']} ad group(s) salvos para {dia}{extra}")
             else:
                 falhas += 1
                 print(f"  {conta}: FALHOU -- {r['erro']}")
         print(f"\nColeta de {dia} concluida. {len(contas) - falhas}/{len(contas)} conta(s) OK.")
+        # Codigo != 0 e o unico sinal que o Agendador de Tarefas registra
+        # sozinho (o run-diario.ps1 propaga com `exit $code`).
         return 1 if falhas else 0
     finally:
         conn.close()

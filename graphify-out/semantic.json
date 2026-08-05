@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 352,
- "edge_count": 649,
+ "node_count": 353,
+ "edge_count": 655,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4040,6 +4040,19 @@
    "id": "retencao_de_concluidos_zebra",
    "community": 0,
    "norm_label": "retencao de concluidos no lado da zebra (2026-08-04, v1.26.2 do outro repo): a pista indireta 2 deste app e 'o arquivo saiu da pasta vigiada', nao 'o arquivo foi apagado' -- distincao que so ficou visivel quando o outro lado parou de apagar. motivo la: o spooler aceitar o job nao garante papel impresso (papel preso, ribbon rasgado depois do aceite), e com 'excluir apos imprimir' ligado o arquivo j"
+  },
+  {
+   "label": "COLETOR DO ADS: 'NAO SEI' E ISOLAMENTO POR CONTA (2026-08-05, achados de uma auditoria externa conferida no codigo). Tres defeitos da mesma familia, todos ja conhecidos do projeto e nao aplicados aqui. (1) ISOLAMENTO PROMETIDO E NAO ENTREGUE: o docstring de coletar_conta dizia 'nunca levanta -- uma conta ruim nao pode derrubar as demais', mas o try/except cobria SO a autenticacao; advertiser, laco de campanhas, gravacao e commit corriam fora dele, entao um sqlite3.Error na 1a conta estourava por cima do main e a 2a nem era tentada. Mesma causa-raiz do incidente do migrar_para_pastas (2026-07-29): em rotina best-effort que percorre uma FILA, o try/except pertence a cada item. Hoje o try envolve o corpo inteiro E o main repete a guarda (a fila nao pode depender de uma funcao cumprir a promessa -- foi uma promessa nao cumprida que derrubou o run). (2) FALHA DE API VIRANDO FATO: buscar_campanhas_do_dia devolvia [] no erro; o laco nao rodava, coletar_conta marcava ok=True com campanhas=0 e o main saia com codigo 0. A coleta ANUNCIAVA SUCESSO com um buraco no historico, e como o coletor so busca 'ontem', esse dia nunca era preenchido sozinho. Importante para calibrar o dano: nenhuma linha era gravada, entao NAO existia 'dia zerado' distorcendo medias -- AVG() ignora linha ausente; o efeito no recomendar.py e ficar abaixo de MIN_DIAS e a campanha virar 'monitorando'. O motor fica mais CALADO, nao mais errado -- a direcao do erro importa ao priorizar. Mesma correcao em buscar_ad_groups_da_campanha (a falha da 2a pagina dava break e devolvia as 50 primeiras COMO SE fossem o total -- resposta truncada gravada como completa) e buscar_itens_do_ad_group. (3) 401/403 LIDO COMO CONFIGURACAO: buscar_advertiser colapsava erro de credencial em None e a mensagem virava 'conta sem Product Ads?', mandando o dono mexer no Mercado Ads em vez de rodar pegar_token.py -- diagnostico errado e ESTAVEL. EXCECAO DELIBERADA que NAO deve ser 'corrigida': buscar_detalhe_campanha continua devolvendo {}, porque salvar_campanha grava detalhe.get(...) -> NULL e o AVG() do SQLite ignora NULL; avaliar_campanha so olha o sinal quando 'is not None', entao falha ali ja e 'sem sinal' e nunca 'campanha saudavel'. Vira defeito grave no dia em que alguem trocar o default por 0. METODO: a auditoria externa reconheceu os PADROES e acertou 4 de 6 achados, mas inventou a consequencia do principal (afirmou distorcao de medias, que nao existe) -- revisor que aponta onde olhar, nao autoridade sobre o que acontece; conferir no codigo antes de agir continua sendo obrigatorio.",
+   "file_type": "rationale",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "coletor_ads_nao_sei_e_isolamento",
+   "community": 0,
+   "norm_label": "coletor do ads: 'nao sei' e isolamento por conta (2026-08-05, achados de uma auditoria externa conferida no codigo). tres defeitos da mesma familia, todos ja conhecidos do projeto e nao aplicados aqui. (1) isolamento prometido e nao entregue: o docstring de coletar_conta dizia 'nunca levanta -- uma conta ruim nao pode derrubar as demais', mas o try/except cobria so a autenticacao; advertiser, laco"
   }
  ],
  "edges": [
@@ -4929,6 +4942,16 @@
    "weight": 1.0,
    "source": "ci_ruff_lint",
    "target": "ci_pytest",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletor_camada1",
    "confidence_score": 1.0
   },
   {
@@ -6942,6 +6965,56 @@
    "weight": 1.0,
    "source": "carimbo_encoding_ci28",
    "target": "separador_etiquetas_ml_carimbar_zpl",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_ad_groups_da_campanha",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_advertiser",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_buscar_campanhas_do_dia",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_coletar_conta",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "ads-monitor/coletar.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "coletor_ads_nao_sei_e_isolamento",
+   "target": "ads_monitor_coletar_main",
    "confidence_score": 1.0
   },
   {
