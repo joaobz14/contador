@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 360,
- "edge_count": 683,
+ "node_count": 361,
+ "edge_count": 686,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4144,6 +4144,19 @@
    "id": "webhook_n8n_autenticado",
    "community": 0,
    "norm_label": "webhook do n8n autenticado por authorization: bearer (05/08/2026, proposto pelo lado n8n e negociado nos dois lados). o problema: os webhooks eram endpoints http sem autenticacao -- o unico segredo era o sufixo aleatorio no path. vazamento de dado ja estava fechado (o chat_id passa por allowlist do lado n8n, entao a resposta sempre vai para o dono), mas sobrava abuso por repeticao: cota da api do "
+  },
+  {
+   "label": "COMPLIANCE DA SHOPEE ENCERRADO (05/08/2026, resposta final do suporte). O requisito (success rate > 90% por 7 dias consecutivos em v2.logistics.ship_order, com prazo e risco de penalidade) foi o que motivou as duas rodadas de correcao de 2026-07. O e-mail final diz: 'A task completa-se sozinha com 7 dias consecutivos. Embora, atualmente, se houver dias SEM CHAMADA, quebra o ciclo. Isso ja esta em melhoria interna e NAO HA PENALIZACAO ATIVA no momento.' Duas conclusoes. (1) SEM PRAZO E SEM RISCO: a pressao acabou; as correcoes ficam porque estao certas, nao porque sao exigidas. (2) O ACHADO QUE DECORRE DA FRASE 'dias sem chamada quebram o ciclo': a sequencia de 7 dias e INALCANCAVEL NESTA OPERACAO POR CONSTRUCAO, e nao por falha. O app manda tudo pelo batch_ship_order -- que o suporte ja confirmara NAO contar para esta metrica -- e o caminho individual, quando acionado, cai no ramo envio_ja_arranjado e PULA o ship_order; o singular so e chamado de fato quando o endpoint de lote esta indisponivel por inteiro. Nao havendo chamadas, nao ha o que medir, e fim de semana sem despacho quebraria o ciclo de qualquer jeito. ARMADILHA A EVITAR: forcar chamadas ao singular para manter o ciclo vivo se AUTODESTROI -- seria preciso chama-lo em pedido JA organizado, que e exatamente o que produz package_already_shipped, o erro que a metrica penaliza. Manipular o indicador o derrubaria. O comportamento atual (lote + nao reenviar o que ja esta arranjado) e o correto por si, com ou sem metrica. LICAO DE METODO: a metrica media um endpoint que este app deliberadamente quase nao usa -- vale conferir SE o comportamento medido existe antes de otimizar para a medida.",
+   "file_type": "rationale",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "compliance_shopee_encerrado",
+   "community": 0,
+   "norm_label": "compliance da shopee encerrado (05/08/2026, resposta final do suporte). o requisito (success rate > 90% por 7 dias consecutivos em v2.logistics.ship_order, com prazo e risco de penalidade) foi o que motivou as duas rodadas de correcao de 2026-07. o e-mail final diz: 'a task completa-se sozinha com 7 dias consecutivos. embora, atualmente, se houver dias sem chamada, quebra o ciclo. isso ja esta em "
   }
  ],
  "edges": [
@@ -7296,6 +7309,36 @@
    "weight": 1.0,
    "source": "coletor_ads_nao_sei_e_isolamento",
    "target": "ads_monitor_coletar_main",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "compliance_shopee_encerrado",
+   "target": "shopee_api_filtrar_ja_arranjados",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "compliance_shopee_encerrado",
+   "target": "shopee_api_organizar_envio",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "compliance_shopee_encerrado",
+   "target": "shopee_api_organizar_varios",
    "confidence_score": 1.0
   },
   {

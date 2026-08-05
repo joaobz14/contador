@@ -51,6 +51,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — compliance da Shopee encerrado (resposta final do suporte).**
+  O requisito (success rate > 90% por 7 dias consecutivos em
+  `v2.logistics.ship_order`, com prazo e risco de penalidade) foi o que motivou
+  as duas rodadas de correção de 2026-07. O e-mail final: *"se houver dias **sem
+  chamada**, quebra o ciclo. Isso já está em melhoria interna e **não há
+  penalização ativa no momento**."* **Sem prazo e sem risco** — as correções
+  ficam porque estão certas, não porque são exigidas. E a frase sobre "dias sem
+  chamada" revela o resto: a sequência de 7 dias é **inalcançável nesta operação
+  por construção, e não por falha** — o app manda tudo pelo `batch_ship_order`
+  (que não conta para a métrica) e o individual **pula** o `ship_order` quando o
+  envio já está arranjado; o singular só é chamado quando o lote está
+  indisponível por inteiro. Sem chamadas, não há o que medir. **Armadilha a
+  evitar:** forçar chamadas para manter o ciclo se autodestrói — seria preciso
+  chamar o singular em pedido **já organizado**, que produz exatamente
+  `package_already_shipped`, o erro que a métrica penaliza. Novo nó
+  `compliance_shopee_encerrado`. **Método:** a métrica media um endpoint que
+  este app deliberadamente quase não usa — vale conferir **se** o comportamento
+  medido existe antes de otimizar para a medida.
+  Depois do `--update`: **1799 nós, 3425 arestas, 0 órfãs**.
 - **2026-08-05 — webhook do n8n autenticado por `Authorization: Bearer`.**
   Proposto pelo lado n8n, negociado nos dois. Os webhooks eram endpoints sem
   autenticação — vazamento de **dado** já estava fechado (o `chat_id` passa por
