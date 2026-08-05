@@ -848,10 +848,24 @@ em 2º plano.
   só recebe quem veio do `_filtrar_ja_arranjados` (1.5) ou quem o batch nunca
   chegou a tentar (endpoint indisponível por inteiro).
 - **Compliance da Shopee — success rate do `v2.logistics.ship_order` (achado
-  2026-07, 2 rodadas):** a Shopee exige (requisito obrigatório, com prazo e
-  risco de penalidade) success rate > 90% por 7 dias consecutivos **nesse
-  endpoint** (só o singular — confirmado com o suporte deles que
-  `batch_ship_order` **não** conta pra mesma métrica). O FAQ lista "This
+  2026-07, 2 rodadas; ENCERRADO em 05/08/2026).** A Shopee pedia success rate
+  > 90% por 7 dias consecutivos **nesse endpoint** (só o singular — confirmado
+  com o suporte que `batch_ship_order` **não** conta pra mesma métrica).
+  **A resposta final do suporte (e-mail de 05/08/2026) fecha o assunto:** "não
+  há penalização ativa no momento", e a tarefa "se houver dias **sem chamada**,
+  quebra o ciclo" — defeito que eles dizem estar em melhoria interna. Some o
+  prazo e some o risco; **não trate como urgência**.
+  E o achado que decorre disso: **a sequência de 7 dias é inalcançável nesta
+  operação por construção, e não por falha.** O caminho normal manda tudo pelo
+  `batch_ship_order` (que não conta), e o individual, quando acionado, cai no
+  ramo `envio_ja_arranjado` e **pula** o `ship_order` — o singular só é chamado
+  de fato quando o endpoint de lote está indisponível por inteiro. Sem chamadas,
+  não há o que medir; fim de semana sem despacho já quebraria o ciclo sozinho.
+  **NÃO "conserte" isso forçando chamadas:** para manter o ciclo vivo o app
+  teria de chamar o singular em pedido já organizado, que é exatamente o que
+  produz `package_already_shipped` — o erro que a métrica penaliza. Manipular o
+  indicador o derrubaria, e o comportamento atual (lote + não reenviar o que já
+  está arranjado) é o correto, construído pelas duas rodadas abaixo. O FAQ lista "This
   parcel has already been shipped" (`logistics.package_already_shipped`) e
   "The order is being allocated, please wait until the allocate is
   completed" (`logistics.error_param`) como causas de erro documentadas —

@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1785958997.0326169,
-  "ast_hash": "b8c1d349e0dbdc9d85449db2d315b23aea280250",
-  "semantic_hash": "b8c1d349e0dbdc9d85449db2d315b23aea280250"
+  "mtime": 1785972583.9204865,
+  "ast_hash": "83d42f4d780a7676db08e492f19984a2388ae7a1",
+  "semantic_hash": "83d42f4d780a7676db08e492f19984a2388ae7a1"
  },
  "CLAUDE.md": {
-  "mtime": 1785958997.0313077,
-  "ast_hash": "1b9538ad0dc0374815ba7d92162ff76b2a1441b1",
-  "semantic_hash": "1b9538ad0dc0374815ba7d92162ff76b2a1441b1"
+  "mtime": 1785972583.9196658,
+  "ast_hash": "cf40e29cd12db3a407012f30a1df80b55c051e67",
+  "semantic_hash": "cf40e29cd12db3a407012f30a1df80b55c051e67"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -120,9 +120,9 @@
   "semantic_hash": "3e75ce24e055ebd06621d478f0141c4a1c61fdb5"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
-  "mtime": 1785411736.8780603,
-  "ast_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80",
-  "semantic_hash": "89ddf1783327279987cf49b6f6a1e953277b9d80"
+  "mtime": 1785972601.6807904,
+  "ast_hash": "33a7c07cff9d3aaf0111aedf7047565e77cbf811",
+  "semantic_hash": "33a7c07cff9d3aaf0111aedf7047565e77cbf811"
  },
  "docs/TIKTOK_SHOP_API.md": {
   "mtime": 1785439227.0697117,

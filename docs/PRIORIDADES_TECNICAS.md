@@ -285,6 +285,11 @@ sozinho, determinístico, como antes.
 
 ## 11. Shopee: migrar `ship_order` pra checar por `get_package_detail` (respostas recebidas — migração ainda não implementada)
 
+**ENCERRADO em 05/08/2026 pela resposta final do suporte** — ver o desfecho no
+fim deste item. O que segue e o historico, mantido porque as duas rodadas de
+correcao continuam valendo por si (nao reenviar pedido ja arranjado e o
+comportamento certo, com ou sem metrica).
+
 **Contexto:** a Shopee mandou um requisito de qualidade obrigatorio (prazo,
 risco de penalidade) exigindo success rate > 90% por 7 dias consecutivos em
 `v2.logistics.ship_order`. O FAQ deles lista "This parcel has already been
@@ -330,8 +335,25 @@ demais.
    esperar **15-20 minutos** antes de reconsultar — usado pra decidir NAO
    reenviar no mesmo ciclo (rodada 2).
 
-**Ainda pendente (nao urgente pro compliance — a correcao acima ja resolve o
-requisito):** migrar de fato pra `search_package_list`/`get_package_detail`
+**DESFECHO (e-mail do suporte, 05/08/2026):** "A task completa-se sozinha com
+7 dias consecutivos. Embora, atualmente, se houver dias **sem chamada**, quebra
+o ciclo. Isso ja esta em melhoria interna e **nao ha penalizacao ativa no
+momento**." Duas conclusoes:
+
+1. **Sem prazo e sem risco.** A pressao que gerou as duas rodadas nao existe
+   mais. As correcoes ficam porque estao certas, nao porque sao exigidas.
+2. **A sequencia de 7 dias e inalcancavel nesta operacao — por construcao, nao
+   por falha.** O app manda tudo pelo `batch_ship_order` (que o suporte ja
+   confirmou nao contar pra metrica) e o caminho individual pula o `ship_order`
+   quando o envio ja esta arranjado; o singular so e chamado quando o endpoint
+   de lote esta indisponivel por inteiro. Nao havendo chamadas, nao ha o que
+   medir — e fim de semana sem despacho quebraria o ciclo de qualquer jeito.
+
+**NAO force chamadas para manter o ciclo.** Seria preciso chamar o singular em
+pedido ja organizado, que produz exatamente `package_already_shipped` — o erro
+que a metrica penaliza. Manipular o indicador o derrubaria.
+
+**Ainda pendente (nao urgente — nunca foi, e agora menos ainda):** migrar de fato pra `search_package_list`/`get_package_detail`
 em vez de `get_shipping_parameter`/`info_needed`. E uma mudanca maior do que
 parece: `package_number` pode ser 1:N com `order_sn`, o que exigiria repensar
 a identidade usada em `estado.py`/`Grupo.shipment_ids` (hoje tudo indexado
