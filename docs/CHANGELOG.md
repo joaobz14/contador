@@ -4,6 +4,44 @@ Histórico das principais mudanças do projeto.
 
 ## [Não lançado]
 
+### Removido
+- **A checagem semanal das APIs (`api-monitor`) foi desativada.** Ela nunca
+  conseguiu ler as fontes de verdade — a página de novidades do Mercado Livre
+  exige login e as da Shopee dependem de renderizar a página inteira, o que
+  falhava — então o relatório saía "bloqueada" toda semana, sem informação
+  nenhuma, e ainda gastava uma consulta paga de IA a cada execução. Também havia
+  um risco: ela rodava sozinha, sem restrição, na pasta onde ficam as
+  credenciais, usando conteúdo baixado da internet.
+  - **O que você precisa fazer na máquina:** remover a tarefa do Agendador —
+    `Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:$false`.
+    Enquanto ela existir, vai continuar rodando semanalmente (agora só para
+    imprimir o aviso de desativado).
+  - O código ficou guardado, com o motivo escrito e o que precisaria mudar para
+    voltar (`api-monitor/README.md`).
+
+### Corrigido
+- **Quando a tela não abre, agora dá para saber por quê.** O atalho sobe o
+  programa sem janela preta — então, se algo quebrasse na abertura, o
+  duplo-clique não fazia **nada**: sem tela, sem mensagem, sem nenhum registro.
+  Agora aparece uma caixa de erro dizendo o que houve, e o erro completo fica
+  no `logs/separador.log`. Erros que acontecem com a tela já aberta (e que antes
+  se perdiam) também passam a ser registrados lá.
+- **A coleta diária do Product Ads não anuncia mais sucesso quando falha.**
+  Quando o Mercado Livre não respondia à busca de campanhas, o coletor gravava
+  o dia como "nenhuma campanha", dizia que tinha dado certo e saía com código de
+  sucesso — o dia ficava vazio no histórico e ninguém ficava sabendo. Agora ele
+  informa a falha e termina com erro (que é o que o Agendador de Tarefas do
+  Windows registra sozinho). Para recuperar um dia perdido:
+  `python ads-monitor/coletar.py --dia AAAA-MM-DD`.
+- **Uma conta com problema não derruba mais a coleta da outra.** Um erro
+  inesperado na Cozilatti (banco travado, resposta estranha) fazia o programa
+  parar antes de tentar a Gastromaq. Agora cada conta é isolada de verdade.
+- **Token vencido não é mais confundido com "conta sem Product Ads".** A
+  mensagem agora diz o que fazer: rodar `pegar_token.py` para aquela conta.
+- **Campanha grande não é mais gravada pela metade.** Se a listagem de anúncios
+  de uma campanha for interrompida no meio, o dia dela fica marcado como
+  incompleto em vez de registrar só a primeira parte como se fosse o total.
+
 ### Adicionado
 - **Etiqueta já impressa agora dá para recuperar** (exige o app da Zebra
   **v1.26.2** ou mais novo). Antes, com "Excluir após imprimir" ligado, o arquivo

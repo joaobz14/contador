@@ -117,6 +117,20 @@ jobs:
           xvfb-run -a python tools/gui_screenshot.py tela_ml.png
           xvfb-run -a python tools/gui_screenshot.py tela_shopee.png Shopee
 
+      - name: Provar que este job REPROVA com a tela quebrada
+        # Sem esta prova, o job so garante que o screenshot foi tirado. O Tk
+        # engole excecao de callback (`after`, clique, trace) e segue, entao
+        # ate 2026-08-05 um erro na abertura saia com codigo 0 e o job ficava
+        # VERDE com a tela quebrada. `--autoteste` agenda um callback que
+        # estoura de proposito: se o script NAO reprovar, o guardiao parou de
+        # guardar e este passo falha.
+        run: |
+          if xvfb-run -a python tools/gui_screenshot.py /tmp/autoteste.png "Mercado Livre" --autoteste; then
+            echo "::error::gui_screenshot saiu com 0 mesmo com callback quebrado - o guardiao nao guarda mais nada"
+            exit 1
+          fi
+          echo "OK: o guardiao reprovou como deveria."
+
       - name: Publicar screenshots (artefato do run)
         uses: actions/upload-artifact@v4
         with:

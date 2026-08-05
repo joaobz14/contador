@@ -13,6 +13,7 @@ janela preta do terminal.)
 import threading
 import time
 import tkinter as tk
+import traceback
 from datetime import datetime
 from tkinter import messagebox, simpledialog, ttk
 
@@ -1529,9 +1530,56 @@ def _marcar_lote_tolerante(marcar, impressos: list, perguntar_retry) -> list:
     return falhas
 
 
+def _erro_de_callback(exc, val, tb) -> None:
+    """Manda para o `separador.log` a excecao que o Tk engoliria.
+
+    O Tk CAPTURA excecao de callback (`after`, clique, trace), imprime no
+    stderr e segue. Sob `pythonw` — que e como a tela sobe pelo atalho — nao
+    ha stderr: o traceback vai para lugar nenhum. O sintoma vira "a tela
+    travou/nao fez nada" sem uma linha em canto algum, e a investigacao
+    comeca do zero. Registrar aqui e puramente aditivo: nao muda o que a tela
+    faz, so deixa rastro. Sem messagebox de proposito — um callback que falhe
+    em serie encheria a tela de caixas de dialogo.
+    """
+    try:
+        log.error("Erro em callback do Tk (a tela seguiu rodando): %s",
+                  sem_segredos("".join(traceback.format_exception(exc, val, tb))))
+    except Exception:                              # noqa: BLE001 - log nunca atrapalha
+        pass
+
+
+def _falha_na_abertura(e: BaseException) -> None:
+    """Ultimo recurso quando a tela NAO abre: deixa rastro e avisa.
+
+    Sob `pythonw` (Abrir Separador.bat) nao ha console: uma excecao aqui fazia
+    o duplo-clique nao produzir NADA — sem janela, sem mensagem, sem log. E o
+    mesmo defeito do incidente do bot_config.json (2026-08-04), na tela que se
+    abre todo dia de manha: uma falha que so aparece onde ninguem olha e uma
+    falha silenciosa. Agora vai para o separador.log E para uma caixa de
+    dialogo (o Tk consegue mostrar uma mesmo com a janela principal quebrada;
+    se nem isso der, o log ja esta gravado).
+    """
+    try:
+        log.exception("A tela nao conseguiu abrir")
+    except Exception:                              # noqa: BLE001
+        pass
+    try:
+        messagebox.showerror(
+            "Separador de Etiquetas",
+            f"A tela nao conseguiu abrir:\n\n{sem_segredos(e)}\n\n"
+            f"O erro completo esta em {core.PASTA_LOGS / 'separador.log'}.")
+    except Exception:                              # noqa: BLE001 - sem display/Tk quebrado
+        pass
+
+
 def main() -> None:
-    root = tk.Tk()
-    SeparadorApp(root)
+    try:
+        root = tk.Tk()
+        root.report_callback_exception = _erro_de_callback
+        SeparadorApp(root)
+    except Exception as e:                         # noqa: BLE001 - ver _falha_na_abertura
+        _falha_na_abertura(e)
+        raise SystemExit(1) from None
     root.mainloop()
 
 

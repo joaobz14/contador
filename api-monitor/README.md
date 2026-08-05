@@ -1,5 +1,36 @@
 # api-monitor — monitor semanal das APIs (Mercado Livre + Shopee)
 
+> [!warning] **DESATIVADO em 05/08/2026** (pausa, não desistência)
+>
+> `run-semanal.ps1` e `registrar-tarefa.ps1` **não rodam mais** — os dois saem
+> logo no começo com um aviso. O código foi preservado inteiro; para reativar,
+> apague os blocos marcados `ARQUIVADO` no topo de cada um.
+>
+> **Por que:** nunca se conseguiu acesso confiável às fontes. A fonte 1 (ML
+> Novidades) exige **login** do console e não tem equivalente público; as 3 e 4
+> (Shopee) são SPAs que dependem do Playwright + Edge renderizar, e nem sempre
+> renderizam. Uma rotina que marca "bloqueada" toda semana não monitora nada —
+> e continuava **custando uma chamada paga de IA por semana**.
+>
+> **O que importava mais que o desperdício** (auditoria de 05/08/2026): a rotina
+> rodava `claude -p --permission-mode bypassPermissions`, **sem ninguém olhando**,
+> com o `cwd` na raiz do projeto — a mesma pasta de `dados/contas/*/credenciais.json`,
+> `credenciais_shopee.json` e `bot_config.json` (token do Telegram e as URLs dos
+> webhooks do n8n, que são credenciais). E a **entrada** dela era conteúdo baixado
+> da web. Probabilidade baixa, raio de alcance igual às credenciais do negócio.
+> A flag foi trocada por `--allowedTools "WebFetch,Read,Write,Edit"` (em modo `-p`,
+> ferramenta fora da lista falha em vez de perguntar — funciona sem ninguém
+> presente, **sem shell**), para que uma reativação futura não reinstale o risco
+> por descuido.
+>
+> **O que destrava:** uma fonte pública e estável para as novidades do ML (RSS,
+> changelog, ou a área logada via API) e uma captura da Shopee que não dependa de
+> renderizar SPA. Sem isso, reativar só recria o relatório vazio.
+>
+> **Enquanto isso**, mudança de API aparece do jeito de sempre: quebrando algo, e
+> aí os diagnósticos do projeto dizem o quê (`python separador_etiquetas_ml.py
+> substatus`, `python shopee_api.py status`).
+
 Checa **uma vez por semana** se mudou algo na **documentação/políticas** das APIs
 que o Separador usa — **sem consultar dados da conta**, só as páginas públicas.
 Objetivo: pegar cedo depreciação de endpoint, nova política, prazo, taxa, etc.
@@ -83,10 +114,13 @@ Unregister-ScheduledTask -TaskName 'Contador - Monitor APIs (semanal)' -Confirm:
 
 ## Notas
 
-- **Permissões:** `run-semanal.ps1` chama `claude -p --permission-mode
-  bypassPermissions` para rodar sem pedir confirmação (é tarefa automática, sem
-  ninguém para responder). Se preferir restringir, troque por
-  `--allowedTools "WebFetch,Read,Write,Edit"` no script.
+- **Permissões (corrigido em 05/08/2026, junto com a desativação):**
+  `run-semanal.ps1` chamava `claude -p --permission-mode bypassPermissions` — sem
+  restrição nenhuma, sem ninguém olhando, na pasta das credenciais e com conteúdo
+  da web como entrada. Hoje usa `--allowedTools "WebFetch,Read,Write,Edit"`: em
+  modo `-p`, ferramenta fora da lista **falha** em vez de perguntar, então
+  continua rodando desassistido, mas **sem shell**. **Se reativar, mantenha a
+  lista** — a flag antiga é o risco que motivou desligar tudo.
 - **Baseline inicial vazio:** os snapshots começam vazios porque a configuração
   foi feita num ambiente de nuvem com **rede restrita** que não alcança essas
   fontes (ver `relatorios/2026-07-17.md`). O baseline é criado na **primeira

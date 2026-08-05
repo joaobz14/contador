@@ -51,6 +51,68 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — `api-monitor` desativado (pausa, não desistência).** Duas
+  razões, e a segunda é a que decide. **(1) Não funcionava:** ML Novidades exige
+  login e não tem equivalente público; as fontes da Shopee são SPAs que nem
+  sempre renderizavam. O relatório saía "bloqueada" toda semana — rotina que
+  nunca responde não monitora — e ainda custava uma chamada paga de IA por
+  semana. **(2) Risco:** rodava `claude -p --permission-mode bypassPermissions`,
+  **sem supervisão**, com `cwd` na raiz do projeto (a pasta das credenciais do
+  ML, da Shopee e do bot), tendo **conteúdo baixado da web como entrada**.
+  Probabilidade baixa, raio de alcance igual às credenciais do negócio. Os dois
+  `.ps1` saem no começo com aviso e o código ficou inteiro — reativar é apagar o
+  bloco. O `registrar-tarefa.ps1` foi travado **de propósito**: sem isso,
+  reativar seria um duplo-clique distraído num script esquecido, e não uma
+  decisão. A flag virou `--allowedTools` **antes** de arquivar, para que uma
+  reativação futura não reinstale o risco por descuido. Novo nó
+  `api_monitor_desativado`. **Lição:** agente automático sem supervisão herda o
+  alcance da pasta em que roda; quando a entrada dele é conteúdo de terceiros,
+  restringir ferramenta é o mínimo — e desligar o que não entrega valor é sempre
+  mais barato que proteger.
+  Depois do `--update`: **1759 nós, 3327 arestas, 0 órfãs**.
+- **2026-08-05 — a tela que não abre sem deixar rastro, e o guardião que não
+  guardava.** Auditoria feita por um critério novo: procurar por
+  **invisibilidade** (onde uma falha não apareceria para ninguém), não por
+  complexidade — o que o incidente do `bot_config.json` ensinou. Dois achados,
+  mesma causa: o Tk **captura** exceção de callback (`after`/clique/`trace`),
+  imprime no stderr e segue — e nem sob `pythonw` (como o atalho sobe a tela)
+  nem no job da CI existe alguém lendo esse stderr. **(1) Na tela:** `main()`
+  eram quatro linhas sem `try/except` e sem log; falha ao montar fazia o
+  duplo-clique não produzir **nada**. Idêntico ao incidente do bot, no app que
+  abre toda manhã. **(2) Na CI:** o `gui-smoke` pegava só erro de **construção**
+  — erro em callback deixava o `gui_screenshot.py` tirar o screenshot e sair com
+  0, job **verde** com a tela quebrada (reproduzido antes de corrigir). Hoje o
+  script instala `report_callback_exception` e reprova, **com o screenshot
+  tirado antes** (a imagem é a primeira pista e sumiria se ele morresse antes),
+  e a CI ganhou um passo `--autoteste` que exige que ele reprove: guardião sem
+  prova de que reprova não é guardião, e descobrir que ele parou de guardar não
+  pode depender de um bug chegar na produção. Novo nó
+  `falha_silenciosa_na_abertura_da_tela`.
+  Depois do `--update`: **1758 nós, 3324 arestas, 0 órfãs**.
+- **2026-08-05 — coletor do Ads: "não sei" e isolamento por conta.** Três
+  defeitos da mesma família, todos já conhecidos do projeto e nunca aplicados
+  nesta pasta. (1) `coletar_conta` **prometia no docstring** um isolamento que
+  não entregava: o `try/except` cobria só a autenticação, e um `sqlite3.Error`
+  na 1ª conta derrubava o run antes de a 2ª ser tentada — mesma causa-raiz do
+  `migrar_para_pastas` (2026-07-29). (2) `buscar_campanhas_do_dia` devolvia
+  `[]` no erro, então o dia era dado por coletado com `campanhas: 0` e o run
+  **anunciava sucesso** com código de saída 0, deixando um buraco que nunca era
+  preenchido (o coletor só busca "ontem"). **Calibração do dano:** nenhuma linha
+  era gravada, então não havia "dia zerado" distorcendo médias — `AVG()` ignora
+  linha ausente; o efeito no `recomendar.py` é cair abaixo de `MIN_DIAS` e virar
+  "monitorando", ou seja, o motor fica mais **calado**, não mais errado. Mesma
+  correção na paginação de ad_groups (falha na 2ª página devolvia as 50
+  primeiras como se fossem o total) e na busca de itens. (3) 401/403 virava
+  "conta sem Product Ads?", mandando mexer no Mercado Ads em vez de rodar
+  `pegar_token.py`. **Exceção deliberada preservada:** `buscar_detalhe_campanha`
+  continua devolvendo `{}` — vira NULL, e `AVG()` ignora NULL, então falha ali
+  já significa "sem sinal" e nunca "campanha saudável". Novo nó
+  `coletor_ads_nao_sei_e_isolamento`. **Método:** os achados vieram de uma
+  auditoria feita por outra ferramenta de agente, conferida linha a linha aqui —
+  ela reconheceu os padrões e acertou 4 de 6, mas **inventou a consequência** do
+  achado principal. Revisor que aponta onde olhar, não autoridade sobre o que
+  acontece.
+  Depois do `--update`: **1744 nós, 3306 arestas, 0 órfãs**.
 - **2026-08-04 — a pista do monitor é "SAIR da pasta", não "ser apagado"
   (app Zebra v1.26.2).** O outro lado passou a **mover** o arquivo impresso com
   sucesso para `~/zebra_usb_concluidos/AAAA-MM-DD/` em vez de apagá-lo: quando a
