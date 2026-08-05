@@ -18,6 +18,8 @@ Comandos:
   python shopee_api.py dia <AAAA-MM-DD>
   python shopee_api.py etiqueta <order_sn>   -> gera/baixa a etiqueta e mostra o formato
   python shopee_api.py parametros <order_sn> -> tipos de documento disponiveis (diagnostico)
+  python shopee_api.py canais     -> canais de logistica da loja; diz se ha
+                                      Entrega Instantanea habilitada (diagnostico)
 """
 
 from __future__ import annotations
@@ -1382,6 +1384,40 @@ def main() -> None:
             print(parametros_documento(cred, token, args[1]))
         except core.SeparadorError as e:
             sys.exit(f"ERRO: {e}")
+        return
+
+    # Diagnostico: a loja tem canal de Entrega Instantanea habilitado? A Shopee
+    # anunciou (05/08/2026, mercados incluindo BR) que espera adocao crescer nos
+    # proximos 1-2 anos e pede que apps de fulfillment suportem o fluxo — mas o
+    # canal so existe se a Shopee habilitar para a loja (categoria/regiao), e o
+    # app inteiro e desenhado para LOTE por dia de despacho, nao pedido a pedido
+    # em minutos. Antes de decidir se vale a pena mexer em algo, confirme se o
+    # canal existe aqui: `v2.logistics.get_channel_list`,
+    # service_type_identifier == "instant".
+    if comando == "canais":
+        try:
+            cred = carregar_credenciais()
+            token = obter_token(cred)
+            dados = _get_shop(cred, token, "/api/v2/logistics/get_channel_list", {})
+        except core.SeparadorError as e:
+            sys.exit(f"ERRO: {e}")
+        canais = (dados.get("response") or {}).get("logistics_channel_list") or []
+        print(f"\n{len(canais)} canal(is) de logistica na loja:\n")
+        instantaneos = []
+        for c in canais:
+            tipo = c.get("service_type_identifier") or "(sem tipo)"
+            marca = "   <- ENTREGA INSTANTANEA" if tipo == "instant" else ""
+            print(f"  {c.get('logistics_channel_id')}  {c.get('logistics_channel_name')}"
+                  f"  [{tipo}]{marca}")
+            if tipo == "instant":
+                instantaneos.append(c.get("logistics_channel_id"))
+        if instantaneos:
+            print(f"\n>> Existe canal instantaneo habilitado: {instantaneos}.")
+            print("   Vale conversar antes de mexer em codigo — e mudanca de "
+                 "arquitetura (pedido a pedido, nao lote), nao so um alerta a mais.")
+        else:
+            print("\n>> Nenhum canal instantaneo nesta loja. O anuncio da Shopee "
+                 "nao se aplica aqui agora.")
         return
 
     try:
