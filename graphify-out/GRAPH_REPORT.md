@@ -51,6 +51,22 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — "tenho que abrir o Reiniciar Bot.bat 2x".** Relato do dono. O
+  bot roda numa árvore `powershell`(tarefa) → `cmd.exe`(laço) → `python.exe`. O
+  script matava o `cmd.exe` e o `python`, mas o `powershell` da tarefa só termina
+  **depois** que o `Start-Process -Wait` dele percebe que o `.bat` morreu — e até
+  lá a tarefa continua "Em execução", estado em que o Agendador **recusa**
+  `schtasks /run`. Dois defeitos somados: a espera olhava só os processos
+  **python** (já mortos, então saía na hora) e o **código de saída do `/run` era
+  descartado**, com a mensagem verde saindo de qualquer jeito. Por isso o sintoma
+  não era erro e sim "abre de novo que aí vai". Hoje espera o lançador sair e a
+  tarefa liberar, confere o `$LASTEXITCODE` e — acima de tudo — **verifica que um
+  bot apareceu** antes de anunciar sucesso, com fallback para o `.bat` direto.
+  Guardião de **texto** (PowerShell não roda na CI): não prova que funciona, só
+  impede que as três defesas sumam sem ninguém notar. Novo nó
+  `reiniciar_bot_duas_vezes`. **Mesma família** do `gui-smoke` e do `bot_config`
+  inválido: o defeito não era falhar, era **reportar sucesso sem ter verificado**.
+  Depois do `--update`: **1774 nós, 3374 arestas, 0 órfãs**.
 - **2026-08-05 — alerta pós-horário: uma mensagem por ciclo, janela às 8:30 e 1º
   ciclo calado.** Veio de um print do próprio dono. O envio era **por origem e
   por tipo**: com 2 contas ML + Shopee, cada uma podendo ter "pronta" e "falta

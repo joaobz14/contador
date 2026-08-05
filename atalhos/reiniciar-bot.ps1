@@ -63,15 +63,50 @@ if (@(Processos-Do-Bot).Count -gt 0) {
     exit 1
 }
 
+# Espera o LANCADOR sair tambem. Nao e detalhe (achado 2026-08-05: "tenho que
+# abrir o Reiniciar Bot.bat 2x"): enquanto o cmd.exe do laco existir, o
+# `Start-Process -Wait` do rodar-bot-oculto.ps1 ainda nao voltou e a TAREFA
+# continua "Em execucao" -- e o Agendador RECUSA `schtasks /run` numa tarefa que
+# ja esta rodando (regra padrao: nao iniciar nova instancia). O laco anterior so
+# olhava o python, que ja tinha morrido, entao saia na hora e o /run vinha cedo
+# demais. Na 1a execucao nada subia; na 2a a tarefa ja tinha liberado.
+for ($i = 0; $i -lt 20 -and (@(Lancadores).Count -gt 0); $i++) { Start-Sleep -Milliseconds 500 }
+
+function Tarefa-Rodando {
+    try { (Get-ScheduledTask -TaskName $NomeTarefa -ErrorAction Stop).State -eq 'Running' }
+    catch { $false }   # tarefa inexistente nao esta rodando
+}
+for ($i = 0; $i -lt 20 -and (Tarefa-Rodando); $i++) { Start-Sleep -Milliseconds 500 }
+
 # Sobe UMA vez. Pela tarefa quando ela existir (mesmo caminho do logon); senao,
 # direto pelo .bat -- um setup sem a tarefa registrada continua utilizavel.
+$subiu_por = ""
 schtasks /query /tn "$NomeTarefa" *> $null
 if ($LASTEXITCODE -eq 0) {
     schtasks /run /tn "$NomeTarefa" *> $null
-    Write-Host "Bot reiniciado pela tarefa do Agendador." -ForegroundColor Green
-} else {
+    if ($LASTEXITCODE -eq 0) { $subiu_por = "tarefa do Agendador" }
+    else { Write-Host "  o Agendador recusou iniciar a tarefa (codigo $LASTEXITCODE)." -ForegroundColor Yellow }
+}
+
+# CONFERE que um bot apareceu de verdade, em vez de anunciar sucesso e sair.
+# Era exatamente isso que escondia a falha: o codigo de saida do `schtasks /run`
+# era descartado e a mensagem verde saia de qualquer jeito, entao o unico
+# sintoma visivel era "nao reiniciou, abre de novo".
+for ($i = 0; $i -lt 30 -and (@(Processos-Do-Bot).Count -eq 0); $i++) { Start-Sleep -Milliseconds 500 }
+
+if (@(Processos-Do-Bot).Count -eq 0) {
+    # Ultimo recurso: sobe pelo .bat direto. Este script ja nao depende da
+    # arvore da tarefa (mata por identificacao propria), entao um bot fora dela
+    # e plenamente gerenciavel -- e bot de pe vale mais que bot na arvore certa.
     $bat = Join-Path $PSScriptRoot 'Iniciar Bot (auto).bat'
     Start-Process -FilePath $bat -WindowStyle Hidden
-    Write-Host "Bot reiniciado pelo lancador (tarefa nao registrada)." -ForegroundColor Green
+    $subiu_por = "lancador direto"
+    for ($i = 0; $i -lt 30 -and (@(Processos-Do-Bot).Count -eq 0); $i++) { Start-Sleep -Milliseconds 500 }
 }
-Write-Host "Mande /versao no Telegram em uns 15s para confirmar."
+
+if (@(Processos-Do-Bot).Count -eq 0) {
+    Write-Host "NAO consegui subir o bot. Veja o fim de logs\bot.log -- se falar em " -ForegroundColor Red -NoNewline
+    Write-Host "bot_config.json, o arquivo esta invalido." -ForegroundColor Red
+    exit 1
+}
+Write-Host "Bot reiniciado ($subiu_por). Mande /versao no Telegram para confirmar." -ForegroundColor Green

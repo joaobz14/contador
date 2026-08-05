@@ -23856,6 +23856,33 @@
    "id": "alerta_uma_mensagem_por_ciclo",
    "community": 0,
    "norm_label": "alerta pos-horario: uma mensagem por ciclo, janela as 8:30 e 1o ciclo calado (05/08/2026, a partir de um print do proprio dono). o envio era por origem e por tipo: com 2 contas ml + shopee, e cada uma podendo ter 'pronta' e 'falta nf-e', o pior caso eram seis mensagens a cada 5 minutos -- avisos curtos competindo entre si no chat. tres correcoes, e cada uma resolve uma coisa diferente. (1) agrupar"
+  },
+  {
+   "label": "test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu()",
+   "file_type": "code",
+   "source_file": "tests/test_bot_atualizar.py",
+   "source_location": "L337",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_bot_atualizar_test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu",
+   "community": 79,
+   "norm_label": "test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu()"
+  },
+  {
+   "label": "REINICIAR BOT SO FUNCIONAVA NA SEGUNDA TENTATIVA (05/08/2026). Relato do dono: 'tenho que abrir o Reiniciar Bot.bat 2x para o bot reiniciar mesmo'. O bot roda numa arvore powershell(tarefa) -> cmd.exe(.bat do laco) -> python.exe. O script matava o cmd.exe e o python, mas o powershell da tarefa so termina DEPOIS que o seu `Start-Process -Wait` percebe que o .bat morreu -- e enquanto isso a tarefa continua 'Em execucao'. O Agendador RECUSA `schtasks /run` numa tarefa ja rodando (regra padrao: nao iniciar nova instancia). Dois defeitos somados: (1) a espera olhava so os processos PYTHON, que ja tinham sido mortos, entao o laco saia na hora e o /run vinha cedo demais; (2) o codigo de saida do /run era DESCARTADO (`*> $null`) e a mensagem verde 'Bot reiniciado' saia de qualquer jeito. Por isso o sintoma nao era um erro e sim 'abre de novo que ai vai' -- na 1a vez nada subia, na 2a a tarefa ja tinha liberado. Correcao: esperar o LANCADOR sair e a tarefa deixar de estar Running antes do /run; conferir o $LASTEXITCODE; e, acima de tudo, CONFERIR que um bot apareceu de verdade antes de anunciar sucesso, com fallback para o .bat direto (bot de pe vale mais que bot na arvore certa -- este script ja nao depende da arvore, mata por identificacao propria). Guardiao de TEXTO em tests/test_bot_atualizar.py, assumidamente fraco: PowerShell nao roda na CI (Linux), entao ele nao prova que funciona, so impede que as tres defesas sumam sem ninguem notar -- e procura a instrucao VIVA, porque o cabecalho do script cita `schtasks /run` ao contar a historia do bug anterior e comentario nao vale como defesa. MESMA FAMILIA do achado do gui-smoke e do bot_config invalido: o defeito nao era falhar, era REPORTAR SUCESSO sem ter verificado nada.",
+   "file_type": "rationale",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "reiniciar_bot_duas_vezes",
+   "community": 0,
+   "norm_label": "reiniciar bot so funcionava na segunda tentativa (05/08/2026). relato do dono: 'tenho que abrir o reiniciar bot.bat 2x para o bot reiniciar mesmo'. o bot roda numa arvore powershell(tarefa) -> cmd.exe(.bat do laco) -> python.exe. o script matava o cmd.exe e o python, mas o powershell da tarefa so termina depois que o seu `start-process -wait` percebe que o .bat morreu -- e enquanto isso a tarefa c"
   }
  ],
  "links": [
@@ -37942,6 +37969,26 @@
    "confidence_score": 0.85
   },
   {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reiniciar_bot_duas_vezes",
+   "target": "config_bot_invalida_silenciosa",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reiniciar_bot_duas_vezes",
+   "target": "falha_silenciosa_na_abertura_da_tela",
+   "confidence_score": 1.0
+  },
+  {
    "source": "reinicio_do_bot_orfao",
    "target": "bot_agendador_tarefas_logon",
    "relation": "conceptually_related_to",
@@ -43853,6 +43900,16 @@
    "weight": 1.0,
    "source": "tests_test_bot_atualizar",
    "target": "tests_test_bot_atualizar_test_receita_de_reinicio_nao_volta_ao_par_schtasks",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_bot_atualizar.py",
+   "source_location": "L337",
+   "weight": 1.0,
+   "source": "tests_test_bot_atualizar",
+   "target": "tests_test_bot_atualizar_test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu",
    "confidence_score": 1.0
   },
   {
@@ -54673,6 +54730,16 @@
    "confidence_score": 1.0
   },
   {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "atalhos/reiniciar-bot.ps1",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "reiniciar_bot_duas_vezes",
+   "target": "bot_telegram_cmd_atualizar",
+   "confidence_score": 1.0
+  },
+  {
    "source": "reinicio_do_bot_orfao",
    "target": "bot_telegram_cmd_atualizar",
    "relation": "rationale_for",
@@ -58369,5 +58436,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "ec69d71731de28c52eeeedef27fa25700a82dab5"
+ "built_at_commit": "52ca2b8193bcf5221cfd6e9fc4f0255c77c86ec0"
 }

@@ -332,3 +332,45 @@ def test_receita_de_reinicio_nao_volta_ao_par_schtasks():
                  if "schtasks /end" in ln
                  and not ln.strip().startswith(("#", "REM", "//"))]
         assert not vivas, f"{arq.name} ainda ensina o par schtasks: {vivas}"
+
+
+def test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu():
+    """Regressao (2026-08-05): "tenho que abrir o Reiniciar Bot.bat 2x".
+
+    O script matava o cmd.exe do laco e o python, esperava so os PYTHON
+    sumirem — que ja tinham morrido, entao a espera saia na hora — e chamava
+    `schtasks /run` enquanto o `Start-Process -Wait` do rodar-bot-oculto.ps1
+    ainda nao tinha voltado. Com a tarefa em "Em execucao", o Agendador RECUSA
+    iniciar outra instancia. E o codigo de saida do /run era DESCARTADO, com a
+    mensagem verde saindo de qualquer jeito: a falha ficava invisivel e o unico
+    sintoma era "abre de novo que ai vai".
+
+    Guardiao de texto porque PowerShell nao roda na CI (Linux). Fraco de
+    proposito: nao prova que funciona, so impede que as tres defesas sumam sem
+    ninguem notar.
+    """
+    from pathlib import Path
+
+    ps1 = (Path(bot.__file__).resolve().parent / "atalhos"
+           / "reiniciar-bot.ps1").read_text(encoding="utf-8")
+
+    # 1) espera o LANCADOR sair (e a tarefa deixar de estar Running)
+    assert "@(Lancadores).Count -gt 0" in ps1, \
+        "sem esperar o cmd.exe do laco sair, a tarefa ainda esta Running e o /run e recusado"
+    assert "Get-ScheduledTask" in ps1 and "'Running'" in ps1
+
+    # 2) o codigo de saida do /run e conferido, nao descartado. Procura a
+    # instrucao VIVA: o cabecalho do script cita `schtasks /run` ao contar a
+    # historia do bug antigo, e o comentario nao vale como defesa.
+    linhas = ps1.splitlines()
+    vivas = [i for i, ln in enumerate(linhas)
+             if "schtasks /run" in ln and not ln.strip().startswith("#")]
+    assert vivas, "o script precisa iniciar a tarefa em algum lugar"
+    depois = "\n".join(linhas[vivas[-1]:vivas[-1] + 6])
+    assert "$LASTEXITCODE" in depois, \
+        "o /run pode ser recusado; ignorar o codigo de saida foi o que escondeu a falha"
+
+    # 3) so anuncia sucesso depois de VER um bot de pe
+    i_ok = ps1.index("Bot reiniciado (")
+    i_confere = ps1.index("@(Processos-Do-Bot).Count -eq 0")
+    assert i_confere < i_ok, "anunciar sucesso sem conferir e o defeito, nao a correcao"

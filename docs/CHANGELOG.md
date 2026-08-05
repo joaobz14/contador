@@ -36,6 +36,13 @@ Histórico das principais mudanças do projeto.
     voltar (`api-monitor/README.md`).
 
 ### Corrigido
+- **O "Reiniciar Bot.bat" agora reinicia na primeira vez.** Era preciso abrir
+  duas vezes: na primeira ele derrubava o bot mas não conseguia subir de novo —
+  a tarefa do Agendador ainda estava terminando, o Windows recusava iniciá-la, e
+  o script dizia "reiniciado" mesmo assim. Agora ele espera a tarefa liberar,
+  confere se conseguiu, e **só avisa que reiniciou depois de ver o bot de pé**.
+  Se nem assim subir, ele sobe pelo lançador direto; e se ainda assim falhar,
+  diz que falhou em vez de dar sucesso por engano.
 - **Quando a tela não abre, agora dá para saber por quê.** O atalho sobe o
   programa sem janela preta — então, se algo quebrasse na abertura, o
   duplo-clique não fazia **nada**: sem tela, sem mensagem, sem nenhum registro.
