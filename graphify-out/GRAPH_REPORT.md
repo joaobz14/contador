@@ -51,6 +51,25 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-05 — carência do aviso "sem NF-e": o sinal é o TEMPO, não o
+  estado.** Relato do dono, com print: o alerta avisava "sem NF-e" e minutos
+  depois se desmentia com o ✅. Causa: o ERP dele (UpSeller) consulta as APIs,
+  puxa a venda, confere o **estoque interno** e só então sobe o XML — então
+  **toda** venda nova passa alguns minutos sem nota, e o alerta disparava dentro
+  dessa janela normal. O aviso não existe para dizer "está sem NF-e"; existe
+  para dizer **"está sem NF-e há tempo demais para ser processamento normal"**,
+  que no fluxo dele significa **falta de estoque**. Este era o discriminador que
+  **faltava**: já se sabia que `invoice_data.status=pending` é ambíguo (por isso
+  o texto nunca afirmou a causa) — o que não se tinha era como separar os casos.
+  O tempo separa, e de quebra mata o falso positivo do "Em processamento" da
+  Shopee: **um mecanismo, dois ruídos**. Três decisões: o relógio conta do
+  carimbo da **venda** (não de quando o bot olhou); quem está **na carência não
+  é registrado** no dedup (senão ficaria calado para sempre); e **sem carimbo,
+  avisa** (nunca calar com prova na mão). O corte fica no **bot**, não no núcleo.
+  A mensagem leva **há quanto tempo** — uma parada há 40 min é estoque, várias de
+  uma vez é o faturador fora do ar; entrega o dado e não conclui. Novo nó
+  `carencia_do_aviso_sem_nf`.
+  Depois do `--update`: **1789 nós, 3404 arestas, 0 órfãs**.
 - **2026-08-05 — Entrega Instantânea da Shopee não se aplica (decisão do
   dono).** A Shopee anunciou por e-mail que espera adoção crescente da Instant
   Delivery (mercados incluindo BR) e pede suporte de apps de fulfillment.

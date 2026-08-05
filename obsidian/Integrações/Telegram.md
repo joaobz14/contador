@@ -76,6 +76,18 @@ senão some do menu.
   aviso separado. `pending` sozinho é o estado de toda venda nova, então o que
   distingue é o **dia** — e como o prazo demora a ser atribuído, ele é derivado
   de `pay_time + days_to_ship` quando falta.
+- **Carência do aviso "sem NF-e"** (05/08/2026): o sinal é o **tempo**, não o
+  estado. O ERP do dono (UpSeller) consulta as APIs, puxa a venda, confere o
+  **estoque interno** e só então sobe o XML — então toda venda nova passa alguns
+  minutos sem NF-e, e o aviso disparava dentro dessa janela normal, desmentindo-se
+  depois com o ✅. Hoje `_fora_da_carencia` só deixa passar quem já ficou
+  `CARENCIA_NF_MIN` (30 min, ajustável em `carencia_nf_min`) **e continua** sem
+  nota — que no fluxo dele significa **falta de estoque**. O relógio conta do
+  carimbo da **venda** (`pay_time` / `date_closed`), não de quando o bot olhou;
+  quem está na carência **não é registrado** no dedup (senão ficaria calado para
+  sempre); e **sem carimbo, avisa** (calar por falta de informação esconderia a
+  venda sem estoque). O corte é no bot, não no núcleo. A mensagem leva **há
+  quanto tempo**: uma parada há 40 min é estoque, várias de uma vez é o faturador.
 - **Alerta também de "Informe a NF-e"** (`invoice_pending`, ML): venda de item
   **sem estoque** não recebe o XML do faturador e nunca chega a `ready_to_print`
   — era a única invisível, e a que mais precisa de aviso. Vem num aviso separado

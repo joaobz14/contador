@@ -225,13 +225,17 @@ def test_job_manda_um_texto_com_as_duas_secoes_e_baldes_separados(monkeypatch, t
     monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
     monkeypatch.setattr(core, "_hoje_br", lambda: hoje)
 
-    def _item(chave):
-        return core.ItemPedido(order_id=1, shipment_id=1, chave=chave, nome=chave, quantidade=1)
+    # O `shipment_id` do item TEM de bater com o do envio, como em producao
+    # (`extrair_itens` usa `_envio["shipment_id"]`): desde a carencia da NF-e o
+    # alerta cruza os dois para separar quem ja passou do tempo de quem nao.
+    def _item(chave, sid):
+        return core.ItemPedido(order_id=sid, shipment_id=sid, chave=chave,
+                               nome=chave, quantidade=1)
 
     monkeypatch.setattr(bot, "_dados_alerta_da_conta",
                         lambda conta, avisados, hoje, avisados_nf=None: (
-                            [_envio_bot(1, hoje)], [_item("A02")],
-                            [_envio_bot(9, hoje)], [_item("A03")]))
+                            [_envio_bot(1, hoje)], [_item("A02", 1)],
+                            [_envio_bot(9, hoje)], [_item("A03", 9)]))
 
     enviadas = []
 
@@ -393,3 +397,132 @@ def test_invoice_data_vem_na_mesma_chamada(monkeypatch):
     sh.buscar_detalhes({}, "tok", ["A"])
     assert len(vistos) == 1, "nao pode fazer chamada extra"
     assert "invoice_data" in vistos[0]["response_optional_fields"]
+
+
+# ============================================ carencia do aviso (05/08/2026)
+# O aviso NAO existe para dizer "esta sem NF-e" — toda venda nova esta, por
+# alguns minutos, enquanto o ERP do dono (UpSeller) puxa o pedido e sobe o XML.
+# Ele existe para dizer "esta sem NF-e ha tempo demais para ser processamento
+# normal", que no fluxo dele significa uma coisa so: o ERP olhou, NAO achou
+# estoque e por isso nao faturou. Sem a carencia o alerta disparava dentro da
+# janela normal e se desmentia minutos depois com o ✅.
+from datetime import datetime, timedelta  # noqa: E402
+
+
+def _agora():
+    return datetime(2026, 8, 5, 14, 0, tzinfo=core.TZ_BR)
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_pago_em_le_as_duas_formas():
+    """Shopee manda epoch (`pay_time`); ML manda ISO (`date_closed`)."""
+    epoch = int(datetime(2026, 8, 5, 13, 30, tzinfo=core.TZ_BR).timestamp())
+    assert bot._pago_em({"pay_time": epoch}).hour == 13
+
+    iso = bot._pago_em({"date_closed": "2026-08-05T13:30:00.000-03:00"})
+    assert iso is not None and iso.hour == 13
+
+    # `date_created` e a reserva quando o pagamento nao veio
+    assert bot._pago_em({"date_created": "2026-08-05T13:30:00.000-03:00"}) is not None
+    # e "nao sei" continua sendo None, nao uma data inventada
+    assert bot._pago_em({}) is None
+    assert bot._pago_em({"date_closed": "isto nao e data"}) is None
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_venda_recem_paga_ainda_nao_vira_aviso():
+    """O caso do relato: venda cai, o ERP ainda nem puxou, e o bot avisava."""
+    recem = {"pay_time": int((_agora() - timedelta(minutes=5)).timestamp())}
+    passaram, espera = bot._fora_da_carencia([recem], 30, agora=_agora())
+    assert passaram == [] and espera == 0
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_venda_parada_ha_tempo_demais_vira_aviso():
+    """Passou da carencia e continua sem nota: agora sim e falta de estoque."""
+    velha = {"pay_time": int((_agora() - timedelta(minutes=45)).timestamp())}
+    passaram, espera = bot._fora_da_carencia([velha], 30, agora=_agora())
+    assert passaram == [velha]
+    assert espera == 45, "o tempo vai para a mensagem: e ele que sugere a causa"
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_carencia_conta_da_VENDA_e_nao_de_quando_o_bot_olhou():
+    """Bot fora do ar a noite toda: a venda travada desde as 23h ja nasce com
+    9 horas de idade e e avisada na hora, sem esperar mais 30 min a toa."""
+    ontem = datetime(2026, 8, 4, 23, 0, tzinfo=core.TZ_BR)
+    de_ontem = {"pay_time": int(ontem.timestamp())}
+    manha = datetime(2026, 8, 5, 8, 30, tzinfo=core.TZ_BR)
+    passaram, espera = bot._fora_da_carencia([de_ontem], 30, agora=manha)
+    assert passaram == [de_ontem] and espera == 9 * 60 + 30
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_sem_carimbo_de_tempo_AVISA_em_vez_de_calar():
+    """"Nao sei" para o lado de falar: calar por falta de informacao esconderia
+    justamente a venda sem estoque que este aviso existe para pegar. Se a API
+    parar de mandar o campo, o sintoma sera ruido visivel, nao silencio."""
+    passaram, espera = bot._fora_da_carencia([{"order_sn": "SN1"}], 30, agora=_agora())
+    assert passaram and espera == 0
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_carencia_do_config_manda_no_padrao():
+    assert bot._carencia({}) == bot.CARENCIA_NF_MIN, "config sem a chave nao quebra"
+    assert bot._carencia({"carencia_nf_min": 90}) == 90
+    assert bot._carencia({"carencia_nf_min": "lixo"}) == bot.CARENCIA_NF_MIN
+
+
+@pytest.mark.skipif(bot is None, reason="bot_telegram indisponivel")
+def test_job_nao_avisa_venda_dentro_da_carencia_e_avisa_depois(monkeypatch, tmp_path):
+    """De ponta a ponta: a MESMA venda fica calada no 1o ciclo (recem-paga) e
+    vira aviso quando envelhece — sem nunca ter sido registrada no meio, senao
+    o dedup a calaria para sempre."""
+    import asyncio
+
+    import shopee_api as shopee
+
+    hoje = "2026-08-05"
+    monkeypatch.setattr(bot, "ARQUIVO_ALERTAS", tmp_path / "alertas.json")
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", tmp_path / "sem_shopee.json")
+    monkeypatch.setattr(bot, "_alerta_no_horario", lambda agora=None: True)
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: hoje)
+    bot._salvar_alertas({"dia": hoje, "avisados": {}, "itens": {}, "iniciado": True})
+
+    idade = {"min": 5}
+
+    def _dados(conta, avisados, hoje_, avisados_nf=None):
+        if 9 in (avisados_nf or set()):
+            return [], [], [], []
+        pago = datetime.now(core.TZ_BR) - timedelta(minutes=idade["min"])
+        ped = dict(_envio_bot(9, hoje_))
+        ped["date_closed"] = pago.isoformat()
+        item = core.ItemPedido(order_id=9, shipment_id=9, chave="AR1",
+                               nome="AR1", quantidade=1)
+        return [], [], [ped], [item]
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+
+    enviadas = []
+
+    class _Bot:
+        async def send_message(self, chat_id, texto=None, **k):
+            enviadas.append(texto if texto is not None else k.get("text", ""))
+
+    class _Ctx:
+        bot_data = {"cfg": {"chat_ids": [10]}}
+        bot = _Bot()
+
+    asyncio.run(bot.job_alerta_pos_horario(_Ctx()))
+    assert enviadas == [], "recem-paga: o ERP ainda nem puxou"
+    estado = core._ler_json(tmp_path / "alertas.json")
+    assert not estado["avisados"].get("cozilatti" + bot.SUFIXO_ALERTA_NF), \
+        "quem esta na carencia NAO pode ser registrado, senao nunca seria avisado"
+
+    idade["min"] = 45                       # a mesma venda, mais tarde
+    asyncio.run(bot.job_alerta_pos_horario(_Ctx()))
+    assert len(enviadas) == 1
+    assert "AR1 - 1" in enviadas[0] and "parada há 45 min" in enviadas[0]
+    estado = core._ler_json(tmp_path / "alertas.json")
+    assert estado["avisados"]["cozilatti" + bot.SUFIXO_ALERTA_NF] == [9]

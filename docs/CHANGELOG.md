@@ -5,6 +5,20 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Alterado
+- **O aviso "sem NF-e" agora espera o seu faturador trabalhar.** Ele estava
+  disparando assim que a venda caía — antes de o UpSeller puxar o pedido — e
+  minutos depois se desmentia com o "✅ liberada". Agora o bot só avisa quando a
+  venda passa de **30 minutos** e **continua** sem nota, que é quando o motivo
+  provável é o único que interessa: **o ERP não achou estoque e por isso não
+  faturou**.
+  - A mensagem passa a dizer **há quanto tempo** a venda está parada. Isso ajuda
+    a distinguir os dois casos: uma venda parada há 40 min é falta de estoque;
+    várias de uma vez é o faturador com problema.
+  - Para ajustar o tempo, acrescente `"carencia_nf_min": 45` (ou o valor que
+    preferir) ao `bot_config.json`. O número certo depende do seu ERP.
+  - **Bônus:** isso também acaba com o aviso disparado quando a Shopee ainda
+    está só processando o pedido — que resolve sozinho em minutos e nunca
+    precisou de aviso.
 - **Os avisos de venda do bot pararam de poluir o chat.** Três mudanças, todas
   no alerta automático:
   - **Uma mensagem por vez, não uma por conta.** Cozilatti, Gastromaq e Shopee

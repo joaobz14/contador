@@ -560,6 +560,30 @@ em 2º plano.
   suporte NÃO valem:** a de que `ship_by_date` só é atribuído após a nota virar
   válida **contradiz o dado real**, e o push `fbs_br_invoice_issued_push` (código
   31) é de **FBS**, enquanto os pedidos do dono são `fulfilled_by_local_seller`.
+- **Carência do aviso "sem NF-e" (05/08/2026): o sinal é o TEMPO, não o
+  estado.** O faturador do dono (ERP UpSeller) consulta as APIs do ML/Shopee,
+  puxa a venda, confere o **estoque interno** e só então sobe o XML. Toda venda
+  nova passa alguns minutos sem NF-e — então avisar sobre o estado disparava
+  dentro da janela normal do ERP e se desmentia minutos depois com o ✅ (relato
+  do dono, com print). O aviso não existe para dizer "está sem NF-e"; existe
+  para dizer **"está sem NF-e há tempo demais para ser processamento normal"**,
+  que no fluxo dele significa uma coisa só: o ERP olhou, **não achou estoque** e
+  por isso não faturou. `_fora_da_carencia` corta por `CARENCIA_NF_MIN` (30 min,
+  ajustável em `carencia_nf_min` no `bot_config.json` — o número certo depende
+  do ERP, não do app). Três decisões que não são detalhe: **(1)** o relógio conta
+  do carimbo da VENDA (`pay_time` na Shopee, `date_closed`/`date_created` no ML),
+  não de quando o bot olhou — bot fora do ar a noite toda, venda travada desde as
+  23h já nasce com 9h de idade e é avisada na hora; **(2)** quem está **na
+  carência NÃO é registrado** no dedup, senão ficaria calado para sempre; **(3)**
+  sem carimbo de tempo, **avisa** — calar por falta de informação esconderia
+  justamente a venda sem estoque (regra de 2026-07-31: nunca calar com prova na
+  mão). O corte é no **bot**, não no núcleo: `filtrar_para_imprimir` continua
+  respondendo "quem está em `invoice_pending`"; quem decide "sobre quem vale
+  avisar" é o alerta. **Efeito colateral bom:** mata também o falso positivo do
+  "Em processamento" da Shopee, que `invoice_data.status=pending` não distingue
+  de nota faltando — um mecanismo, dois ruídos. A mensagem leva **há quanto
+  tempo** (`espera_min`): uma venda parada há 40 min é falta de estoque, várias
+  de uma vez é o faturador fora do ar — o texto entrega o dado e não conclui.
 - **Alerta de venda parada em "Informe a NF-e" (`invoice_pending`):** o dono
   controla estoque; quando vende um item que não tem, o faturador **não sobe o
   XML** e o envio nunca chega a `ready_to_print` — a venda que mais precisa de
