@@ -543,6 +543,18 @@ em 2º plano.
   (booleano `True`) continua valendo** para o dia já gravado: o bot pode ser
   atualizado no meio do dia, e rebaixar `True` para lista vazia produziria o
   despejo de novo.
+  **ATENÇÃO — o caso de campo que levou até aqui NÃO está explicado.** O que
+  motivou a investigação foi um aviso de venda Shopee às **09:42** de 06/08 que,
+  pelo desenho, o primeiro ciclo das 08:32 deveria ter calado. O `bot.log`
+  **descarta** esta correção como causa: registrou o primeiro ciclo às 08:32:41 e
+  **nenhuma** linha de "Falha ao checar alerta pos-horario". Ou seja, o furo
+  acima é real e foi corrigido por mérito próprio, mas **não é** o que aconteceu
+  naquele dia — falta explicar por que o pedido `260805JCWTKH9K` (pago 05/08
+  09:40, `ship_by_date` 06/08, `invoice_data.status=pending`, `update_time`
+  igual ao `pay_time`, ou seja **sem mudança de estado** desde a véspera) não foi
+  registrado no balde `Shopee`+`SUFIXO_ALERTA_NF` no ciclo das 08:32. O próximo
+  passo é o próprio `dados/alertas_pos_horario.json`. **Não trate como
+  encerrado.**
 - **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
   (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
   Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6
