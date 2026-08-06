@@ -897,3 +897,71 @@ def test_marca_antiga_booleana_do_mesmo_dia_continua_valendo(monkeypatch):
 
     assert len(enviados) == 1, "marca antiga = ja iniciada, entao avisa normalmente"
     assert bot._carregar_alertas()["iniciado"] is True, "e nao e rebaixada"
+
+
+# --------------------------------- desligar o alerta da Shopee (06/08/2026)
+def _ctx_shopee(monkeypatch, tmp_path, enviados, *, ligado=True):
+    """Contexto com credencial Shopee presente e a chave `alerta_shopee`."""
+    cred = tmp_path / "credenciais_shopee.json"
+    cred.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(shopee, "ARQUIVO_CRED", cred)
+    monkeypatch.setattr(core, "listar_contas", lambda: [])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    monkeypatch.setattr(bot, "_dados_alerta_shopee",
+                        lambda avisados, hoje, avisados_nf=None: (
+                            [{"order_sn": "SN1"}],
+                            [core.ItemPedido(order_id="SN1", shipment_id="SN1",
+                                             chave="AR1", nome="AR1", quantidade=1)],
+                            [], [],
+                        ))
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+    ctx.bot_data["cfg"]["alerta_shopee"] = ligado
+    return ctx
+
+
+def test_alerta_shopee_desligado_nao_manda_nada(monkeypatch, tmp_path):
+    """Pedido do dono (06/08/2026): "por enquanto os alertas da Shopee estao
+    mais atrapalhando do que ajudando". Vale so para o ALERTA — a tela e o
+    /prontos continuam mostrando a Shopee."""
+    enviados = []
+    _ja_iniciado(dia="2026-07-24")
+    ctx = _ctx_shopee(monkeypatch, tmp_path, enviados, ligado=False)
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert enviados == []
+
+
+def test_alerta_shopee_desligado_NAO_registra_no_dedup(monkeypatch, tmp_path):
+    """Se registrasse com o alerta desligado, ao RELIGAR o dedup ja consideraria
+    conhecidas as vendas do dia e o primeiro aviso util so viria no dia seguinte
+    — desligar viraria uma pausa de dois dias."""
+    _ja_iniciado(dia="2026-07-24")
+    ctx = _ctx_shopee(monkeypatch, tmp_path, [], ligado=False)
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert bot.CHAVE_ALERTA_SHOPEE not in bot._carregar_alertas()["avisados"]
+
+
+def test_alerta_shopee_ligado_continua_avisando(monkeypatch, tmp_path):
+    """O outro lado: o default e LIGADO, e desligar tem de ser escolha."""
+    enviados = []
+    _ja_iniciado(dia="2026-07-24")
+    ctx = _ctx_shopee(monkeypatch, tmp_path, enviados, ligado=True)
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1 and "AR1" in enviados[0][1]
+
+
+def test_config_sem_a_chave_mantem_o_alerta_LIGADO(monkeypatch, tmp_path):
+    """Config antigo (sem a chave) nao pode calar um aviso por omissao."""
+    enviados = []
+    _ja_iniciado(dia="2026-07-24")
+    ctx = _ctx_shopee(monkeypatch, tmp_path, enviados)
+    del ctx.bot_data["cfg"]["alerta_shopee"]
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1

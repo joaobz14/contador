@@ -119,14 +119,6 @@ def _tempo_curto(minutos: int) -> str:
     return f"{horas}h{resto:02d}" if resto else f"{horas}h"
 
 
-# Marca a origem cujo lote inclui venda ainda sem `ship_by_date`. A Shopee
-# demora a atribuir o prazo, e data incerta NUNCA exclui em silencio (ver
-# `shopee_api.dia_previsto`) — entao ela entra no lote de hoje. A linha existe
-# para o dono nao estranhar uma venda que talvez seja de amanha: informa o
-# porque, sem afirmar o dia.
-AVISO_SEM_PRAZO = "🗓 inclui venda que a Shopee ainda não datou"
-
-
 @dataclass(frozen=True)
 class BlocoAlerta:
     """Uma origem (conta ML ou Shopee) dentro de UM ciclo do alerta."""
@@ -136,7 +128,6 @@ class BlocoAlerta:
     aviso: str = ""             # explicacao da secao NF (difere ML x Shopee)
     liberadas: bool = False     # inclui venda que estava esperando NF-e
     espera_min: int = 0         # ha quanto tempo a mais antiga esta parada
-    sem_prazo: bool = False     # inclui venda que a Shopee ainda nao datou
 
 
 def texto_alerta_pos_horario(blocos: list) -> str:
@@ -167,8 +158,6 @@ def texto_alerta_pos_horario(blocos: list) -> str:
             corpo = ([b.rotulo] if b.rotulo else []) + _linhas_por_sku(b.itens)
             if b.liberadas:
                 corpo.append("✅ inclui venda que estava esperando a NF-e")
-            if b.sem_prazo:
-                corpo.append(AVISO_SEM_PRAZO)
             partes.append("\n".join(corpo))
 
     if pendentes:
@@ -181,8 +170,6 @@ def texto_alerta_pos_horario(blocos: list) -> str:
             # conclui por ninguem.
             if b.espera_min:
                 corpo.append(f"⏱ parada há {_tempo_curto(b.espera_min)}")
-            if b.sem_prazo:
-                corpo.append(AVISO_SEM_PRAZO)
             partes.append("\n".join(corpo))
         # A explicacao entra uma vez por texto distinto (ML e Shopee tem
         # motivos diferentes), nunca uma vez por origem.

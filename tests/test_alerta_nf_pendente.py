@@ -531,13 +531,17 @@ def test_job_nao_avisa_venda_dentro_da_carencia_e_avisa_depois(monkeypatch, tmp_
 
 
 # ------------------------------- data incerta nunca exclui (06/08/2026)
-def test_venda_sem_prazo_ENTRA_no_lote_de_hoje(monkeypatch):
-    """A Shopee demora a atribuir `ship_by_date`. O filtro por dia comparava com
-    uma data DERIVADA por formula, e a formula empurrava a venda um dia para a
-    frente: a venda que vencia HOJE saia do filtro de hoje, em silencio.
+def test_venda_que_a_shopee_ainda_NAO_LIBEROU_fica_de_fora(monkeypatch):
+    """Sem `ship_by_date` a venda NAO e de hoje — e isso e informacao, nao
+    ignorancia (medido em 06/08/2026). O painel da Shopee, na venda sem prazo,
+    diz: "A emissao de etiqueta estara disponivel a partir de 07/08 13:07. O
+    prazo de envio comecara a contar APENAS APOS essa data". Campo ausente
+    significa "ainda nao liberei esta venda", o oposto de "pode ser hoje".
 
-    Agora "sem prazo" = data incerta, e incerteza inclui. Mesma regra do `_sla`
-    no ML: excluir em silencio e pior que datar errado."""
+    Incluir (como se tentou por 2 horas naquele dia) produzia alarme diario
+    garantido: toda venda da tarde cai aqui, a carencia de 30 min nao alcanca
+    (o "Em processamento" dura ~24h) e o aviso dizia "falta NF-e" de uma venda
+    que o ERP nem tinha como faturar ainda."""
     hoje = core._hoje_br()
     det = [_ped_shopee("SEM_PRAZO", nf="valid"),
            _ped_shopee("SEM_PRAZO_NF", nf="pending")]
@@ -547,8 +551,7 @@ def test_venda_sem_prazo_ENTRA_no_lote_de_hoje(monkeypatch):
     novos, _, nf, _ = sh.pedidos_prontos_novos(
         {}, "tok", avisados=set(), hoje=hoje, avisados_nf=set())
 
-    assert [d["order_sn"] for d in novos] == ["SEM_PRAZO"]
-    assert [d["order_sn"] for d in nf] == ["SEM_PRAZO_NF"]
+    assert novos == [] and nf == []
 
 
 def test_venda_com_prazo_de_OUTRO_dia_continua_de_fora(monkeypatch):
