@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1538 nodes · 2889 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1816 nodes · 3449 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,24 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 — etiqueta em branco no meio do lote: este app não sabe criar
+  uma.** Reclamação recorrente do dono ("às vezes pula uma etiqueta"), trazida
+  com foto. Investigado lendo os **dois** repos, e o que se descartou foi
+  descartado **com leitura de código**: o núcleo daqui nunca cria página (só
+  insere um `^FO…^FS` dentro do bloco da DANFE que já existe; **zero** ocorrências
+  de `^LL`/`^PQ`/`^MN`/`^LH` no repositório), e o app da Zebra **descarta** bloco
+  vazio antes de imprimir. Sobram três causas — o **auto-feed de início de
+  sessão** do app da Zebra (`^XA^XZ` proposital, reaparece a cada "Iniciar"),
+  `^MN`/`^LL` divergindo entre os blocos do ML, e calibração da mídia — e elas se
+  separam por evidência: `tools/diag_zpl.py` (novo) lê o lote já impresso e o log
+  da Zebra mostra o auto-feed. Registrada também a **armadilha de leitura da
+  foto**: a ordem do ML é ENVIO → DANFE e a impressora empurra o papel para fora,
+  então o mais perto da impressora foi impresso por **último** — ler a tira ao
+  contrário troca uma causa pela outra. Nó `etiqueta_em_branco_no_lote`
+  (3 `rationale_for` + 3 `conceptually_related_to`). Primeiro uso real da pasta de
+  retenção `~/zebra_usb_concluidos/` contratada em 2026-08: ela foi negociada para
+  reimpressão, e serviu para **investigar depois do fato**.
+  Depois do `--update`: **1816 nós, 3449 arestas, 0 órfãs**.
 - **2026-08-05 — compliance da Shopee encerrado (resposta final do suporte).**
   O requisito (success rate > 90% por 7 dias consecutivos em
   `v2.logistics.ship_order`, com prazo e risco de penalidade) foi o que motivou

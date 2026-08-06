@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 361,
- "edge_count": 686,
+ "node_count": 362,
+ "edge_count": 692,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4157,6 +4157,19 @@
    "id": "compliance_shopee_encerrado",
    "community": 0,
    "norm_label": "compliance da shopee encerrado (05/08/2026, resposta final do suporte). o requisito (success rate > 90% por 7 dias consecutivos em v2.logistics.ship_order, com prazo e risco de penalidade) foi o que motivou as duas rodadas de correcao de 2026-07. o e-mail final diz: 'a task completa-se sozinha com 7 dias consecutivos. embora, atualmente, se houver dias sem chamada, quebra o ciclo. isso ja esta em "
+  },
+  {
+   "label": "ETIQUETA EM BRANCO NO MEIO DO LOTE: ESTE APP NAO SABE CRIAR UMA (06/08/2026). Reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: DANFE, uma etiqueta totalmente em branco, e a etiqueta de envio. Investigado lendo os DOIS repos. DESCARTADO COM LEITURA DE CODIGO, nao com palpite: (1) o nucleo daqui NUNCA CRIA PAGINA -- baixar_zpl so repassa o ZPL do ML e carimbar_zpl so insere um ^FO...^FS DENTRO do bloco que ja existe (o da DANFE); nao ha um unico ^LL/^PQ/^MN/^LH em todo o repositorio (grep = 0 ocorrencias), entao nao ha como este app produzir ou pedir um avanco de midia. (2) Mesmo que o ML mandasse um ^XA^XZ vazio, o app da Zebra o DESCARTA antes de imprimir (_validar_e_extrair_blocos_zpl loga 'Bloco ZPL #N: conteudo vazio entre ^XA e ^XZ -- ignorado'). SOBRAM TRES CAUSAS: (a) AUTO-FEED DE INICIO DE SESSAO do app da Zebra -- ele imprime um ^XA^XZ DE PROPOSITO para posicionar o sensor de gap; o flag _primeira_impressao_sessao nasce True em cada MonitorEtiquetas, e um monitor novo e criado a cada clique em 'Iniciar', entao isto se repete a cada abertura/reinicio do app -- deixa a linha 'Avancando etiqueta - posicionando sensor' no ~/zebra_usb_log.txt e cai SEMPRE ANTES do primeiro bloco, NUNCA no meio de uma venda. (b) ^MN/^LL DIVERGINDO entre os blocos do ML: trocar de modo de midia (continua x sensor de gap) obriga a impressora a procurar o proximo gap, e esse avanco sai como etiqueta em branco; o app da Zebra ja tem cicatriz vizinha disso (o comentario que proibe reintroduzir ^MCY->^MCN porque o ^MCN 'retem o buffer de imagem e causa sobreposicao do DANFE na etiqueta seguinte') -- prova de que os blocos do ML carregam comandos que atravessam etiquetas. (c) CALIBRACAO DA MIDIA (botao 'Calibrar midia' / ~JC no app da Zebra), a causa classica de intermitencia. COMO SEPARAR: tools/diag_zpl.py le o lote JA IMPRESSO e reporta, bloco a bloco, bloco vazio + ^MN/^LL/^PQ -- decide (b) contra o resto; a linha no log da Zebra decide (a). O lote impresso existe porque o app da Zebra RETEM o arquivo em ~/zebra_usb_concluidos/AAAA-MM-DD/ (contrato de 2026-08): a pasta de retencao foi negociada para reimpressao, e o primeiro uso real dela foi este -- investigar DEPOIS do fato. ARMADILHA DE LEITURA DA FOTO: a ordem dos blocos do ML e ENVIO -> DANFE (e o que _verificar_sequencia_ml do outro repo cobra), e a impressora empurra o papel para FORA -- logo o que esta mais perto da impressora foi impresso por ULTIMO. Ler a tira na ordem errada troca 'a branca veio antes de tudo' (auto-feed, causa a) por 'a branca veio no meio da venda' (midia/sensor, causas b/c), que pedem acoes diferentes. PRIVACIDADE: o diagnostico so imprime ESTRUTURA (nome de comando, contagem, tamanho) -- a etiqueta carrega nome, endereco e CEP do comprador, e o repositorio e publico; nunca imprima conteudo de ^FD.",
+   "file_type": "rationale",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "etiqueta_em_branco_no_lote",
+   "community": 0,
+   "norm_label": "etiqueta em branco no meio do lote: este app nao sabe criar uma (06/08/2026). reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: danfe, uma etiqueta totalmente em branco, e a etiqueta de envio. investigado lendo os dois repos. descartado com leitura de codigo, nao com palpite: (1) o nucleo daqui nunca cria pagina -- baixar_zpl so repassa o zpl do ml e carim"
   }
  ],
  "edges": [
@@ -5220,6 +5233,36 @@
    "weight": 1.0,
    "source": "estado_prio_concluida",
    "target": "estado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "confirmacao_de_impressao_monitor_zebra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "nao_fundir_contador_e_zebra",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "retencao_de_concluidos_zebra",
    "confidence_score": 1.0
   },
   {
@@ -7632,6 +7675,36 @@
    "weight": 1.0,
    "source": "estado_trava_processos",
    "target": "estado_trava",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "separador_etiquetas_ml_carimbar_zpl",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "tools_diag_zpl",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "etiqueta_em_branco_no_lote",
+   "target": "tools_diag_zpl_analisar",
    "confidence_score": 1.0
   },
   {

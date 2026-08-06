@@ -36,7 +36,7 @@ repo) monitora e imprime.
 | `relatorio.py` | Formata textos para o bot. |
 | `pegar_token.py` / `pegar_token_shopee.py` | OAuth inicial (gera credenciais). |
 | `pegar_token_tiktok.py` | OAuth inicial do TikTok Shop. **Escrito, mas nunca rodou com sucesso** — a integração está ARQUIVADA (ver `docs/TIKTOK_SHOP_API.md`). |
-| `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify) e `validar_obsidian.py` (validador do cofre `obsidian/`). |
+| `tools/` | Ferramentas de dev: `gui_screenshot.py` (screenshot GUI headless), `graph_sync.py` (sincronizador seguro do grafo Graphify), `validar_obsidian.py` (validador do cofre `obsidian/`) e `diag_zpl.py` (estrutura do lote impresso — caça etiqueta em branco; ver a pegadinha abaixo). |
 | `api-monitor/` | **DESATIVADO em 05/08/2026** (código preservado; os dois `.ps1` saem logo no começo). Era a rotina **semanal** que checava mudanças nas docs/políticas públicas das APIs. Nunca se conseguiu acesso confiável às fontes — ML Novidades exige login, a Shopee é SPA — então o relatório nascia "bloqueada" e ainda gastava uma chamada paga de IA por semana. Pesou mais o **risco**: rodava `claude -p` **sem restrição de ferramenta**, sem supervisão, com o `cwd` na pasta das credenciais, tendo **conteúdo da web como entrada**. Ao reativar (ver `api-monitor/README.md`), resolva as fontes primeiro e **não** volte com `bypassPermissions`. |
 | `ads-monitor/` | Monitor **determinístico** (sem IA no núcleo) do Product Ads (Mercado Ads), 3 camadas: **coleta** (`coletar.py`, agendada diariamente — `registrar-tarefa.ps1`, mesmo padrão do `api-monitor/`) grava snapshot de campanha **e de ad_group/item dentro dela** (atribuição por SKU, best-effort) num SQLite local, incluindo o detalhe por campanha (`lost_impression_share_by_budget`/`_by_ad_rank`); **recomendação** (`recomendar.py`) gera ações a partir do histórico usando só os sinais que não dependem de margem (orçamento/ranking/ROAS vs. alvo). Falta a fonte de custo/margem por SKU para as recomendações condicionadas a ela (ver `ads-monitor/README.md`). **Camada 4 opcional (`narrar.py`)** narra em português, via `claude -p`, o que as camadas 1-3 já calcularam — aditiva, não muda o motor de regras. |
 
@@ -415,6 +415,36 @@ em 2º plano.
   de graça**: a tela pode cair no meio do lote que a impressão continua. O único
   ganho real da fusão era o canal de volta, e ele foi obtido **sem** fundir (mural
   de status, acima).
+- **Etiqueta em branco no meio do lote: este app não sabe criar uma
+  (06/08/2026).** Reclamação recorrente do dono ("às vezes pula uma etiqueta").
+  Antes de investigar aqui, saiba o que já foi **descartado com leitura de
+  código**: (1) o núcleo daqui **nunca cria página** — passa o ZPL do ML adiante e
+  só insere um `^FO…^FS` dentro do bloco da DANFE (`carimbar_zpl`); não há um
+  único `^LL`/`^PQ`/`^MN`/`^LH` no repositório; (2) mesmo que o ML mandasse um
+  `^XA^XZ` vazio, o app da Zebra o **descarta** antes de imprimir
+  (`_validar_e_extrair_blocos_zpl` loga "conteúdo vazio entre ^XA e ^XZ —
+  ignorado"). Sobram três causas, e elas se separam **por evidência, não por
+  palpite**: **(a)** o **auto-feed de início de sessão** do app da Zebra, que
+  imprime um `^XA^XZ` de propósito para posicionar o sensor de gap — reaparece a
+  **cada "Iniciar"** (o `MonitorEtiquetas` é recriado), e deixa a linha
+  "Avançando etiqueta — posicionando sensor" no `~/zebra_usb_log.txt`; só cai
+  **antes** do primeiro bloco, nunca no meio de uma venda; **(b)** `^MN`/`^LL`
+  divergindo entre os blocos do ML — trocar de modo de mídia obriga a impressora a
+  procurar o próximo gap, e esse avanço sai como etiqueta em branco (o app da
+  Zebra já tem cicatriz vizinha disso: o comentário do `^MCN` que "retém o buffer
+  e sobrepõe a DANFE na etiqueta seguinte"); **(c)** calibração da mídia
+  (botão *Calibrar mídia* / `~JC` no app da Zebra). **`python tools/diag_zpl.py`
+  decide entre (b) e o resto** lendo o lote já impresso, que o app da Zebra
+  **retém** em `~/zebra_usb_concluidos/AAAA-MM-DD/` — a pasta de retenção
+  contratada em 2026-08 existe justamente para investigar depois do fato. Ele
+  reporta só **estrutura** (comando, contagem, tamanho): a etiqueta carrega nome,
+  endereço e CEP do comprador, então **nunca** imprima conteúdo de `^FD`.
+  **Ordem dos blocos do ML: ENVIO → DANFE** (é o que `_verificar_sequencia_ml`
+  do outro repo cobra) — some isso ao fato de a impressora empurrar o papel para
+  fora e a ordem física fica **invertida** em relação à foto: o que está mais
+  perto da impressora foi impresso por ÚLTIMO. Ler a foto na ordem errada
+  troca "veio antes de tudo" (auto-feed) por "veio no meio da venda" (mídia),
+  que são causas diferentes.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).
