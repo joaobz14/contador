@@ -104,5 +104,9 @@ Avaliado a pedido do dono em 2026-07-30 e **recusado** →
 que se baixa **na mão** pelo painel do ML, roda **elevado** (UAC) e é Windows-only.
 O único ganho real da fusão era o canal de volta — obtido acima, sem fundir.
 
+## Quando sai uma etiqueta em branco
+O app da Zebra imprime **uma** de propósito ao iniciar (posiciona o sensor de gap),
+e esse é só um dos três motivos possíveis → [[Etiqueta em branco na impressão]].
+
 ## Relacionado
-- [[Sistemas externos]] · [[Escrita atômica de JSON]] · [[Identificação na impressão (carimbo)]] · [[separador_etiquetas_ml (núcleo)]]
+- [[Sistemas externos]] · [[Escrita atômica de JSON]] · [[Identificação na impressão (carimbo)]] · [[separador_etiquetas_ml (núcleo)]] · [[Etiqueta em branco na impressão]]

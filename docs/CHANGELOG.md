@@ -5,6 +5,15 @@ Histórico das principais mudanças do projeto.
 ## [Não lançado]
 
 ### Adicionado
+- **`python tools/diag_zpl.py` — descobre de onde vem a etiqueta em branco.**
+  Quando a impressão "pula uma etiqueta", ele lê o lote que já foi impresso
+  (o app da Zebra guarda em `~/zebra_usb_concluidos/`) e diz, página por
+  página, o que o arquivo realmente mandou para a impressora. Rode sem
+  argumento nenhum que ele pega o lote mais recente sozinho.
+  - Serve para separar as três causas possíveis: uma página em branco dentro
+    do arquivo, uma troca de configuração de mídia no meio do lote, ou o
+    avanço de etiqueta que o próprio app da Zebra faz ao ser iniciado.
+  - **Não mostra nome, endereço nem CEP de comprador** — só a estrutura.
 - **Os comandos `/perguntas` e `/anuncios` passam a mandar uma senha ao n8n.**
   Hoje qualquer pessoa que descobrisse o endereço do fluxo conseguia dispará-lo
   — não veria os dados (a resposta sempre vai para o seu chat), mas podia gastar

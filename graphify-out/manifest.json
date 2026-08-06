@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1785972583.9204865,
-  "ast_hash": "83d42f4d780a7676db08e492f19984a2388ae7a1",
-  "semantic_hash": "83d42f4d780a7676db08e492f19984a2388ae7a1"
+  "mtime": 1786016766.0329351,
+  "ast_hash": "aa5de12e24a7432cfe7b543006bf8590440bd05c",
+  "semantic_hash": "aa5de12e24a7432cfe7b543006bf8590440bd05c"
  },
  "CLAUDE.md": {
-  "mtime": 1785972583.9196658,
-  "ast_hash": "cf40e29cd12db3a407012f30a1df80b55c051e67",
-  "semantic_hash": "cf40e29cd12db3a407012f30a1df80b55c051e67"
+  "mtime": 1786016751.4609349,
+  "ast_hash": "88563217bd83479957b44af5c7449bb26625a221",
+  "semantic_hash": "88563217bd83479957b44af5c7449bb26625a221"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1785959015.5096624,
-  "ast_hash": "3e75ce24e055ebd06621d478f0141c4a1c61fdb5",
-  "semantic_hash": "3e75ce24e055ebd06621d478f0141c4a1c61fdb5"
+  "mtime": 1786016777.6489353,
+  "ast_hash": "44eab72220a522183733c65ccf1b3e6a0e84ed3e",
+  "semantic_hash": "44eab72220a522183733c65ccf1b3e6a0e84ed3e"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785972601.6807904,
@@ -474,6 +474,11 @@
   "ast_hash": "950653ed296c1d42877ec4f86a8eeb57dc3b011a",
   "semantic_hash": "950653ed296c1d42877ec4f86a8eeb57dc3b011a"
  },
+ "tests/test_diag_zpl.py": {
+  "mtime": 1786017023.9609406,
+  "ast_hash": "43047e658ec93b1ba729592c31bf9a74a690c994",
+  "semantic_hash": "43047e658ec93b1ba729592c31bf9a74a690c994"
+ },
  "tests/test_estado.py": {
   "mtime": 1783442165.7015514,
   "ast_hash": "3542ddd4cfd1d5752eb5922e7844d3f871f025e6",
@@ -593,6 +598,11 @@
   "mtime": 1784830839.0648768,
   "ast_hash": "25ec4bbd0318e332b469d535593173e5db2260a7",
   "semantic_hash": "25ec4bbd0318e332b469d535593173e5db2260a7"
+ },
+ "tools/diag_zpl.py": {
+  "mtime": 1786016669.4661088,
+  "ast_hash": "7d6cb5f593418ba8b162c82f4dc1c71d3a82fca8",
+  "semantic_hash": "7d6cb5f593418ba8b162c82f4dc1c71d3a82fca8"
  },
  "tools/graph_sync.py": {
   "mtime": 1785846298.9677277,
