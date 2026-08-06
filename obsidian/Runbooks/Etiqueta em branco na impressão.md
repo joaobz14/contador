@@ -46,6 +46,13 @@ Ele lê o lote **que já foi impresso** — o app da Zebra guarda em
 `~/zebra_usb_concluidos/AAAA-MM-DD/` → [[Ponte com a Zebra]] — e mostra, página
 por página, o que o arquivo mandou para a impressora.
 
+> [!tip] Ele responde mais do que a pergunta
+> Além da página em branco, o relatório aponta **venda sem DANFE** (o ML manda
+> uma etiqueta e uma nota por venda; `ENVIO → ENVIO` significa um pacote que
+> sairia **sem nota fiscal**) e total ímpar de blocos. A primeira versão só
+> procurava página em branco e escreveu **"OK"** num lote com 19 etiquetas e 18
+> notas — um diagnóstico que se cala manda procurar no lugar errado.
+
 > [!warning] Ele mostra só a estrutura, e isso é de propósito
 > A etiqueta carrega **nome, endereço e CEP do comprador**, e este repositório é
 > público. O relatório traz nome de comando, contagem e tamanho — nunca o

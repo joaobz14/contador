@@ -24248,7 +24248,7 @@
    "label": "_candidatos()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L54",
+   "source_location": "L57",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24262,7 +24262,7 @@
    "label": "_texto_do_arquivo()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L70",
+   "source_location": "L73",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24276,7 +24276,7 @@
    "label": "_midia()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L80",
+   "source_location": "L83",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24290,7 +24290,7 @@
    "label": "analisar()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L85",
+   "source_location": "L110",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24304,7 +24304,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L125",
+   "source_location": "L173",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24315,7 +24315,7 @@
    "norm_label": "main()"
   },
   {
-   "label": "ETIQUETA EM BRANCO NO MEIO DO LOTE: ESTE APP NAO SABE CRIAR UMA (06/08/2026). Reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: DANFE, uma etiqueta totalmente em branco, e a etiqueta de envio. Investigado lendo os DOIS repos. DESCARTADO COM LEITURA DE CODIGO, nao com palpite: (1) o nucleo daqui NUNCA CRIA PAGINA -- baixar_zpl so repassa o ZPL do ML e carimbar_zpl so insere um ^FO...^FS DENTRO do bloco que ja existe (o da DANFE); nao ha um unico ^LL/^PQ/^MN/^LH em todo o repositorio (grep = 0 ocorrencias), entao nao ha como este app produzir ou pedir um avanco de midia. (2) Mesmo que o ML mandasse um ^XA^XZ vazio, o app da Zebra o DESCARTA antes de imprimir (_validar_e_extrair_blocos_zpl loga 'Bloco ZPL #N: conteudo vazio entre ^XA e ^XZ -- ignorado'). SOBRAM TRES CAUSAS: (a) AUTO-FEED DE INICIO DE SESSAO do app da Zebra -- ele imprime um ^XA^XZ DE PROPOSITO para posicionar o sensor de gap; o flag _primeira_impressao_sessao nasce True em cada MonitorEtiquetas, e um monitor novo e criado a cada clique em 'Iniciar', entao isto se repete a cada abertura/reinicio do app -- deixa a linha 'Avancando etiqueta - posicionando sensor' no ~/zebra_usb_log.txt e cai SEMPRE ANTES do primeiro bloco, NUNCA no meio de uma venda. (b) ^MN/^LL DIVERGINDO entre os blocos do ML: trocar de modo de midia (continua x sensor de gap) obriga a impressora a procurar o proximo gap, e esse avanco sai como etiqueta em branco; o app da Zebra ja tem cicatriz vizinha disso (o comentario que proibe reintroduzir ^MCY->^MCN porque o ^MCN 'retem o buffer de imagem e causa sobreposicao do DANFE na etiqueta seguinte') -- prova de que os blocos do ML carregam comandos que atravessam etiquetas. (c) CALIBRACAO DA MIDIA (botao 'Calibrar midia' / ~JC no app da Zebra), a causa classica de intermitencia. COMO SEPARAR: tools/diag_zpl.py le o lote JA IMPRESSO e reporta, bloco a bloco, bloco vazio + ^MN/^LL/^PQ -- decide (b) contra o resto; a linha no log da Zebra decide (a). O lote impresso existe porque o app da Zebra RETEM o arquivo em ~/zebra_usb_concluidos/AAAA-MM-DD/ (contrato de 2026-08): a pasta de retencao foi negociada para reimpressao, e o primeiro uso real dela foi este -- investigar DEPOIS do fato. ARMADILHA DE LEITURA DA FOTO: a ordem dos blocos do ML e ENVIO -> DANFE (e o que _verificar_sequencia_ml do outro repo cobra), e a impressora empurra o papel para FORA -- logo o que esta mais perto da impressora foi impresso por ULTIMO. Ler a tira na ordem errada troca 'a branca veio antes de tudo' (auto-feed, causa a) por 'a branca veio no meio da venda' (midia/sensor, causas b/c), que pedem acoes diferentes. PRIVACIDADE: o diagnostico so imprime ESTRUTURA (nome de comando, contagem, tamanho) -- a etiqueta carrega nome, endereco e CEP do comprador, e o repositorio e publico; nunca imprima conteudo de ^FD.",
+   "label": "ETIQUETA EM BRANCO NO MEIO DO LOTE: ESTE APP NAO SABE CRIAR UMA (06/08/2026). Reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: DANFE, uma etiqueta totalmente em branco, e a etiqueta de envio. Investigado lendo os DOIS repos. DESCARTADO COM LEITURA DE CODIGO, nao com palpite: (1) o nucleo daqui NUNCA CRIA PAGINA -- baixar_zpl so repassa o ZPL do ML e carimbar_zpl so insere um ^FO...^FS DENTRO do bloco que ja existe (o da DANFE); nao ha um unico ^LL/^PQ/^MN/^LH em todo o repositorio (grep = 0 ocorrencias), entao nao ha como este app produzir ou pedir um avanco de midia. (2) Mesmo que o ML mandasse um ^XA^XZ vazio, o app da Zebra o DESCARTA antes de imprimir (_validar_e_extrair_blocos_zpl loga 'Bloco ZPL #N: conteudo vazio entre ^XA e ^XZ -- ignorado'). SOBRAM TRES CAUSAS: (a) AUTO-FEED DE INICIO DE SESSAO do app da Zebra -- ele imprime um ^XA^XZ DE PROPOSITO para posicionar o sensor de gap; o flag _primeira_impressao_sessao nasce True em cada MonitorEtiquetas, e um monitor novo e criado a cada clique em 'Iniciar', entao isto se repete a cada abertura/reinicio do app -- deixa a linha 'Avancando etiqueta - posicionando sensor' no ~/zebra_usb_log.txt e cai SEMPRE ANTES do primeiro bloco, NUNCA no meio de uma venda. (b) ^MN/^LL DIVERGINDO entre os blocos do ML: trocar de modo de midia (continua x sensor de gap) obriga a impressora a procurar o proximo gap, e esse avanco sai como etiqueta em branco; o app da Zebra ja tem cicatriz vizinha disso (o comentario que proibe reintroduzir ^MCY->^MCN porque o ^MCN 'retem o buffer de imagem e causa sobreposicao do DANFE na etiqueta seguinte') -- prova de que os blocos do ML carregam comandos que atravessam etiquetas. (c) CALIBRACAO DA MIDIA (botao 'Calibrar midia' / ~JC no app da Zebra), a causa classica de intermitencia. COMO SEPARAR: tools/diag_zpl.py le o lote JA IMPRESSO e reporta, bloco a bloco, bloco vazio + ^MN/^LL/^PQ -- decide (b) contra o resto; a linha no log da Zebra decide (a). O lote impresso existe porque o app da Zebra RETEM o arquivo em ~/zebra_usb_concluidos/AAAA-MM-DD/ (contrato de 2026-08): a pasta de retencao foi negociada para reimpressao, e o primeiro uso real dela foi este -- investigar DEPOIS do fato. ARMADILHA DE LEITURA DA FOTO: a ordem dos blocos do ML e ENVIO -> DANFE (e o que _verificar_sequencia_ml do outro repo cobra), e a impressora empurra o papel para FORA -- logo o que esta mais perto da impressora foi impresso por ULTIMO. Ler a tira na ordem errada troca 'a branca veio antes de tudo' (auto-feed, causa a) por 'a branca veio no meio da venda' (midia/sensor, causas b/c), que pedem acoes diferentes. PRIVACIDADE: o diagnostico so imprime ESTRUTURA (nome de comando, contagem, tamanho) -- a etiqueta carrega nome, endereco e CEP do comprador, e o repositorio e publico; nunca imprima conteudo de ^FD. ACHADO DO PRIMEIRO USO REAL (06/08/2026), E A LICAO QUE VEIO COM ELE: rodado no lote do dono, o diagnostico imprimiu 'OK: nenhum bloco em branco e nenhuma troca de midia' -- e o mesmo arquivo tinha 19 etiquetas de ENVIO para 18 DANFEs (blocos #31 e #32 ambos de envio; o perfil de tamanho confirma: envio ~2600 B/33 campos, nota ~1600 B/37 campos). Ou seja: uma venda sairia com a etiqueta e SEM NOTA FISCAL, e a ferramenta calou porque so procurava a pagina em branco que motivou sua criacao. E a familia 'falha que reporta sucesso' aplicada a um DIAGNOSTICO: o OK nao e neutro, ele manda procurar no lugar errado -- teria feito calibrar a impressora enquanto o pacote saia sem NF-e. REGRA GERAL: ferramenta de diagnostico responde sobre o ARQUIVO INTEIRO, nao so sobre a pergunta que a motivou. Corrigido: _vendas_sem_danfe (mesma regra do _verificar_sequencia_ml do outro repo, feita tambem aqui porque este lado ve o arquivo ANTES de imprimir), aviso de total impar, e a comparacao de ^MN/^LL passou a tratar AUSENTE como valor (comando que persiste, posto em alguns blocos e nao em outros, tambem e troca de estado). Dois cuidados contra alarme falso: o emparelhamento NAO vale para a Shopee (1 etiqueta por venda, sem nota junto) e a comparacao de midia so roda se algum bloco trouxer o comando. E baixar_zpl CONTINUA com '>=': a guarda dele e contra lote CURTO; amarrar no numero exato tornaria o app refem de um formato que ele nao controla.",
    "file_type": "rationale",
    "source_file": "tools/diag_zpl.py",
    "source_location": null,
@@ -24457,7 +24457,7 @@
    "label": "test_nunca_expoe_conteudo_de_campo()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L72",
+   "source_location": "L114",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24466,6 +24466,104 @@
    "id": "tests_test_diag_zpl_test_nunca_expoe_conteudo_de_campo",
    "community": 83,
    "norm_label": "test_nunca_expoe_conteudo_de_campo()"
+  },
+  {
+   "label": "test_acusa_venda_sem_danfe()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L72",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_acusa_venda_sem_danfe",
+   "community": 83,
+   "norm_label": "test_acusa_venda_sem_danfe()"
+  },
+  {
+   "label": "test_acusa_total_impar_de_blocos()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L81",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_acusa_total_impar_de_blocos",
+   "community": 83,
+   "norm_label": "test_acusa_total_impar_de_blocos()"
+  },
+  {
+   "label": "test_lote_par_e_emparelhado_nao_acusa_nada()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L86",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_lote_par_e_emparelhado_nao_acusa_nada",
+   "community": 83,
+   "norm_label": "test_lote_par_e_emparelhado_nao_acusa_nada()"
+  },
+  {
+   "label": "test_shopee_nao_e_cobrada_por_emparelhamento()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L91",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_shopee_nao_e_cobrada_por_emparelhamento",
+   "community": 83,
+   "norm_label": "test_shopee_nao_e_cobrada_por_emparelhamento()"
+  },
+  {
+   "label": "test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L99",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca",
+   "community": 83,
+   "norm_label": "test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca()"
+  },
+  {
+   "label": "test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L107",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme",
+   "community": 83,
+   "norm_label": "test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme()"
+  },
+  {
+   "label": "_vendas_sem_danfe()",
+   "file_type": "code",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": "L88",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tools_diag_zpl_vendas_sem_danfe",
+   "community": 82,
+   "norm_label": "_vendas_sem_danfe()"
   }
  ],
  "links": [
@@ -37138,6 +37236,16 @@
    "relation": "calls",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
+   "source_location": "L137",
+   "weight": 1.0,
+   "source": "tools_diag_zpl_analisar",
+   "target": "tools_diag_zpl_vendas_sem_danfe",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_zpl.py",
    "source_location": "L141",
    "weight": 1.0,
    "source": "tools_diag_zpl_main",
@@ -37162,6 +37270,16 @@
    "weight": 1.0,
    "source": "tools_diag_zpl_main",
    "target": "tools_diag_zpl_texto_do_arquivo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "calls",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": "L194",
+   "weight": 1.0,
+   "source": "tools_diag_zpl_main",
+   "target": "tools_diag_zpl_vendas_sem_danfe",
    "confidence_score": 1.0
   },
   {
@@ -46989,10 +47107,30 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L81",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_acusa_total_impar_de_blocos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
    "source_location": "L48",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_acusa_troca_de_modo_de_midia_no_meio_do_lote",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L72",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_acusa_venda_sem_danfe",
    "confidence_score": 1.0
   },
   {
@@ -47009,6 +47147,26 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L99",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L86",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_lote_par_e_emparelhado_nao_acusa_nada",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
    "source_location": "L25",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
@@ -47019,7 +47177,17 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L72",
+   "source_location": "L107",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L114",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_nunca_expoe_conteudo_de_campo",
@@ -47033,6 +47201,16 @@
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_reconhece_qual_bloco_e_a_danfe",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L91",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_shopee_nao_e_cobrada_por_emparelhamento",
    "confidence_score": 1.0
   },
   {
@@ -51169,7 +51347,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L85",
+   "source_location": "L110",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_analisar",
@@ -51179,7 +51357,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L54",
+   "source_location": "L57",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_candidatos",
@@ -51189,7 +51367,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L125",
+   "source_location": "L173",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_main",
@@ -51199,7 +51377,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L80",
+   "source_location": "L83",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_midia",
@@ -51209,10 +51387,20 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L70",
+   "source_location": "L73",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_texto_do_arquivo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tools/diag_zpl.py",
+   "source_location": "L88",
+   "weight": 1.0,
+   "source": "tools_diag_zpl",
+   "target": "tools_diag_zpl_vendas_sem_danfe",
    "confidence_score": 1.0
   },
   {
@@ -59769,5 +59957,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "cb687b65b0af3697d953b0ea9b5de7ef60691042"
+ "built_at_commit": "9b9c7f15cf21845d157b262d9ef467ea95fd3e5f"
 }

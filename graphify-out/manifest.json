@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1786016766.0329351,
-  "ast_hash": "aa5de12e24a7432cfe7b543006bf8590440bd05c",
-  "semantic_hash": "aa5de12e24a7432cfe7b543006bf8590440bd05c"
+  "mtime": 1786020408.732418,
+  "ast_hash": "336d0bde22a18649f37a5a93391827339ae2b0cb",
+  "semantic_hash": "336d0bde22a18649f37a5a93391827339ae2b0cb"
  },
  "CLAUDE.md": {
-  "mtime": 1786016751.4609349,
-  "ast_hash": "88563217bd83479957b44af5c7449bb26625a221",
-  "semantic_hash": "88563217bd83479957b44af5c7449bb26625a221"
+  "mtime": 1786020400.5804174,
+  "ast_hash": "4e4d472593e6b67be79495fc91eda5d808f2996d",
+  "semantic_hash": "4e4d472593e6b67be79495fc91eda5d808f2996d"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1786016777.6489353,
-  "ast_hash": "44eab72220a522183733c65ccf1b3e6a0e84ed3e",
-  "semantic_hash": "44eab72220a522183733c65ccf1b3e6a0e84ed3e"
+  "mtime": 1786020415.9684184,
+  "ast_hash": "09bae54923f416b5db12ca8ed4f4346d21e178b1",
+  "semantic_hash": "09bae54923f416b5db12ca8ed4f4346d21e178b1"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785972601.6807904,
@@ -225,9 +225,9 @@
   "semantic_hash": "5a1c61cdd57333ddf0402e039e46b0d6e6a73a57"
  },
  "obsidian/Conceitos/Ponte com a Zebra.md": {
-  "mtime": 1785885576.1923618,
-  "ast_hash": "1e0cef4b2cda3dcf2c083bd2eb8248618203d448",
-  "semantic_hash": "1e0cef4b2cda3dcf2c083bd2eb8248618203d448"
+  "mtime": 1786017096.2889423,
+  "ast_hash": "6ab61a29514037e37d55e46011a3a3b12a7afac9",
+  "semantic_hash": "6ab61a29514037e37d55e46011a3a3b12a7afac9"
  },
  "obsidian/Conceitos/Trava entre processos.md": {
   "mtime": 1784923251.5942357,
@@ -475,9 +475,9 @@
   "semantic_hash": "950653ed296c1d42877ec4f86a8eeb57dc3b011a"
  },
  "tests/test_diag_zpl.py": {
-  "mtime": 1786017023.9609406,
-  "ast_hash": "43047e658ec93b1ba729592c31bf9a74a690c994",
-  "semantic_hash": "43047e658ec93b1ba729592c31bf9a74a690c994"
+  "mtime": 1786020362.388415,
+  "ast_hash": "69735765db64040f1db98088af85c32ed2e12ebb",
+  "semantic_hash": "69735765db64040f1db98088af85c32ed2e12ebb"
  },
  "tests/test_estado.py": {
   "mtime": 1783442165.7015514,
@@ -600,9 +600,9 @@
   "semantic_hash": "25ec4bbd0318e332b469d535593173e5db2260a7"
  },
  "tools/diag_zpl.py": {
-  "mtime": 1786016669.4661088,
-  "ast_hash": "7d6cb5f593418ba8b162c82f4dc1c71d3a82fca8",
-  "semantic_hash": "7d6cb5f593418ba8b162c82f4dc1c71d3a82fca8"
+  "mtime": 1786020317.9964125,
+  "ast_hash": "fc17f1dcc3d94e431264d68512282705054f33df",
+  "semantic_hash": "fc17f1dcc3d94e431264d68512282705054f33df"
  },
  "tools/graph_sync.py": {
   "mtime": 1785846298.9677277,

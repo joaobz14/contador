@@ -47,6 +47,9 @@ RE_BLOCO = re.compile(r"\^XA(.*?)\^XZ", re.DOTALL | re.IGNORECASE)
 RE_MIDIA = re.compile(r"\^(" + "|".join(COMANDOS_MIDIA) + r")([^\^~\n]*)", re.IGNORECASE)
 # Um bloco "desenha" se tem campo de texto, grafico inline ou imagem da RAM.
 RE_DESENHA = re.compile(r"\^(FD|FN|GF|GB|XG|BC|B3|BY)", re.IGNORECASE)
+# A etiqueta de ENVIO do ML e a que traz grafico inline (^GF); a nota traz texto.
+# Mesma classificacao que o app da Zebra usa em _verificar_sequencia_ml.
+RE_ENVIO = re.compile(r"\^GF", re.IGNORECASE)
 
 PREFIXOS = ("etiqueta de envio", "etiqueta shopee")
 
@@ -82,9 +85,31 @@ def _midia(bloco: str) -> dict[str, str]:
     return {m.group(1).upper(): m.group(2).strip() for m in RE_MIDIA.finditer(bloco)}
 
 
+def _vendas_sem_danfe(blocos: list[dict]) -> list[int]:
+    """Numeros dos blocos de ENVIO que nao sao seguidos do seu DANFE.
+
+    O ML manda ENVIO -> DANFE por venda; a sequencia ENVIO -> ENVIO significa
+    uma venda que sairia SEM a nota. Mesma regra que o app da Zebra aplica em
+    _verificar_sequencia_ml -- conferida aqui tambem porque este lado ve o
+    arquivo ANTES de imprimir, e porque um diagnostico que so olha 'saiu pagina
+    em branco?' cala diante de um defeito pior no mesmo arquivo."""
+    faltando: list[int] = []
+    pendente: int | None = None
+    for b in blocos:
+        if b["envio"]:
+            if pendente is not None:
+                faltando.append(pendente)
+            pendente = b["n"]
+        elif b["danfe"]:
+            pendente = None
+    if pendente is not None:
+        faltando.append(pendente)
+    return faltando
+
+
 def analisar(texto: str) -> tuple[list[dict], list[str]]:
     """Devolve (blocos, avisos). Cada bloco: indice, bytes, campos, danfe,
-    vazio, midia."""
+    envio, vazio, midia."""
     blocos: list[dict] = []
     for i, m in enumerate(RE_BLOCO.finditer(texto), 1):
         interior = m.group(1)
@@ -93,6 +118,7 @@ def analisar(texto: str) -> tuple[list[dict], list[str]]:
             "bytes": len(m.group(0)),
             "campos": len(RE_DESENHA.findall(interior)),
             "danfe": "DANFE" in interior.upper(),
+            "envio": bool(RE_ENVIO.search(interior)),
             "vazio": not interior.strip(),
             "midia": _midia(interior),
         })
@@ -105,8 +131,30 @@ def analisar(texto: str) -> tuple[list[dict], list[str]]:
             "(sem nenhum campo a desenhar). Origem: ML ou este app."
         )
 
+    # Emparelhamento ENVIO/DANFE -- so faz sentido para o ML (a Shopee e 1
+    # etiqueta por venda, sem nota junto, e usa ~DG para a imagem).
+    if any(b["danfe"] for b in blocos) and "~DG" not in texto.upper():
+        sem_nota = _vendas_sem_danfe(blocos)
+        if sem_nota:
+            avisos.append(
+                f"VENDA SEM DANFE: o(s) bloco(s) de envio #{', #'.join(str(v) for v in sem_nota)} "
+                "nao vem seguido(s) da nota. Essa venda sairia com a etiqueta e SEM a "
+                "nota fiscal. Origem: o pacote que o ML devolveu."
+            )
+        if len(blocos) % 2:
+            avisos.append(
+                f"Total IMPAR de blocos ({len(blocos)}): o ML manda 1 etiqueta + 1 DANFE "
+                "por venda, entao o esperado e par."
+            )
+
     for cmd in ("MN", "LL"):
-        valores = {b["midia"].get(cmd, "") for b in blocos if cmd in b["midia"]}
+        # 'ausente' conta como valor: um comando que persiste (modo de midia,
+        # comprimento) posto em alguns blocos e nao em outros tambem e uma
+        # TROCA de estado no meio do lote. So compara se algum bloco o traz --
+        # senao todo lote sem esses comandos viraria alarme falso.
+        if not any(cmd in b["midia"] for b in blocos):
+            continue
+        valores = {b["midia"].get(cmd, "(ausente)") for b in blocos}
         if len(valores) > 1:
             avisos.append(
                 f"^{cmd} MUDA no meio do lote: {sorted(valores)}. Trocar de modo de "
@@ -143,23 +191,32 @@ def main() -> int:
         print("Nenhum bloco ^XA...^XZ no arquivo.")
         return 1
 
+    sem_nota = set(_vendas_sem_danfe(blocos)) if any(b["danfe"] for b in blocos) else set()
     print(f"Blocos (paginas) que serao impressos: {len(blocos)}\n")
     for b in blocos:
-        rotulo = "DANFE " if b["danfe"] else "      "
-        marca = "  <== EM BRANCO" if b["vazio"] or b["campos"] == 0 else ""
+        if b["danfe"]:
+            rotulo = "DANFE "
+        elif b["envio"]:
+            rotulo = "ENVIO "
+        else:
+            rotulo = "      "
+        marca = ""
+        if b["vazio"] or b["campos"] == 0:
+            marca = "  <== EM BRANCO"
+        elif b["n"] in sem_nota:
+            marca = "  <== SEM DANFE"
         midia = " ".join(f"^{k}{v}" for k, v in sorted(b["midia"].items())) or "-"
         print(f"  #{b['n']:>3}  {b['bytes']:>8} B  campos={b['campos']:<4} "
               f"{rotulo}{midia}{marca}")
 
     print()
-    if avisos:
-        for a in avisos:
-            print(f"  !! {a}")
-    else:
-        print("  OK: nenhum bloco em branco e nenhuma troca de midia/comprimento.")
-        print("     Se saiu etiqueta em branco, ela NAO veio deste arquivo -- procure")
-        print("     no log do app da Zebra a linha 'Avancando etiqueta - posicionando")
-        print("     sensor' (auto-feed de inicio de sessao) ou calibre a midia.")
+    for a in avisos:
+        print(f"  !! {a}")
+    if not any("EM BRANCO" in a for a in avisos):
+        print("  Pagina em branco: NAO veio deste arquivo (nenhum bloco vazio, nenhuma")
+        print("  troca de midia/comprimento). Procure no log do app da Zebra a linha")
+        print("  'Avancando etiqueta - posicionando sensor' (auto-feed de inicio de")
+        print("  sessao); se nao houver, calibre a midia.")
     return 0
 
 
