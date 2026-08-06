@@ -69,6 +69,57 @@ def test_uma_copia_so_nao_e_aviso():
     assert avisos == []
 
 
+def test_acusa_envio_sem_danfe_em_seguida():
+    """ENVIO -> ENVIO e o defeito que passou batido na primeira versao: o
+    diagnostico dizia 'OK' diante de um lote real com 19 etiquetas e 18 notas."""
+    lote = f"{ENVIO}\n{DANFE}\n{ENVIO}\n{ENVIO}\n{DANFE}"
+    _, avisos = diag_zpl.analisar(lote)
+    assert any("ENVIO SEM DANFE" in a and "#3" in a for a in avisos)
+
+
+def test_aviso_de_envio_sem_danfe_nao_crava_a_causa():
+    """A estrutura nao distingue 'nota faltando' de 'venda com varios volumes'
+    (que legitimamente tem 2 etiquetas para 1 nota). Cravar uma das duas mandaria
+    o operador atras da coisa errada -- o aviso entrega o fato e manda conferir."""
+    lote = f"{ENVIO}\n{ENVIO}\n{DANFE}"
+    _, avisos = diag_zpl.analisar(lote)
+    texto = " ".join(avisos)
+    assert "VARIOS VOLUMES" in texto and "painel do ML" in texto
+
+
+def test_acusa_total_impar_de_blocos():
+    _, avisos = diag_zpl.analisar(f"{ENVIO}\n{DANFE}\n{ENVIO}")
+    assert any("IMPAR" in a for a in avisos)
+
+
+def test_lote_par_e_emparelhado_nao_acusa_nada():
+    _, avisos = diag_zpl.analisar(f"{ENVIO}\n{DANFE}\n{ENVIO}\n{DANFE}")
+    assert avisos == []
+
+
+def test_shopee_nao_e_cobrada_por_emparelhamento():
+    """A Shopee e 1 etiqueta por venda, sem nota junto: exigir par ali seria
+    alarme falso -- e alarme falso ensina o operador a ignorar o aviso."""
+    shopee = "~DGR:DEMO.GRF,1,1,x\n^XA^XGR:DEMO.GRF,1,1^FS^XZ\n^XA^IDR:DEMO.GRF^FS^FDx^FS^XZ"
+    _, avisos = diag_zpl.analisar(shopee)
+    assert not any("DANFE" in a or "IMPAR" in a for a in avisos)
+
+
+def test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca():
+    """^MN posto em um bloco e ausente no seguinte muda o estado da impressora
+    do mesmo jeito -- a primeira versao so comparava blocos que TINHAM o comando."""
+    lote = ENVIO + "\n" + DANFE.replace("^MNY", "")   # so o ENVIO traz ^MN
+    _, avisos = diag_zpl.analisar(lote)
+    assert any("^MN MUDA" in a and "(ausente)" in a for a in avisos)
+
+
+def test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme():
+    """Nenhum bloco traz ^MN/^LL: nao ha troca nenhuma a reportar."""
+    lote = ENVIO.replace("^LL1218^MNY", "") + "\n" + DANFE.replace("^LL1218^MNY", "")
+    _, avisos = diag_zpl.analisar(lote)
+    assert avisos == []
+
+
 def test_nunca_expoe_conteudo_de_campo():
     """A etiqueta leva nome, endereco e CEP do comprador e o repositorio e
     publico: o relatorio pode citar comando e numero, nunca o dado."""

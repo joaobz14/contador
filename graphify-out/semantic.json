@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 362,
- "edge_count": 692,
+ "node_count": 364,
+ "edge_count": 702,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4159,7 +4159,7 @@
    "norm_label": "compliance da shopee encerrado (05/08/2026, resposta final do suporte). o requisito (success rate > 90% por 7 dias consecutivos em v2.logistics.ship_order, com prazo e risco de penalidade) foi o que motivou as duas rodadas de correcao de 2026-07. o e-mail final diz: 'a task completa-se sozinha com 7 dias consecutivos. embora, atualmente, se houver dias sem chamada, quebra o ciclo. isso ja esta em "
   },
   {
-   "label": "ETIQUETA EM BRANCO NO MEIO DO LOTE: ESTE APP NAO SABE CRIAR UMA (06/08/2026). Reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: DANFE, uma etiqueta totalmente em branco, e a etiqueta de envio. Investigado lendo os DOIS repos. DESCARTADO COM LEITURA DE CODIGO, nao com palpite: (1) o nucleo daqui NUNCA CRIA PAGINA -- baixar_zpl so repassa o ZPL do ML e carimbar_zpl so insere um ^FO...^FS DENTRO do bloco que ja existe (o da DANFE); nao ha um unico ^LL/^PQ/^MN/^LH em todo o repositorio (grep = 0 ocorrencias), entao nao ha como este app produzir ou pedir um avanco de midia. (2) Mesmo que o ML mandasse um ^XA^XZ vazio, o app da Zebra o DESCARTA antes de imprimir (_validar_e_extrair_blocos_zpl loga 'Bloco ZPL #N: conteudo vazio entre ^XA e ^XZ -- ignorado'). SOBRAM TRES CAUSAS: (a) AUTO-FEED DE INICIO DE SESSAO do app da Zebra -- ele imprime um ^XA^XZ DE PROPOSITO para posicionar o sensor de gap; o flag _primeira_impressao_sessao nasce True em cada MonitorEtiquetas, e um monitor novo e criado a cada clique em 'Iniciar', entao isto se repete a cada abertura/reinicio do app -- deixa a linha 'Avancando etiqueta - posicionando sensor' no ~/zebra_usb_log.txt e cai SEMPRE ANTES do primeiro bloco, NUNCA no meio de uma venda. (b) ^MN/^LL DIVERGINDO entre os blocos do ML: trocar de modo de midia (continua x sensor de gap) obriga a impressora a procurar o proximo gap, e esse avanco sai como etiqueta em branco; o app da Zebra ja tem cicatriz vizinha disso (o comentario que proibe reintroduzir ^MCY->^MCN porque o ^MCN 'retem o buffer de imagem e causa sobreposicao do DANFE na etiqueta seguinte') -- prova de que os blocos do ML carregam comandos que atravessam etiquetas. (c) CALIBRACAO DA MIDIA (botao 'Calibrar midia' / ~JC no app da Zebra), a causa classica de intermitencia. COMO SEPARAR: tools/diag_zpl.py le o lote JA IMPRESSO e reporta, bloco a bloco, bloco vazio + ^MN/^LL/^PQ -- decide (b) contra o resto; a linha no log da Zebra decide (a). O lote impresso existe porque o app da Zebra RETEM o arquivo em ~/zebra_usb_concluidos/AAAA-MM-DD/ (contrato de 2026-08): a pasta de retencao foi negociada para reimpressao, e o primeiro uso real dela foi este -- investigar DEPOIS do fato. ARMADILHA DE LEITURA DA FOTO: a ordem dos blocos do ML e ENVIO -> DANFE (e o que _verificar_sequencia_ml do outro repo cobra), e a impressora empurra o papel para FORA -- logo o que esta mais perto da impressora foi impresso por ULTIMO. Ler a tira na ordem errada troca 'a branca veio antes de tudo' (auto-feed, causa a) por 'a branca veio no meio da venda' (midia/sensor, causas b/c), que pedem acoes diferentes. PRIVACIDADE: o diagnostico so imprime ESTRUTURA (nome de comando, contagem, tamanho) -- a etiqueta carrega nome, endereco e CEP do comprador, e o repositorio e publico; nunca imprima conteudo de ^FD.",
+   "label": "ETIQUETA EM BRANCO NO MEIO DO LOTE: ESTE APP NAO SABE CRIAR UMA (06/08/2026). Reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: DANFE, uma etiqueta totalmente em branco, e a etiqueta de envio. Investigado lendo os DOIS repos. DESCARTADO COM LEITURA DE CODIGO, nao com palpite: (1) o nucleo daqui NUNCA CRIA PAGINA -- baixar_zpl so repassa o ZPL do ML e carimbar_zpl so insere um ^FO...^FS DENTRO do bloco que ja existe (o da DANFE); nao ha um unico ^LL/^PQ/^MN/^LH em todo o repositorio (grep = 0 ocorrencias), entao nao ha como este app produzir ou pedir um avanco de midia. (2) Mesmo que o ML mandasse um ^XA^XZ vazio, o app da Zebra o DESCARTA antes de imprimir (_validar_e_extrair_blocos_zpl loga 'Bloco ZPL #N: conteudo vazio entre ^XA e ^XZ -- ignorado'). SOBRAM TRES CAUSAS: (a) AUTO-FEED DE INICIO DE SESSAO do app da Zebra -- ele imprime um ^XA^XZ DE PROPOSITO para posicionar o sensor de gap; o flag _primeira_impressao_sessao nasce True em cada MonitorEtiquetas, e um monitor novo e criado a cada clique em 'Iniciar', entao isto se repete a cada abertura/reinicio do app -- deixa a linha 'Avancando etiqueta - posicionando sensor' no ~/zebra_usb_log.txt e cai SEMPRE ANTES do primeiro bloco, NUNCA no meio de uma venda. (b) ^MN/^LL DIVERGINDO entre os blocos do ML: trocar de modo de midia (continua x sensor de gap) obriga a impressora a procurar o proximo gap, e esse avanco sai como etiqueta em branco; o app da Zebra ja tem cicatriz vizinha disso (o comentario que proibe reintroduzir ^MCY->^MCN porque o ^MCN 'retem o buffer de imagem e causa sobreposicao do DANFE na etiqueta seguinte') -- prova de que os blocos do ML carregam comandos que atravessam etiquetas. (c) CALIBRACAO DA MIDIA (botao 'Calibrar midia' / ~JC no app da Zebra), a causa classica de intermitencia. COMO SEPARAR: tools/diag_zpl.py le o lote JA IMPRESSO e reporta, bloco a bloco, bloco vazio + ^MN/^LL/^PQ -- decide (b) contra o resto; a linha no log da Zebra decide (a). O lote impresso existe porque o app da Zebra RETEM o arquivo em ~/zebra_usb_concluidos/AAAA-MM-DD/ (contrato de 2026-08): a pasta de retencao foi negociada para reimpressao, e o primeiro uso real dela foi este -- investigar DEPOIS do fato. ARMADILHA DE LEITURA DA FOTO: a ordem dos blocos do ML e ENVIO -> DANFE (e o que _verificar_sequencia_ml do outro repo cobra), e a impressora empurra o papel para FORA -- logo o que esta mais perto da impressora foi impresso por ULTIMO. Ler a tira na ordem errada troca 'a branca veio antes de tudo' (auto-feed, causa a) por 'a branca veio no meio da venda' (midia/sensor, causas b/c), que pedem acoes diferentes. PRIVACIDADE: o diagnostico so imprime ESTRUTURA (nome de comando, contagem, tamanho) -- a etiqueta carrega nome, endereco e CEP do comprador, e o repositorio e publico; nunca imprima conteudo de ^FD. ACHADO DO PRIMEIRO USO REAL (06/08/2026), E A LICAO QUE VEIO COM ELE: rodado no lote do dono, o diagnostico imprimiu 'OK: nenhum bloco em branco e nenhuma troca de midia' -- e o mesmo arquivo tinha 19 etiquetas de ENVIO para 18 DANFEs (blocos #31 e #32 ambos de envio; o perfil de tamanho confirma: envio ~2600 B/33 campos, nota ~1600 B/37 campos). Ou seja: uma venda sairia com a etiqueta e SEM NOTA FISCAL, e a ferramenta calou porque so procurava a pagina em branco que motivou sua criacao. E a familia 'falha que reporta sucesso' aplicada a um DIAGNOSTICO: o OK nao e neutro, ele manda procurar no lugar errado -- teria feito calibrar a impressora enquanto o pacote saia sem NF-e. REGRA GERAL: ferramenta de diagnostico responde sobre o ARQUIVO INTEIRO, nao so sobre a pergunta que a motivou. Corrigido: _vendas_sem_danfe (mesma regra do _verificar_sequencia_ml do outro repo, feita tambem aqui porque este lado ve o arquivo ANTES de imprimir), aviso de total impar, e a comparacao de ^MN/^LL passou a tratar AUSENTE como valor (comando que persiste, posto em alguns blocos e nao em outros, tambem e troca de estado). Dois cuidados contra alarme falso: o emparelhamento NAO vale para a Shopee (1 etiqueta por venda, sem nota junto) e a comparacao de midia so roda se algum bloco trouxer o comando. E baixar_zpl CONTINUA com '>=': a guarda dele e contra lote CURTO; amarrar no numero exato tornaria o app refem de um formato que ele nao controla.",
    "file_type": "rationale",
    "source_file": "tools/diag_zpl.py",
    "source_location": null,
@@ -4170,6 +4170,32 @@
    "id": "etiqueta_em_branco_no_lote",
    "community": 0,
    "norm_label": "etiqueta em branco no meio do lote: este app nao sabe criar uma (06/08/2026). reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: danfe, uma etiqueta totalmente em branco, e a etiqueta de envio. investigado lendo os dois repos. descartado com leitura de codigo, nao com palpite: (1) o nucleo daqui nunca cria pagina -- baixar_zpl so repassa o zpl do ml e carim"
+  },
+  {
+   "label": "PRIMEIRO CICLO DO DIA E MARCADO POR FONTE, E SO APOS SUCESSO (06/08/2026). O alerta pos-horario cala o primeiro ciclo do dia (registra o que ja existe sem avisar) para nao trocar a parede de mensagens da manha por um despejo unico. A marca `iniciado` era um BOOLEANO ligado no FIM do ciclo -- inclusive quando a checagem de uma fonte tinha estourado excecao (o `except` do laco por conta faz `continue`; o da Shopee zera as listas). Fonte que falhou NAO REGISTROU NADA, entao no ciclo seguinte todas as vendas dela apareciam como 'novas' e saiam de uma vez: uma falha de rede transformava a garantia de 'nada de despejo' EXATAMENTE no despejo que ela existe para evitar -- a mesma familia de 'falha que reporta sucesso', aqui na forma de 'falha que marca progresso'. Hoje `iniciado` e a LISTA de fontes que completaram a rodada (_fonte_iniciada / _marcar_fonte_iniciada), gravada so depois do sucesso; quem falhou repete o ciclo calado na proxima rodada. POR FONTE E NAO GLOBAL de proposito: um guardiao global trocaria o despejo por SILENCIO GERAL -- a Shopee fora do ar calaria os alertas do ML o dia inteiro. E a mesma filosofia do isolamento de falha por conta que ja existia no laco. COMPATIBILIDADE: o formato antigo (booleano True) continua valendo para o dia ja gravado, porque o bot pode ser atualizado no MEIO do dia e rebaixar True para lista vazia produziria o despejo de novo. ACHADO A PARTIR DE EVIDENCIA DE CAMPO: o dono recebeu as 09:42 um aviso de venda Shopee parada ha 24h01 -- mensagem que, pelo desenho, o primeiro ciclo do dia (08:30) deveria ter calado; a divergencia entre o comportamento observado e o codigo foi o que expos o furo.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "primeiro_ciclo_por_fonte",
+   "community": 0,
+   "norm_label": "primeiro ciclo do dia e marcado por fonte, e so apos sucesso (06/08/2026). o alerta pos-horario cala o primeiro ciclo do dia (registra o que ja existe sem avisar) para nao trocar a parede de mensagens da manha por um despejo unico. a marca `iniciado` era um booleano ligado no fim do ciclo -- inclusive quando a checagem de uma fonte tinha estourado excecao (o `except` do laco por conta faz `continu"
+  },
+  {
+   "label": "DATA INCERTA DA SHOPEE INCLUI, NUNCA EXCLUI (06/08/2026). `dia_previsto` tinha um fallback que derivava o dia de despacho de `pay_time + days_to_ship` quando a Shopee ainda nao atribuira `ship_by_date`; a docstring dizia que a conta fora 'conferida contra um pedido real'. MEDICAO que a derrubou: o pedido `260805JCWTKH9K` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem `ship_by_date` REAL de 06/08 -- a formula daria 07/08. Dois pedidos reais discordam, logo NAO EXISTE FORMULA CONFIRMADA, e trocar por `days_to_ship - 1` seria repetir o erro com outra amostra. O que condenou o fallback nao foi so estar errado, foi a DIRECAO do erro: ele existia para que uma venda sem prazo nao ficasse fora do filtro por dia ('o aviso nasceria mudo') e, empurrando a venda para a FRENTE, produzia exatamente o silencio que devia evitar -- a venda que vencia HOJE saia do filtro de hoje. Mesma familia do OK que cala e do fallback que reporta sucesso. CORRECAO: `dia_previsto` devolve \"\" para 'nao sei' (sem inventar data) e `pedidos_prontos_novos` INCLUI o incerto no lote de hoje -- a regra do `_sla` no ML, 'excluí-lo seria pior que datá-lo errado'. Prazo CONHECIDO e diferente de hoje continua fora (senao o alerta viraria 'todas as vendas abertas'). O custo em ruido e baixo porque a CARENCIA de 30 min ja segura a venda recem-criada, que e justamente a que costuma vir sem prazo; e o alerta marca o lote com relatorio.AVISO_SEM_PRAZO para o dono nao estranhar uma venda que talvez seja de amanha -- informa o porque sem afirmar o dia, mesma disciplina do aviso de NF-e. DECIDIDO PELO DONO aplicar nos DOIS avisos (pronta e falta-NF-e), e nao so no de NF-e.",
+   "file_type": "rationale",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "data_incerta_shopee",
+   "community": 0,
+   "norm_label": "data incerta da shopee inclui, nunca exclui (06/08/2026). `dia_previsto` tinha um fallback que derivava o dia de despacho de `pay_time + days_to_ship` quando a shopee ainda nao atribuira `ship_by_date`; a docstring dizia que a conta fora 'conferida contra um pedido real'. medicao que a derrubou: o pedido `260805jcwtkh9k` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem `ship_by_date` real de 06/"
   }
  ],
  "edges": [
@@ -5146,6 +5172,26 @@
   },
   {
    "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "data_incerta_shopee",
+   "target": "carencia_do_aviso_sem_nf",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "data_incerta_shopee",
+   "target": "primeiro_ciclo_por_fonte",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
    "confidence": "INFERRED",
    "confidence_score": 0.65,
    "source_file": "requirements.txt",
@@ -5659,6 +5705,26 @@
    "weight": 1.0,
    "source": "perf_organizar_piso",
    "target": "awb"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "alerta_uma_mensagem_por_ciclo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "carencia_do_aviso_sem_nf",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -7519,6 +7585,26 @@
   },
   {
    "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "data_incerta_shopee",
+   "target": "shopee_api_dia_previsto",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "shopee_api.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "data_incerta_shopee",
+   "target": "shopee_api_pedidos_prontos_novos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
    "confidence": "EXTRACTED",
    "confidence_score": 1.0,
    "source_file": "requirements-bot.txt",
@@ -8318,6 +8404,46 @@
    "weight": 1.0,
    "source": "perf_organizar_piso",
    "target": "shopee_api_organizar_varios"
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_carregar_alertas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_fonte_iniciada",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_marcar_fonte_iniciada",
+   "confidence_score": 1.0
   },
   {
    "relation": "rationale_for",

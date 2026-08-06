@@ -13,6 +13,12 @@ Histórico das principais mudanças do projeto.
   - Serve para separar as três causas possíveis: uma página em branco dentro
     do arquivo, uma troca de configuração de mídia no meio do lote, ou o
     avanço de etiqueta que o próprio app da Zebra faz ao ser iniciado.
+  - **Ele também avisa quando uma etiqueta de envio não vem seguida da nota.**
+    O Mercado Livre manda uma etiqueta e uma nota por venda; o relatório aponta
+    o número exato do bloco quando isso não bate. O primeiro lote conferido de
+    verdade tinha 19 etiquetas e 18 notas. O aviso **não afirma o motivo** —
+    pode ser nota que faltou ou venda de vários volumes (que tem duas etiquetas
+    para uma nota só) —, ele manda você conferir no painel do Mercado Livre.
   - **Não mostra nome, endereço nem CEP de comprador** — só a estrutura.
 - **Os comandos `/perguntas` e `/anuncios` passam a mandar uma senha ao n8n.**
   Hoje qualquer pessoa que descobrisse o endereço do fluxo conseguia dispará-lo
@@ -31,6 +37,20 @@ Histórico das principais mudanças do projeto.
     o workflow à toa.
 
 ### Alterado
+- **Venda da Shopee sem prazo definido não some mais do aviso do dia.** A Shopee
+  demora a atribuir a data de despacho, e o app preenchia essa lacuna com uma
+  conta própria — que, medida contra um pedido real, errava **um dia para a
+  frente**. Resultado: a venda que vencia hoje ficava fora do aviso de hoje,
+  em silêncio. Agora, quando a Shopee ainda não datou, a venda **entra** no
+  aviso e vem marcada com "🗓 inclui venda que a Shopee ainda não datou".
+  Venda com prazo conhecido de outro dia continua fora.
+- **Correção no alerta do Telegram: uma falha de rede podia virar um despejo de
+  mensagens.** O bot marca, uma vez por dia, quais vendas ele "já conhece",
+  para depois só avisar do que aparecer de novo. Essa marca era única e era
+  ligada mesmo quando a consulta de uma das lojas tinha falhado — e aí, no ciclo
+  seguinte, todas as vendas daquela loja apareciam como novas e saíam juntas.
+  Agora a marca é por loja/conta e só é gravada quando a consulta dá certo.
+  Quem falhou tenta de novo em silêncio, sem calar as outras.
 - **O aviso "sem NF-e" agora espera o seu faturador trabalhar.** Ele estava
   disparando assim que a venda caía — antes de o UpSeller puxar o pedido — e
   minutos depois se desmentia com o "✅ liberada". Agora o bot só avisa quando a

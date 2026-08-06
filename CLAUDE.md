@@ -439,6 +439,26 @@ em 2º plano.
   contratada em 2026-08 existe justamente para investigar depois do fato. Ele
   reporta só **estrutura** (comando, contagem, tamanho): a etiqueta carrega nome,
   endereço e CEP do comprador, então **nunca** imprima conteúdo de `^FD`.
+  **Ele também confere o emparelhamento ENVIO→DANFE — e isso não estava na v1
+  (06/08/2026).** O primeiro lote real analisado tinha **19 etiquetas e 18
+  notas** (blocos `#31` e `#32` ambos de envio; o perfil de tamanho confirma —
+  envio ~2600 B/33 campos, nota ~1600 B/37) e a ferramenta imprimiu **"OK"**:
+  ela só procurava página em branco, então calou diante de uma anomalia **maior**
+  no mesmo arquivo. É a família "falha que reporta sucesso" aplicada a um
+  **diagnóstico**, onde o dano é próprio: o OK não é neutro, ele **manda procurar
+  no lugar errado** — teria feito calibrar a impressora enquanto o arquivo tinha
+  outra coisa a dizer. Regra: **ferramenta de diagnóstico responde sobre o arquivo
+  inteiro, não só sobre a pergunta que a motivou.**
+  **Mas o aviso NÃO crava a causa:** a estrutura não distingue "o ML não mandou a
+  nota" de "venda de **vários volumes**" (que legitimamente tem 2 etiquetas para 1
+  nota). Ele entrega o fato e manda conferir no painel — mesma disciplina do aviso
+  de NF-e da Shopee, que diz o efeito e não afirma o porquê.
+  A checagem é a mesma do `_verificar_sequencia_ml` do outro repo, feita aqui
+  também porque este lado vê o arquivo **antes** de imprimir. Não vale para a
+  Shopee (1 etiqueta por venda, sem nota junto) — exigir par ali seria alarme
+  falso. E o `baixar_zpl` **continua com `>=`**: a guarda dele é contra lote
+  **curto**, e amarrar no número exato tornaria o app refém de um formato que ele
+  não controla.
   **Ordem dos blocos do ML: ENVIO → DANFE** (é o que `_verificar_sequencia_ml`
   do outro repo cobra) — some isso ao fato de a impressora empurrar o papel para
   fora e a ordem física fica **invertida** em relação à foto: o que está mais
@@ -508,6 +528,55 @@ em 2º plano.
   meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
   pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
   libera a trava; o `finally` libera mesmo se a confirmação estourar.
+- **A marca de "1º ciclo já rodou" é POR FONTE, não uma só (06/08/2026).**
+  Ela era um booleano ligado **no fim** do ciclo — inclusive quando a checagem
+  de uma fonte tinha **falhado**. A fonte que falhou não registrou nada, então
+  no ciclo seguinte todas as vendas dela apareciam como "novas" e saíam **de
+  uma vez**: uma falha de rede transformava a garantia de "nada de despejo"
+  exatamente no despejo que ela existe para evitar. Hoje `iniciado` é a
+  **lista** de fontes que completaram a rodada (`_fonte_iniciada` /
+  `_marcar_fonte_iniciada`), marcada só **depois** do sucesso — quem falhou
+  repete o ciclo **calado** na próxima rodada. Por fonte, e não global, porque
+  o global trocaria o despejo por **silêncio geral**: a Shopee fora do ar
+  calaria os alertas do ML o dia inteiro (mesma filosofia do isolamento de
+  falha por conta, que já existia logo acima no laço). O **formato antigo
+  (booleano `True`) continua valendo** para o dia já gravado: o bot pode ser
+  atualizado no meio do dia, e rebaixar `True` para lista vazia produziria o
+  despejo de novo.
+  **ATENÇÃO — o caso de campo que levou até aqui NÃO está explicado.** O que
+  motivou a investigação foi um aviso de venda Shopee às **09:42** de 06/08 que,
+  pelo desenho, o primeiro ciclo das 08:32 deveria ter calado. O `bot.log`
+  **descarta** esta correção como causa: registrou o primeiro ciclo às 08:32:41 e
+  **nenhuma** linha de "Falha ao checar alerta pos-horario". Ou seja, o furo
+  acima é real e foi corrigido por mérito próprio, mas **não é** o que aconteceu
+  naquele dia — falta explicar por que o pedido `260805JCWTKH9K` (pago 05/08
+  09:40, `ship_by_date` 06/08, `invoice_data.status=pending`, `update_time`
+  igual ao `pay_time`, ou seja **sem mudança de estado** desde a véspera) não foi
+  registrado no balde `Shopee`+`SUFIXO_ALERTA_NF` no ciclo das 08:32. O estado
+  (`dados/alertas_pos_horario.json`) confirma a dedução: o pedido **está** no
+  balde, mas foi acrescentado **por último** — ou seja, entrou às 09:42 e não às
+  08:32, senão o dedup teria calado a mensagem. **Não trate como encerrado.**
+- **O fallback de `dia_previsto` erra por UM DIA (medido, 06/08/2026).** A
+  docstring diz que `ship_by_date` = fim do dia de `pay_time + days_to_ship`, e
+  diz ter sido "conferida contra um pedido real". O pedido `260805JCWTKH9K`
+  **contradiz**: `pay_time` 05/08 09:40, `days_to_ship` **2**, e `ship_by_date`
+  real **06/08** 23:59:59 — a fórmula daria **07/08**. Dois pedidos reais
+  discordam, então **não existe fórmula confirmada**: não "conserte" trocando por
+  `days_to_ship - 1` com base numa amostra. O que importa é a **forma do erro**:
+  o fallback existe para que uma venda sem prazo não fique fora do filtro por dia
+  ("o aviso nasceria mudo") e, errando para a frente, ele produz **exatamente o
+  silêncio que deveria evitar** — mesma família do `OK` que cala. A saída correta
+  não é adivinhar a data e sim tratar **ausência de `ship_by_date` como data
+  incerta**, que nunca pode EXCLUIR em silêncio (a regra do `_sla` no ML:
+  "excluí-lo seria pior que datá-lo errado"). **Foi o que se fez:** o fallback
+  saiu, `dia_previsto` devolve `""` para "não sei" e `pedidos_prontos_novos`
+  **inclui** o incerto no lote de hoje — nos **dois** avisos (pronta e
+  falta-NF-e), por decisão do dono. Prazo **conhecido** e diferente de hoje
+  continua de fora, senão o alerta viraria "todas as vendas abertas". O ruído
+  extra é baixo porque a **carência de 30 min** já segura a venda recém-criada,
+  que é justamente a que costuma vir sem prazo; e o lote leva
+  `relatorio.AVISO_SEM_PRAZO`, que diz **por que** aquela venda entrou sem
+  afirmar o dia (mesma disciplina do aviso de NF-e).
 - **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
   (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
   Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6

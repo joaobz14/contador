@@ -423,18 +423,53 @@ def _carregar_alertas() -> dict:
     dia muda (mesma filosofia do estado de impressao — nao precisa "limpar"
     nada na mao; um dia novo comeca com "hoje" vazio).
 
-    Guarda tambem `iniciado`: se o PRIMEIRO ciclo do dia ja rodou (ver
-    `job_alerta_pos_horario`). Sem essa marca, o ciclo que abre a janela
+    Guarda tambem `iniciado`: quais FONTES ja tiveram o primeiro ciclo do dia
+    (ver `job_alerta_pos_horario`). Sem essa marca, o ciclo que abre a janela
     consideraria "nova" toda venda pronta do dia e despejaria o lote inteiro
-    numa mensagem — justamente o oposto de "apareceu agora"."""
+    numa mensagem — justamente o oposto de "apareceu agora".
+
+    E uma LISTA de fontes, nao um booleano (achado 2026-08-06): a marca unica
+    era ligada no fim do ciclo mesmo quando a checagem de uma fonte tinha
+    FALHADO — e uma fonte que falhou nao registrou nada, entao no ciclo
+    seguinte todas as suas vendas do dia apareciam como "novas" e saiam de uma
+    vez. Uma falha de rede transformava a garantia de "nada de despejo"
+    exatamente no despejo que ela existe para evitar. Por fonte, quem falhou
+    continua sem marca e repete o primeiro ciclo (calado) na proxima rodada,
+    sem calar as outras."""
     dados = core._ler_json(ARQUIVO_ALERTAS)
     hoje = core._hoje_br()
     if dados.get("dia") != hoje:
-        return {"dia": hoje, "avisados": {}, "itens": {}, "iniciado": False}
+        return {"dia": hoje, "avisados": {}, "itens": {}, "iniciado": []}
     dados.setdefault("avisados", {})
     dados.setdefault("itens", {})
-    dados.setdefault("iniciado", False)
+    dados.setdefault("iniciado", [])
     return dados
+
+
+def _fonte_iniciada(dados: dict, fonte: str) -> bool:
+    """A fonte ja teve o primeiro ciclo (calado) do dia?
+
+    Aceita o formato antigo (booleano unico) porque o bot pode ser atualizado
+    no MEIO de um dia cujo arquivo ja esta gravado: `True` ali significa "todas
+    as fontes ja iniciadas", e rebaixar isso para lista vazia produziria
+    justamente o despejo que esta correcao evita."""
+    marca = dados.get("iniciado")
+    if isinstance(marca, bool):
+        return marca
+    return fonte in (marca or [])
+
+
+def _marcar_fonte_iniciada(dados: dict, fonte: str) -> bool:
+    """Marca a fonte como iniciada; devolve True se mudou algo (precisa gravar)."""
+    marca = dados.get("iniciado")
+    if marca is True:                      # legado do mesmo dia: ja cobre tudo
+        return False
+    lista = list(marca) if isinstance(marca, list) else []
+    if fonte in lista:
+        return False
+    lista.append(fonte)
+    dados["iniciado"] = lista
+    return True
 
 
 def _salvar_alertas(dados: dict) -> None:
@@ -669,18 +704,18 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     contas = core.listar_contas() or [""]
     hoje = core._hoje_br()
     dados = await asyncio.to_thread(_carregar_alertas)
-    primeiro_ciclo = not dados.get("iniciado")
     blocos: list = []
     mudou = False
 
-    def _acrescentar(rotulo, itens, *, nf=False, aviso="", liberadas=False,
-                     espera_min=0):
-        """So entra na mensagem fora do primeiro ciclo — o registro no estado
-        acontece sempre (ver o docstring)."""
-        if not primeiro_ciclo and itens:
+    def _acrescentar(rotulo, itens, *, fonte, nf=False, aviso="", liberadas=False,
+                     espera_min=0, sem_prazo=False):
+        """So entra na mensagem fora do primeiro ciclo DAQUELA FONTE — o
+        registro no estado acontece sempre (ver o docstring)."""
+        if _fonte_iniciada(dados, fonte) and itens:
             blocos.append(relatorio.BlocoAlerta(rotulo, itens, nf_pendente=nf,
                                                 aviso=aviso, liberadas=liberadas,
-                                                espera_min=espera_min))
+                                                espera_min=espera_min,
+                                                sem_prazo=sem_prazo))
 
     for conta in contas:
         avisados = set(dados["avisados"].get(conta, []))
@@ -697,7 +732,7 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             # Venda que ja tinha sido avisada como "falta NF-e" e agora esta
             # pronta: sem marcar, o mesmo SKU reaparecendo minutos depois
             # parece duplicata, quando e a noticia de que o XML subiu.
-            _acrescentar(conta or "Mercado Livre", itens,
+            _acrescentar(conta or "Mercado Livre", itens, fonte=conta,
                          liberadas=any(i in avisados_nf for i in ids))
             _registrar_alerta(dados, conta, itens, ids)
             mudou = True
@@ -715,10 +750,15 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             if maduros:
                 ids_nf = {p["_envio"]["shipment_id"] for p in maduros}
                 itens_maduros = _so_dos_ids(itens_nf, ids_nf)
-                _acrescentar(conta or "Mercado Livre", itens_maduros, nf=True,
-                             aviso=AVISO_NF_PENDENTE, espera_min=espera)
+                _acrescentar(conta or "Mercado Livre", itens_maduros, fonte=conta,
+                             nf=True, aviso=AVISO_NF_PENDENTE, espera_min=espera)
                 _registrar_alerta(dados, chave_nf, itens_maduros, list(ids_nf))
                 mudou = True
+        # A fonte completou a rodada: so agora ela deixa de ser "primeiro ciclo".
+        # Se tivesse falhado acima, o `continue` pulou esta linha — e ela repete
+        # o ciclo calado na proxima rodada, em vez de despejar o dia inteiro.
+        if _marcar_fonte_iniciada(dados, conta):
+            mudou = True
 
     # Shopee e independente das contas ML (loja unica); pula em silencio se
     # nao houver credencial configurada (setup so-ML e valido e nao deve
@@ -727,16 +767,19 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
         avisados_shopee = set(dados["avisados"].get(CHAVE_ALERTA_SHOPEE, []))
         chave_nf_shopee = CHAVE_ALERTA_SHOPEE + SUFIXO_ALERTA_NF
         avisados_nf_shopee = set(dados["avisados"].get(chave_nf_shopee, []))
+        ok_shopee = True
         try:
             novos_shopee, itens_shopee, nf_shopee, itens_nf_shopee = await asyncio.to_thread(
                 _dados_alerta_shopee, avisados_shopee, hoje, avisados_nf_shopee)
         except Exception:
             log.exception("Falha ao checar alerta pos-horario da Shopee")
+            ok_shopee = False
             novos_shopee, itens_shopee, nf_shopee, itens_nf_shopee = [], [], [], []
         if novos_shopee:
             sns = [d["order_sn"] for d in novos_shopee]
-            _acrescentar(CHAVE_ALERTA_SHOPEE, itens_shopee,
-                         liberadas=any(s in avisados_nf_shopee for s in sns))
+            _acrescentar(CHAVE_ALERTA_SHOPEE, itens_shopee, fonte=CHAVE_ALERTA_SHOPEE,
+                         liberadas=any(s in avisados_nf_shopee for s in sns),
+                         sem_prazo=any(not d.get("ship_by_date") for d in novos_shopee))
             _registrar_alerta(dados, CHAVE_ALERTA_SHOPEE, itens_shopee, sns)
             mudou = True
         if nf_shopee:
@@ -744,19 +787,21 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
             if maduros_sh:
                 sns_nf = {d["order_sn"] for d in maduros_sh}
                 itens_maduros_sh = _so_dos_ids(itens_nf_shopee, sns_nf)
-                _acrescentar(CHAVE_ALERTA_SHOPEE, itens_maduros_sh, nf=True,
-                             aviso=AVISO_NF_SHOPEE, espera_min=espera_sh)
+                _acrescentar(CHAVE_ALERTA_SHOPEE, itens_maduros_sh,
+                             fonte=CHAVE_ALERTA_SHOPEE, nf=True,
+                             aviso=AVISO_NF_SHOPEE, espera_min=espera_sh,
+                             sem_prazo=any(not d.get("ship_by_date") for d in maduros_sh))
                 _registrar_alerta(dados, chave_nf_shopee, itens_maduros_sh,
                                   list(sns_nf))
                 mudou = True
+        # So marca se a rodada da Shopee foi ate o fim (mesma regra do ML).
+        if ok_shopee and _marcar_fonte_iniciada(dados, CHAVE_ALERTA_SHOPEE):
+            mudou = True
+            log.info("Primeiro ciclo do dia da Shopee: vendas ja existentes "
+                     "marcadas como conhecidas, sem avisar.")
 
     await _enviar_alerta(context, cfg, relatorio.texto_alerta_pos_horario(blocos))
 
-    if primeiro_ciclo:
-        dados["iniciado"] = True
-        mudou = True
-        log.info("Primeiro ciclo do dia: vendas ja existentes marcadas como "
-                 "conhecidas, sem avisar (a partir daqui, so o que aparecer agora).")
     if mudou:
         await asyncio.to_thread(_salvar_alertas, dados)
 

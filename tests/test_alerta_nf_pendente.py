@@ -363,16 +363,18 @@ def test_dia_previsto_usa_ship_by_date_quando_existe():
     assert sh.dia_previsto(_ped_shopee("A", _epoch(hoje))) == hoje
 
 
-def test_dia_previsto_deriva_de_pay_time_mais_days_to_ship():
-    """A Shopee leva um tempo para atribuir o `ship_by_date` — venda recem-paga
-    vem sem ele. Sem este fallback, uma venda travada recem-criada ficaria fora
-    de qualquer filtro por dia e o aviso nasceria mudo.
+def test_dia_previsto_nao_INVENTA_data_quando_falta_o_prazo():
+    """Havia aqui um fallback `pay_time + days_to_ship`, dito "conferido contra
+    um pedido real". Um segundo pedido real o contradiz (`260805JCWTKH9K`: pago
+    05/08, days_to_ship 2, ship_by_date REAL de 06/08 — a conta daria 07/08),
+    entao nao existe formula confirmada e adivinhar e pior que admitir.
 
-    A conta foi conferida contra um pedido real: ship_by_date e o FIM DO DIA de
-    pay_time + days_to_ship (pago 03/08, days_to_ship 2 -> 05/08 23:59:59)."""
+    "" significa DATA INCERTA, e quem consome inclui (teste abaixo). O que
+    condenou o fallback nao foi so estar errado: empurrando a venda para a
+    frente, ele produzia exatamente o silencio que existia para evitar."""
     ped = _ped_shopee("SEM_PRAZO", nf="pending", pay=_epoch("2026-08-03", "14:36:50"),
                       dias=2)
-    assert sh.dia_previsto(ped) == "2026-08-05"
+    assert sh.dia_previsto(ped) == ""
 
 
 def test_dia_previsto_vazio_quando_nao_da_para_saber():
@@ -526,3 +528,48 @@ def test_job_nao_avisa_venda_dentro_da_carencia_e_avisa_depois(monkeypatch, tmp_
     assert "AR1 - 1" in enviadas[0] and "parada há 45 min" in enviadas[0]
     estado = core._ler_json(tmp_path / "alertas.json")
     assert estado["avisados"]["cozilatti" + bot.SUFIXO_ALERTA_NF] == [9]
+
+
+# ------------------------------- data incerta nunca exclui (06/08/2026)
+def test_venda_sem_prazo_ENTRA_no_lote_de_hoje(monkeypatch):
+    """A Shopee demora a atribuir `ship_by_date`. O filtro por dia comparava com
+    uma data DERIVADA por formula, e a formula empurrava a venda um dia para a
+    frente: a venda que vencia HOJE saia do filtro de hoje, em silencio.
+
+    Agora "sem prazo" = data incerta, e incerteza inclui. Mesma regra do `_sla`
+    no ML: excluir em silencio e pior que datar errado."""
+    hoje = core._hoje_br()
+    det = [_ped_shopee("SEM_PRAZO", nf="valid"),
+           _ped_shopee("SEM_PRAZO_NF", nf="pending")]
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["SEM_PRAZO", "SEM_PRAZO_NF"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: det)
+
+    novos, _, nf, _ = sh.pedidos_prontos_novos(
+        {}, "tok", avisados=set(), hoje=hoje, avisados_nf=set())
+
+    assert [d["order_sn"] for d in novos] == ["SEM_PRAZO"]
+    assert [d["order_sn"] for d in nf] == ["SEM_PRAZO_NF"]
+
+
+def test_venda_com_prazo_de_OUTRO_dia_continua_de_fora(monkeypatch):
+    """A inclusao vale so para a data INCERTA. Prazo conhecido e diferente de
+    hoje continua fora — senao o alerta viraria "todas as vendas abertas"."""
+    monkeypatch.setattr(sh, "listar_order_sns", lambda c, t: ["OUTRO_DIA"])
+    monkeypatch.setattr(sh, "buscar_detalhes", lambda c, t, sns: [
+        _ped_shopee("OUTRO_DIA", _epoch("2026-08-20"), nf="valid")])
+
+    novos, _, nf, _ = sh.pedidos_prontos_novos(
+        {}, "tok", avisados=set(), hoje="2026-08-06", avisados_nf=set())
+
+    assert novos == [] and nf == []
+
+
+def test_o_pedido_real_que_expos_a_formula_errada():
+    """`260805JCWTKH9K`, medido em 06/08/2026: pago 05/08 09:40 com
+    days_to_ship 2 e ship_by_date REAL de 06/08. A formula antiga daria 07/08 —
+    um dia depois — e a venda sumiria do filtro no dia em que vencia."""
+    real = _ped_shopee("260805JCWTKH9K", _epoch("2026-08-06", "23:59:59"),
+                       nf="pending", pay=_epoch("2026-08-05", "09:40:51"), dias=2)
+    assert sh.dia_previsto(real) == "2026-08-06"
+    sem = {k: v for k, v in real.items() if k != "ship_by_date"}
+    assert sh.dia_previsto(sem) == "", "sem o campo, incerto — nao 2026-08-07"
