@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1786020611.7475905,
-  "ast_hash": "fc6e09d57a72c800abcafa0314694572855f3cdf",
-  "semantic_hash": "fc6e09d57a72c800abcafa0314694572855f3cdf"
+  "mtime": 1786023686.417951,
+  "ast_hash": "e911012a439fcede503525a1a625b74433833080",
+  "semantic_hash": "e911012a439fcede503525a1a625b74433833080"
  },
  "CLAUDE.md": {
-  "mtime": 1786020611.746598,
-  "ast_hash": "2fab2b5deb4a515f3f65932e013b29e107a94825",
-  "semantic_hash": "2fab2b5deb4a515f3f65932e013b29e107a94825"
+  "mtime": 1786023686.4166477,
+  "ast_hash": "975fe32a48dc2a26a26d570d69ccc94f23b71a27",
+  "semantic_hash": "975fe32a48dc2a26a26d570d69ccc94f23b71a27"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1785958850.5856662,
-  "ast_hash": "e83ea8cb391f71a88d218cef8b1e9ee6d70ef581",
-  "semantic_hash": "e83ea8cb391f71a88d218cef8b1e9ee6d70ef581"
+  "mtime": 1786023532.698755,
+  "ast_hash": "9316058fd4b097e825be90242b49437d25d3b1f5",
+  "semantic_hash": "9316058fd4b097e825be90242b49437d25d3b1f5"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785933863.773306,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1786020628.5019765,
-  "ast_hash": "1afa0e780910634ed1eacfa52cacac5610229c2b",
-  "semantic_hash": "1afa0e780910634ed1eacfa52cacac5610229c2b"
+  "mtime": 1786023686.4418764,
+  "ast_hash": "a67420882da54112b5b5fcc5229f878142704dd5",
+  "semantic_hash": "a67420882da54112b5b5fcc5229f878142704dd5"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785972601.6807904,
@@ -405,9 +405,9 @@
   "semantic_hash": "ba5b3daac7e708efb0964b53609670b9d1e8b233"
  },
  "tests/test_bot_alerta.py": {
-  "mtime": 1785929492.0484521,
-  "ast_hash": "61abd022a7324ffe64ee319ba2dc98cd2af40736",
-  "semantic_hash": "61abd022a7324ffe64ee319ba2dc98cd2af40736"
+  "mtime": 1786023666.246763,
+  "ast_hash": "06db916be23e3c0dc8f7f387863d5b07f689fd73",
+  "semantic_hash": "06db916be23e3c0dc8f7f387863d5b07f689fd73"
  },
  "tests/test_bot_atualizar.py": {
   "mtime": 1785933781.0297174,

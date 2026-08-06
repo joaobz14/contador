@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 362,
- "edge_count": 692,
+ "node_count": 363,
+ "edge_count": 698,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4170,6 +4170,19 @@
    "id": "etiqueta_em_branco_no_lote",
    "community": 0,
    "norm_label": "etiqueta em branco no meio do lote: este app nao sabe criar uma (06/08/2026). reclamacao recorrente do dono ('as vezes a impressao pula uma etiqueta'), trazida com foto: danfe, uma etiqueta totalmente em branco, e a etiqueta de envio. investigado lendo os dois repos. descartado com leitura de codigo, nao com palpite: (1) o nucleo daqui nunca cria pagina -- baixar_zpl so repassa o zpl do ml e carim"
+  },
+  {
+   "label": "PRIMEIRO CICLO DO DIA E MARCADO POR FONTE, E SO APOS SUCESSO (06/08/2026). O alerta pos-horario cala o primeiro ciclo do dia (registra o que ja existe sem avisar) para nao trocar a parede de mensagens da manha por um despejo unico. A marca `iniciado` era um BOOLEANO ligado no FIM do ciclo -- inclusive quando a checagem de uma fonte tinha estourado excecao (o `except` do laco por conta faz `continue`; o da Shopee zera as listas). Fonte que falhou NAO REGISTROU NADA, entao no ciclo seguinte todas as vendas dela apareciam como 'novas' e saiam de uma vez: uma falha de rede transformava a garantia de 'nada de despejo' EXATAMENTE no despejo que ela existe para evitar -- a mesma familia de 'falha que reporta sucesso', aqui na forma de 'falha que marca progresso'. Hoje `iniciado` e a LISTA de fontes que completaram a rodada (_fonte_iniciada / _marcar_fonte_iniciada), gravada so depois do sucesso; quem falhou repete o ciclo calado na proxima rodada. POR FONTE E NAO GLOBAL de proposito: um guardiao global trocaria o despejo por SILENCIO GERAL -- a Shopee fora do ar calaria os alertas do ML o dia inteiro. E a mesma filosofia do isolamento de falha por conta que ja existia no laco. COMPATIBILIDADE: o formato antigo (booleano True) continua valendo para o dia ja gravado, porque o bot pode ser atualizado no MEIO do dia e rebaixar True para lista vazia produziria o despejo de novo. ACHADO A PARTIR DE EVIDENCIA DE CAMPO: o dono recebeu as 09:42 um aviso de venda Shopee parada ha 24h01 -- mensagem que, pelo desenho, o primeiro ciclo do dia (08:30) deveria ter calado; a divergencia entre o comportamento observado e o codigo foi o que expos o furo.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "primeiro_ciclo_por_fonte",
+   "community": 0,
+   "norm_label": "primeiro ciclo do dia e marcado por fonte, e so apos sucesso (06/08/2026). o alerta pos-horario cala o primeiro ciclo do dia (registra o que ja existe sem avisar) para nao trocar a parede de mensagens da manha por um despejo unico. a marca `iniciado` era um booleano ligado no fim do ciclo -- inclusive quando a checagem de uma fonte tinha estourado excecao (o `except` do laco por conta faz `continu"
   }
  ],
  "edges": [
@@ -5659,6 +5672,26 @@
    "weight": 1.0,
    "source": "perf_organizar_piso",
    "target": "awb"
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "alerta_uma_mensagem_por_ciclo",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "carencia_do_aviso_sem_nf",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -8318,6 +8351,46 @@
    "weight": 1.0,
    "source": "perf_organizar_piso",
    "target": "shopee_api_organizar_varios"
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_carregar_alertas",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_fonte_iniciada",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "primeiro_ciclo_por_fonte",
+   "target": "bot_telegram_marcar_fonte_iniciada",
+   "confidence_score": 1.0
   },
   {
    "relation": "rationale_for",

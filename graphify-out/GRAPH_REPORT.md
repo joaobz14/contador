@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1824 nodes · 3459 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1831 nodes · 3482 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 — o "1º ciclo do dia é calado" virou marca POR FONTE, e só após sucesso.**
+  Achado a partir de **evidência de campo**: o dono recebeu às 09:42 um aviso de venda Shopee
+  parada há 24h01 — mensagem que, pelo desenho, o primeiro ciclo do dia (08:30) deveria ter
+  calado. A divergência entre o observado e o código expôs o furo: `iniciado` era um **booleano
+  ligado no fim do ciclo**, inclusive quando a checagem de uma fonte tinha **falhado**. A fonte
+  que falhou não registrou nada, então no ciclo seguinte todas as vendas dela apareciam como
+  "novas" e saíam de uma vez — uma falha de rede transformava a garantia de *"nada de despejo"*
+  exatamente no despejo que ela existe para evitar (a família *"falha que reporta sucesso"*, aqui
+  na forma de **falha que marca progresso**). Hoje é a **lista** de fontes que completaram a
+  rodada, gravada só depois do sucesso. **Por fonte e não global**, senão a Shopee fora do ar
+  calaria os alertas do ML o dia inteiro. Nó `primeiro_ciclo_por_fonte` (4 `rationale_for` +
+  2 `conceptually_related_to`).
+  Depois do `--update`: **1831 nós, 3482 arestas, 0 órfãs**.
 - **2026-08-06 — etiqueta em branco no meio do lote: este app não sabe criar
   uma.** Reclamação recorrente do dono ("às vezes pula uma etiqueta"), trazida
   com foto. Investigado lendo os **dois** repos, e o que se descartou foi
@@ -74,7 +87,7 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   sua criação: é a família *"falha que reporta sucesso"* aplicada a um **diagnóstico** — o OK não é
   neutro, manda procurar no lugar errado. Regra registrada: **ferramenta de diagnóstico responde sobre
   o arquivo inteiro, não só sobre a pergunta que a motivou.**
-  Depois do `--update`: **1824 nós, 3459 arestas, 0 órfãs**.
+  Depois do `--update`: **1824 nós, 3459 arestas, 0 órfãs** (antes deste lote).
 - **2026-08-05 — compliance da Shopee encerrado (resposta final do suporte).**
   O requisito (success rate > 90% por 7 dias consecutivos em
   `v2.logistics.ship_order`, com prazo e risco de penalidade) foi o que motivou

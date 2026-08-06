@@ -38,21 +38,23 @@ def _envio(sid, dia, item_id=1):
     return {"id": item_id, "_envio": {"shipment_id": sid, "expected_date": dia}}
 
 
-def _ja_iniciado(dia="2026-07-24"):
-    """Marca o primeiro ciclo do dia como ja rodado.
+def _ja_iniciado(dia="2026-07-24",
+                 fontes=("cozilatti", "gastromaq", "", bot.CHAVE_ALERTA_SHOPEE)):
+    """Marca o primeiro ciclo do dia como ja rodado, para cada fonte.
 
     O primeiro ciclo do dia e CALADO de proposito: ele so registra o que ja
     existia (ver `job_alerta_pos_horario`). Os testes de regime partem daqui —
     senao estariam conferindo uma mensagem que o alerta, por decisao, nao manda.
     """
-    bot._salvar_alertas({"dia": dia, "avisados": {}, "itens": {}, "iniciado": True})
+    bot._salvar_alertas({"dia": dia, "avisados": {}, "itens": {},
+                         "iniciado": list(fontes)})
 
 
 # ------------------------------------------------------- _carregar/_salvar_alertas
 def test_carregar_alertas_comeca_vazio_sem_arquivo(monkeypatch):
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": False}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": []}
 
 
 def test_carregar_alertas_preserva_mesmo_dia(monkeypatch):
@@ -69,7 +71,7 @@ def test_carregar_alertas_reseta_quando_dia_muda(monkeypatch):
                         "itens": {"cozilatti": [{"chave": "A02", "quantidade": 1}]}})
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
     dados = bot._carregar_alertas()
-    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": False}
+    assert dados == {"dia": "2026-07-24", "avisados": {}, "itens": {}, "iniciado": []}
 
 
 # ------------------------------------------------------------ _dados_alerta_da_conta
@@ -279,7 +281,7 @@ def test_job_alerta_isola_falha_por_conta(monkeypatch):
     enviados = []
     monkeypatch.setattr(core, "listar_contas", lambda: ["com_erro", "ok"])
     monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
-    _ja_iniciado()
+    _ja_iniciado(fontes=("com_erro", "ok"))
 
     def _dados(conta, avisados, hoje, avisados_nf=None):
         if conta == "com_erro":
@@ -344,7 +346,7 @@ def test_primeiro_ciclo_do_dia_e_CALADO_mas_registra(monkeypatch):
     assert enviados == [], "o primeiro ciclo do dia nao manda mensagem"
     dados = bot._carregar_alertas()
     assert dados["avisados"]["cozilatti"] == [1], "mas registra, para nao avisar depois"
-    assert dados["iniciado"] is True
+    assert dados["iniciado"] == ["cozilatti"], "a fonte fica marcada como iniciada"
 
 
 def test_apos_o_primeiro_ciclo_a_venda_nova_e_avisada(monkeypatch):
@@ -782,3 +784,116 @@ def _update_msg(chat_id, respostas):
         message = _Msg()
 
     return _Update()
+
+
+# ------------------------------------------- primeiro ciclo POR FONTE (06/08/2026)
+def test_fonte_que_FALHOU_no_primeiro_ciclo_nao_fica_marcada(monkeypatch):
+    """O furo: a marca de "primeiro ciclo ja rodou" era UMA so e era ligada no
+    fim do ciclo, mesmo quando a checagem de uma fonte tinha estourado.
+
+    A fonte que falhou nao registrou nada -- entao no ciclo seguinte todas as
+    vendas dela apareciam como "novas" e saiam de uma vez. Uma falha de rede
+    transformava a garantia de "nada de despejo" exatamente no despejo que ela
+    existe para evitar."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cai", "ok"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+
+    def _dados(conta, avisados, hoje, avisados_nf=None):
+        if conta == "cai":
+            raise RuntimeError("falha de rede")
+        return ([_envio(1, hoje)],
+                [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
+                                 nome="A02", quantidade=1)],
+                [], [])
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert enviados == [], "primeiro ciclo e calado nas duas"
+    dados = bot._carregar_alertas()
+    assert dados["iniciado"] == ["ok"], "so a fonte que completou fica marcada"
+
+
+def test_fonte_que_falhou_repete_o_ciclo_CALADO_na_rodada_seguinte(monkeypatch):
+    """Consequencia do teste acima: a rodada seguinte da fonte que falhou volta
+    a ser primeiro ciclo -- registra sem avisar, em vez de despejar o dia."""
+    enviados = []
+    quedas = {"n": 1}
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cai"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+
+    def _dados(conta, avisados, hoje, avisados_nf=None):
+        if quedas["n"]:
+            quedas["n"] -= 1
+            raise RuntimeError("falha de rede")
+        novos = [_envio(s, hoje) for s in (1, 2, 3) if s not in avisados]
+        return (novos,
+                [core.ItemPedido(order_id=p["_envio"]["shipment_id"],
+                                 shipment_id=p["_envio"]["shipment_id"],
+                                 chave="A02", nome="A02", quantidade=1)
+                 for p in novos],
+                [], [])
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))    # falhou: nada marcado
+    asyncio.run(bot.job_alerta_pos_horario(ctx))    # 1o ciclo de verdade: calado
+
+    assert enviados == [], "o dia inteiro nao pode sair de uma vez por causa da queda"
+    assert bot._carregar_alertas()["avisados"]["cai"] == [1, 2, 3]
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))    # em regime, sem novidade
+    assert enviados == []
+
+
+def test_uma_fonte_calada_nao_cala_as_outras(monkeypatch):
+    """A marca e por fonte justamente para a queda de uma nao virar silencio
+    geral: 'ok' ja iniciada continua avisando enquanto 'cai' se recupera."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cai", "ok"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    _ja_iniciado(fontes=("ok",))
+
+    def _dados(conta, avisados, hoje, avisados_nf=None):
+        if conta == "cai":
+            raise RuntimeError("falha de rede")
+        return ([_envio(7, hoje)],
+                [core.ItemPedido(order_id=7, shipment_id=7, chave="A02",
+                                 nome="A02", quantidade=1)],
+                [], [])
+
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta", _dados)
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1 and "A02" in enviados[0][1]
+
+
+def test_marca_antiga_booleana_do_mesmo_dia_continua_valendo(monkeypatch):
+    """O bot pode ser atualizado no MEIO de um dia cujo arquivo ja esta gravado
+    no formato antigo. `True` ali significa 'todas as fontes ja iniciadas';
+    rebaixar para lista vazia produziria justamente o despejo que a correcao
+    evita."""
+    enviados = []
+    monkeypatch.setattr(core, "listar_contas", lambda: ["cozilatti"])
+    monkeypatch.setattr(core, "_hoje_br", lambda: "2026-07-24")
+    bot._salvar_alertas({"dia": "2026-07-24", "avisados": {}, "itens": {},
+                         "iniciado": True})
+    monkeypatch.setattr(bot, "_dados_alerta_da_conta",
+                        lambda conta, avisados, hoje, avisados_nf=None: (
+                            [_envio(1, hoje)],
+                            [core.ItemPedido(order_id=1, shipment_id=1, chave="A02",
+                                             nome="A02", quantidade=1)],
+                            [], [],
+                        ))
+    ctx = _ctx([10], lambda cid, txt: enviados.append((cid, txt)))
+
+    asyncio.run(bot.job_alerta_pos_horario(ctx))
+
+    assert len(enviados) == 1, "marca antiga = ja iniciada, entao avisa normalmente"
+    assert bot._carregar_alertas()["iniciado"] is True, "e nao e rebaixada"

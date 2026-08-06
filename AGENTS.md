@@ -528,6 +528,21 @@ em 2º plano.
   meio, um 2º clique reimprimia o mesmo lote (o `if self.ocupado: return` não
   pegava porque o `ocupado` já tinha voltado a `False`). Cancelar o organizar
   libera a trava; o `finally` libera mesmo se a confirmação estourar.
+- **A marca de "1º ciclo já rodou" é POR FONTE, não uma só (06/08/2026).**
+  Ela era um booleano ligado **no fim** do ciclo — inclusive quando a checagem
+  de uma fonte tinha **falhado**. A fonte que falhou não registrou nada, então
+  no ciclo seguinte todas as vendas dela apareciam como "novas" e saíam **de
+  uma vez**: uma falha de rede transformava a garantia de "nada de despejo"
+  exatamente no despejo que ela existe para evitar. Hoje `iniciado` é a
+  **lista** de fontes que completaram a rodada (`_fonte_iniciada` /
+  `_marcar_fonte_iniciada`), marcada só **depois** do sucesso — quem falhou
+  repete o ciclo **calado** na próxima rodada. Por fonte, e não global, porque
+  o global trocaria o despejo por **silêncio geral**: a Shopee fora do ar
+  calaria os alertas do ML o dia inteiro (mesma filosofia do isolamento de
+  falha por conta, que já existia logo acima no laço). O **formato antigo
+  (booleano `True`) continua valendo** para o dia já gravado: o bot pode ser
+  atualizado no meio do dia, e rebaixar `True` para lista vazia produziria o
+  despejo de novo.
 - **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
   (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
   Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6

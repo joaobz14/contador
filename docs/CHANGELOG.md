@@ -37,6 +37,13 @@ Histórico das principais mudanças do projeto.
     o workflow à toa.
 
 ### Alterado
+- **Correção no alerta do Telegram: uma falha de rede podia virar um despejo de
+  mensagens.** O bot marca, uma vez por dia, quais vendas ele "já conhece",
+  para depois só avisar do que aparecer de novo. Essa marca era única e era
+  ligada mesmo quando a consulta de uma das lojas tinha falhado — e aí, no ciclo
+  seguinte, todas as vendas daquela loja apareciam como novas e saíam juntas.
+  Agora a marca é por loja/conta e só é gravada quando a consulta dá certo.
+  Quem falhou tenta de novo em silêncio, sem calar as outras.
 - **O aviso "sem NF-e" agora espera o seu faturador trabalhar.** Ele estava
   disparando assim que a venda caía — antes de o UpSeller puxar o pedido — e
   minutos depois se desmentia com o "✅ liberada". Agora o bot só avisa quando a
