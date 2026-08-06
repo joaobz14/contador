@@ -457,13 +457,18 @@ def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str,
     if not order_sns:
         return [], [], [], []
     detalhes = buscar_detalhes(cred, token, order_sns)
-    # Sem `ship_by_date` a data e INCERTA, e incerteza nunca pode EXCLUIR em
-    # silencio: entra no lote de hoje. E a regra do `_sla` no ML ("excluí-lo
-    # seria pior que datá-lo errado"), que aqui custa quase nada porque a
-    # carencia do bot ja segura a venda recem-criada — justamente a que costuma
-    # vir sem prazo. O custo de errar para o outro lado ja foi pago uma vez: a
-    # venda que vencia HOJE ficou fora do filtro de hoje (06/08/2026).
-    do_dia = [d for d in detalhes if dia_previsto(d) in ("", hoje)]
+    # Sem `ship_by_date` a venda NAO e de hoje — e isso e informacao, nao
+    # ignorancia (medido em 06/08/2026, poucas horas depois de eu ter assumido o
+    # contrario). O painel da Shopee diz, na venda sem prazo: "A emissao de
+    # etiqueta de envio estara disponivel a partir de 07/08 13:07. O prazo de
+    # envio comecara a contar APENAS APOS essa data". Ou seja: campo ausente
+    # significa "ainda nao liberei esta venda", que e o oposto de "pode ser
+    # hoje". A analogia com o `_sla` do ML nao valia — la a data ausente e
+    # ignorancia (o ML sabe e nao respondeu), aqui e um ESTADO declarado.
+    # Incluir produzia alarme diario garantido: toda venda da tarde cai aqui, a
+    # carencia de 30 min nao alcanca (o "Em processamento" dura ~24h) e o aviso
+    # dizia "falta NF-e" de uma venda que o ERP nem tinha como faturar ainda.
+    do_dia = [d for d in detalhes if dia_previsto(d) == hoje]
     # A separacao e por NF-e, e ela decide o RECADO: uma venda com nota pendente
     # nao pode ser despachada (o ship_order e recusado com error_pending_invoice),
     # entao chama-la de "pronta" seria dizer ao operador que esta pronto o que nao

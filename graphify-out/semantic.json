@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 366,
- "edge_count": 708,
+ "node_count": 367,
+ "edge_count": 712,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4185,7 +4185,7 @@
    "norm_label": "primeiro ciclo do dia e marcado por fonte, e so apos sucesso (06/08/2026). o alerta pos-horario cala o primeiro ciclo do dia (registra o que ja existe sem avisar) para nao trocar a parede de mensagens da manha por um despejo unico. a marca `iniciado` era um booleano ligado no fim do ciclo -- inclusive quando a checagem de uma fonte tinha estourado excecao (o `except` do laco por conta faz `continu"
   },
   {
-   "label": "DATA INCERTA DA SHOPEE INCLUI, NUNCA EXCLUI (06/08/2026). `dia_previsto` tinha um fallback que derivava o dia de despacho de `pay_time + days_to_ship` quando a Shopee ainda nao atribuira `ship_by_date`; a docstring dizia que a conta fora 'conferida contra um pedido real'. MEDICAO que a derrubou: o pedido `260805JCWTKH9K` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem `ship_by_date` REAL de 06/08 -- a formula daria 07/08. Dois pedidos reais discordam, logo NAO EXISTE FORMULA CONFIRMADA, e trocar por `days_to_ship - 1` seria repetir o erro com outra amostra. O que condenou o fallback nao foi so estar errado, foi a DIRECAO do erro: ele existia para que uma venda sem prazo nao ficasse fora do filtro por dia ('o aviso nasceria mudo') e, empurrando a venda para a FRENTE, produzia exatamente o silencio que devia evitar -- a venda que vencia HOJE saia do filtro de hoje. Mesma familia do OK que cala e do fallback que reporta sucesso. CORRECAO: `dia_previsto` devolve \"\" para 'nao sei' (sem inventar data) e `pedidos_prontos_novos` INCLUI o incerto no lote de hoje -- a regra do `_sla` no ML, 'excluí-lo seria pior que datá-lo errado'. Prazo CONHECIDO e diferente de hoje continua fora (senao o alerta viraria 'todas as vendas abertas'). O custo em ruido e baixo porque a CARENCIA de 30 min ja segura a venda recem-criada, que e justamente a que costuma vir sem prazo; e o alerta marca o lote com relatorio.AVISO_SEM_PRAZO para o dono nao estranhar uma venda que talvez seja de amanha -- informa o porque sem afirmar o dia, mesma disciplina do aviso de NF-e. DECIDIDO PELO DONO aplicar nos DOIS avisos (pronta e falta-NF-e), e nao so no de NF-e.",
+   "label": "CAMPO AUSENTE NEM SEMPRE E 'NAO SEI' -- AS VEZES E A RESPOSTA (Shopee, 06/08/2026; corrigido 2h depois de eu ter decidido o contrario). O `dia_previsto` tinha um fallback que derivava o dia de `pay_time + days_to_ship` quando faltava `ship_by_date`. MEDICAO 1 o derrubou: o pedido 260805JCWTKH9K (pago 05/08 09:40, days_to_ship 2) tem ship_by_date REAL de 06/08 -- a formula daria 07/08. Removi o fallback (certo) e, por analogia com o `_sla` do ML, passei a tratar ausencia como DATA INCERTA que INCLUI no lote de hoje ('excluí-lo seria pior que datá-lo errado'). ERRADO. MEDICAO 2, no mesmo dia: o painel da Shopee, numa venda sem prazo, escreve 'A emissao de etiqueta de envio estara disponivel a partir de 07/08 13:07. O prazo de envio comecara a contar APENAS APOS essa data'. Ou seja, campo ausente significa 'ainda nao liberei esta venda' -- um ESTADO DECLARADO, e o oposto de 'pode ser hoje'. A analogia com o ML nao valia: la a data ausente e IGNORANCIA (o ML sabe e nao respondeu), aqui e RESPOSTA. O custo do erro nao foi teorico: em menos de duas horas o dono recebeu 'Ainda sem NF-e' de uma venda criada as 13:04 que a Shopee so libera no dia seguinte -- e a CARENCIA DE 30 MIN NAO ALCANCA esse caso (o 'Em processamento' dura ~24h), ao contrario do que eu previra ao aprovar a mudanca. Alarme diario garantido: toda venda da tarde cai nesse estado. CORRIGIDO: `pedidos_prontos_novos` volta a `== hoje`, e o marcador AVISO_SEM_PRAZO (criado junto) foi REMOVIDO em vez de ficar como codigo morto. O fallback continua fora -- essa parte estava certa. LICAO DE METODO: antes de tratar campo ausente como 'nao sei', pergunte se a API nao esta DIZENDO algo com a ausencia; e desconfie de previsao de ruido feita por quem propos a mudanca (eu previ 'ruido baixo' com base numa carencia que nao cobria o caso).",
    "file_type": "rationale",
    "source_file": "shopee_api.py",
    "source_location": null,
@@ -4195,7 +4195,7 @@
    "contributor": null,
    "id": "data_incerta_shopee",
    "community": 0,
-   "norm_label": "data incerta da shopee inclui, nunca exclui (06/08/2026). `dia_previsto` tinha um fallback que derivava o dia de despacho de `pay_time + days_to_ship` quando a shopee ainda nao atribuira `ship_by_date`; a docstring dizia que a conta fora 'conferida contra um pedido real'. medicao que a derrubou: o pedido `260805jcwtkh9k` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem `ship_by_date` real de 06/"
+   "norm_label": "campo ausente nem sempre e 'nao sei' -- as vezes e a resposta (shopee, 06/08/2026; corrigido 2h depois de eu ter decidido o contrario). o `dia_previsto` tinha um fallback que derivava o dia de `pay_time + days_to_ship` quando faltava `ship_by_date`. medicao 1 o derrubou: o pedido 260805jcwtkh9k (pago 05/08 09:40, days_to_ship 2) tem ship_by_date real de 06/08 -- a formula daria 07/08. removi o fal"
   },
   {
    "label": "/ATUALIZAR REINICIA POR DEFASAGEM, NAO POR 'O PULL TROUXE ALGO' (06/08/2026). O comando decidia o reinicio pelo resultado do `git pull`: pull vazio => 'Ja estava na versao mais nova. Nada a fazer.' e RETORNAVA sem reiniciar. Mas pull vazio NAO significa processo em dia -- quem resolveu a arvore suja com um `git pull` na mao (caminho obrigatorio quando ha nomes_sku.json/skus_por_anuncio.json editados pela tela) ou rodou o 'Atualizar programa.bat' JA trocou os arquivos, e o bot no ar segue com o codigo que carregou no logon. O dono lia 'ja esta atualizado' e ficava CONVENCIDO DE QUE ATUALIZOU, rodando o codigo antigo: o comando reportava sucesso sem entregar o efeito -- familia 'falha que reporta sucesso', aqui com o agravante de que o proprio /versao existia para diagnosticar exatamente este sintoma. Pegou o dono duas vezes. CORRECAO: `_desatualizado(no_disco)` compara a pasta com COMMIT_EM_USO e e o PONTO UNICO da pergunta, usado por /versao e por /atualizar (antes o /versao tinha a comparacao inline e o /atualizar nao a fazia). Na duvida devolve False -- commit desconhecido de qualquer um dos lados nao e prova de defasagem, e reinicio em falso derruba o bot por 15s a toa; e a regra do _mtime_log_monitor ('nao sei' nunca vira acao), e quem quiser forcar tem o Reiniciar Bot.bat. A ARVORE SUJA continua bloqueando o pull (o trabalho do dono manda), mas agora AVISA quando o processo tambem esta atrasado: dizer so 'nao atualizei' escondia metade do problema.",
@@ -4222,6 +4222,19 @@
    "id": "repositorio_publico_varredura",
    "community": 0,
    "norm_label": "repositorio publico: varredura de seguranca de 06/08/2026 e o que ela decidiu. o dono perguntou se valia privar. varridos 428 commits (todo o historico) procurando token do telegram (id:hash), app_usr- do ml, refresh tg-, chave hex de 64 da shopee, url de webhook e url com usuario:senha: as 4 ocorrencias sao fixtures declaradamente falsos em tests/ (app_usr-segredo-123, exemplo.app.n8n.cloud) -- n"
+  },
+  {
+   "label": "CHAVE PARA DESLIGAR O ALERTA DA SHOPEE (`alerta_shopee`, 06/08/2026). Pedido do dono no mesmo dia do alarme falso: 'por enquanto os alertas da Shopee estao mais atrapalhando do que ajudando'. Vale SO PARA O ALERTA -- a tela e o /prontos continuam mostrando a Shopee, porque o problema nunca foi o dado e sim a mensagem chegando na hora errada; desligar a coleta seria curar a dor de cabeca cortando a cabeca. Default LIGADO, lido com `cfg.get('alerta_shopee', True)` e nunca `cfg[...]` -- chave ausente cai no default em vez de derrubar o job (mesma filosofia do _carencia e do _sanear_config; ja tinha custado um KeyError com `carencia_nf_min`). E DESLIGADO NAO REGISTRA NO DEDUP: se registrasse, ao RELIGAR o balde ja consideraria conhecidas as vendas do dia e o primeiro aviso util so viria no dia seguinte -- desligar por uma tarde viraria uma pausa de dois dias.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "alerta_shopee_desligavel",
+   "community": 0,
+   "norm_label": "chave para desligar o alerta da shopee (`alerta_shopee`, 06/08/2026). pedido do dono no mesmo dia do alarme falso: 'por enquanto os alertas da shopee estao mais atrapalhando do que ajudando'. vale so para o alerta -- a tela e o /prontos continuam mostrando a shopee, porque o problema nunca foi o dado e sim a mensagem chegando na hora errada; desligar a coleta seria curar a dor de cabeca cortando a"
   }
  ],
  "edges": [
@@ -4693,6 +4706,26 @@
    "context": "o mesmo problema no ML, com sinal invertido",
    "source_file": "shopee_api.py",
    "source_location": null
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_shopee_desligavel",
+   "target": "carencia_do_aviso_sem_nf",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_shopee_desligavel",
+   "target": "data_incerta_shopee",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",
@@ -6564,6 +6597,26 @@
    "context": "separa pronta de travada",
    "source_file": "shopee_api.py",
    "source_location": null
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_shopee_desligavel",
+   "target": "bot_telegram_carregar_config",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "alerta_shopee_desligavel",
+   "target": "bot_telegram_job_alerta_pos_horario",
+   "confidence_score": 1.0
   },
   {
    "relation": "rationale_for",

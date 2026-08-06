@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1844 nodes · 3516 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1848 nodes · 3532 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,22 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 (2h depois) — corrigido: campo ausente na Shopee NÃO é "não sei", é a resposta.**
+  Eu havia removido o fallback de data (certo) e, por analogia com o `_sla` do ML, passado a
+  **incluir** a venda sem `ship_by_date` no lote de hoje. **Errado.** O painel da Shopee, numa venda
+  sem prazo, escreve: *"A emissão de etiqueta estará disponível a partir de 07/08 13:07. O prazo de
+  envio começará a contar APENAS APÓS essa data"* — campo ausente é **estado declarado**, não
+  ignorância. No ML a data ausente é o ML não ter respondido; aqui é a Shopee dizendo "ainda não
+  liberei". O custo não foi teórico: em menos de duas horas o dono recebeu *"Ainda sem NF-e"* de uma
+  venda criada às 13:04 que a Shopee só libera no dia seguinte — e a **carência de 30 min não
+  alcança** esse caso (o "Em processamento" dura ~24h), ao contrário do que eu previra ao propor a
+  mudança. Alarme diário garantido. Revertido para `== hoje`; o `AVISO_SEM_PRAZO` criado junto foi
+  **removido** em vez de virar código morto. O fallback continua fora — essa parte estava certa.
+  Entrou também a chave **`alerta_shopee`** para desligar só o alerta da Shopee (nó
+  `alerta_shopee_desligavel`). **Método:** antes de tratar campo ausente como "não sei", pergunte se
+  a API não está **dizendo** algo com a ausência — e desconfie de previsão de ruído feita por quem
+  propôs a mudança.
+  Depois do `--update`: **1848 nós, 3532 arestas, 0 órfãs**.
 - **2026-08-06 — varredura de segurança do repositório PÚBLICO: fica público, e a CI perde
   a permissão de escrita.** 428 commits varridos: nenhum segredo real jamais entrou (as 4
   ocorrências são fixtures declaradamente falsos), o `.gitignore` cobre os 19 caminhos sensíveis
