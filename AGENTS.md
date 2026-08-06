@@ -568,7 +568,15 @@ em 2º plano.
   silêncio que deveria evitar** — mesma família do `OK` que cala. A saída correta
   não é adivinhar a data e sim tratar **ausência de `ship_by_date` como data
   incerta**, que nunca pode EXCLUIR em silêncio (a regra do `_sla` no ML:
-  "excluí-lo seria pior que datá-lo errado").
+  "excluí-lo seria pior que datá-lo errado"). **Foi o que se fez:** o fallback
+  saiu, `dia_previsto` devolve `""` para "não sei" e `pedidos_prontos_novos`
+  **inclui** o incerto no lote de hoje — nos **dois** avisos (pronta e
+  falta-NF-e), por decisão do dono. Prazo **conhecido** e diferente de hoje
+  continua de fora, senão o alerta viraria "todas as vendas abertas". O ruído
+  extra é baixo porque a **carência de 30 min** já segura a venda recém-criada,
+  que é justamente a que costuma vir sem prazo; e o lote leva
+  `relatorio.AVISO_SEM_PRAZO`, que diz **por que** aquela venda entrou sem
+  afirmar o dia (mesma disciplina do aviso de NF-e).
 - **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
   (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
   Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6

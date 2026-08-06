@@ -708,13 +708,14 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
     mudou = False
 
     def _acrescentar(rotulo, itens, *, fonte, nf=False, aviso="", liberadas=False,
-                     espera_min=0):
+                     espera_min=0, sem_prazo=False):
         """So entra na mensagem fora do primeiro ciclo DAQUELA FONTE — o
         registro no estado acontece sempre (ver o docstring)."""
         if _fonte_iniciada(dados, fonte) and itens:
             blocos.append(relatorio.BlocoAlerta(rotulo, itens, nf_pendente=nf,
                                                 aviso=aviso, liberadas=liberadas,
-                                                espera_min=espera_min))
+                                                espera_min=espera_min,
+                                                sem_prazo=sem_prazo))
 
     for conta in contas:
         avisados = set(dados["avisados"].get(conta, []))
@@ -777,7 +778,8 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
         if novos_shopee:
             sns = [d["order_sn"] for d in novos_shopee]
             _acrescentar(CHAVE_ALERTA_SHOPEE, itens_shopee, fonte=CHAVE_ALERTA_SHOPEE,
-                         liberadas=any(s in avisados_nf_shopee for s in sns))
+                         liberadas=any(s in avisados_nf_shopee for s in sns),
+                         sem_prazo=any(not d.get("ship_by_date") for d in novos_shopee))
             _registrar_alerta(dados, CHAVE_ALERTA_SHOPEE, itens_shopee, sns)
             mudou = True
         if nf_shopee:
@@ -787,7 +789,8 @@ async def job_alerta_pos_horario(context: ContextTypes.DEFAULT_TYPE) -> None:
                 itens_maduros_sh = _so_dos_ids(itens_nf_shopee, sns_nf)
                 _acrescentar(CHAVE_ALERTA_SHOPEE, itens_maduros_sh,
                              fonte=CHAVE_ALERTA_SHOPEE, nf=True,
-                             aviso=AVISO_NF_SHOPEE, espera_min=espera_sh)
+                             aviso=AVISO_NF_SHOPEE, espera_min=espera_sh,
+                             sem_prazo=any(not d.get("ship_by_date") for d in maduros_sh))
                 _registrar_alerta(dados, chave_nf_shopee, itens_maduros_sh,
                                   list(sns_nf))
                 mudou = True

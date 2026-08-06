@@ -383,3 +383,21 @@ def test_dividir_mensagem_respeita_limite(core):
 def test_dividir_mensagem_linha_gigante(core):
     blocos = relatorio.dividir_mensagem("x" * 25, limite=10)
     assert blocos == ["x" * 10, "x" * 10, "x" * 5]
+
+
+def test_alerta_marca_venda_que_a_shopee_ainda_nao_datou(core):
+    """Venda sem `ship_by_date` entra no lote de hoje (data incerta nunca
+    exclui). A linha existe para o dono nao estranhar uma venda que talvez seja
+    de amanha: informa o porque, sem afirmar o dia."""
+    itens = [core.ItemPedido(order_id="A", shipment_id="A", chave="AR1",
+                             nome="AR1", quantidade=1)]
+    texto = relatorio.texto_alerta_pos_horario(
+        [relatorio.BlocoAlerta("Shopee", itens, sem_prazo=True)])
+    assert relatorio.AVISO_SEM_PRAZO in texto
+
+
+def test_alerta_sem_venda_indatada_nao_ganha_a_linha(core):
+    itens = [core.ItemPedido(order_id="A", shipment_id="A", chave="AR1",
+                             nome="AR1", quantidade=1)]
+    texto = relatorio.texto_alerta_pos_horario([relatorio.BlocoAlerta("Shopee", itens)])
+    assert relatorio.AVISO_SEM_PRAZO not in texto

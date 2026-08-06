@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1831 nodes · 3482 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1837 nodes · 3497 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,20 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 — `dia_previsto` da Shopee: fallback removido por MEDIÇÃO, e data incerta
+  passa a INCLUIR.** O pedido real `260805JCWTKH9K` (pago 05/08 09:40, `days_to_ship` 2,
+  `ship_by_date` **06/08**) contradiz a fórmula `pay_time + days_to_ship`, que daria 07/08 —
+  e a docstring dizia tê-la "conferido contra um pedido real". Dois pedidos reais discordam:
+  **não existe fórmula confirmada**, e trocar por `days_to_ship - 1` seria repetir o erro com
+  outra amostra. O que condenou o fallback foi a **direção** do erro: ele existia para que uma
+  venda sem prazo não ficasse fora do filtro por dia e, empurrando-a para a frente, produzia
+  **exatamente o silêncio que devia evitar** — a venda que vencia HOJE saía do filtro de hoje.
+  Hoje `dia_previsto` devolve `""` para "não sei" e `pedidos_prontos_novos` **inclui** o
+  incerto (regra do `_sla` no ML: excluir em silêncio é pior que datar errado); o alerta marca
+  o lote com `AVISO_SEM_PRAZO` para o dono não estranhar uma venda que talvez seja de amanhã.
+  A carência de 30 min é o que torna isso barato: a venda recém-criada, justamente a que vem
+  sem prazo, já é segurada por ela. Nó `data_incerta_shopee`.
+  Depois do `--update`: **1837 nós, 3497 arestas, 0 órfãs**.
 - **2026-08-06 — o "1º ciclo do dia é calado" virou marca POR FONTE, e só após sucesso.**
   Achado a partir de **evidência de campo**: o dono recebeu às 09:42 um aviso de venda Shopee
   parada há 24h01 — mensagem que, pelo desenho, o primeiro ciclo do dia (08:30) deveria ter

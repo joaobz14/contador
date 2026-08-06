@@ -37,6 +37,13 @@ Histórico das principais mudanças do projeto.
     o workflow à toa.
 
 ### Alterado
+- **Venda da Shopee sem prazo definido não some mais do aviso do dia.** A Shopee
+  demora a atribuir a data de despacho, e o app preenchia essa lacuna com uma
+  conta própria — que, medida contra um pedido real, errava **um dia para a
+  frente**. Resultado: a venda que vencia hoje ficava fora do aviso de hoje,
+  em silêncio. Agora, quando a Shopee ainda não datou, a venda **entra** no
+  aviso e vem marcada com "🗓 inclui venda que a Shopee ainda não datou".
+  Venda com prazo conhecido de outro dia continua fora.
 - **Correção no alerta do Telegram: uma falha de rede podia virar um despejo de
   mensagens.** O bot marca, uma vez por dia, quais vendas ele "já conhece",
   para depois só avisar do que aparecer de novo. Essa marca era única e era

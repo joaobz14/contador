@@ -32,7 +32,7 @@ import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import requests
 
@@ -381,25 +381,27 @@ def nota_nao_validada(ped: dict) -> bool:
 
 
 def dia_previsto(ped: dict) -> str:
-    """Dia de despacho (YYYY-MM-DD), com fallback para quando o prazo ainda nao
-    foi atribuido.
+    """Dia de despacho (YYYY-MM-DD), ou "" quando a Shopee ainda NAO atribuiu o
+    prazo — "" significa DATA INCERTA, nunca "nao e hoje".
 
-    A Shopee leva um tempo para preencher `ship_by_date` depois do pagamento —
-    as vendas mais novas vem sem ele. Sem fallback, uma venda travada recem-paga
-    ficaria fora de qualquer filtro por dia, e o aviso nasceria mudo.
+    A Shopee leva um tempo para preencher `ship_by_date` depois do pagamento.
+    Havia aqui um fallback que derivava a data de `pay_time + days_to_ship`,
+    para que uma venda sem prazo nao ficasse fora do filtro por dia ("o aviso
+    nasceria mudo"). **Ele foi removido em 06/08/2026 por medicao**: o pedido
+    `260805JCWTKH9K` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem
+    `ship_by_date` real de **06/08** — a conta daria 07/08. Somando ao pedido
+    que originou a formula, dois pedidos reais discordam: **nao existe formula
+    confirmada**, e nao adianta trocar por `days_to_ship - 1` com base em uma
+    amostra.
 
-    A derivacao foi conferida contra um pedido real: `ship_by_date` e o FIM DO
-    DIA (23:59:59 de Brasilia) de `pay_time` + `days_to_ship`. Quando o campo
-    existe ele manda — a conta e so para o intervalo em que ele falta.
+    O que condenou o fallback nao foi so estar errado, foi a DIRECAO do erro:
+    empurrando a venda para a frente, ele produzia exatamente o silencio que
+    existia para evitar — a venda que vence HOJE saia do filtro de hoje. Quem
+    consome esta funcao trata "" como incerto e **inclui** (ver
+    `pedidos_prontos_novos`), na mesma regra do `_sla` do ML: excluir em
+    silencio e pior que datar errado.
     """
-    dia = _data_envio(ped.get("ship_by_date"))
-    if dia:
-        return dia
-    pago = ped.get("pay_time") or ped.get("create_time")
-    if not pago:
-        return ""
-    base = datetime.fromtimestamp(int(pago), core.TZ_BR).date()
-    return (base + timedelta(days=int(ped.get("days_to_ship") or 0))).isoformat()
+    return _data_envio(ped.get("ship_by_date"))
 
 
 def _data_envio(ship_by_date) -> str:
@@ -455,7 +457,13 @@ def pedidos_prontos_novos(cred: dict, token: str, avisados: set, hoje: str,
     if not order_sns:
         return [], [], [], []
     detalhes = buscar_detalhes(cred, token, order_sns)
-    do_dia = [d for d in detalhes if dia_previsto(d) == hoje]
+    # Sem `ship_by_date` a data e INCERTA, e incerteza nunca pode EXCLUIR em
+    # silencio: entra no lote de hoje. E a regra do `_sla` no ML ("excluí-lo
+    # seria pior que datá-lo errado"), que aqui custa quase nada porque a
+    # carencia do bot ja segura a venda recem-criada — justamente a que costuma
+    # vir sem prazo. O custo de errar para o outro lado ja foi pago uma vez: a
+    # venda que vencia HOJE ficou fora do filtro de hoje (06/08/2026).
+    do_dia = [d for d in detalhes if dia_previsto(d) in ("", hoje)]
     # A separacao e por NF-e, e ela decide o RECADO: uma venda com nota pendente
     # nao pode ser despachada (o ship_order e recusado com error_pending_invoice),
     # entao chama-la de "pronta" seria dizer ao operador que esta pronto o que nao
