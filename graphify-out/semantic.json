@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 365,
- "edge_count": 706,
+ "node_count": 366,
+ "edge_count": 708,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4209,6 +4209,19 @@
    "id": "atualizar_reinicia_por_defasagem",
    "community": 0,
    "norm_label": "/atualizar reinicia por defasagem, nao por 'o pull trouxe algo' (06/08/2026). o comando decidia o reinicio pelo resultado do `git pull`: pull vazio => 'ja estava na versao mais nova. nada a fazer.' e retornava sem reiniciar. mas pull vazio nao significa processo em dia -- quem resolveu a arvore suja com um `git pull` na mao (caminho obrigatorio quando ha nomes_sku.json/skus_por_anuncio.json editad"
+  },
+  {
+   "label": "REPOSITORIO PUBLICO: VARREDURA DE SEGURANCA DE 06/08/2026 E O QUE ELA DECIDIU. O dono perguntou se valia privar. Varridos 428 commits (todo o historico) procurando token do Telegram (id:hash), APP_USR- do ML, refresh TG-, chave hex de 64 da Shopee, URL de webhook e URL com usuario:senha: as 4 ocorrencias sao FIXTURES declaradamente falsos em tests/ (APP_USR-SEGREDO-123, exemplo.app.n8n.cloud) -- NENHUM segredo real jamais entrou; so os .example, com placeholders honestos. O .gitignore foi testado caminho a caminho (19 arquivos sensiveis, todos ignorados) -- a regra INVERTIDA (`dados/*` bloqueado, liberando so nomes_sku.json e skus_por_anuncio.json) e o que torna isso robusto: arquivo local novo nunca escapa por esquecimento. Zero dado pessoal de comprador (CPF/CEP/telefone/chave de NF-e) nos 198 arquivos rastreados, apesar de a etiqueta carregar tudo isso. DECISAO: continua PUBLICO. DOIS PONTOS DA CI QUE NAO SAO DETALHE: (1) o gatilho e `pull_request` e NUNCA `pull_request_target` -- aquele roda PR de fork com token restrito e sem segredo, este daria contexto privilegiado a codigo de estranho; (2) o workflow passou a declarar `permissions: contents: read`, porque nenhum job escreve nada e, sem o bloco, o GITHUB_TOKEN herda o padrao do repositorio, que pode incluir ESCRITA -- um passo comprometido (acao de terceiro, dependencia trocada) teria credencial para commitar. O bloco fecha o lado do `push` em main, que roda com o token cheio; o gatilho ja cobria o lado do fork. AMARRA QUE IMPEDE PRIVAR SEM PREPARO: `docs/index.html` e a Redirect URL do OAuth cadastrada no painel da Shopee (https://joaobz14.github.io/contador/, servida pelo GitHub Pages). No plano gratuito, Pages so publica de repo PUBLICO -- privar derruba a pagina e quebra o caminho de REFAZER O OAUTH, que e exatamente o que se precisa quando o refresh token morre. 'So foi usada uma vez' e o criterio errado: ela e o estepe. Privar exige, NESTA ORDEM: criar um repo publico minusculo so com a pagina, ligar o Pages nele, atualizar a Redirect URL no painel da Shopee, testar o fluxo, e so entao privar. RISCO QUE E ESPECIFICO DE SER PUBLICO (e nao e vazamento): qualquer pessoa abre issue/PR, e esse texto entra no contexto de quem for ler -- inclusive de um agente. Mitigacao: desligar Issues/Discussions se nao forem usados. A pagina do OAuth em si e inofensiva: le a query e mostra na tela, sem fetch nem script externo -- o `code` nao sai do navegador.",
+   "file_type": "rationale",
+   "source_file": ".github/workflows/testes.yml",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "repositorio_publico_varredura",
+   "community": 0,
+   "norm_label": "repositorio publico: varredura de seguranca de 06/08/2026 e o que ela decidiu. o dono perguntou se valia privar. varridos 428 commits (todo o historico) procurando token do telegram (id:hash), app_usr- do ml, refresh tg-, chave hex de 64 da shopee, url de webhook e url com usuario:senha: as 4 ocorrencias sao fixtures declaradamente falsos em tests/ (app_usr-segredo-123, exemplo.app.n8n.cloud) -- n"
   }
  ],
  "edges": [
@@ -5910,6 +5923,26 @@
    "context": "o /atualizar nao sofre disso: o bot sai e o laco o traz de volta",
    "source_file": "atalhos/reiniciar-bot.ps1",
    "source_location": null
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": ".github/workflows/testes.yml",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "repositorio_publico_varredura",
+   "target": "registro_sem_segredos",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "conceptually_related_to",
+   "confidence": "MANUAL",
+   "source_file": ".github/workflows/testes.yml",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "repositorio_publico_varredura",
+   "target": "webhook_n8n_autenticado",
+   "confidence_score": 1.0
   },
   {
    "relation": "conceptually_related_to",

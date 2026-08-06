@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1843 nodes · 3514 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1844 nodes · 3516 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,18 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 — varredura de segurança do repositório PÚBLICO: fica público, e a CI perde
+  a permissão de escrita.** 428 commits varridos: nenhum segredo real jamais entrou (as 4
+  ocorrências são fixtures declaradamente falsos), o `.gitignore` cobre os 19 caminhos sensíveis
+  testados um a um, e não há dado pessoal de comprador nos 198 arquivos rastreados — apesar de a
+  etiqueta carregar nome, endereço e CEP. Dois pontos da CI ficaram registrados: o gatilho é
+  `pull_request` e **nunca** `pull_request_target`, e o workflow passou a declarar
+  `permissions: contents: read` (nenhum job escreve; sem o bloco o `GITHUB_TOKEN` herda o padrão
+  do repositório, que pode incluir escrita). E a amarra que impede privar sem preparo:
+  `docs/index.html` é a **Redirect URL do OAuth** cadastrada no painel da Shopee e servida pelo
+  Pages — no plano gratuito, privar derruba a página e quebra o caminho de refazer o OAuth,
+  que é exatamente o que se precisa quando o refresh token morre. Nó `repositorio_publico_varredura`.
+  Depois do `--update`: **1844 nós, 3516 arestas, 0 órfãs**.
 - **2026-08-06 — `/atualizar` passa a reiniciar por DEFASAGEM, não por "o pull trouxe algo".**
   O comando decidia o reinício pelo resultado do `git pull`: pull vazio ⇒ *"nada a fazer"*, sem
   reiniciar. Mas pull vazio **não** significa processo em dia — quem resolveu a árvore suja com um

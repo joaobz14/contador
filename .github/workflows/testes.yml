@@ -7,6 +7,20 @@ on:
     branches: [main]
   pull_request:
 
+# Menor privilegio para o GITHUB_TOKEN destes jobs (varredura de seguranca de
+# 2026-08-06, com o repositorio PUBLICO). Sem este bloco o token herda o padrao
+# do repositorio, que pode incluir ESCRITA — e nenhum job aqui escreve nada:
+# todos so baixam o codigo e rodam teste/lint. Um passo comprometido (uma acao
+# de terceiro, uma dependencia trocada) teria, sem isto, credencial para
+# commitar no repo.
+#
+# NAO e o mesmo que a protecao do `pull_request`: aquele gatilho (e nao
+# `pull_request_target`, de proposito) ja garante que PR de fork roda sem
+# segredo e com token restrito. Este bloco fecha o outro lado, o `push` em
+# main, que roda com o token cheio.
+permissions:
+  contents: read
+
 jobs:
   lint:
     # Linter (ruff): pega import morto / nome indefinido antes da revisao manual
