@@ -30,14 +30,14 @@
   "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
  },
  "AGENTS.md": {
-  "mtime": 1786024654.8535762,
-  "ast_hash": "0a26401706e5d5a3a979af116c37d68d419f5ddd",
-  "semantic_hash": "0a26401706e5d5a3a979af116c37d68d419f5ddd"
+  "mtime": 1786026241.13356,
+  "ast_hash": "9a7ce5850e177728301b0c3ab282c45fc931b99d",
+  "semantic_hash": "9a7ce5850e177728301b0c3ab282c45fc931b99d"
  },
  "CLAUDE.md": {
-  "mtime": 1786024654.8523586,
-  "ast_hash": "b3eeb55d535be2350269519d5d170dec1fba7758",
-  "semantic_hash": "b3eeb55d535be2350269519d5d170dec1fba7758"
+  "mtime": 1786026241.1331232,
+  "ast_hash": "d02453039fd1ec828e6a4e9de5ffda14234cc15e",
+  "semantic_hash": "d02453039fd1ec828e6a4e9de5ffda14234cc15e"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -85,9 +85,9 @@
   "semantic_hash": "cc20f420c628eb88d5b81076939816fc167055af"
  },
  "bot_telegram.py": {
-  "mtime": 1786026083.6478088,
-  "ast_hash": "691e725684f767603ab89a897348d1024fbd6db3",
-  "semantic_hash": "691e725684f767603ab89a897348d1024fbd6db3"
+  "mtime": 1786027517.2229674,
+  "ast_hash": "d7412283d34c4451c813cd8eacd0ac2d0017643f",
+  "semantic_hash": "d7412283d34c4451c813cd8eacd0ac2d0017643f"
  },
  "dados/nomes_sku.json": {
   "mtime": 1785933863.773306,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1786023686.4418764,
-  "ast_hash": "a67420882da54112b5b5fcc5229f878142704dd5",
-  "semantic_hash": "a67420882da54112b5b5fcc5229f878142704dd5"
+  "mtime": 1786026241.1340113,
+  "ast_hash": "e62c76ea216f752a90575b86042ed6f5c5ae8749",
+  "semantic_hash": "e62c76ea216f752a90575b86042ed6f5c5ae8749"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785972601.6807904,
@@ -410,9 +410,9 @@
   "semantic_hash": "06db916be23e3c0dc8f7f387863d5b07f689fd73"
  },
  "tests/test_bot_atualizar.py": {
-  "mtime": 1785933781.0297174,
-  "ast_hash": "8beba219776bd795edbbea43afd9f8772cd7ec07",
-  "semantic_hash": "8beba219776bd795edbbea43afd9f8772cd7ec07"
+  "mtime": 1786027551.4592333,
+  "ast_hash": "1632d700810a0f82df401758b0eaf8e2a9c1c40a",
+  "semantic_hash": "1632d700810a0f82df401758b0eaf8e2a9c1c40a"
  },
  "tests/test_bot_autorizacao.py": {
   "mtime": 1785800977.1264076,

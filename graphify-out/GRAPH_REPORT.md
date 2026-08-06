@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1837 nodes · 3497 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1843 nodes · 3514 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -51,6 +51,19 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
 > fonte consultável; os números do **Summary** abaixo refletem o build automático de
 > 2026-07-08 (ver "Estado de sincronização" no topo para as contagens atuais).
 
+- **2026-08-06 — `/atualizar` passa a reiniciar por DEFASAGEM, não por "o pull trouxe algo".**
+  O comando decidia o reinício pelo resultado do `git pull`: pull vazio ⇒ *"nada a fazer"*, sem
+  reiniciar. Mas pull vazio **não** significa processo em dia — quem resolveu a árvore suja com um
+  `git pull` na mão (ou rodou o `Atualizar programa.bat`) já trocou os arquivos, e o bot no ar segue
+  com o que carregou no logon. O dono lia "já está atualizado" e ficava **convencido de que
+  atualizou**, rodando o código antigo: o comando reportava sucesso sem entregar o efeito. Pegou-o
+  duas vezes. Agora quem decide é `_desatualizado()` — ponto único usado por `/versao` e
+  `/atualizar` —, comparando a pasta com `COMMIT_EM_USO`. Na dúvida (commit desconhecido de um dos
+  lados) devolve **False**: "não sei" nunca vira ação, porque reinício em falso derruba o bot por
+  15s à toa (regra do `_mtime_log_monitor`). A árvore suja continua bloqueando o pull, mas agora
+  **avisa** quando o processo também está atrasado — dizer só "não atualizei" escondia metade do
+  problema. Nó `atualizar_reinicia_por_defasagem`.
+  Depois do `--update`: **1843 nós, 3514 arestas, 0 órfãs**.
 - **2026-08-06 — `dia_previsto` da Shopee: fallback removido por MEDIÇÃO, e data incerta
   passa a INCLUIR.** O pedido real `260805JCWTKH9K` (pago 05/08 09:40, `days_to_ship` 2,
   `ship_by_date` **06/08**) contradiz a fórmula `pay_time + days_to_ship`, que daria 07/08 —

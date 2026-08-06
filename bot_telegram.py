@@ -1355,6 +1355,21 @@ def _commit_do_disco() -> str:
 COMMIT_EM_USO = _commit_do_disco()
 
 
+def _desatualizado(no_disco: str) -> bool:
+    """O codigo da PASTA e diferente do que ESTE processo carregou?
+
+    Ponto unico da comparacao (`/versao` e `/atualizar` usam o mesmo), porque a
+    pergunta e sempre a mesma: `git pull` troca os arquivos, mas o processo no
+    ar segue com o que leu no logon.
+
+    Na duvida devolve **False** — commit desconhecido de qualquer um dos lados
+    nao e prova de defasagem, e um reinicio em falso derruba o bot por 15s a
+    toa. Mesma regra do `_mtime_log_monitor`: "nao sei" nunca vira acao. Quem
+    quiser forcar tem o `Reiniciar Bot.bat`.
+    """
+    return bool(no_disco and COMMIT_EM_USO and no_disco != COMMIT_EM_USO)
+
+
 async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Diz qual versao o bot esta RODANDO e avisa se a pasta ja tem outra.
 
@@ -1367,7 +1382,7 @@ async def cmd_versao(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     no_disco = _commit_do_disco()
     linhas = [f"Bot rodando a versao: {COMMIT_EM_USO or '(desconhecida)'}"]
-    if no_disco and COMMIT_EM_USO and no_disco != COMMIT_EM_USO:
+    if _desatualizado(no_disco):
         linhas += [
             f"A pasta ja esta em: {no_disco}",
             "",
@@ -1457,10 +1472,17 @@ def _puxar_atualizacao() -> tuple[bool, str]:
                         if linha.strip()]
             lista = "\n".join(f"  • {a}" for a in arquivos[:6])
             resto = f"\n  ... e mais {len(arquivos) - 6}" if len(arquivos) > 6 else ""
+            # Se, alem da arvore suja, o processo ja estiver defasado, dizer
+            # so "nao atualizei" esconderia metade do problema: os arquivos da
+            # pasta ja mudaram e o bot continua no codigo velho.
+            no_disco = _commit_do_disco()
+            atrasado = (f"\n\n⚠️ E o codigo da pasta ja e outro ({COMMIT_EM_USO} → "
+                        f"{no_disco}): eu ainda estou rodando o antigo. Depois de "
+                        "resolver, reinicie.") if _desatualizado(no_disco) else ""
             return False, ("Nao atualizei: ha alteracoes locais nao salvas nesta "
                            f"pasta.\n{lista}{resto}\n\nNao mexi em nada para nao "
                            "perder o seu trabalho — resolva no PC (commitar ou "
-                           "descartar) e mande /atualizar de novo.")
+                           f"descartar) e mande /atualizar de novo.{atrasado}")
 
         antes = _commit_do_disco()
         # --ff-only: numa pasta de OPERACAO o histórico so deve andar para a
@@ -1474,6 +1496,16 @@ def _puxar_atualizacao() -> tuple[bool, str]:
                              "commit local nesta pasta — resolva no PC.")
         depois = _commit_do_disco()
         if antes and depois and antes == depois:
+            # O pull nao trouxe nada — mas isso NAO quer dizer que o processo
+            # esta em dia. Um `git pull` feito na mao (ou o "Atualizar
+            # programa.bat") ja trocou os arquivos, e o bot no ar continua com o
+            # codigo que carregou no logon. A versao anterior devolvia "nada a
+            # fazer" e NAO reiniciava — deixando o dono convencido de que
+            # atualizou, rodando o codigo antigo. Quem decide o reinicio e a
+            # comparacao com COMMIT_EM_USO, nunca o resultado do pull.
+            if _desatualizado(depois):
+                return True, (f"A pasta ja estava em {depois}, mas eu ainda estou "
+                              f"rodando {COMMIT_EM_USO}.")
             return False, f"Ja estava na versao mais nova ({depois}). Nada a fazer."
         return True, f"Atualizado: {antes or '?'} → {depois or '?'}."
     except subprocess.TimeoutExpired:
