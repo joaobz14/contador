@@ -25,19 +25,19 @@
   "semantic_hash": "985a368f39808c2974ce2acb4e2a4eb9553205c8"
  },
  ".github/workflows/testes.yml": {
-  "mtime": 1785926757.0137262,
-  "ast_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988",
-  "semantic_hash": "eeaf0781596a8c7b471fd23defb5a1ed62a9b988"
+  "mtime": 1786030073.206208,
+  "ast_hash": "0e843e17e653cd888d0e56d6de1797e53a70681d",
+  "semantic_hash": "0e843e17e653cd888d0e56d6de1797e53a70681d"
  },
  "AGENTS.md": {
-  "mtime": 1786026241.13356,
-  "ast_hash": "9a7ce5850e177728301b0c3ab282c45fc931b99d",
-  "semantic_hash": "9a7ce5850e177728301b0c3ab282c45fc931b99d"
+  "mtime": 1786030110.3845584,
+  "ast_hash": "475a2b02439283d1496d2e7189826a1e02126782",
+  "semantic_hash": "475a2b02439283d1496d2e7189826a1e02126782"
  },
  "CLAUDE.md": {
-  "mtime": 1786026241.1331232,
-  "ast_hash": "d02453039fd1ec828e6a4e9de5ffda14234cc15e",
-  "semantic_hash": "d02453039fd1ec828e6a4e9de5ffda14234cc15e"
+  "mtime": 1786030110.3836863,
+  "ast_hash": "2f1dfbbfb4508e922f15d65b8808b2a2f06582f3",
+  "semantic_hash": "2f1dfbbfb4508e922f15d65b8808b2a2f06582f3"
  },
  "README.md": {
   "mtime": 1785428068.827218,
@@ -90,9 +90,9 @@
   "semantic_hash": "d7412283d34c4451c813cd8eacd0ac2d0017643f"
  },
  "dados/nomes_sku.json": {
-  "mtime": 1785933863.773306,
-  "ast_hash": "16ff9230ce77b26af0f5d6a037e5ac6ef73a64af",
-  "semantic_hash": "16ff9230ce77b26af0f5d6a037e5ac6ef73a64af"
+  "mtime": 1786027645.1613598,
+  "ast_hash": "624c4c6f86d5e621589be677f7b1356ae813c97a",
+  "semantic_hash": "624c4c6f86d5e621589be677f7b1356ae813c97a"
  },
  "dados/skus_por_anuncio.json": {
   "mtime": 1785933863.773306,
@@ -115,9 +115,9 @@
   "semantic_hash": "1764d17567ef1da3921decf8eefb69e878921914"
  },
  "docs/CHANGELOG.md": {
-  "mtime": 1786026241.1340113,
-  "ast_hash": "e62c76ea216f752a90575b86042ed6f5c5ae8749",
-  "semantic_hash": "e62c76ea216f752a90575b86042ed6f5c5ae8749"
+  "mtime": 1786030110.3852174,
+  "ast_hash": "4faccbe59aece1ae564c584baa8a35465e81c645",
+  "semantic_hash": "4faccbe59aece1ae564c584baa8a35465e81c645"
  },
  "docs/PRIORIDADES_TECNICAS.md": {
   "mtime": 1785972601.6807904,

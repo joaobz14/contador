@@ -36,6 +36,14 @@ Histórico das principais mudanças do projeto.
   - Se a senha ficar errada, o bot avisa **isso** — não manda mais você conferir
     o workflow à toa.
 
+### Segurança
+- **A automação do GitHub passa a rodar com permissão só de leitura.** Os testes
+  que rodam a cada envio não precisam escrever nada no repositório, e agora a
+  credencial temporária que eles recebem também não pode. Resultado de uma
+  varredura completa (428 commits) feita para decidir se valia a pena deixar o
+  repositório privado: **nenhuma senha ou dado de cliente jamais foi publicado**,
+  então ele continua público.
+
 ### Alterado
 - **`/atualizar` agora reinicia quando o bot está rodando código antigo, mesmo
   que não haja nada para baixar.** Antes, se você tivesse feito o `git pull` no

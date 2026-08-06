@@ -465,6 +465,22 @@ em 2º plano.
   perto da impressora foi impresso por ÚLTIMO. Ler a foto na ordem errada
   troca "veio antes de tudo" (auto-feed) por "veio no meio da venda" (mídia),
   que são causas diferentes.
+- **Repositório PÚBLICO, e a varredura de 2026-08-06 confirma que dá para
+  continuar assim.** 428 commits varridos: nenhum segredo real jamais entrou
+  (só fixtures declaradamente falsos), o `.gitignore` cobre os 19 caminhos
+  sensíveis testados um a um, não há dado pessoal de comprador em arquivo
+  nenhum e a página pública do OAuth (`docs/index.html`) só lê a query e mostra
+  na tela — o `code` não sai do navegador. Duas consequências que não são
+  detalhe: **(1)** a CI usa `pull_request` e **nunca** `pull_request_target` —
+  aquele roda PR de fork com token restrito e sem segredo; **(2)** o workflow
+  declara `permissions: contents: read`, porque nenhum job escreve nada e sem o
+  bloco o `GITHUB_TOKEN` herda o padrão do repositório, que pode incluir
+  escrita. **A `docs/index.html` é a Redirect URL cadastrada no painel da
+  Shopee** (`https://joaobz14.github.io/contador/`, servida pelo Pages): tornar
+  o repositório privado no plano gratuito derruba o Pages e **quebra o caminho
+  de refazer o OAuth** — que é justamente o que se precisa quando o refresh
+  token morre. Privar exige mover a página para um repo público próprio e
+  atualizar a URL no painel ANTES.
 - **Segredos nunca versionados** (ver `.gitignore`): credenciais, estado, caches,
   `historico_impressao.json`, `config.json`, `bot_config.json`, logs (`bot.log`,
   `shopee_tempos.log`, `ml_tempos.log`, `separador.log`).
