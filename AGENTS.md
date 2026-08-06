@@ -552,9 +552,23 @@ em 2º plano.
   naquele dia — falta explicar por que o pedido `260805JCWTKH9K` (pago 05/08
   09:40, `ship_by_date` 06/08, `invoice_data.status=pending`, `update_time`
   igual ao `pay_time`, ou seja **sem mudança de estado** desde a véspera) não foi
-  registrado no balde `Shopee`+`SUFIXO_ALERTA_NF` no ciclo das 08:32. O próximo
-  passo é o próprio `dados/alertas_pos_horario.json`. **Não trate como
-  encerrado.**
+  registrado no balde `Shopee`+`SUFIXO_ALERTA_NF` no ciclo das 08:32. O estado
+  (`dados/alertas_pos_horario.json`) confirma a dedução: o pedido **está** no
+  balde, mas foi acrescentado **por último** — ou seja, entrou às 09:42 e não às
+  08:32, senão o dedup teria calado a mensagem. **Não trate como encerrado.**
+- **O fallback de `dia_previsto` erra por UM DIA (medido, 06/08/2026).** A
+  docstring diz que `ship_by_date` = fim do dia de `pay_time + days_to_ship`, e
+  diz ter sido "conferida contra um pedido real". O pedido `260805JCWTKH9K`
+  **contradiz**: `pay_time` 05/08 09:40, `days_to_ship` **2**, e `ship_by_date`
+  real **06/08** 23:59:59 — a fórmula daria **07/08**. Dois pedidos reais
+  discordam, então **não existe fórmula confirmada**: não "conserte" trocando por
+  `days_to_ship - 1` com base numa amostra. O que importa é a **forma do erro**:
+  o fallback existe para que uma venda sem prazo não fique fora do filtro por dia
+  ("o aviso nasceria mudo") e, errando para a frente, ele produz **exatamente o
+  silêncio que deveria evitar** — mesma família do `OK` que cala. A saída correta
+  não é adivinhar a data e sim tratar **ausência de `ship_by_date` como data
+  incerta**, que nunca pode EXCLUIR em silêncio (a regra do `_sla` no ML:
+  "excluí-lo seria pior que datá-lo errado").
 - **Alerta pós-horário: UMA mensagem por ciclo, e o 1º ciclo do dia é calado
   (05/08/2026).** O envio era **por origem e por tipo** — com 2 contas ML +
   Shopee, cada uma podendo ter "pronta" e "falta NF-e", o pior caso eram **6
