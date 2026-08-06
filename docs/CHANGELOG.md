@@ -37,6 +37,12 @@ Histórico das principais mudanças do projeto.
     o workflow à toa.
 
 ### Alterado
+- **`/atualizar` agora reinicia quando o bot está rodando código antigo, mesmo
+  que não haja nada para baixar.** Antes, se você tivesse feito o `git pull` no
+  PC, o comando respondia "já está atualizado" e **não reiniciava** — e você
+  ficava convencido de que atualizou enquanto o bot seguia na versão velha.
+  Também: quando há alterações locais travando o pull, ele agora avisa se o
+  código da pasta já é mais novo que o que está rodando.
 - **Venda da Shopee sem prazo definido não some mais do aviso do dia.** A Shopee
   demora a atribuir a data de despacho, e o app preenchia essa lacuna com uma
   conta própria — que, medida contra um pedido real, errava **um dia para a

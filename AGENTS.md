@@ -883,6 +883,21 @@ em 2º plano.
   o histórico só anda para a frente; sem fast-forward há commit local, e isso pede
   um humano) e o git roda com **`stdin=DEVNULL` + `GIT_TERMINAL_PROMPT=0`** —
   senão ficaria esperando usuário/senha para sempre num processo sem console.
+- **`/atualizar` reinicia por DEFASAGEM, não por "o pull trouxe algo"
+  (06/08/2026).** O comando decidia pelo resultado do `git pull`: pull vazio →
+  *"nada a fazer"*, sem reiniciar. Mas pull vazio **não** significa processo em
+  dia — quem resolveu a árvore suja com um `git pull` na mão (caminho
+  **obrigatório** quando há `nomes_sku.json`/`skus_por_anuncio.json` editados
+  pela tela) já trocou os arquivos, e o bot no ar segue com o que carregou no
+  logon. O dono lia "já está atualizado" e ficava **convencido de que
+  atualizou**, rodando o código antigo — sucesso reportado sem o efeito
+  entregue, e com o agravante de que o `/versao` existe justamente para
+  diagnosticar esse sintoma. Hoje quem decide é **`_desatualizado()`**, o
+  **ponto único** da pergunta (antes o `/versao` a tinha inline e o
+  `/atualizar` não a fazia). Na dúvida devolve **False**: commit desconhecido
+  de um dos lados não é prova, e reinício em falso derruba o bot por 15s à toa
+  (regra do `_mtime_log_monitor`). A árvore suja continua bloqueando o pull,
+  mas **avisa** quando o processo também está atrasado.
 - **Código novo só vale depois de REINICIAR o processo:** `git pull` troca os
   arquivos; o bot que já está no ar segue com o que carregou no logon. O sintoma
   é "a mudança não pegou", sem sinal nenhum do porquê — aconteceu **duas vezes**

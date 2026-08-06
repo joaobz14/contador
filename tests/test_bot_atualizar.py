@@ -105,6 +105,9 @@ def test_arquivo_nao_rastreado_nao_bloqueia(monkeypatch):
 def test_ja_estava_atualizado(monkeypatch):
     _git_falso(monkeypatch, {"status": _resposta(), "pull": _resposta("Already up to date.")})
     monkeypatch.setattr(bot, "_commit_do_disco", lambda: "abc1234")
+    # Pull vazio SO significa "nada a fazer" se o processo tambem estiver no
+    # mesmo commit — ver test_pull_vazio_mas_processo_DEFASADO_reinicia.
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
     mudou, texto = bot._puxar_atualizacao()
     assert mudou is False
     assert "Ja estava na versao mais nova" in texto and "abc1234" in texto
@@ -374,3 +377,56 @@ def test_reiniciar_bot_espera_a_tarefa_liberar_e_confere_que_subiu():
     i_ok = ps1.index("Bot reiniciado (")
     i_confere = ps1.index("@(Processos-Do-Bot).Count -eq 0")
     assert i_confere < i_ok, "anunciar sucesso sem conferir e o defeito, nao a correcao"
+
+
+# ------------------------- pull vazio NAO significa processo em dia (06/08/2026)
+def test_pull_vazio_mas_processo_DEFASADO_reinicia(monkeypatch):
+    """O caso real: o dono resolve a arvore suja no PC com `git pull` na mao e
+    depois manda /atualizar. O pull nao traz nada — e a versao anterior
+    respondia "nada a fazer" e NAO reiniciava, deixando-o convencido de que
+    atualizou enquanto o bot seguia no codigo antigo. Ja o pegou duas vezes."""
+    _git_falso(monkeypatch, {"status": _resposta(), "pull": _resposta("Already up to date.")})
+    monkeypatch.setattr(bot, "_commit_do_disco", lambda: "def5678")
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
+
+    mudou, texto = bot._puxar_atualizacao()
+
+    assert mudou is True, "o processo esta defasado: tem de reiniciar"
+    assert "abc1234" in texto and "def5678" in texto
+
+
+def test_pull_vazio_e_processo_EM_DIA_nao_reinicia(monkeypatch):
+    """O outro lado: sem defasagem, reiniciar seria derrubar o bot por 15s a toa."""
+    _git_falso(monkeypatch, {"status": _resposta(), "pull": _resposta("Already up to date.")})
+    monkeypatch.setattr(bot, "_commit_do_disco", lambda: "abc1234")
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
+
+    mudou, texto = bot._puxar_atualizacao()
+
+    assert mudou is False
+    assert "Ja estava na versao mais nova" in texto
+
+
+def test_commit_desconhecido_NAO_conta_como_defasagem(monkeypatch):
+    """"Nao sei" nunca vira acao: sem saber um dos dois lados, reiniciar seria
+    chutar. Mesma regra do _mtime_log_monitor."""
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "")
+    assert bot._desatualizado("def5678") is False
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
+    assert bot._desatualizado("") is False
+    assert bot._desatualizado("abc1234") is False
+    assert bot._desatualizado("def5678") is True
+
+
+def test_arvore_suja_avisa_quando_o_processo_tambem_esta_atrasado(monkeypatch):
+    """Nao puxa (o trabalho do dono manda), mas dizer so "nao atualizei"
+    esconderia que os arquivos da pasta ja mudaram e o bot segue no velho."""
+    _git_falso(monkeypatch, {"status": _resposta(" M dados/nomes_sku.json")})
+    monkeypatch.setattr(bot, "_commit_do_disco", lambda: "def5678")
+    monkeypatch.setattr(bot, "COMMIT_EM_USO", "abc1234")
+
+    mudou, texto = bot._puxar_atualizacao()
+
+    assert mudou is False, "arvore suja continua bloqueando o pull"
+    assert "nomes_sku.json" in texto
+    assert "abc1234" in texto and "def5678" in texto

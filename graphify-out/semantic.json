@@ -1,7 +1,7 @@
 {
  "_comment": "Extrato duravel da camada semantica (hand-curated) do grafo. Gerado por tools/graph_sync.py. Serve de backup para re-mesclar o conhecimento manual caso a camada AST seja reconstruida. NAO editar a mao aqui — edite graph.json e rode --update.",
- "node_count": 364,
- "edge_count": 702,
+ "node_count": 365,
+ "edge_count": 706,
  "hyperedges": [
   {
    "id": "sistemas_externos",
@@ -4196,6 +4196,19 @@
    "id": "data_incerta_shopee",
    "community": 0,
    "norm_label": "data incerta da shopee inclui, nunca exclui (06/08/2026). `dia_previsto` tinha um fallback que derivava o dia de despacho de `pay_time + days_to_ship` quando a shopee ainda nao atribuira `ship_by_date`; a docstring dizia que a conta fora 'conferida contra um pedido real'. medicao que a derrubou: o pedido `260805jcwtkh9k` foi pago em 05/08 09:40 com `days_to_ship` 2 e tem `ship_by_date` real de 06/"
+  },
+  {
+   "label": "/ATUALIZAR REINICIA POR DEFASAGEM, NAO POR 'O PULL TROUXE ALGO' (06/08/2026). O comando decidia o reinicio pelo resultado do `git pull`: pull vazio => 'Ja estava na versao mais nova. Nada a fazer.' e RETORNAVA sem reiniciar. Mas pull vazio NAO significa processo em dia -- quem resolveu a arvore suja com um `git pull` na mao (caminho obrigatorio quando ha nomes_sku.json/skus_por_anuncio.json editados pela tela) ou rodou o 'Atualizar programa.bat' JA trocou os arquivos, e o bot no ar segue com o codigo que carregou no logon. O dono lia 'ja esta atualizado' e ficava CONVENCIDO DE QUE ATUALIZOU, rodando o codigo antigo: o comando reportava sucesso sem entregar o efeito -- familia 'falha que reporta sucesso', aqui com o agravante de que o proprio /versao existia para diagnosticar exatamente este sintoma. Pegou o dono duas vezes. CORRECAO: `_desatualizado(no_disco)` compara a pasta com COMMIT_EM_USO e e o PONTO UNICO da pergunta, usado por /versao e por /atualizar (antes o /versao tinha a comparacao inline e o /atualizar nao a fazia). Na duvida devolve False -- commit desconhecido de qualquer um dos lados nao e prova de defasagem, e reinicio em falso derruba o bot por 15s a toa; e a regra do _mtime_log_monitor ('nao sei' nunca vira acao), e quem quiser forcar tem o Reiniciar Bot.bat. A ARVORE SUJA continua bloqueando o pull (o trabalho do dono manda), mas agora AVISA quando o processo tambem esta atrasado: dizer so 'nao atualizei' escondia metade do problema.",
+   "file_type": "rationale",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "source_url": null,
+   "captured_at": null,
+   "author": null,
+   "contributor": null,
+   "id": "atualizar_reinicia_por_defasagem",
+   "community": 0,
+   "norm_label": "/atualizar reinicia por defasagem, nao por 'o pull trouxe algo' (06/08/2026). o comando decidia o reinicio pelo resultado do `git pull`: pull vazio => 'ja estava na versao mais nova. nada a fazer.' e retornava sem reiniciar. mas pull vazio nao significa processo em dia -- quem resolveu a arvore suja com um `git pull` na mao (caminho obrigatorio quando ha nomes_sku.json/skus_por_anuncio.json editad"
   }
  ],
  "edges": [
@@ -6721,6 +6734,46 @@
    "context": "arvore suja e ff-only",
    "source_file": "bot_telegram.py",
    "source_location": null
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "atualizar_reinicia_por_defasagem",
+   "target": "bot_telegram_cmd_atualizar",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "atualizar_reinicia_por_defasagem",
+   "target": "bot_telegram_cmd_versao",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "atualizar_reinicia_por_defasagem",
+   "target": "bot_telegram_desatualizado",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "rationale_for",
+   "confidence": "MANUAL",
+   "source_file": "bot_telegram.py",
+   "source_location": null,
+   "weight": 1.0,
+   "source": "atualizar_reinicia_por_defasagem",
+   "target": "bot_telegram_puxar_atualizacao",
+   "confidence_score": 1.0
   },
   {
    "relation": "rationale_for",
