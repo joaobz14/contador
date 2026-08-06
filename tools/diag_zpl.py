@@ -137,9 +137,11 @@ def analisar(texto: str) -> tuple[list[dict], list[str]]:
         sem_nota = _vendas_sem_danfe(blocos)
         if sem_nota:
             avisos.append(
-                f"VENDA SEM DANFE: o(s) bloco(s) de envio #{', #'.join(str(v) for v in sem_nota)} "
-                "nao vem seguido(s) da nota. Essa venda sairia com a etiqueta e SEM a "
-                "nota fiscal. Origem: o pacote que o ML devolveu."
+                f"ENVIO SEM DANFE em seguida: bloco(s) #{', #'.join(str(v) for v in sem_nota)}. "
+                "Duas leituras possiveis, e a estrutura NAO distingue: (1) uma venda cuja "
+                "nota o ML nao mandou -- o pacote sairia SEM nota fiscal; ou (2) uma venda "
+                "de VARIOS VOLUMES, que legitimamente tem mais de uma etiqueta para uma nota "
+                "so. Confira no painel do ML antes de concluir."
             )
         if len(blocos) % 2:
             avisos.append(

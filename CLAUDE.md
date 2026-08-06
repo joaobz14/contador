@@ -441,18 +441,24 @@ em 2º plano.
   endereço e CEP do comprador, então **nunca** imprima conteúdo de `^FD`.
   **Ele também confere o emparelhamento ENVIO→DANFE — e isso não estava na v1
   (06/08/2026).** O primeiro lote real analisado tinha **19 etiquetas e 18
-  notas** (blocos `#31` e `#32` ambos de envio) e a ferramenta imprimiu **"OK"**:
-  ela só procurava página em branco, então calou diante de um defeito **pior** no
-  mesmo arquivo — uma venda que sairia com etiqueta e **sem nota fiscal**. É a
-  família "falha que reporta sucesso": um diagnóstico que diz OK manda procurar
-  no lugar errado, e teria feito calibrar a impressora enquanto o pacote saía sem
-  NF-e. Regra: **ferramenta de diagnóstico responde sobre o arquivo inteiro, não
-  só sobre a pergunta que a motivou.** A checagem é a mesma do
-  `_verificar_sequencia_ml` do outro repo, feita aqui também porque este lado vê
-  o arquivo **antes** de imprimir. Não vale para a Shopee (1 etiqueta por venda,
-  sem nota junto) — exigir par ali seria alarme falso. E o `baixar_zpl` **continua
-  com `>=`**: a guarda dele é contra lote **curto**, e amarrar no número exato
-  tornaria o app refém de um formato que ele não controla.
+  notas** (blocos `#31` e `#32` ambos de envio; o perfil de tamanho confirma —
+  envio ~2600 B/33 campos, nota ~1600 B/37) e a ferramenta imprimiu **"OK"**:
+  ela só procurava página em branco, então calou diante de uma anomalia **maior**
+  no mesmo arquivo. É a família "falha que reporta sucesso" aplicada a um
+  **diagnóstico**, onde o dano é próprio: o OK não é neutro, ele **manda procurar
+  no lugar errado** — teria feito calibrar a impressora enquanto o arquivo tinha
+  outra coisa a dizer. Regra: **ferramenta de diagnóstico responde sobre o arquivo
+  inteiro, não só sobre a pergunta que a motivou.**
+  **Mas o aviso NÃO crava a causa:** a estrutura não distingue "o ML não mandou a
+  nota" de "venda de **vários volumes**" (que legitimamente tem 2 etiquetas para 1
+  nota). Ele entrega o fato e manda conferir no painel — mesma disciplina do aviso
+  de NF-e da Shopee, que diz o efeito e não afirma o porquê.
+  A checagem é a mesma do `_verificar_sequencia_ml` do outro repo, feita aqui
+  também porque este lado vê o arquivo **antes** de imprimir. Não vale para a
+  Shopee (1 etiqueta por venda, sem nota junto) — exigir par ali seria alarme
+  falso. E o `baixar_zpl` **continua com `>=`**: a guarda dele é contra lote
+  **curto**, e amarrar no número exato tornaria o app refém de um formato que ele
+  não controla.
   **Ordem dos blocos do ML: ENVIO → DANFE** (é o que `_verificar_sequencia_ml`
   do outro repo cobra) — some isso ao fato de a impressora empurrar o papel para
   fora e a ordem física fica **invertida** em relação à foto: o que está mais

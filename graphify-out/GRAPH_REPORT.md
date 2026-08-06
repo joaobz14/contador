@@ -11,7 +11,7 @@ O grafo tem **duas camadas** com origens diferentes — não confunda as datas:
 
 - **`built_at_commit` do `graph.json`** = HEAD analisado nesta sincronização.
 - **Contagens atuais do `graph.json` (pós-sync, autoritativas):**
-  **1823 nodes · 3458 edges · 10 hyperedges** — inclui a remoção do auto-start
+  **1824 nodes · 3459 edges · 10 hyperedges** — inclui a remoção do auto-start
   do bot pela tela (2 achados reais de mesma causa-raiz) e a troca pro
   Agendador de Tarefas do Windows (`atalhos/registrar-tarefa-bot.ps1`), o CLI
   de teste do alerta pós-horário (`bot_telegram.py testar-alerta`), o
@@ -74,7 +74,7 @@ semântica). Ver `tools/graph_sync.py` para o modelo das duas camadas.
   sua criação: é a família *"falha que reporta sucesso"* aplicada a um **diagnóstico** — o OK não é
   neutro, manda procurar no lugar errado. Regra registrada: **ferramenta de diagnóstico responde sobre
   o arquivo inteiro, não só sobre a pergunta que a motivou.**
-  Depois do `--update`: **1823 nós, 3458 arestas, 0 órfãs**.
+  Depois do `--update`: **1824 nós, 3459 arestas, 0 órfãs**.
 - **2026-08-05 — compliance da Shopee encerrado (resposta final do suporte).**
   O requisito (success rate > 90% por 7 dias consecutivos em
   `v2.logistics.ship_order`, com prazo e risco de penalidade) foi o que motivou

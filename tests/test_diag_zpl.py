@@ -69,13 +69,22 @@ def test_uma_copia_so_nao_e_aviso():
     assert avisos == []
 
 
-def test_acusa_venda_sem_danfe():
-    """ENVIO -> ENVIO significa uma venda que sairia com etiqueta e SEM a nota.
-    E o defeito que passou batido na primeira versao: o diagnostico dizia 'OK'
-    diante de um lote real com 19 etiquetas e 18 notas."""
+def test_acusa_envio_sem_danfe_em_seguida():
+    """ENVIO -> ENVIO e o defeito que passou batido na primeira versao: o
+    diagnostico dizia 'OK' diante de um lote real com 19 etiquetas e 18 notas."""
     lote = f"{ENVIO}\n{DANFE}\n{ENVIO}\n{ENVIO}\n{DANFE}"
     _, avisos = diag_zpl.analisar(lote)
-    assert any("VENDA SEM DANFE" in a and "#3" in a for a in avisos)
+    assert any("ENVIO SEM DANFE" in a and "#3" in a for a in avisos)
+
+
+def test_aviso_de_envio_sem_danfe_nao_crava_a_causa():
+    """A estrutura nao distingue 'nota faltando' de 'venda com varios volumes'
+    (que legitimamente tem 2 etiquetas para 1 nota). Cravar uma das duas mandaria
+    o operador atras da coisa errada -- o aviso entrega o fato e manda conferir."""
+    lote = f"{ENVIO}\n{ENVIO}\n{DANFE}"
+    _, avisos = diag_zpl.analisar(lote)
+    texto = " ".join(avisos)
+    assert "VARIOS VOLUMES" in texto and "painel do ML" in texto
 
 
 def test_acusa_total_impar_de_blocos():

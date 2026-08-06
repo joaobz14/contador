@@ -24304,7 +24304,7 @@
    "label": "main()",
    "file_type": "code",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L173",
+   "source_location": "L175",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24457,7 +24457,7 @@
    "label": "test_nunca_expoe_conteudo_de_campo()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L114",
+   "source_location": "L123",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24468,24 +24468,10 @@
    "norm_label": "test_nunca_expoe_conteudo_de_campo()"
   },
   {
-   "label": "test_acusa_venda_sem_danfe()",
-   "file_type": "code",
-   "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L72",
-   "metadata": {
-    "language": "python",
-    "kind": "function"
-   },
-   "_origin": "ast",
-   "id": "tests_test_diag_zpl_test_acusa_venda_sem_danfe",
-   "community": 83,
-   "norm_label": "test_acusa_venda_sem_danfe()"
-  },
-  {
    "label": "test_acusa_total_impar_de_blocos()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L81",
+   "source_location": "L90",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24499,7 +24485,7 @@
    "label": "test_lote_par_e_emparelhado_nao_acusa_nada()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L86",
+   "source_location": "L95",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24513,7 +24499,7 @@
    "label": "test_shopee_nao_e_cobrada_por_emparelhamento()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L91",
+   "source_location": "L100",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24527,7 +24513,7 @@
    "label": "test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L99",
+   "source_location": "L108",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24541,7 +24527,7 @@
    "label": "test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme()",
    "file_type": "code",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L107",
+   "source_location": "L116",
    "metadata": {
     "language": "python",
     "kind": "function"
@@ -24564,6 +24550,34 @@
    "id": "tools_diag_zpl_vendas_sem_danfe",
    "community": 82,
    "norm_label": "_vendas_sem_danfe()"
+  },
+  {
+   "label": "test_acusa_envio_sem_danfe_em_seguida()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L72",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_acusa_envio_sem_danfe_em_seguida",
+   "community": 83,
+   "norm_label": "test_acusa_envio_sem_danfe_em_seguida()"
+  },
+  {
+   "label": "test_aviso_de_envio_sem_danfe_nao_crava_a_causa()",
+   "file_type": "code",
+   "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L80",
+   "metadata": {
+    "language": "python",
+    "kind": "function"
+   },
+   "_origin": "ast",
+   "id": "tests_test_diag_zpl_test_aviso_de_envio_sem_danfe_nao_crava_a_causa",
+   "community": 83,
+   "norm_label": "test_aviso_de_envio_sem_danfe_nao_crava_a_causa()"
   }
  ],
  "links": [
@@ -47087,6 +47101,16 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
+   "source_location": "L72",
+   "weight": 1.0,
+   "source": "tests_test_diag_zpl",
+   "target": "tests_test_diag_zpl_test_acusa_envio_sem_danfe_em_seguida",
+   "confidence_score": 1.0
+  },
+  {
+   "relation": "contains",
+   "confidence": "EXTRACTED",
+   "source_file": "tests/test_diag_zpl.py",
    "source_location": "L36",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
@@ -47107,7 +47131,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L81",
+   "source_location": "L90",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_acusa_total_impar_de_blocos",
@@ -47127,10 +47151,10 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L72",
+   "source_location": "L80",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
-   "target": "tests_test_diag_zpl_test_acusa_venda_sem_danfe",
+   "target": "tests_test_diag_zpl_test_aviso_de_envio_sem_danfe_nao_crava_a_causa",
    "confidence_score": 1.0
   },
   {
@@ -47147,7 +47171,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L99",
+   "source_location": "L108",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_comando_de_midia_em_so_alguns_blocos_tambem_e_troca",
@@ -47157,7 +47181,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L86",
+   "source_location": "L95",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_lote_par_e_emparelhado_nao_acusa_nada",
@@ -47177,7 +47201,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L107",
+   "source_location": "L116",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_lote_sem_nenhum_comando_de_midia_nao_vira_alarme",
@@ -47187,7 +47211,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L114",
+   "source_location": "L123",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_nunca_expoe_conteudo_de_campo",
@@ -47207,7 +47231,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tests/test_diag_zpl.py",
-   "source_location": "L91",
+   "source_location": "L100",
    "weight": 1.0,
    "source": "tests_test_diag_zpl",
    "target": "tests_test_diag_zpl_test_shopee_nao_e_cobrada_por_emparelhamento",
@@ -51367,7 +51391,7 @@
    "relation": "contains",
    "confidence": "EXTRACTED",
    "source_file": "tools/diag_zpl.py",
-   "source_location": "L173",
+   "source_location": "L175",
    "weight": 1.0,
    "source": "tools_diag_zpl",
    "target": "tools_diag_zpl_main",
@@ -59957,5 +59981,5 @@
    "source_file": "tools/graph_sync.py"
   }
  ],
- "built_at_commit": "9b9c7f15cf21845d157b262d9ef467ea95fd3e5f"
+ "built_at_commit": "772f0be0fe6643626a225c3588fdd45dfaacc189"
 }

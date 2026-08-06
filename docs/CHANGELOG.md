@@ -13,10 +13,12 @@ Histórico das principais mudanças do projeto.
   - Serve para separar as três causas possíveis: uma página em branco dentro
     do arquivo, uma troca de configuração de mídia no meio do lote, ou o
     avanço de etiqueta que o próprio app da Zebra faz ao ser iniciado.
-  - **Ele também avisa quando uma venda vem sem a DANFE** — o Mercado Livre
-    manda uma etiqueta e uma nota por venda, e o relatório aponta o número
-    exato do bloco quando a nota falta. O primeiro lote conferido de verdade
-    tinha 19 etiquetas e 18 notas.
+  - **Ele também avisa quando uma etiqueta de envio não vem seguida da nota.**
+    O Mercado Livre manda uma etiqueta e uma nota por venda; o relatório aponta
+    o número exato do bloco quando isso não bate. O primeiro lote conferido de
+    verdade tinha 19 etiquetas e 18 notas. O aviso **não afirma o motivo** —
+    pode ser nota que faltou ou venda de vários volumes (que tem duas etiquetas
+    para uma nota só) —, ele manda você conferir no painel do Mercado Livre.
   - **Não mostra nome, endereço nem CEP de comprador** — só a estrutura.
 - **Os comandos `/perguntas` e `/anuncios` passam a mandar uma senha ao n8n.**
   Hoje qualquer pessoa que descobrisse o endereço do fluxo conseguia dispará-lo
